@@ -10,6 +10,9 @@ import { StudentDetailPage } from './pages/StudentDetailPage'
 import { ParentDetailPage } from './pages/ParentDetailPage'
 import { EnrollmentsPage } from './pages/EnrollmentsPage'
 import { FinancePage } from './pages/FinancePage'
+import { CompetitionsPage } from './pages/CompetitionsPage'
+import { CompetitionDetailPage } from './pages/CompetitionDetailPage'
+import { StaffPage } from './pages/StaffPage'
 import { ReportsPage } from './pages/ReportsPage'
 
 function ProtectedRoute() {
@@ -43,9 +46,10 @@ function App() {
             <Route path="/enrollments" element={<EnrollmentsPage />} />
             <Route path="/finance" element={<FinancePage />} />
             <Route path="/attendance" element={<div>Attendance (Phase 3)</div>} />
-            <Route path="/competitions" element={<div>Competitions</div>} />
+            <Route path="/competitions" element={<CompetitionsPage />} />
+            <Route path="/competitions/:id" element={<CompetitionDetailPage />} />
             <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/staff" element={<div>Staff</div>} />
+            <Route path="/staff" element={<StaffPage />} />
           </Route>
         </Route>
 
