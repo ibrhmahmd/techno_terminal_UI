@@ -2,15 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-
 @layer base {
+  :root {
+    /* Dark Sidebar Colors */
+    --sidebar-bg: #0f172a;
+    --sidebar-bg-hover: #1e293b;
+    --sidebar-text: #94a3b8;
+    --sidebar-text-active: #2dd4bf;
+    --sidebar-border: #1e293b;
+    --sidebar-brand-text: #ffffff;
+    --sidebar-accent: #14b8a6;
+    --sidebar-width: 16rem;
+
+    /* Surface Colors */
+    --surface: #f8f9ff;
+    --surface-dim: #cbdbf5;
+    --surface-container-lowest: #ffffff;
+    --surface-container-low: #eff4ff;
+    --surface-container: #e5eeff;
+    --surface-container-high: #dce9ff;
+    --surface-container-highest: #d3e4fe;
+  }
+
   html {
     font-family: 'Inter', system-ui, sans-serif;
   }
   
   body {
     @apply bg-surface text-on-surface antialiased;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 }

@@ -3,23 +3,11 @@ import { Sidebar } from './Sidebar'
 
 export function AppLayout() {
   return (
-    <div className="app-layout">
+    <div className="flex min-h-screen bg-surface">
       <Sidebar />
-      <main className="main-content">
+      <main className="ml-64 flex-1 min-h-screen">
         <Outlet />
       </main>
-      <style>{`
-        .app-layout {
-          display: flex;
-          min-height: 100vh;
-        }
-        .main-content {
-          margin-left: var(--sidebar-width);
-          flex: 1;
-          min-height: 100vh;
-          background-color: var(--surface);
-        }
-      `}</style>
     </div>
   )
 }

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { getDailySchedule, type Group } from '../api/academics'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import { ErrorMessage } from '../components/common/ErrorMessage'
 
 export function GroupsPage() {
   const navigate = useNavigate()
@@ -16,9 +16,8 @@ export function GroupsPage() {
       setIsLoading(true)
       setError(null)
       try {
-        // Get groups from daily schedule without date filter to get all groups
         const data = await getDailySchedule()
-        setGroups(data.groups)
+        setGroups(data.groups || [])
       } catch (err) {
         setError('Failed to load groups. Please try again.')
       } finally {
@@ -39,48 +38,55 @@ export function GroupsPage() {
   }
 
   return (
-    <div className="groups-page">
-      <header className="page-header">
-        <div className="page-header-content">
+    <div className="min-h-screen bg-surface">
+      <TopNavbar activePage="Groups" />
+
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-6">
+        <div className="max-w-[1400px] mx-auto flex items-end justify-between">
           <div>
-            <h1 className="page-title">Groups</h1>
-            <p className="page-subtitle">Manage classes, schedules, and attendance</p>
+            <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">Groups</h1>
+            <p className="text-sm text-on-surface-variant mt-2">Manage classes, schedules, and attendance</p>
           </div>
-          <div className="header-actions">
-            <div className="search-box">
-              <span className="material-symbols-outlined">search</span>
-              <input
-                type="text"
-                placeholder="Search groups..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+          <div className="flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-lg border border-slate-200">
+            <span className="material-symbols-outlined text-slate-500">search</span>
+            <input
+              type="text"
+              placeholder="Search groups..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="bg-transparent border-none outline-none text-sm text-on-surface min-w-[200px] placeholder-slate-400"
+            />
           </div>
         </div>
       </header>
 
-      <section className="content-wrapper">
+      {/* Content */}
+      <section className="p-8 max-w-[1400px] mx-auto">
         {isLoading ? (
-          <LoadingSpinner />
+          <div className="flex items-center justify-center py-20">
+            <LoadingSpinner />
+          </div>
         ) : error ? (
-          <ErrorMessage message={error} />
+          <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-center">
+            {error}
+          </div>
         ) : (
-          <div className="table-container">
-            <table className="data-table">
-              <thead>
+          <div className="overflow-hidden rounded-xl bg-white border border-slate-200 shadow-sm">
+            <table className="w-full border-collapse text-sm">
+              <thead className="bg-slate-50">
                 <tr>
-                  <th>Group Name</th>
-                  <th>Course</th>
-                  <th>Instructor</th>
-                  <th>Students</th>
-                  <th>Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Group Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Course</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Instructor</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Students</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {filteredGroups.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="empty-cell">
+                    <td colSpan={5} className="px-4 py-12 text-center text-slate-500">
                       No groups found
                     </td>
                   </tr>
@@ -89,24 +95,24 @@ export function GroupsPage() {
                     <tr
                       key={group.id}
                       onClick={() => handleRowClick(group.id)}
-                      className="clickable-row"
+                      className="hover:bg-slate-50 transition-colors cursor-pointer"
                     >
-                      <td className="group-name">{group.name}</td>
-                      <td>{group.course_name}</td>
-                      <td>{group.instructor_name}</td>
-                      <td>
-                        <span className="student-badge">
-                          <span className="material-symbols-outlined">group</span>
+                      <td className="px-4 py-3 font-semibold text-on-surface">{group.name}</td>
+                      <td className="px-4 py-3 text-on-surface-variant">{group.course_name}</td>
+                      <td className="px-4 py-3 text-on-surface-variant">{group.instructor_name}</td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 rounded-full text-xs font-medium text-on-surface">
+                          <span className="material-symbols-outlined text-sm">group</span>
                           {group.student_count}
                         </span>
                       </td>
-                      <td>
+                      <td className="px-4 py-3">
                         <button
-                          className="action-link"
                           onClick={(e) => {
                             e.stopPropagation()
                             navigate(`/groups/${group.id}`)
                           }}
+                          className="px-3 py-1 text-xs font-medium text-secondary border border-secondary rounded hover:bg-secondary-container transition-colors"
                         >
                           View
                         </button>
@@ -119,142 +125,6 @@ export function GroupsPage() {
           </div>
         )}
       </section>
-
-      <style>{`
-        .groups-page {
-          min-height: 100vh;
-          background-color: var(--surface);
-        }
-        .page-header {
-          position: sticky;
-          top: 0;
-          z-index: 40;
-          background-color: var(--surface-container-lowest);
-          border-bottom: 1px solid rgba(198, 198, 205, 0.15);
-          padding: var(--space-6) var(--space-8);
-        }
-        .page-header-content {
-          max-width: 1400px;
-          margin: 0 auto;
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-        }
-        .page-title {
-          font-family: var(--font-headline);
-          font-size: var(--text-3xl);
-          font-weight: 700;
-          color: var(--primary);
-          letter-spacing: -0.02em;
-          line-height: 1.2;
-          margin: 0;
-        }
-        .page-subtitle {
-          font-size: var(--text-sm);
-          color: var(--on-surface-variant);
-          margin-top: var(--space-2);
-        }
-        .header-actions {
-          display: flex;
-          gap: var(--space-3);
-        }
-        .search-box {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-          padding: var(--space-2) var(--space-4);
-          background-color: var(--surface-container-low);
-          border-radius: var(--radius-md);
-          border: 1px solid var(--outline-variant);
-        }
-        .search-box .material-symbols-outlined {
-          font-size: 1.25rem;
-          color: var(--on-surface-variant);
-        }
-        .search-box input {
-          border: none;
-          background: transparent;
-          font-size: var(--text-sm);
-          color: var(--on-surface);
-          outline: none;
-          min-width: 200px;
-        }
-        .content-wrapper {
-          padding: var(--space-8);
-          max-width: 1400px;
-          margin: 0 auto;
-        }
-        .table-container {
-          overflow: hidden;
-          border-radius: var(--radius-lg);
-          background-color: var(--surface-container-lowest);
-          border: 1px solid rgba(198, 198, 205, 0.15);
-        }
-        .data-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: var(--text-sm);
-        }
-        .data-table thead {
-          background-color: var(--surface-container-low);
-        }
-        .data-table th {
-          padding: var(--space-4);
-          text-align: left;
-          font-weight: 600;
-          font-size: var(--text-xs);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--on-surface-variant);
-        }
-        .data-table td {
-          padding: var(--space-4);
-          border-top: 1px solid rgba(198, 198, 205, 0.1);
-        }
-        .clickable-row {
-          cursor: pointer;
-          transition: background-color 0.2s ease;
-        }
-        .clickable-row:hover {
-          background-color: var(--surface-container-low);
-        }
-        .group-name {
-          font-weight: 600;
-          color: var(--primary);
-        }
-        .student-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: var(--space-1);
-          padding: var(--space-1) var(--space-3);
-          background-color: var(--surface-container-low);
-          border-radius: var(--radius-full);
-          font-size: var(--text-xs);
-          font-weight: 500;
-        }
-        .student-badge .material-symbols-outlined {
-          font-size: 1rem;
-        }
-        .action-link {
-          padding: var(--space-1) var(--space-3);
-          font-size: var(--text-xs);
-          font-weight: 500;
-          color: var(--secondary);
-          background: transparent;
-          border: 1px solid var(--secondary);
-          border-radius: var(--radius-sm);
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .action-link:hover {
-          background-color: var(--secondary-container);
-        }
-        .empty-cell {
-          text-align: center;
-          color: var(--on-surface-variant);
-          padding: var(--space-8);
-        }
-      `}</style>
     </div>
   )
 }

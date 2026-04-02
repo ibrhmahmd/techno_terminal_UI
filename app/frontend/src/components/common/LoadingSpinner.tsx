@@ -1,26 +1,23 @@
-export function LoadingSpinner() {
+interface LoadingSpinnerProps {
+  size?: 'sm' | 'md' | 'lg'
+  variant?: 'default' | 'light'
+}
+
+export function LoadingSpinner({ size = 'md', variant = 'default' }: LoadingSpinnerProps) {
+  const sizeClasses = {
+    sm: 'w-4 h-4 border-2',
+    md: 'w-8 h-8 border-2',
+    lg: 'w-12 h-12 border-3',
+  }
+
+  const colorClasses = {
+    default: 'border-slate-200 border-t-secondary',
+    light: 'border-white/30 border-t-white',
+  }
+
   return (
-    <div className="loading-spinner">
-      <div className="spinner"></div>
-      <style>{`
-        .loading-spinner {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: var(--space-8);
-        }
-        .spinner {
-          width: 2rem;
-          height: 2rem;
-          border: 2px solid var(--outline-variant);
-          border-top-color: var(--secondary);
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+    <div className="flex items-center justify-center p-2">
+      <div className={`${sizeClasses[size]} ${colorClasses[variant]} rounded-full animate-spin`} />
     </div>
   )
 }

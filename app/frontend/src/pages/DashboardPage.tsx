@@ -101,18 +101,18 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface pb-20">
+    <div className="min-h-screen bg-surface">
       <TopNavbar activePage="Dashboard" />
       
-      <DashboardHeader
-        title="System Overview"
-        subtitle="Real-time status of active groups and attendance tracking."
-        showTime
-      />
+      <div className="p-10 flex-1 space-y-8">
+        <DashboardHeader
+          title="System Overview"
+          subtitle="Real-time status of active groups and attendance tracking."
+          showTime
+        />
 
-      <DaySelectorBar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+        <DaySelectorBar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
 
-      <main className="px-8 max-w-[1400px] mx-auto">
         {isLoading ? (
           <LoadingSpinner />
         ) : (
@@ -124,14 +124,14 @@ export function DashboardPage() {
               </div>
             )}
 
-            <div className="flex flex-col gap-6">
-              {schedule?.groups.length === 0 ? (
+            <div className="flex flex-col gap-6 pb-20">
+              {schedule?.groups?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-16 text-on-surface-variant bg-white rounded-lg border border-slate-200">
                   <span className="material-symbols-outlined text-5xl mb-4 opacity-50">event_busy</span>
                   <p>No groups scheduled for this day</p>
                 </div>
               ) : (
-                schedule?.groups.map((group) => (
+                schedule?.groups?.map((group) => (
                   <GroupSessionCard
                     key={group.id}
                     group={group}
@@ -143,7 +143,7 @@ export function DashboardPage() {
             </div>
           </>
         )}
-      </main>
+      </div>
     </div>
   )
 }

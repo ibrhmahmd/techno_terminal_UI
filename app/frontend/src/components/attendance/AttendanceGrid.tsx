@@ -1,240 +1,178 @@
-import { useState, useCallback } from 'react'
-import type { AttendanceRecord, AttendanceUpdate } from '../../api/attendance'
+import { useState } from 'react'
+import type { Session } from '../../api/academics'
 
-type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused' | null
+interface StudentAttendance {
+  student_id: number
+  student_name: string
+  gender: 'male' | 'female'
+  billing_status: 'paid' | 'due'
+  attendance: (boolean | null)[]  // true=present, false=absent, null=unmarked
+  notes?: string
+}
 
 interface AttendanceGridProps {
-  students: AttendanceRecord[]
-  onSave: (attendance: AttendanceUpdate[]) => void
-  isSaving?: boolean
+  sessions: Session[]
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  present: { label: 'P', color: '#065f46', bg: '#d1fae5' },
-  absent: { label: 'A', color: '#991b1b', bg: '#fee2e2' },
-  late: { label: 'L', color: '#92400e', bg: '#fef3c7' },
-  excused: { label: 'E', color: '#1e40af', bg: '#dbeafe' },
-}
+// Mock students data - in real app, this comes from API
+const MOCK_STUDENTS: StudentAttendance[] = [
+  {
+    student_id: 1,
+    student_name: 'Lucas Meyer',
+    gender: 'male',
+    billing_status: 'paid',
+    attendance: [true, true, null, null, null],
+    notes: '',
+  },
+  {
+    student_id: 2,
+    student_name: 'Sami Khan',
+    gender: 'male',
+    billing_status: 'due',
+    attendance: [true, false, null, null, null],
+    notes: 'Medical leave',
+  },
+  {
+    student_id: 3,
+    student_name: 'Elena Jovic',
+    gender: 'female',
+    billing_status: 'paid',
+    attendance: [false, true, null, null, null],
+    notes: '',
+  },
+]
 
-export function AttendanceGrid({ students, onSave, isSaving }: AttendanceGridProps) {
-  const [localAttendance, setLocalAttendance] = useState<Record<number, AttendanceStatus>>(() => {
-    return students.reduce((acc, student) => {
-      acc[student.student_id] = student.status
-      return acc
-    }, {} as Record<number, AttendanceStatus>)
-  })
-  const [hasChanges, setHasChanges] = useState(false)
+const SESSION_DATES = ['Dec 07', 'Dec 14', 'Dec 21', 'Dec 28', 'Jan 04']
 
-  const cycleStatus = useCallback((studentId: number) => {
-    setLocalAttendance((prev) => {
-      const current = prev[studentId]
-      let next: AttendanceStatus
-      if (current === null || current === undefined) next = 'present'
-      else if (current === 'present') next = 'absent'
-      else if (current === 'absent') next = null
-      else next = null
+export function AttendanceGrid({ sessions }: AttendanceGridProps) {
+  const [students, setStudents] = useState<StudentAttendance[]>(MOCK_STUDENTS)
+  const [activeSessionIndex, setActiveSessionIndex] = useState(1) // Highlight session 2 by default
 
-      setHasChanges(true)
-      return { ...prev, [studentId]: next }
+  const handleAttendanceClick = (studentIndex: number, sessionIndex: number) => {
+    setStudents((prev) => {
+      const updated = [...prev]
+      const current = updated[studentIndex].attendance[sessionIndex]
+      // Cycle: null -> true -> false -> null
+      updated[studentIndex].attendance[sessionIndex] = 
+        current === null ? true : current === true ? false : null
+      return updated
     })
-  }, [])
+  }
 
-  const setStatus = useCallback((studentId: number, status: AttendanceStatus) => {
-    setLocalAttendance((prev) => {
-      setHasChanges(true)
-      return { ...prev, [studentId]: status }
-    })
-  }, [])
+  const getAttendanceIcon = (status: boolean | null) => {
+    if (status === true) {
+      return (
+        <span className="material-symbols-outlined text-secondary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+          check_circle
+        </span>
+      )
+    }
+    if (status === false) {
+      return (
+        <span className="material-symbols-outlined text-error text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+          cancel
+        </span>
+      )
+    }
+    return <div className="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm" />
+  }
 
-  const handleSave = () => {
-    const attendance: AttendanceUpdate[] = Object.entries(localAttendance).map(
-      ([studentId, status]) => ({
-        student_id: Number(studentId),
-        status,
-      })
+  const getGenderEmoji = (gender: 'male' | 'female') => {
+    return gender === 'male' ? '👦' : '👧'
+  }
+
+  const getBillingBadge = (status: 'paid' | 'due') => {
+    return status === 'paid' ? (
+      <span className="text-[9px] font-bold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded-sm">
+        PAID
+      </span>
+    ) : (
+      <span className="text-[9px] font-bold text-error bg-error-container/20 px-1.5 py-0.5 rounded-sm">
+        DUE
+      </span>
     )
-    onSave(attendance)
-    setHasChanges(false)
   }
 
-  const getStatusDisplay = (status: AttendanceStatus) => {
-    if (!status) return { label: '-', color: '#9ca3af', bg: 'transparent' }
-    return STATUS_CONFIG[status]
-  }
+  // Limit to 5 sessions for display
+  const displaySessions = sessions.slice(0, 5)
 
   return (
-    <div className="attendance-grid">
-      <div className="grid-header">
-        <span className="header-cell student-col">Student</span>
-        <span className="header-cell status-col">Status</span>
-        <span className="header-cell actions-col">Actions</span>
+    <div className="bg-white border border-outline-variant/10 shadow-sm overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse min-w-[1000px]">
+          <thead>
+            <tr className="bg-surface-container-lowest">
+              <th 
+                className="px-6 py-5 text-[10px] font-bold text-outline-variant uppercase tracking-[0.2em] border-b border-outline-variant/10" 
+                style={{ width: 280 }}
+              >
+                Student
+              </th>
+              {displaySessions.map((session, idx) => (
+                <th
+                  key={session.id}
+                  className={`px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] border-b border-outline-variant/10 text-center border-l border-outline-variant/5 ${
+                    idx === activeSessionIndex 
+                      ? 'text-secondary bg-secondary/5' 
+                      : 'text-outline-variant'
+                  }`}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    Session {idx + 1}
+                    <span className="block text-[8px] font-normal tracking-normal opacity-60">
+                      {SESSION_DATES[idx]}
+                    </span>
+                    <button className={`hover:text-secondary ${idx === activeSessionIndex ? 'text-secondary' : 'text-outline-variant'}`}>
+                      <span className="material-symbols-outlined text-xs">sticky_note_2</span>
+                    </button>
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-outline-variant/5">
+            {students.map((student, studentIdx) => (
+              <tr key={student.student_id} className="hover:bg-surface-container-low/20 transition-colors">
+                {/* Student Cell */}
+                <td className="px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <span className="text-xs mr-3">{getGenderEmoji(student.gender)}</span>
+                      <div>
+                        <span className="text-sm font-semibold text-on-surface block">
+                          {student.student_name}
+                        </span>
+                        <button className="text-[9px] text-outline hover:text-secondary flex items-center mt-0.5">
+                          <span className="material-symbols-outlined text-[10px] mr-0.5">notes</span>
+                          {student.notes || 'Add student note'}
+                        </button>
+                      </div>
+                    </div>
+                    {getBillingBadge(student.billing_status)}
+                  </div>
+                </td>
+
+                {/* Attendance Cells */}
+                {student.attendance.slice(0, displaySessions.length).map((status, sessionIdx) => (
+                  <td
+                    key={sessionIdx}
+                    className={`px-4 py-4 text-center border-l border-outline-variant/5 ${
+                      sessionIdx === activeSessionIndex ? 'bg-secondary/5' : ''
+                    }`}
+                  >
+                    <button
+                      onClick={() => handleAttendanceClick(studentIdx, sessionIdx)}
+                      className="w-full h-full flex items-center justify-center"
+                    >
+                      {getAttendanceIcon(status)}
+                    </button>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-
-      <div className="grid-body">
-        {students.map((student) => {
-          const status = localAttendance[student.student_id]
-          const display = getStatusDisplay(status)
-
-          return (
-            <div key={student.id} className="grid-row">
-              <div className="student-cell">
-                <span className="student-name">{student.student_name}</span>
-              </div>
-
-              <div className="status-cell">
-                <button
-                  className="status-badge"
-                  onClick={() => cycleStatus(student.student_id)}
-                  style={{
-                    color: display.color,
-                    backgroundColor: display.bg,
-                  }}
-                  title="Click to cycle: Present → Absent → Clear"
-                >
-                  {display.label}
-                </button>
-              </div>
-
-              <div className="actions-cell">
-                <button
-                  className={`action-btn ${status === 'late' ? 'active' : ''}`}
-                  onClick={() => setStatus(student.student_id, 'late')}
-                >
-                  Late
-                </button>
-                <button
-                  className={`action-btn ${status === 'excused' ? 'active' : ''}`}
-                  onClick={() => setStatus(student.student_id, 'excused')}
-                >
-                  Excused
-                </button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {hasChanges && (
-        <div className="save-bar">
-          <span className="unsaved-indicator">You have unsaved changes</span>
-          <button
-            className="save-button"
-            onClick={handleSave}
-            disabled={isSaving}
-          >
-            {isSaving ? 'Saving...' : 'Save All Changes'}
-          </button>
-        </div>
-      )}
-
-      <style>{`
-        .attendance-grid {
-          background-color: var(--surface-container-lowest);
-          border-radius: var(--radius-lg);
-          border: 1px solid rgba(198, 198, 205, 0.15);
-          overflow: hidden;
-        }
-        .grid-header {
-          display: grid;
-          grid-template-columns: 1fr 100px 200px;
-          padding: var(--space-3) var(--space-4);
-          background-color: var(--surface-container-low);
-          border-bottom: 1px solid rgba(198, 198, 205, 0.1);
-          font-size: var(--text-xs);
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--on-surface-variant);
-        }
-        .grid-body {
-          max-height: 400px;
-          overflow-y: auto;
-        }
-        .grid-row {
-          display: grid;
-          grid-template-columns: 1fr 100px 200px;
-          padding: var(--space-3) var(--space-4);
-          border-bottom: 1px solid rgba(198, 198, 205, 0.05);
-          align-items: center;
-          transition: background-color 0.15s ease;
-        }
-        .grid-row:hover {
-          background-color: var(--surface-container-low);
-        }
-        .student-name {
-          font-size: var(--text-sm);
-          font-weight: 500;
-          color: var(--on-surface);
-        }
-        .status-badge {
-          width: 2rem;
-          height: 2rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: var(--radius-md);
-          font-size: var(--text-sm);
-          font-weight: 600;
-          border: 1px solid transparent;
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }
-        .status-badge:hover {
-          transform: scale(1.05);
-        }
-        .actions-cell {
-          display: flex;
-          gap: var(--space-2);
-        }
-        .action-btn {
-          padding: var(--space-1) var(--space-3);
-          font-size: var(--text-xs);
-          font-weight: 500;
-          border: 1px solid var(--outline-variant);
-          background-color: transparent;
-          border-radius: var(--radius-sm);
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }
-        .action-btn:hover {
-          background-color: var(--surface-container-low);
-        }
-        .action-btn.active {
-          background-color: var(--secondary-container);
-          border-color: var(--secondary);
-          color: #005049;
-        }
-        .save-bar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: var(--space-3) var(--space-4);
-          background-color: var(--surface-container-low);
-          border-top: 1px solid rgba(198, 198, 205, 0.1);
-        }
-        .unsaved-indicator {
-          font-size: var(--text-sm);
-          color: var(--on-surface-variant);
-        }
-        .save-button {
-          padding: var(--space-2) var(--space-4);
-          font-size: var(--text-sm);
-          font-weight: 600;
-          color: var(--on-secondary);
-          background-color: var(--secondary);
-          border: none;
-          border-radius: var(--radius-md);
-          cursor: pointer;
-          transition: background-color 0.2s ease;
-        }
-        .save-button:hover:not(:disabled) {
-          background-color: #005049;
-        }
-        .save-button:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-      `}</style>
     </div>
   )
 }

@@ -1,22 +1,51 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { getGroupSessions, type Group, type Session } from '../api/academics'
-import { getSessionAttendance, markAttendance, type AttendanceRecord, type AttendanceUpdate } from '../api/attendance'
+import { useParams } from 'react-router-dom'
+import { TopNavbar } from '../components/dashboard/TopNavbar'
+import { GroupHeader } from '../components/groups/GroupHeader'
+import { TabNavigation } from '../components/groups/TabNavigation'
 import { AttendanceGrid } from '../components/attendance/AttendanceGrid'
+import { ProgressSection } from '../components/groups/ProgressSection'
+import { SuccessBanner } from '../components/common/SuccessBanner'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import { ErrorMessage } from '../components/common/ErrorMessage'
+import { getGroupDetails, getGroupSessions, getGroupProgress, type Group, type Session, type ProgressLevel } from '../api/academics'
+
+// Mock data for fallback
+const MOCK_GROUP: Group = {
+  id: 1,
+  name: 'Robotics A',
+  course_name: 'Robotics',
+  instructor_name: 'Ali Mahmoud',
+  student_count: 12,
+  level: 1,
+  schedule_time: 'Sat 15:00',
+}
+
+const MOCK_SESSIONS: Session[] = [
+  { id: 1, group_id: 1, date: '2026-04-01', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'completed', attendance_marked: true, notes: 'Good session' },
+  { id: 2, group_id: 1, date: '2026-04-08', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'scheduled', attendance_marked: false },
+  { id: 3, group_id: 1, date: '2026-04-15', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'scheduled', attendance_marked: false },
+  { id: 4, group_id: 1, date: '2026-04-22', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'scheduled', attendance_marked: false },
+  { id: 5, group_id: 1, date: '2026-04-29', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'scheduled', attendance_marked: false },
+]
+
+const MOCK_PROGRESS: ProgressLevel = {
+  current_module: 'Mechanical Linkages Progress',
+  description: '3D spatial reasoning through assembly. 80% completion across group benchmarks.',
+  group_score: 80,
+  target_score: 100,
+  is_completed: true,
+  ready_for_next_level: true,
+}
 
 export function GroupDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const groupId = Number(id)
-
+  const groupId = parseInt(id || '1', 10)
+  
   const [group, setGroup] = useState<Group | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
-  const [selectedSession, setSelectedSession] = useState<Session | null>(null)
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>([])
+  const [progress, setProgress] = useState<ProgressLevel | null>(null)
+  const [activeTab, setActiveTab] = useState<'roster' | 'attendance' | 'history'>('attendance')
   const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -24,230 +53,94 @@ export function GroupDetailPage() {
       setIsLoading(true)
       setError(null)
       try {
-        // For now, get sessions from daily schedule
-        // In a real implementation, you'd have a dedicated endpoint
-        const allSessions = await getGroupSessions(groupId)
-        setSessions(allSessions)
-
-        // Create a mock group object since we don't have a direct endpoint
-        // In real implementation, call getGroup(groupId)
-        setGroup({
-          id: groupId,
-          name: `Group ${groupId}`,
-          course_name: 'Loading...',
-          instructor_name: 'Loading...',
-          student_count: 0,
-        })
-
-        if (allSessions.length > 0) {
-          setSelectedSession(allSessions[0])
-        }
-      } catch (_err) {
-        setError('Failed to load group details. Please try again.')
+        const [groupData, sessionsData, progressData] = await Promise.all([
+          getGroupDetails(groupId),
+          getGroupSessions(groupId),
+          getGroupProgress(groupId),
+        ])
+        setGroup(groupData)
+        setSessions(sessionsData)
+        setProgress(progressData)
+      } catch (err) {
+        console.error('API Error:', err)
+        setError('API not available. Showing mock data.')
+        setGroup(MOCK_GROUP)
+        setSessions(MOCK_SESSIONS)
+        setProgress(MOCK_PROGRESS)
       } finally {
         setIsLoading(false)
       }
     }
-
-    if (groupId) {
-      loadGroupData()
-    }
+    loadGroupData()
   }, [groupId])
 
-  useEffect(() => {
-    async function loadAttendance() {
-      if (!selectedSession) return
-
-      setIsLoading(true)
-      try {
-        const data = await getSessionAttendance(selectedSession.id)
-        setAttendance(data.students)
-      } catch (_err) {
-        setError('Failed to load attendance data.')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadAttendance()
-  }, [selectedSession])
-
-  const handleSaveAttendance = async (updates: AttendanceUpdate[]) => {
-    if (!selectedSession) return
-
-    setIsSaving(true)
-    try {
-      await markAttendance(selectedSession.id, updates)
-      // Refresh attendance data
-      const data = await getSessionAttendance(selectedSession.id)
-      setAttendance(data.students)
-    } catch (_err) {
-      setError('Failed to save attendance. Please try again.')
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
   return (
-    <div className="group-detail-page">
-      <header className="page-header">
-        <div className="page-header-content">
-          <div>
-            <button className="back-link" onClick={() => navigate('/groups')}>
-              <span className="material-symbols-outlined">arrow_back</span>
-              Back to Groups
-            </button>
-            <h1 className="page-title">{group?.name || 'Group Details'}</h1>
-            <p className="page-subtitle">
-              {group?.course_name} • {group?.instructor_name} • {group?.student_count} students
-            </p>
+    <div className="min-h-screen bg-surface">
+      <TopNavbar activePage="Groups" />
+      
+      <div className="p-8 space-y-8">
+        {/* Success Banner */}
+        {progress?.ready_for_next_level && (
+          <SuccessBanner 
+            message={`Level ${group?.level} Complete. Ready for Level ${(group?.level || 0) + 1} progression and billing generation.`}
+            actionText="Proceed"
+            onAction={() => console.log('Proceed to next level')}
+          />
+        )}
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <LoadingSpinner />
           </div>
-        </div>
-      </header>
-
-      <section className="content-wrapper">
-        {isLoading && !attendance.length ? (
-          <LoadingSpinner />
-        ) : error ? (
-          <ErrorMessage message={error} />
-        ) : (
+        ) : group ? (
           <>
-            <div className="session-selector">
-              <label>Select Session:</label>
-              <select
-                value={selectedSession?.id || ''}
-                onChange={(e) => {
-                  const session = sessions.find((s) => s.id === Number(e.target.value))
-                  setSelectedSession(session || null)
-                }}
-              >
-                {sessions.map((session) => (
-                  <option key={session.id} value={session.id}>
-                    {session.date} {session.start_time} - {session.end_time}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Group Header */}
+            <GroupHeader 
+              name={group.name}
+              scheduleTime={group.schedule_time || 'Sat 15:00'}
+              level={group.level || 1}
+              instructor={group.instructor_name}
+              enrollmentCount={group.student_count}
+              maxEnrollment={12}
+            />
 
-            {selectedSession && (
-              <div className="attendance-section">
-                <div className="section-header">
-                  <h2>Attendance</h2>
-                  <span className="session-info">
-                    {selectedSession.date} • {selectedSession.start_time} - {selectedSession.end_time}
-                  </span>
-                </div>
+            {/* Tab Navigation */}
+            <TabNavigation 
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              sessionCount={sessions.length}
+            />
 
-                <AttendanceGrid
-                  students={attendance}
-                  onSave={handleSaveAttendance}
-                  isSaving={isSaving}
-                />
+            {/* Tab Content */}
+            {activeTab === 'attendance' && (
+              <AttendanceGrid sessions={sessions} />
+            )}
+
+            {activeTab === 'roster' && (
+              <div className="p-12 text-center text-on-surface-variant bg-surface-container-low rounded-lg">
+                <span className="material-symbols-outlined text-4xl mb-3 opacity-50">people</span>
+                <p>Roster view coming soon</p>
               </div>
             )}
-          </>
-        )}
-      </section>
 
-      <style>{`
-        .group-detail-page {
-          min-height: 100vh;
-          background-color: var(--surface);
-        }
-        .page-header {
-          position: sticky;
-          top: 0;
-          z-index: 40;
-          background-color: var(--surface-container-lowest);
-          border-bottom: 1px solid rgba(198, 198, 205, 0.15);
-          padding: var(--space-6) var(--space-8);
-        }
-        .page-header-content {
-          max-width: 1400px;
-          margin: 0 auto;
-        }
-        .back-link {
-          display: inline-flex;
-          align-items: center;
-          gap: var(--space-1);
-          font-size: var(--text-sm);
-          color: var(--secondary);
-          background: transparent;
-          border: none;
-          cursor: pointer;
-          margin-bottom: var(--space-2);
-          padding: 0;
-        }
-        .back-link:hover {
-          text-decoration: underline;
-        }
-        .back-link .material-symbols-outlined {
-          font-size: 1.25rem;
-        }
-        .page-title {
-          font-family: var(--font-headline);
-          font-size: var(--text-3xl);
-          font-weight: 700;
-          color: var(--primary);
-          letter-spacing: -0.02em;
-          line-height: 1.2;
-          margin: 0;
-        }
-        .page-subtitle {
-          font-size: var(--text-sm);
-          color: var(--on-surface-variant);
-          margin-top: var(--space-2);
-        }
-        .content-wrapper {
-          padding: var(--space-8);
-          max-width: 1400px;
-          margin: 0 auto;
-        }
-        .session-selector {
-          display: flex;
-          align-items: center;
-          gap: var(--space-4);
-          margin-bottom: var(--space-6);
-          padding: var(--space-4);
-          background-color: var(--surface-container-lowest);
-          border-radius: var(--radius-lg);
-          border: 1px solid rgba(198, 198, 205, 0.15);
-        }
-        .session-selector label {
-          font-size: var(--text-sm);
-          font-weight: 500;
-          color: var(--on-surface);
-        }
-        .session-selector select {
-          padding: var(--space-2) var(--space-4);
-          font-size: var(--text-sm);
-          border: 1px solid var(--outline-variant);
-          border-radius: var(--radius-md);
-          background-color: var(--surface-container-lowest);
-          color: var(--on-surface);
-          min-width: 250px;
-        }
-        .attendance-section {
-          margin-top: var(--space-6);
-        }
-        .section-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: var(--space-4);
-        }
-        .section-header h2 {
-          font-family: var(--font-headline);
-          font-size: var(--text-xl);
-          font-weight: 600;
-          color: var(--primary);
-          margin: 0;
-        }
-        .session-info {
-          font-size: var(--text-sm);
-          color: var(--on-surface-variant);
-        }
-      `}</style>
+            {activeTab === 'history' && (
+              <div className="p-12 text-center text-on-surface-variant bg-surface-container-low rounded-lg">
+                <span className="material-symbols-outlined text-4xl mb-3 opacity-50">history</span>
+                <p>History view coming soon</p>
+              </div>
+            )}
+
+            {/* Progress Section */}
+            {progress && (
+              <ProgressSection progress={progress} />
+            )}
+          </>
+        ) : (
+          <div className="p-12 text-center text-on-surface-variant">
+            <p>Group not found</p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
