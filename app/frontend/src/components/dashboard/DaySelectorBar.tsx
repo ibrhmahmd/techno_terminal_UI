@@ -1,138 +1,50 @@
-import { useState } from 'react'
-
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-
 interface DaySelectorBarProps {
   selectedDate: string
   onSelectDate: (date: string) => void
 }
 
-export function DaySelectorBar({ selectedDate, onSelectDate }: DaySelectorBarProps) {
-  const [currentWeek, setCurrentWeek] = useState(() => {
-    const today = new Date()
-    const monday = new Date(today)
-    monday.setDate(today.getDate() - today.getDay() + 1)
-    return monday
-  })
+const DAY_NAMES = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 
-  const getWeekDates = (monday: Date) => {
-    return DAYS.map((day, index) => {
-      const date = new Date(monday)
-      date.setDate(monday.getDate() + index)
+export function DaySelectorBar({ selectedDate, onSelectDate }: DaySelectorBarProps) {
+  // Get current week's dates starting from Saturday
+  const getWeekDates = () => {
+    const today = new Date(selectedDate)
+    const dayOfWeek = today.getDay() // 0 = Sunday, 6 = Saturday
+    
+    // Find Saturday of current week
+    const saturday = new Date(today)
+    saturday.setDate(today.getDate() - ((dayOfWeek + 1) % 7))
+    
+    return DAY_NAMES.map((dayName, index) => {
+      const date = new Date(saturday)
+      date.setDate(saturday.getDate() + index)
       return {
-        day,
+        dayName,
         date: date.toISOString().split('T')[0],
-        dayNum: date.getDate(),
+        isToday: date.toDateString() === new Date().toDateString(),
       }
     })
   }
 
-  const weekDates = getWeekDates(currentWeek)
-
-  const navigateWeek = (direction: 'prev' | 'next') => {
-    const newWeek = new Date(currentWeek)
-    newWeek.setDate(currentWeek.getDate() + (direction === 'next' ? 7 : -7))
-    setCurrentWeek(newWeek)
-  }
+  const weekDates = getWeekDates()
 
   return (
-    <div className="day-selector">
-      <button
-        className="nav-button"
-        onClick={() => navigateWeek('prev')}
-        title="Previous week"
-      >
-        <span className="material-symbols-outlined">chevron_left</span>
-      </button>
-
-      <div className="days-container">
-        {weekDates.map(({ day, date, dayNum }) => (
+    <section className="px-8 pb-6 max-w-[1400px] mx-auto">
+      <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg w-fit">
+        {weekDates.map(({ dayName, date }) => (
           <button
             key={date}
-            className={`day-pill ${date === selectedDate ? 'active' : ''}`}
+            className={`px-5 py-1.5 rounded-md font-headline text-sm font-medium transition-all ${
+              date === selectedDate
+                ? 'bg-white text-secondary shadow-sm font-bold'
+                : 'text-slate-500 hover:text-secondary hover:bg-white/50'
+            }`}
             onClick={() => onSelectDate(date)}
           >
-            <span className="day-name">{day}</span>
-            <span className="day-number">{dayNum}</span>
+            {dayName}
           </button>
         ))}
       </div>
-
-      <button
-        className="nav-button"
-        onClick={() => navigateWeek('next')}
-        title="Next week"
-      >
-        <span className="material-symbols-outlined">chevron_right</span>
-      </button>
-
-      <style>{`
-        .day-selector {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-          padding: var(--space-4) var(--space-6);
-          background-color: var(--surface-container-lowest);
-          border-bottom: 1px solid rgba(198, 198, 205, 0.15);
-        }
-        .nav-button {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 2rem;
-          height: 2rem;
-          border: none;
-          background: transparent;
-          color: var(--on-surface-variant);
-          cursor: pointer;
-          border-radius: var(--radius-md);
-          transition: background-color 0.2s ease;
-        }
-        .nav-button:hover {
-          background-color: var(--surface-container-low);
-        }
-        .nav-button .material-symbols-outlined {
-          font-size: 1.25rem;
-        }
-        .days-container {
-          display: flex;
-          gap: var(--space-2);
-          flex: 1;
-          justify-content: center;
-        }
-        .day-pill {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: var(--space-1);
-          padding: var(--space-2) var(--space-4);
-          min-width: 3.5rem;
-          border: 1px solid var(--outline-variant);
-          background-color: var(--surface-container-lowest);
-          border-radius: var(--radius-lg);
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .day-pill:hover {
-          background-color: var(--surface-container-low);
-          border-color: var(--outline);
-        }
-        .day-pill.active {
-          background-color: var(--secondary);
-          border-color: var(--secondary);
-          color: var(--on-secondary);
-        }
-        .day-name {
-          font-size: var(--text-xs);
-          font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-        .day-number {
-          font-size: var(--text-lg);
-          font-weight: 600;
-        }
-      `}</style>
-    </div>
+    </section>
   )
 }

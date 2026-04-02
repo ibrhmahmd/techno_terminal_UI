@@ -1,9 +1,70 @@
 import { useState, useEffect } from 'react'
-import { getDailySchedule, type DailySchedule } from '../api/academics'
+import { getDailySchedule, type DailySchedule, type Session } from '../api/academics'
+import { TopNavbar } from '../components/dashboard/TopNavbar'
+import { DashboardHeader } from '../components/dashboard/DashboardHeader'
 import { DaySelectorBar } from '../components/dashboard/DaySelectorBar'
 import { GroupSessionCard } from '../components/dashboard/GroupSessionCard'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import { ErrorMessage } from '../components/common/ErrorMessage'
+
+// Mock data for testing when API is unavailable
+const MOCK_DATA: DailySchedule = {
+  date: new Date().toISOString().split('T')[0],
+  groups: [
+    {
+      id: 1,
+      name: 'Robotics A - Saturday',
+      course_name: 'Robotics',
+      instructor_name: 'Ahmed Hassan',
+      student_count: 12,
+    },
+    {
+      id: 2,
+      name: 'Coding B - Sunday',
+      course_name: 'Coding',
+      instructor_name: 'Sara Mohamed',
+      student_count: 8,
+    },
+    {
+      id: 3,
+      name: 'Electronics A - Monday',
+      course_name: 'Electronics',
+      instructor_name: 'Omar Khalid',
+      student_count: 15,
+    },
+  ],
+  sessions: [
+    {
+      id: 1,
+      group_id: 1,
+      date: new Date().toISOString().split('T')[0],
+      start_time: '10:00',
+      end_time: '12:00',
+      instructor_name: 'Ahmed Hassan',
+      status: 'scheduled',
+      attendance_marked: false,
+    },
+    {
+      id: 2,
+      group_id: 2,
+      date: new Date().toISOString().split('T')[0],
+      start_time: '14:00',
+      end_time: '16:00',
+      instructor_name: 'Sara Mohamed',
+      status: 'scheduled',
+      attendance_marked: true,
+    },
+    {
+      id: 3,
+      group_id: 3,
+      date: new Date().toISOString().split('T')[0],
+      start_time: '09:00',
+      end_time: '11:00',
+      instructor_name: 'Omar Khalid',
+      status: 'scheduled',
+      attendance_marked: false,
+    },
+  ],
+}
 
 export function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -12,6 +73,7 @@ export function DashboardPage() {
   const [schedule, setSchedule] = useState<DailySchedule | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [useMockData, setUseMockData] = useState(false)
 
   useEffect(() => {
     async function loadSchedule() {
@@ -20,8 +82,12 @@ export function DashboardPage() {
       try {
         const data = await getDailySchedule(selectedDate)
         setSchedule(data)
+        setUseMockData(false)
       } catch (err) {
-        setError('Failed to load daily schedule. Please try again.')
+        console.error('API Error:', err)
+        setError('API not available. Showing mock data for testing.')
+        setSchedule(MOCK_DATA)
+        setUseMockData(true)
       } finally {
         setIsLoading(false)
       }
@@ -29,158 +95,55 @@ export function DashboardPage() {
     loadSchedule()
   }, [selectedDate])
 
-  const getSessionsForGroup = (groupId: number) => {
+  const getSessionsForGroup = (groupId: number): Session[] => {
     if (!schedule) return []
     return schedule.sessions.filter((s) => s.group_id === groupId)
   }
 
   return (
-    <div className="dashboard-page">
-      <header className="page-header-compact">
-        <h1>System Overview</h1>
-        <div className="header-actions">
-          <button className="btn-secondary">
-            <span className="material-symbols-outlined">filter_list</span>
-            Filter
-          </button>
-          <button className="btn-secondary">
-            <span className="material-symbols-outlined">language</span>
-            AR / EN
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-surface pb-20">
+      <TopNavbar activePage="Dashboard" />
+      
+      <DashboardHeader
+        title="System Overview"
+        subtitle="Real-time status of active groups and attendance tracking."
+        showTime
+      />
 
       <DaySelectorBar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
 
-      <div className="dashboard-content">
-        <div className="dashboard-header">
-          <div>
-            <h2 className="section-title">
-              {new Date(selectedDate).toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </h2>
-            <p className="section-subtitle">
-              {schedule?.sessions.length || 0} sessions scheduled across {schedule?.groups.length || 0} groups
-            </p>
-          </div>
-        </div>
-
+      <main className="px-8 max-w-[1400px] mx-auto">
         {isLoading ? (
           <LoadingSpinner />
-        ) : error ? (
-          <ErrorMessage message={error} />
-        ) : schedule?.groups.length === 0 ? (
-          <div className="empty-state">
-            <span className="material-symbols-outlined">event_busy</span>
-            <p>No groups scheduled for this day</p>
-          </div>
         ) : (
-          <div className="groups-grid">
-            {schedule?.groups.map((group) => (
-              <GroupSessionCard
-                key={group.id}
-                group={group}
-                sessions={getSessionsForGroup(group.id)}
-                selectedDate={selectedDate}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+          <>
+            {useMockData && (
+              <div className="flex items-center gap-2 p-3 px-4 bg-amber-100 border border-amber-300 rounded-lg mb-6 text-sm text-amber-800">
+                <span className="material-symbols-outlined text-xl">info</span>
+                <span>{error}</span>
+              </div>
+            )}
 
-      <style>{`
-        .dashboard-page {
-          min-height: 100vh;
-          background-color: var(--surface);
-        }
-        .page-header-compact {
-          position: sticky;
-          top: 0;
-          z-index: 40;
-          height: var(--header-height);
-          background-color: var(--surface-container-lowest);
-          border-bottom: 1px solid rgba(198, 198, 205, 0.15);
-          padding: 0 var(--space-8);
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-        .page-header-compact h1 {
-          font-family: var(--font-headline);
-          font-size: var(--text-lg);
-          font-weight: 600;
-          color: var(--primary);
-          margin: 0;
-        }
-        .header-actions {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-        }
-        .btn-secondary {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-          padding: var(--space-2) var(--space-4);
-          font-size: var(--text-sm);
-          font-weight: 500;
-          color: var(--on-surface);
-          background-color: transparent;
-          border: 1px solid var(--outline-variant);
-          border-radius: var(--radius-md);
-          cursor: pointer;
-          transition: background-color 0.2s ease;
-        }
-        .btn-secondary:hover {
-          background-color: var(--surface-container-low);
-        }
-        .btn-secondary .material-symbols-outlined {
-          font-size: 1.25rem;
-        }
-        .dashboard-content {
-          padding: var(--space-8);
-          max-width: 1400px;
-          margin: 0 auto;
-        }
-        .dashboard-header {
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-          margin-bottom: var(--space-6);
-        }
-        .section-title {
-          font-family: var(--font-headline);
-          font-size: var(--text-2xl);
-          font-weight: 700;
-          color: var(--primary);
-          margin: 0 0 var(--space-1) 0;
-        }
-        .section-subtitle {
-          font-size: var(--text-sm);
-          color: var(--on-surface-variant);
-        }
-        .empty-state {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: var(--space-16);
-          color: var(--on-surface-variant);
-        }
-        .empty-state .material-symbols-outlined {
-          font-size: 3rem;
-          margin-bottom: var(--space-4);
-          opacity: 0.5;
-        }
-        .groups-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-          gap: var(--space-6);
-        }
-      `}</style>
+            <div className="flex flex-col gap-6">
+              {schedule?.groups.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-16 text-on-surface-variant bg-white rounded-lg border border-slate-200">
+                  <span className="material-symbols-outlined text-5xl mb-4 opacity-50">event_busy</span>
+                  <p>No groups scheduled for this day</p>
+                </div>
+              ) : (
+                schedule?.groups.map((group) => (
+                  <GroupSessionCard
+                    key={group.id}
+                    group={group}
+                    sessions={getSessionsForGroup(group.id)}
+                    selectedDate={selectedDate}
+                  />
+                ))
+              )}
+            </div>
+          </>
+        )}
+      </main>
     </div>
   )
 }
