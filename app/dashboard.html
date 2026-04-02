@@ -82,186 +82,106 @@
         },
       };
     </script>
-    <style>
-      .material-symbols-outlined {
-        font-variation-settings:
-          "FILL" 0,
-          "wght" 400,
-          "GRAD" 0,
-          "opsz" 24;
-        vertical-align: middle;
-      }
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      body {
-        width: 1440px;
-        height: 1024px;
-        margin: 0 auto;
-        overflow: hidden;
-        position: relative;
-      }
-    </style>
+    <link rel="stylesheet" href="shared/styles.css"/>
   </head>
   <body
     class="bg-background text-on-background font-body antialiased flex min-h-screen"
   >
-    <!-- SideNavBar - Standardized -->
-    <aside
-      class="fixed left-0 top-0 h-screen w-64 bg-white border-r border-outline-variant/15 z-50 flex flex-col overflow-hidden"
-    >
-      <!-- Brand/Header -->
-      <div class="p-6 border-b border-outline-variant/15">
-        <a
-          href="index.html"
-          class="block hover:opacity-80 transition-opacity"
-        >
-          <h1
-            class="text-xl font-bold font-headline text-primary tracking-tight"
-          >
-            TechnoTerminal
-          </h1>
-          <p
-            class="text-[10px] text-secondary font-medium tracking-[0.15em] uppercase mt-0.5"
-          >
-            Control Center
-          </p>
-        </a>
-      </div>
-
-      <!-- Navigation -->
-      <nav class="flex-1 overflow-y-auto py-4">
-        <div class="px-3 space-y-1">
-          <!-- Core Operations -->
-          <p
-            class="px-3 py-2 text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider"
-          >
-            Core Operations
-          </p>
-
-          <a
-            href="dashboard.html"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium bg-secondary/10 text-secondary border-r-2 border-secondary"
-          >
-            <span class="material-symbols-outlined text-lg">dashboard</span>
-            <span>Dashboard</span>
-          </a>
-
-          <a
-            href="groups.html"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent"
-          >
-            <span class="material-symbols-outlined text-lg">group</span>
-            <span>Groups</span>
-          </a>
-
-          <a
-            href="directory.html"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent"
-          >
-            <span class="material-symbols-outlined text-lg">person_search</span>
-            <span>Directory</span>
-          </a>
-
-          <a
-            href="students.html"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent"
-          >
-            <span class="material-symbols-outlined text-lg">school</span>
-            <span>Students</span>
-          </a>
-
-          <!-- Management -->
-          <p
-            class="px-3 py-2 mt-6 text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider"
-          >
-            Management
-          </p>
-
-          <a
-            href="enrollments.html"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent"
-          >
-            <span class="material-symbols-outlined text-lg">assignment_ind</span>
-            <span>Enrollments</span>
-          </a>
-
-          <a
-            href="finance.html"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent"
-          >
-            <span class="material-symbols-outlined text-lg">payments</span>
-            <span>Finance</span>
-          </a>
-
-          <a
-            href="attendance.html"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent"
-          >
-            <span class="material-symbols-outlined text-lg">check_circle</span>
-            <span>Attendance</span>
-          </a>
-
-          <!-- Programs & Events -->
-          <p
-            class="px-3 py-2 mt-6 text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider"
-          >
-            Programs
-          </p>
-
-          <a
-            href="competitions.html"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent"
-          >
-            <span class="material-symbols-outlined text-lg">emoji_events</span>
-            <span>Competitions</span>
-          </a>
-
-          <a
-            href="reports.html"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent"
-          >
-            <span class="material-symbols-outlined text-lg">assessment</span>
-            <span>Reports</span>
-          </a>
-
-          <!-- Resources -->
-          <p
-            class="px-3 py-2 mt-6 text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider"
-          >
-            Resources
-          </p>
-
-          <a
-            href="staff.html"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent"
-          >
-            <span class="material-symbols-outlined text-lg">people</span>
-            <span>Staff</span>
-          </a>
+    <!-- SideNavBar - Dark Theme -->
+    <aside class="sidebar">
+        <!-- Brand/Header -->
+        <div class="sidebar-brand">
+            <a href="index.html">
+                <h1>TechnoTerminal</h1>
+                <p>Control Center</p>
+            </a>
         </div>
-      </nav>
 
-      <!-- Footer -->
-      <div class="p-4 border-t border-outline-variant/15">
-        <a
-          href="index.html"
-          class="flex items-center gap-2 text-xs font-medium text-on-surface-variant hover:text-secondary transition-colors"
-        >
-          <span class="material-symbols-outlined text-base">home</span>
-          <span>Back to Hub</span>
-        </a>
-      </div>
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+            <!-- Core Operations -->
+            <div class="sidebar-section">
+                <p class="sidebar-section-title">Core Operations</p>
+                
+                <a href="dashboard.html" class="nav-item active">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a href="groups.html" class="nav-item">
+                    <span class="material-symbols-outlined">group</span>
+                    <span>Groups</span>
+                </a>
+                
+                <a href="directory.html" class="nav-item">
+                    <span class="material-symbols-outlined">person_search</span>
+                    <span>Directory</span>
+                </a>
+                
+                <a href="students.html" class="nav-item">
+                    <span class="material-symbols-outlined">school</span>
+                    <span>Students</span>
+                </a>
+            </div>
+
+            <!-- Management -->
+            <div class="sidebar-section">
+                <p class="sidebar-section-title">Management</p>
+                
+                <a href="enrollments.html" class="nav-item">
+                    <span class="material-symbols-outlined">assignment_ind</span>
+                    <span>Enrollments</span>
+                </a>
+                
+                <a href="finance.html" class="nav-item">
+                    <span class="material-symbols-outlined">payments</span>
+                    <span>Finance</span>
+                </a>
+                
+                <a href="attendance.html" class="nav-item">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span>Attendance</span>
+                </a>
+            </div>
+
+            <!-- Programs -->
+            <div class="sidebar-section">
+                <p class="sidebar-section-title">Programs</p>
+                
+                <a href="competitions.html" class="nav-item">
+                    <span class="material-symbols-outlined">emoji_events</span>
+                    <span>Competitions</span>
+                </a>
+                
+                <a href="reports.html" class="nav-item">
+                    <span class="material-symbols-outlined">assessment</span>
+                    <span>Reports</span>
+                </a>
+            </div>
+
+            <!-- Resources -->
+            <div class="sidebar-section">
+                <p class="sidebar-section-title">Resources</p>
+                
+                <a href="staff.html" class="nav-item">
+                    <span class="material-symbols-outlined">people</span>
+                    <span>Staff</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Footer -->
+        <div class="sidebar-footer">
+            <a href="index.html">
+                <span class="material-symbols-outlined">home</span>
+                <span>Back to Hub</span>
+            </a>
+        </div>
     </aside>
 
     <!-- Main Content Area -->
-    <div
-      class="ml-64 w-[1176px] h-screen flex flex-col relative overflow-y-auto no-scrollbar"
-    >
+    <main class="ml-64 flex-1 min-h-screen">
+    
       <!-- TopNavBar -->
       <header
         class="sticky top-0 z-40 flex items-center justify-between px-8 w-full h-16 bg-white border-b border-slate-100"
@@ -305,7 +225,7 @@
       </header>
 
       <!-- Main Dashboard Canvas -->
-      <main class="p-10 flex-1 space-y-8">
+      <div class="p-10 flex-1 space-y-8">
         <!-- Dashboard Header Section -->
         <div class="flex items-end justify-between">
           <div>
@@ -778,7 +698,7 @@
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   </body>
 </html>

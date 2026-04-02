@@ -1,0 +1,529 @@
+/* TechnoTerminal CRM - Centralized Design System */
+/* Version: 2.0 - Unified Styling for all pages */
+
+/* ========================================
+   CSS CUSTOM PROPERTIES (Variables)
+   ======================================== */
+
+:root {
+  /* Dark Sidebar Colors */
+  --sidebar-bg: #0f172a;
+  --sidebar-bg-hover: #1e293b;
+  --sidebar-text: #94a3b8;
+  --sidebar-text-active: #2dd4bf;
+  --sidebar-border: #1e293b;
+  --sidebar-brand-text: #ffffff;
+  --sidebar-accent: #14b8a6;
+
+  /* Main Content Colors */
+  --primary: #000000;
+  --primary-container: #131b2e;
+  --secondary: #006a61;
+  --secondary-container: #86f2e4;
+  
+  /* Surface Colors */
+  --surface: #f8f9ff;
+  --surface-dim: #cbdbf5;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #eff4ff;
+  --surface-container: #e5eeff;
+  --surface-container-high: #dce9ff;
+  --surface-container-highest: #d3e4fe;
+  
+  /* Text Colors */
+  --on-surface: #0b1c30;
+  --on-surface-variant: #45464d;
+  --on-primary: #ffffff;
+  --on-secondary: #ffffff;
+  
+  /* Semantic Colors */
+  --error: #ba1a1a;
+  --outline: #76777d;
+  --outline-variant: #c6c6cd;
+
+  /* ========================================
+     SPACING SCALE (4px base)
+     ======================================== */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+
+  /* ========================================
+     BORDER RADIUS SCALE
+     ======================================== */
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.375rem;  /* 6px */
+  --radius-lg: 0.5rem;    /* 8px */
+  --radius-xl: 0.75rem;   /* 12px */
+  --radius-2xl: 1rem;     /* 16px */
+  --radius-full: 9999px;
+
+  /* ========================================
+     TYPOGRAPHY
+     ======================================== */
+  --font-headline: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  
+  /* Font Sizes */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: 1.875rem;   /* 30px */
+
+  /* Layout */
+  --sidebar-width: 16rem;  /* 256px */
+  --header-height: 4rem;   /* 64px */
+}
+
+/* ========================================
+   RESET & BASE
+   ======================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-body);
+  color: var(--on-surface);
+  background-color: var(--surface);
+  line-height: 1.5;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ========================================
+   DARK SIDEBAR COMPONENT
+   ======================================== */
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: var(--sidebar-width);
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-brand {
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.sidebar-brand a {
+  display: block;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar-brand a:hover {
+  opacity: 0.8;
+}
+
+.sidebar-brand h1 {
+  font-family: var(--font-headline);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--sidebar-brand-text);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.sidebar-brand p {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--sidebar-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-top: var(--space-1);
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4) 0;
+}
+
+.sidebar-section {
+  margin-bottom: var(--space-2);
+}
+
+.sidebar-section-title {
+  padding: var(--space-2) var(--space-6);
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--sidebar-text);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
+  margin: 0 var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-right: 2px solid transparent;
+}
+
+.nav-item:hover {
+  background-color: var(--sidebar-bg-hover);
+  color: #e2e8f0;
+}
+
+.nav-item.active {
+  background-color: rgba(20, 184, 166, 0.1);
+  color: var(--sidebar-text-active);
+  border-right-color: var(--sidebar-accent);
+}
+
+.nav-item .material-symbols-outlined {
+  font-size: 1.25rem;
+  font-variation-settings: 'FILL' 0, 'wght' 400;
+}
+
+.sidebar-footer {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--sidebar-border);
+}
+
+.sidebar-footer a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.sidebar-footer a:hover {
+  color: var(--sidebar-accent);
+}
+
+/* ========================================
+   STANDARDIZED HEADER COMPONENT
+   ======================================== */
+
+.page-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: var(--surface-container-lowest);
+  border-bottom: 1px solid rgba(198, 198, 205, 0.15);
+  padding: var(--space-6) var(--space-8);
+}
+
+.page-header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-title {
+  font-family: var(--font-headline);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.page-subtitle {
+  font-size: var(--text-sm);
+  color: var(--on-surface-variant);
+  margin-top: var(--space-2);
+}
+
+/* Alternative: Compact Header for dashboard-style pages */
+.page-header-compact {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: var(--header-height);
+  background-color: var(--surface-container-lowest);
+  border-bottom: 1px solid rgba(198, 198, 205, 0.15);
+  padding: 0 var(--space-8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-header-compact h1 {
+  font-family: var(--font-headline);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* ========================================
+   MAIN CONTENT AREA
+   ======================================== */
+
+.main-content {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  background-color: var(--surface);
+}
+
+.content-wrapper {
+  padding: var(--space-8);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ========================================
+   CARD COMPONENTS (Standardized)
+   ======================================== */
+
+.card {
+  background-color: var(--surface-container-lowest);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  border: 1px solid rgba(198, 198, 205, 0.15);
+}
+
+.card-header {
+  margin-bottom: var(--space-4);
+}
+
+.card-title {
+  font-family: var(--font-headline);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.card-dense {
+  background-color: var(--surface-container-lowest);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  border: 1px solid rgba(198, 198, 205, 0.15);
+}
+
+/* ========================================
+   BUTTON COMPONENTS (Standardized)
+   ======================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: var(--secondary);
+  color: var(--on-secondary);
+}
+
+.btn-primary:hover {
+  background-color: #005049;
+  box-shadow: 0 4px 12px rgba(0, 106, 97, 0.25);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--on-surface);
+  border: 1px solid var(--outline-variant);
+}
+
+.btn-secondary:hover {
+  background-color: var(--surface-container-low);
+}
+
+/* ========================================
+   STATUS CHIPS (Standardized)
+   ======================================== */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.chip-success {
+  background-color: var(--secondary-container);
+  color: #005049;
+}
+
+.chip-error {
+  background-color: #ffdad6;
+  color: #93000a;
+}
+
+.chip-warning {
+  background-color: #fff3c0;
+  color: #4a3c2a;
+}
+
+/* ========================================
+   TABLE COMPONENTS (Standardized)
+   ======================================== */
+
+.table-container {
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background-color: var(--surface-container-lowest);
+  border: 1px solid rgba(198, 198, 205, 0.15);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.data-table thead {
+  background-color: var(--surface-container-low);
+}
+
+.data-table th {
+  padding: var(--space-4);
+  text-align: left;
+  font-weight: 600;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--on-surface-variant);
+}
+
+.data-table td {
+  padding: var(--space-4);
+  border-top: 1px solid rgba(198, 198, 205, 0.1);
+}
+
+.data-table tbody tr:hover {
+  background-color: var(--surface-container-low);
+}
+
+/* ========================================
+   FORM COMPONENTS (Standardized)
+   ======================================== */
+
+.form-group {
+  margin-bottom: var(--space-4);
+}
+
+.form-label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--on-surface);
+  margin-bottom: var(--space-2);
+}
+
+.form-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  background-color: var(--surface-container-lowest);
+  color: var(--on-surface);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 3px rgba(0, 106, 97, 0.1);
+}
+
+/* ========================================
+   GRID LAYOUTS (Standardized)
+   ======================================== */
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-6);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.text-primary { color: var(--primary); }
+.text-secondary { color: var(--secondary); }
+.text-muted { color: var(--on-surface-variant); }
+
+.bg-surface { background-color: var(--surface); }
+.bg-surface-low { background-color: var(--surface-container-low); }
+.bg-surface-lowest { background-color: var(--surface-container-lowest); }
+
+.font-headline { font-family: var(--font-headline); }
+.font-body { font-family: var(--font-body); }
+
+/* Material Symbols sizing */
+.icon-sm { font-size: 1rem; }
+.icon-md { font-size: 1.25rem; }
+.icon-lg { font-size: 1.5rem; }
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 1024px) {
+  .sidebar { width: 14rem; }
+  .main-content { margin-left: 14rem; }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .content-wrapper { padding: var(--space-4); }
+}
