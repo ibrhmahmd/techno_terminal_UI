@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import { useAuthStore } from './store/authStore'
 import { AppLayout } from './components/layout/AppLayout'
 import { LoginPage } from './pages/LoginPage'
+import { DashboardPage } from './pages/DashboardPage'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useAuthStore()
@@ -25,7 +26,7 @@ function App() {
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<div>Dashboard (Phase 2)</div>} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/groups" element={<div>Groups (Phase 3)</div>} />
             <Route path="/directory" element={<div>Directory (Phase 4)</div>} />
             <Route path="/students" element={<div>Students (Phase 4)</div>} />
