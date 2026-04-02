@@ -1,0 +1,25 @@
+# Techno Terminal CRM — Frontend Handover & Product Specification
+
+**Audience:** Frontend Developers & UI/UX Designers  
+**Goal:** Rebuild the UI from scratch in a modern framework.
+**Base URL:** `http://<server>:8000/api/v1`  
+**Auth:** `Authorization: Bearer <JWT>`
+
+## Global Layout & Auth
+- **Sidebar Navigation:** Persistent, collapsible.
+- **Login Page:** Minimal form (Email, Password).
+- **Role-Based UI:** Admin/Manager (Full), Instructor (Dashboard/Directory RO), Receptionist (Directory/Enrollments/Finance).
+
+## Core Pages & Priority
+1. **Dashboard:** Daily operations "war room".
+2. **Group Management:** Classes, sessions, attendance.
+3. **Directory:** Students & Parents lookup/registration.
+4. **Enrollments:** Student-group mapping.
+5. **Finance:** Receipts and payments.
+6. **Reports:** Analytics.
+7. **Staff / HR:** Personnel management (Design target).
+8. **Competitions:** Event management (Design target).
+
+## Critical Components
+- **Attendance Grid:** Highly interactive session tracking with local state management.
+- **Edit Session Popup:** Modal for session-specific adjustments.

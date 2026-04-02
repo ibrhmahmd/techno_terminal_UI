@@ -1,0 +1,206 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Competitions - TechnoTerminal CRM</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#000000",
+              "primary-container": "#131b2e",
+              "on-primary": "#ffffff",
+              secondary: "#006a61",
+              "secondary-container": "#86f2e4",
+              "on-secondary": "#ffffff",
+              surface: "#f8f9ff",
+              "surface-container-lowest": "#ffffff",
+              "surface-container-low": "#eff4ff",
+              "surface-container": "#e5eeff",
+              "on-surface": "#0b1c30",
+              "on-surface-variant": "#45464d",
+              "outline-variant": "#c6c6cd",
+              background: "#f8f9ff",
+              "on-background": "#0b1c30",
+            },
+            fontFamily: { headline: ["Space Grotesk"], body: ["Inter"] },
+            borderRadius: {
+              DEFAULT: "0.375rem",
+              lg: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400;
+      }
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body class="bg-background text-on-background font-body antialiased flex min-h-screen">
+    <!-- SideNavBar - Standardized -->
+    <aside class="fixed left-0 top-0 h-screen w-64 bg-white border-r border-outline-variant/15 z-50 flex flex-col overflow-hidden">
+        <!-- Brand/Header -->
+        <div class="p-6 border-b border-outline-variant/15">
+            <a href="index.html" class="block hover:opacity-80 transition-opacity">
+                <h1 class="text-xl font-bold font-headline text-primary tracking-tight">TechnoTerminal</h1>
+                <p class="text-[10px] text-secondary font-medium tracking-[0.15em] uppercase mt-0.5">Control Center</p>
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-4">
+            <div class="px-3 space-y-1">
+                <!-- Core Operations -->
+                <p class="px-3 py-2 text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Core Operations</p>
+                
+                <a href="dashboard.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a href="groups.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">group</span>
+                    <span>Groups</span>
+                </a>
+                
+                <a href="directory.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">person_search</span>
+                    <span>Directory</span>
+                </a>
+                
+                <a href="students.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">school</span>
+                    <span>Students</span>
+                </a>
+
+                <!-- Management -->
+                <p class="px-3 py-2 mt-6 text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Management</p>
+                
+                <a href="enrollments.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">assignment_ind</span>
+                    <span>Enrollments</span>
+                </a>
+                
+                <a href="finance.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">payments</span>
+                    <span>Finance</span>
+                </a>
+                
+                <a href="attendance.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">check_circle</span>
+                    <span>Attendance</span>
+                </a>
+
+                <!-- Programs & Events -->
+                <p class="px-3 py-2 mt-6 text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Programs</p>
+                
+                <a href="competitions.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium bg-secondary/10 text-secondary border-r-2 border-secondary">
+                    <span class="material-symbols-outlined text-lg">emoji_events</span>
+                    <span>Competitions</span>
+                </a>
+                
+                <a href="reports.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">assessment</span>
+                    <span>Reports</span>
+                </a>
+
+                <!-- Resources -->
+                <p class="px-3 py-2 mt-6 text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Resources</p>
+                
+                <a href="staff.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">people</span>
+                    <span>Staff</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Footer -->
+        <div class="p-4 border-t border-outline-variant/15">
+            <a href="index.html" class="flex items-center gap-2 text-xs font-medium text-on-surface-variant hover:text-secondary transition-colors">
+                <span class="material-symbols-outlined text-base">home</span>
+                <span>Back to Hub</span>
+            </a>
+        </div>
+    </aside>
+    <main class="ml-64 min-h-screen bg-background">
+      <header
+        class="sticky top-0 z-40 bg-surface-container-lowest border-b border-outline-variant/15"
+      >
+        <div class="px-8 py-6">
+          <h1 class="text-3xl font-bold font-headline text-primary">
+            Competitions & Events
+          </h1>
+          <p class="text-sm text-on-surface-variant mt-2">
+            Event management, competition tracking, and results
+          </p>
+        </div>
+      </header>
+      <section class="px-8 py-8 max-w-6xl">
+        <div class="grid grid-cols-2 gap-6">
+          <div
+            class="bg-surface-container-lowest rounded-lg p-6 border border-outline-variant/15"
+          >
+            <h3 class="text-lg font-bold font-headline text-primary mb-2">
+              Robotics Championship 2024
+            </h3>
+            <p class="text-sm text-on-surface-variant mb-4">May 15-17, 2024</p>
+            <p class="text-sm font-semibold text-secondary">
+              Status: <span class="text-primary">Scheduled</span>
+            </p>
+          </div>
+          <div
+            class="bg-surface-container-lowest rounded-lg p-6 border border-outline-variant/15"
+          >
+            <h3 class="text-lg font-bold font-headline text-primary mb-2">
+              Code Development Sprint
+            </h3>
+            <p class="text-sm text-on-surface-variant mb-4">March 2024</p>
+            <p class="text-sm font-semibold text-secondary">
+              Status: <span class="text-primary">Active</span>
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+    <style>
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.625rem 0.75rem;
+        border-radius: 0.25rem;
+        color: #45464d;
+        font-size: 0.875rem;
+        transition: all 100ms;
+      }
+      .nav-item.active {
+        background-color: rgba(0, 106, 97, 0.08);
+        color: #006a61;
+        font-weight: 600;
+      }
+      .nav-item .material-symbols-outlined {
+        font-size: 1.25rem;
+      }
+    </style>
+  </body>
+</html>

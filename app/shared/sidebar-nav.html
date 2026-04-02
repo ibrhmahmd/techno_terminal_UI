@@ -1,0 +1,159 @@
+<!-- Precision Engine Sidebar Navigation Template -->
+<!-- Usage: Include this in every page and set data-current-page attribute -->
+
+<script>
+function initNavigationState(currentPageId) {
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    const pageId = item.getAttribute('data-page-id');
+    if (pageId === currentPageId) {
+      item.classList.add('active');
+      item.setAttribute('aria-current', 'page');
+    } else {
+      item.classList.remove('active');
+      item.removeAttribute('aria-current');
+    }
+  });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  const sidebar = document.querySelector('[data-sidebar-nav]');
+  if (sidebar) {
+    const currentPage = sidebar.getAttribute('data-current-page');
+    initNavigationState(currentPage);
+  }
+});
+</script>
+
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-white border-r border-outline-variant/15 z-50 overflow-y-auto" data-sidebar-nav>
+  <!-- Brand/Header -->
+  <div class="p-6 border-b border-outline-variant/15">
+    <h1 class="text-lg font-bold font-headline text-primary">TechnoTerminal</h1>
+    <p class="text-xs text-on-surface-variant mt-1">CRM Management</p>
+  </div>
+
+  <!-- Primary Navigation -->
+  <nav class="flex-1 overflow-y-auto">
+    <div class="px-3 py-6">
+      <!-- Core Modules -->
+      <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider px-2 mb-3">Core Operations</p>
+      
+      <a href="/build/index.html" data-page-id="dashboard" class="nav-item mb-1">
+        <span class="text-base">📊</span>
+        <span>Dashboard</span>
+      </a>
+      
+      <a href="/build/groups.html" data-page-id="groups" class="nav-item mb-1">
+        <span class="text-base">👥</span>
+        <span>Groups</span>
+      </a>
+
+      <a href="/build/staff.html" data-page-id="staff" class="nav-item mb-1">
+        <span class="text-base">👔</span>
+        <span>Staff</span>
+      </a>
+
+      <a href="/build/directory.html" data-page-id="directory" class="nav-item mb-1">
+        <span class="text-base">📋</span>
+        <span>Directory</span>
+      </a>
+
+      <!-- Management -->
+      <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider px-2 mb-3 mt-6">Management</p>
+
+      <a href="/build/enrollments.html" data-page-id="enrollments" class="nav-item mb-1">
+        <span class="text-base">✏️</span>
+        <span>Enrollments</span>
+      </a>
+
+      <a href="/build/finance.html" data-page-id="finance" class="nav-item mb-1">
+        <span class="text-base">💰</span>
+        <span>Finance</span>
+      </a>
+
+      <a href="/build/attendance.html" data-page-id="attendance" class="nav-item mb-1">
+        <span class="text-base">✅</span>
+        <span>Attendance</span>
+      </a>
+
+      <!-- Programs & Events -->
+      <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider px-2 mb-3 mt-6">Programs</p>
+
+      <a href="/build/competitions.html" data-page-id="competitions" class="nav-item mb-1">
+        <span class="text-base">🏆</span>
+        <span>Competitions</span>
+      </a>
+
+      <a href="/build/students.html" data-page-id="students" class="nav-item mb-1">
+        <span class="text-base">📚</span>
+        <span>Students</span>
+      </a>
+
+      <a href="/build/reports.html" data-page-id="reports" class="nav-item mb-1">
+        <span class="text-base">📈</span>
+        <span>Reports</span>
+      </a>
+
+      <!-- Documentation -->
+      <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider px-2 mb-3 mt-6">Resources</p>
+
+      <a href="/build/docs/design-system.html" data-page-id="design-system" class="nav-item mb-1">
+        <span class="text-base">🎨</span>
+        <span>Design System</span>
+      </a>
+
+      <a href="/build/docs/api-reference.html" data-page-id="api-reference" class="nav-item mb-1">
+        <span class="text-base">⚙️</span>
+        <span>API Reference</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Footer -->
+  <div class="border-t border-outline-variant/15 p-4 text-center">
+    <p class="text-xs text-on-surface-variant">Precision Engine</p>
+    <p class="text-xs text-outline-variant">v1.0</p>
+  </div>
+</aside>
+
+<!-- Stylesheet Injection -->
+<style>
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.25rem;
+  border-right: 3px solid transparent;
+  background-color: transparent;
+  color: #45464d;
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: all 100ms ease-in-out;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  line-height: 1;
+}
+
+.nav-item:hover {
+  background-color: #eff4ff;
+  color: #006a61;
+}
+
+.nav-item.active {
+  background-color: rgba(0, 106, 97, 0.08);
+  color: #006a61;
+  border-right-color: #006a61;
+  padding-right: calc(0.75rem - 3px);
+  font-weight: 600;
+}
+
+.nav-item .text-base {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+</style>

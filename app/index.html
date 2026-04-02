@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>TechnoTerminal CRM - Control Center Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#131b2e",
+                        "on-tertiary-fixed-variant": "#3323cc",
+                        "inverse-surface": "#213145",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#131b2e",
+                        "surface-tint": "#565e74",
+                        "surface-dim": "#cbdbf5",
+                        "on-secondary-container": "#006f66",
+                        "surface-container-low": "#eff4ff",
+                        "on-surface-variant": "#45464d",
+                        "tertiary": "#000000",
+                        "surface": "#f8f9ff",
+                        "on-tertiary-fixed": "#0f0069",
+                        "on-primary-container": "#7c839b",
+                        "error-container": "#ffdad6",
+                        "outline": "#76777d",
+                        "secondary-container": "#86f2e4",
+                        "secondary-fixed-dim": "#6bd8cb",
+                        "secondary-fixed": "#89f5e7",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#0b1c30",
+                        "primary-fixed": "#dae2fd",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#d3e4fe",
+                        "background": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#00201d",
+                        "inverse-primary": "#bec6e0",
+                        "secondary": "#006a61",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container": "#e5eeff",
+                        "tertiary-container": "#0f0069",
+                        "primary": "#000000",
+                        "surface-bright": "#f8f9ff",
+                        "tertiary-fixed": "#e2dfff",
+                        "outline-variant": "#c6c6cd",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#d3e4fe",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#7671ff",
+                        "on-secondary-fixed-variant": "#005049",
+                        "primary-fixed-dim": "#bec6e0",
+                        "on-background": "#0b1c30",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "surface-container-high": "#dce9ff"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { margin: 0; overflow: auto; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body antialiased">
+    <!-- Main Hub Container -->
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-8 py-8">
+                <div class="flex items-baseline gap-3 mb-2">
+                    <h1 class="text-4xl font-bold text-primary tracking-tight font-headline">TechnoTerminal</h1>
+                    <p class="text-[11px] text-secondary font-bold tracking-[0.2em] uppercase">CRM Control Center</p>
+                </div>
+                <p class="text-sm text-on-surface-variant font-body">Integrated learning operations and management platform</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-8 py-12">
+            <!-- Quick Stats -->
+            <section class="mb-12">
+                <h2 class="text-xl font-bold font-headline tracking-tight mb-6">System Status</h2>
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="bg-white p-6 rounded-lg border border-slate-100 shadow-sm">
+                        <p class="text-sm text-on-surface-variant mb-2">Active Groups</p>
+                        <p class="text-3xl font-bold font-headline">12</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg border border-slate-100 shadow-sm">
+                        <p class="text-sm text-on-surface-variant mb-2">Enrolled Students</p>
+                        <p class="text-3xl font-bold font-headline">342</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg border border-slate-100 shadow-sm">
+                        <p class="text-sm text-on-surface-variant mb-2">Staff Members</p>
+                        <p class="text-3xl font-bold font-headline">28</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg border border-slate-100 shadow-sm">
+                        <p class="text-sm text-on-surface-variant mb-2">Pending Finance</p>
+                        <p class="text-3xl font-bold font-headline text-error">$4.2k</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module Navigation Grid -->
+            <section class="mb-12">
+                <h2 class="text-xl font-bold font-headline tracking-tight mb-6">Core Modules</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <!-- Dashboard -->
+                    <a href="dashboard.html" class="group bg-white rounded-lg p-6 border border-slate-100 hover:border-secondary hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="material-symbols-outlined text-2xl text-secondary">dashboard</span>
+                            <h3 class="text-lg font-bold font-headline text-primary group-hover:text-secondary transition-colors">Dashboard</h3>
+                        </div>
+                        <p class="text-sm text-on-surface-variant">Real-time operations overview, attendance tracking, and daily scheduling</p>
+                    </a>
+
+                    <!-- Groups -->
+                    <a href="groups.html" class="group bg-white rounded-lg p-6 border border-slate-100 hover:border-secondary hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="material-symbols-outlined text-2xl text-secondary">group</span>
+                            <h3 class="text-lg font-bold font-headline text-primary group-hover:text-secondary transition-colors">Groups</h3>
+                        </div>
+                        <p class="text-sm text-on-surface-variant">Manage classes, sessions, schedules, and group-level settings</p>
+                    </a>
+
+                    <!-- Directory -->
+                    <a href="directory.html" class="group bg-white rounded-lg p-6 border border-slate-100 hover:border-secondary hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="material-symbols-outlined text-2xl text-secondary">person_search</span>
+                            <h3 class="text-lg font-bold font-headline text-primary group-hover:text-secondary transition-colors">Directory</h3>
+                        </div>
+                        <p class="text-sm text-on-surface-variant">Comprehensive students and parents lookup, registration, and profiles</p>
+                    </a>
+
+                    <!-- Enrollments -->
+                    <a href="enrollments.html" class="group bg-white rounded-lg p-6 border border-slate-100 hover:border-secondary hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="material-symbols-outlined text-2xl text-secondary">assignment_ind</span>
+                            <h3 class="text-lg font-bold font-headline text-primary group-hover:text-secondary transition-colors">Enrollments</h3>
+                        </div>
+                        <p class="text-sm text-on-surface-variant">Student-group mapping, enrollment status, and management</p>
+                    </a>
+
+                    <!-- Finance -->
+                    <a href="finance.html" class="group bg-white rounded-lg p-6 border border-slate-100 hover:border-secondary hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="material-symbols-outlined text-2xl text-secondary">payments</span>
+                            <h3 class="text-lg font-bold font-headline text-primary group-hover:text-secondary transition-colors">Finance</h3>
+                        </div>
+                        <p class="text-sm text-on-surface-variant">Receipts, payments, and financial transaction management</p>
+                    </a>
+
+                    <!-- Reports -->
+                    <a href="reports.html" class="group bg-white rounded-lg p-6 border border-slate-100 hover:border-secondary hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="material-symbols-outlined text-2xl text-secondary">assessment</span>
+                            <h3 class="text-lg font-bold font-headline text-primary group-hover:text-secondary transition-colors">Reports</h3>
+                        </div>
+                        <p class="text-sm text-on-surface-variant">Analytics, insights, and comprehensive reporting dashboard</p>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Additional Modules -->
+            <section class="mb-12">
+                <h2 class="text-xl font-bold font-headline tracking-tight mb-6">Extended Modules</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <!-- Staff Management -->
+                    <a href="staff.html" class="group bg-white rounded-lg p-6 border border-slate-100 hover:border-secondary hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="material-symbols-outlined text-2xl text-secondary">people</span>
+                            <h3 class="text-lg font-bold font-headline text-primary group-hover:text-secondary transition-colors">Staff Management</h3>
+                        </div>
+                        <p class="text-sm text-on-surface-variant">Personnel administration, HR data, and staff profiles</p>
+                    </a>
+
+                    <!-- Attendance -->
+                    <a href="attendance.html" class="group bg-white rounded-lg p-6 border border-slate-100 hover:border-secondary hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="material-symbols-outlined text-2xl text-secondary">check_circle</span>
+                            <h3 class="text-lg font-bold font-headline text-primary group-hover:text-secondary transition-colors">Attendance Log</h3>
+                        </div>
+                        <p class="text-sm text-on-surface-variant">Detailed staff and student attendance tracking and records</p>
+                    </a>
+
+                    <!-- Competitions -->
+                    <a href="competitions.html" class="group bg-white rounded-lg p-6 border border-slate-100 hover:border-secondary hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="material-symbols-outlined text-2xl text-secondary">emoji_events</span>
+                            <h3 class="text-lg font-bold font-headline text-primary group-hover:text-secondary transition-colors">Competitions</h3>
+                        </div>
+                        <p class="text-sm text-on-surface-variant">Event management, competition tracking, and results</p>
+                    </a>
+
+                    <!-- Students -->
+                    <a href="students.html" class="group bg-white rounded-lg p-6 border border-slate-100 hover:border-secondary hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="material-symbols-outlined text-2xl text-secondary">school</span>
+                            <h3 class="text-lg font-bold font-headline text-primary group-hover:text-secondary transition-colors">Student Details</h3>
+                        </div>
+                        <p class="text-sm text-on-surface-variant">Individual student profiles, progress, and performance data</p>
+                    </a>
+
+                    <!-- Design System -->
+                    <a href="../docs/design/design-system.html" class="group bg-white rounded-lg p-6 border border-slate-100 hover:border-secondary hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="material-symbols-outlined text-2xl text-secondary">palette</span>
+                            <h3 class="text-lg font-bold font-headline text-primary group-hover:text-secondary transition-colors">Design System</h3>
+                        </div>
+                        <p class="text-sm text-on-surface-variant">Precision Engine design specifications and component library</p>
+                    </a>
+
+                    <!-- Documentation -->
+                    <a href="../docs/api/api-reference.html" class="group bg-white rounded-lg p-6 border border-slate-100 hover:border-secondary hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="material-symbols-outlined text-2xl text-secondary">description</span>
+                            <h3 class="text-lg font-bold font-headline text-primary group-hover:text-secondary transition-colors">Documentation</h3>
+                        </div>
+                        <p class="text-sm text-on-surface-variant">API reference, technical specifications, and integration guides</p>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Project Index -->
+            <section class="mb-12">
+                <h2 class="text-xl font-bold font-headline tracking-tight mb-6">Project Index</h2>
+                <div class="bg-white rounded-lg p-8 border border-slate-100">
+                    <div class="grid grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="font-bold font-headline mb-4 text-primary">Core Pages</h3>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="dashboard.html" class="text-secondary hover:underline">1. Dashboard</a> - Operations Hub</li>
+                                <li><a href="groups.html" class="text-secondary hover:underline">2. Groups</a> - Class Management</li>
+                                <li><a href="directory.html" class="text-secondary hover:underline">3. Directory</a> - Student/Parent Lookup</li>
+                                <li><a href="enrollments.html" class="text-secondary hover:underline">4. Enrollments</a> - Student Mapping</li>
+                                <li><a href="finance.html" class="text-secondary hover:underline">5. Finance</a> - Payments & Receipts</li>
+                                <li><a href="reports.html" class="text-secondary hover:underline">6. Reports</a> - Analytics</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold font-headline mb-4 text-primary">Extended Pages</h3>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="staff.html" class="text-secondary hover:underline">7. Staff Management</a> - Personnel</li>
+                                <li><a href="attendance.html" class="text-secondary hover:underline">8. Attendance Log</a> - Tracking</li>
+                                <li><a href="competitions.html" class="text-secondary hover:underline">9. Competitions</a> - Events</li>
+                                <li><a href="students.html" class="text-secondary hover:underline">10. Student Details</a> - Profiles</li>
+                                <li><a href="../docs/design/design-system.html" class="text-secondary hover:underline">11. Design System</a> - Specifications</li>
+                                <li><a href="../docs/api/api-reference.html" class="text-secondary hover:underline">12. Documentation</a> - Reference</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-primary-container text-on-background border-t border-slate-200 mt-12">
+            <div class="max-w-7xl mx-auto px-8 py-8 text-sm text-on-primary-container">
+                <p class="mb-2">TechnoTerminal CRM • Precision Engine Design System • Robotics Center Management Platform</p>
+                <p>Version 1.0 • Last Updated: April 2, 2026</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

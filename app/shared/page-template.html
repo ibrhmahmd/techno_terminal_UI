@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Page Title - TechnoTerminal CRM</title>
+    <!-- Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <!-- Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Global Styles -->
+    <link href="shared/precision-engine.css" rel="stylesheet"/>
+    
+    <!-- Precision Engine Tailwind Configuration -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        // Primary Colors
+                        "primary": "#000000",
+                        "primary-container": "#131b2e",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#131b2e",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-primary-container": "#7c839b",
+                        "primary-fixed": "#dae2fd",
+                        "primary-fixed-dim": "#bec6e0",
+                        "inverse-primary": "#bec6e0",
+                        
+                        // Secondary Colors (Teal)
+                        "secondary": "#006a61",
+                        "secondary-container": "#86f2e4",
+                        "secondary-fixed": "#89f5e7",
+                        "secondary-fixed-dim": "#6bd8cb",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#006f66",
+                        "on-secondary-fixed": "#00201d",
+                        "on-secondary-fixed-variant": "#005049",
+                        
+                        // Tertiary Colors (Purple)
+                        "tertiary": "#000000",
+                        "tertiary-container": "#0f0069",
+                        "tertiary-fixed": "#e2dfff",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#7671ff",
+                        "on-tertiary-fixed": "#0f0069",
+                        "on-tertiary-fixed-variant": "#3323cc",
+                        
+                        // Surface Colors (Tonal Layering)
+                        "surface": "#f8f9ff",
+                        "surface-dim": "#cbdbf5",
+                        "surface-bright": "#f8f9ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container": "#e5eeff",
+                        "surface-container-high": "#dce9ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-tint": "#565e74",
+                        "surface-variant": "#d3e4fe",
+                        "on-surface": "#0b1c30",
+                        "on-surface-variant": "#45464d",
+                        "inverse-surface": "#213145",
+                        "inverse-on-surface": "#eaf1ff",
+                        
+                        // Semantic Colors
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-error-container": "#93000a",
+                        
+                        // Outline Colors
+                        "outline": "#76777d",
+                        "outline-variant": "#c6c6cd",
+                        
+                        // Background
+                        "background": "#f8f9ff",
+                        "on-background": "#0b1c30",
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.375rem",
+                        "sm": "0.25rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { margin: 0; overflow: auto; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body antialiased">
+    <!-- Sidebar Navigation -->
+    <aside class="fixed left-0 top-0 h-screen w-64 bg-white border-r border-outline-variant/15 z-50 overflow-y-auto">
+        <!-- Brand/Header -->
+        <div class="p-6 border-b border-outline-variant/15">
+            <a href="index.html" class="hover:opacity-80 transition">
+                <h1 class="text-lg font-bold font-headline text-primary">TechnoTerminal</h1>
+                <p class="text-xs text-on-surface-variant mt-1">CRM Management</p>
+            </a>
+        </div>
+
+        <!-- Primary Navigation -->
+        <nav class="flex-1 overflow-y-auto">
+            <div class="px-3 py-6">
+                <!-- Core Operations -->
+                <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider px-2 mb-3">Core Operations</p>
+                
+                <a href="index.html" data-page-id="dashboard" class="nav-item mb-1">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a href="groups.html" data-page-id="groups" class="nav-item mb-1">
+                    <span class="material-symbols-outlined">group</span>
+                    <span>Groups</span>
+                </a>
+
+                <a href="staff.html" data-page-id="staff" class="nav-item mb-1">
+                    <span class="material-symbols-outlined">people</span>
+                    <span>Staff</span>
+                </a>
+
+                <a href="directory.html" data-page-id="directory" class="nav-item mb-1">
+                    <span class="material-symbols-outlined">person_search</span>
+                    <span>Directory</span>
+                </a>
+
+                <!-- Management -->
+                <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider px-2 mb-3 mt-6">Management</p>
+
+                <a href="enrollments.html" data-page-id="enrollments" class="nav-item mb-1">
+                    <span class="material-symbols-outlined">assignment_ind</span>
+                    <span>Enrollments</span>
+                </a>
+
+                <a href="finance.html" data-page-id="finance" class="nav-item mb-1">
+                    <span class="material-symbols-outlined">payments</span>
+                    <span>Finance</span>
+                </a>
+
+                <a href="attendance.html" data-page-id="attendance" class="nav-item mb-1">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span>Attendance</span>
+                </a>
+
+                <!-- Programs & Events -->
+                <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider px-2 mb-3 mt-6">Programs</p>
+
+                <a href="competitions.html" data-page-id="competitions" class="nav-item mb-1">
+                    <span class="material-symbols-outlined">emoji_events</span>
+                    <span>Competitions</span>
+                </a>
+
+                <a href="students.html" data-page-id="students" class="nav-item mb-1">
+                    <span class="material-symbols-outlined">school</span>
+                    <span>Students</span>
+                </a>
+
+                <a href="reports.html" data-page-id="reports" class="nav-item mb-1">
+                    <span class="material-symbols-outlined">assessment</span>
+                    <span>Reports</span>
+                </a>
+
+                <!-- Documentation -->
+                <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider px-2 mb-3 mt-6">Resources</p>
+
+                <a href="../docs/design/design-system.html" data-page-id="design-system" class="nav-item mb-1">
+                    <span class="material-symbols-outlined">palette</span>
+                    <span>Design System</span>
+                </a>
+
+                <a href="../docs/api/api-reference.html" data-page-id="api-reference" class="nav-item mb-1">
+                    <span class="material-symbols-outlined">description</span>
+                    <span>Documentation</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Footer -->
+        <div class="border-t border-outline-variant/15 p-4 text-center">
+            <p class="text-xs text-on-surface-variant">Precision Engine</p>
+            <p class="text-xs text-outline-variant">v1.0</p>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 min-h-screen bg-background">
+        <!-- Header -->
+        <header class="sticky top-0 z-40 bg-surface-container-lowest border-b border-outline-variant/15">
+            <div class="px-8 py-6">
+                <h1 class="text-3xl font-bold font-headline text-primary">Page Title</h1>
+                <p class="text-sm text-on-surface-variant mt-2">Page description and breadcrumb navigation will appear here</p>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <section class="px-8 py-8 max-w-6xl">
+            <!-- Add page content here -->
+            <div class="bg-surface-container-lowest rounded-lg p-8 border border-outline-variant/15">
+                <h2 class="text-xl font-bold font-headline text-primary mb-4">Section Title</h2>
+                <p class="text-base text-on-surface-variant mb-6">Content will be populated here based on page purpose</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Navigation State Script -->
+    <script>
+        function initNavigationState(currentPageId) {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                const pageId = item.getAttribute('data-page-id');
+                if (pageId === currentPageId) {
+                    item.classList.add('active');
+                    item.setAttribute('aria-current', 'page');
+                } else {
+                    item.classList.remove('active');
+                    item.removeAttribute('aria-current');
+                }
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set current page ID in data attribute
+            const currentPage = document.body.getAttribute('data-current-page') || 'dashboard';
+            initNavigationState(currentPage);
+        });
+    </script>
+
+    <style>
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.75rem;
+            border-radius: 0.25rem;
+            border-right: 3px solid transparent;
+            background-color: transparent;
+            color: #45464d;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 100ms ease-in-out;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .nav-item:hover {
+            background-color: #eff4ff;
+            color: #006a61;
+        }
+
+        .nav-item.active {
+            background-color: rgba(0, 106, 97, 0.08);
+            color: #006a61;
+            border-right-color: #006a61;
+            padding-right: calc(0.75rem - 3px);
+            font-weight: 600;
+        }
+
+        .nav-item .material-symbols-outlined {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</body>
+</html>

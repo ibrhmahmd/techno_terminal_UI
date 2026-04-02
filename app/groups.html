@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Techno Terminal - Group Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#131b2e",
+                        "on-tertiary-fixed-variant": "#3323cc",
+                        "inverse-surface": "#213145",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#131b2e",
+                        "surface-tint": "#565e74",
+                        "surface-dim": "#cbdbf5",
+                        "on-secondary-container": "#006f66",
+                        "surface-container-low": "#eff4ff",
+                        "on-surface-variant": "#45464d",
+                        "tertiary": "#000000",
+                        "surface": "#f8f9ff",
+                        "on-tertiary-fixed": "#0f0069",
+                        "on-primary-container": "#7c839b",
+                        "error-container": "#ffdad6",
+                        "outline": "#76777d",
+                        "secondary-container": "#86f2e4",
+                        "secondary-fixed-dim": "#6bd8cb",
+                        "secondary-fixed": "#89f5e7",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#0b1c30",
+                        "primary-fixed": "#dae2fd",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#d3e4fe",
+                        "background": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#00201d",
+                        "inverse-primary": "#bec6e0",
+                        "secondary": "#006a61",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container": "#e5eeff",
+                        "tertiary-container": "#0f0069",
+                        "primary": "#000000",
+                        "surface-bright": "#f8f9ff",
+                        "tertiary-fixed": "#e2dfff",
+                        "outline-variant": "#c6c6cd",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#d3e4fe",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#7671ff",
+                        "on-secondary-fixed-variant": "#005049",
+                        "primary-fixed-dim": "#bec6e0",
+                        "on-background": "#0b1c30",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "surface-container-high": "#dce9ff"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen flex">
+    <!-- SideNavBar - Standardized -->
+    <aside class="fixed left-0 top-0 h-screen w-64 bg-white border-r border-outline-variant/15 z-50 flex flex-col overflow-hidden">
+        <!-- Brand/Header -->
+        <div class="p-6 border-b border-outline-variant/15">
+            <a href="index.html" class="block hover:opacity-80 transition-opacity">
+                <h1 class="text-xl font-bold font-headline text-primary tracking-tight">TechnoTerminal</h1>
+                <p class="text-[10px] text-secondary font-medium tracking-[0.15em] uppercase mt-0.5">Control Center</p>
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-4">
+            <div class="px-3 space-y-1">
+                <!-- Core Operations -->
+                <p class="px-3 py-2 text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Core Operations</p>
+                
+                <a href="dashboard.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a href="groups.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium bg-secondary/10 text-secondary border-r-2 border-secondary">
+                    <span class="material-symbols-outlined text-lg">group</span>
+                    <span>Groups</span>
+                </a>
+                
+                <a href="directory.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">person_search</span>
+                    <span>Directory</span>
+                </a>
+                
+                <a href="students.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">school</span>
+                    <span>Students</span>
+                </a>
+
+                <!-- Management -->
+                <p class="px-3 py-2 mt-6 text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Management</p>
+                
+                <a href="enrollments.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">assignment_ind</span>
+                    <span>Enrollments</span>
+                </a>
+                
+                <a href="finance.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">payments</span>
+                    <span>Finance</span>
+                </a>
+                
+                <a href="attendance.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">check_circle</span>
+                    <span>Attendance</span>
+                </a>
+
+                <!-- Programs & Events -->
+                <p class="px-3 py-2 mt-6 text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Programs</p>
+                
+                <a href="competitions.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">emoji_events</span>
+                    <span>Competitions</span>
+                </a>
+                
+                <a href="reports.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">assessment</span>
+                    <span>Reports</span>
+                </a>
+
+                <!-- Resources -->
+                <p class="px-3 py-2 mt-6 text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Resources</p>
+                
+                <a href="staff.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-all border-r-2 border-transparent">
+                    <span class="material-symbols-outlined text-lg">people</span>
+                    <span>Staff</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Footer -->
+        <div class="p-4 border-t border-outline-variant/15">
+            <a href="index.html" class="flex items-center gap-2 text-xs font-medium text-on-surface-variant hover:text-secondary transition-colors">
+                <span class="material-symbols-outlined text-base">home</span>
+                <span>Back to Hub</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="ml-64 flex-1 min-h-screen">
+        <!-- TopNavBar -->
+        <header class="sticky top-0 z-40 flex items-center justify-between px-8 w-full h-16 bg-white border-b border-slate-200">
+            <div class="flex items-center space-x-4">
+                <nav class="flex items-center space-x-2 text-sm font-medium">
+                    <span class="text-slate-500">Groups</span>
+                    <span class="material-symbols-outlined text-xs text-slate-400" data-icon="chevron_right">chevron_right</span>
+                    <span class="text-teal-600 font-semibold uppercase tracking-wider">Robotics A</span>
+                </nav>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center bg-slate-100 rounded-full p-1">
+                    <button class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider bg-white shadow-sm rounded-full text-on-surface">EN</button>
+                    <button class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-on-surface">AR</button>
+                </div>
+                <button class="bg-secondary text-white px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-on-secondary-container transition-all flex items-center cursor-pointer">
+                    <span class="material-symbols-outlined mr-2 text-sm" data-icon="add">add</span>
+                    Enrollment
+                </button>
+            </div>
+        </header>
+
+        <!-- View Content -->
+        <div class="p-8 space-y-8">
+            <!-- Success Banner -->
+            <div class="bg-teal-50 border border-teal-100 p-4 flex items-center justify-between">
+                <div class="flex items-center text-teal-800 text-sm font-medium">
+                    <span class="mr-3 text-base">✨</span>
+                    <span>Level 1 Complete. Ready for Level 2 progression and billing generation.</span>
+                </div>
+                <button class="text-teal-600 text-xs font-bold uppercase tracking-widest hover:underline">Proceed</button>
+            </div>
+
+            <!-- Header Section -->
+            <section class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-outline-variant/10">
+                <div>
+                    <h1 class="font-headline text-3xl font-bold text-on-surface tracking-tight">Robotics A <span class="text-outline-variant font-light px-2">/</span> <span class="font-normal text-on-surface-variant">Sat 15:00</span></h1>
+                    <div class="mt-2 flex items-center space-x-6 text-xs font-medium uppercase tracking-wider text-outline">
+                        <span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1.5" data-icon="bookmark">bookmark</span> Level 1</span>
+                        <span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1.5" data-icon="account_circle">account_circle</span> A. Mahmoud</span>
+                        <span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1.5" data-icon="group">group</span> 10/12</span>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="px-4 py-2 border border-outline-variant/30 text-on-surface text-xs font-bold uppercase tracking-widest hover:bg-surface-container transition-colors">Edit</button>
+                    <button class="px-4 py-2 bg-primary-container text-white text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition-all">Add Session</button>
+                </div>
+            </section>
+
+            <!-- Tabs -->
+            <div class="flex justify-between items-center border-b border-outline-variant/10">
+                <div class="flex space-x-8">
+                    <button class="pb-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-on-surface">Roster</button>
+                    <button class="pb-3 text-xs font-bold uppercase tracking-widest text-secondary border-b-2 border-secondary">Attendance Grid</button>
+                    <button class="pb-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-on-surface">History</button>
+                </div>
+                <div class="pb-3 flex space-x-4">
+                    <span class="text-[10px] uppercase font-bold text-outline">Show: 5 Sessions</span>
+                </div>
+            </div>
+
+            <!-- Attendance Grid Table -->
+            <div class="bg-white border border-outline-variant/10 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[1000px]">
+                        <thead>
+                            <tr class="bg-surface-container-lowest">
+                                <th class="px-6 py-5 text-[10px] font-bold text-outline-variant uppercase tracking-[0.2em] border-b border-outline-variant/10" style="width: 280px;">Student</th>
+                                <th class="px-4 py-5 text-[10px] font-bold text-outline-variant uppercase tracking-[0.2em] border-b border-outline-variant/10 text-center border-l border-outline-variant/5">
+                                    <div class="flex flex-col items-center gap-1">
+                                        Session 1
+                                        <span class="block text-[8px] font-normal tracking-normal opacity-60">Dec 07</span>
+                                        <button class="text-outline-variant hover:text-secondary"><span class="material-symbols-outlined text-xs" data-icon="sticky_note_2">sticky_note_2</span></button>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-5 text-[10px] font-bold text-secondary uppercase tracking-[0.2em] border-b border-outline-variant/10 text-center border-l border-outline-variant/5 bg-secondary/5">
+                                    <div class="flex flex-col items-center gap-1">
+                                        Session 2
+                                        <span class="block text-[8px] font-normal tracking-normal opacity-60">Dec 14</span>
+                                        <button class="text-secondary hover:text-on-secondary-container"><span class="material-symbols-outlined text-xs filled-icon" data-icon="sticky_note_2">sticky_note_2</span></button>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-5 text-[10px] font-bold text-outline-variant uppercase tracking-[0.2em] border-b border-outline-variant/10 text-center border-l border-outline-variant/5">
+                                    <div class="flex flex-col items-center gap-1">
+                                        Session 3
+                                        <span class="block text-[8px] font-normal tracking-normal opacity-60">Dec 21</span>
+                                        <button class="text-outline-variant hover:text-secondary"><span class="material-symbols-outlined text-xs" data-icon="sticky_note_2">sticky_note_2</span></button>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-5 text-[10px] font-bold text-outline-variant uppercase tracking-[0.2em] border-b border-outline-variant/10 text-center border-l border-outline-variant/5">
+                                    <div class="flex flex-col items-center gap-1">
+                                        Session 4
+                                        <span class="block text-[8px] font-normal tracking-normal opacity-60">Dec 28</span>
+                                        <button class="text-outline-variant hover:text-secondary"><span class="material-symbols-outlined text-xs" data-icon="sticky_note_2">sticky_note_2</span></button>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-5 text-[10px] font-bold text-outline-variant uppercase tracking-[0.2em] border-b border-outline-variant/10 text-center border-l border-outline-variant/5">
+                                    <div class="flex flex-col items-center gap-1">
+                                        Session 5
+                                        <span class="block text-[8px] font-normal tracking-normal opacity-60">Jan 04</span>
+                                        <button class="text-outline-variant hover:text-secondary"><span class="material-symbols-outlined text-xs" data-icon="sticky_note_2">sticky_note_2</span></button>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/5">
+                            <tr class="hover:bg-surface-container-low/20 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <span class="text-xs mr-3">👦</span>
+                                            <div>
+                                                <span class="text-sm font-semibold text-on-surface block">Lucas Meyer</span>
+                                                <button class="text-[9px] text-outline hover:text-secondary flex items-center mt-0.5"><span class="material-symbols-outlined text-[10px] mr-0.5" data-icon="notes">notes</span> Add student note</button>
+                                            </div>
+                                        </div>
+                                        <span class="text-[9px] font-bold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded-sm">PAID</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5">
+                                    <span class="material-symbols-outlined text-secondary text-xl filled-icon" data-icon="check_circle">check_circle</span>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5 bg-secondary/5">
+                                    <span class="material-symbols-outlined text-secondary text-xl filled-icon" data-icon="check_circle">check_circle</span>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5">
+                                    <div class="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm"></div>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5">
+                                    <div class="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm"></div>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5">
+                                    <div class="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm"></div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-surface-container-low/20 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <span class="text-xs mr-3">👦</span>
+                                            <div>
+                                                <span class="text-sm font-semibold text-on-surface block">Sami Khan</span>
+                                                <button class="text-[9px] text-secondary font-medium flex items-center mt-0.5"><span class="material-symbols-outlined text-[10px] mr-0.5" data-icon="notes">notes</span> Medical leave</button>
+                                            </div>
+                                        </div>
+                                        <span class="text-[9px] font-bold text-error bg-error-container/20 px-1.5 py-0.5 rounded-sm">DUE</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5">
+                                    <span class="material-symbols-outlined text-secondary text-xl filled-icon" data-icon="check_circle">check_circle</span>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5 bg-secondary/5">
+                                    <span class="material-symbols-outlined text-error text-xl filled-icon" data-icon="cancel">cancel</span>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5">
+                                    <div class="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm"></div>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5">
+                                    <div class="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm"></div>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5">
+                                    <div class="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm"></div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-surface-container-low/20 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <span class="text-xs mr-3">👧</span>
+                                            <div>
+                                                <span class="text-sm font-semibold text-on-surface block">Elena Jovic</span>
+                                                <button class="text-[9px] text-outline hover:text-secondary flex items-center mt-0.5"><span class="material-symbols-outlined text-[10px] mr-0.5" data-icon="notes">notes</span> Add student note</button>
+                                            </div>
+                                        </div>
+                                        <span class="text-[9px] font-bold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded-sm">PAID</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5">
+                                    <span class="material-symbols-outlined text-error text-xl filled-icon" data-icon="cancel">cancel</span>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5 bg-secondary/5">
+                                    <span class="material-symbols-outlined text-secondary text-xl filled-icon" data-icon="check_circle">check_circle</span>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5">
+                                    <div class="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm"></div>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5">
+                                    <div class="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm"></div>
+                                </td>
+                                <td class="px-4 py-4 text-center border-l border-outline-variant/5">
+                                    <div class="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="grid grid-cols-1 gap-8 pt-4">
+                <div class="bg-surface-container-lowest p-6 border border-outline-variant/10">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-outline">Current Module</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 bg-primary-container text-white uppercase tracking-tighter">Core</span>
+                    </div>
+                    <h3 class="font-headline font-bold text-base text-on-surface mb-2">Mechanical Linkages Progress</h3>
+                    <p class="text-xs text-on-surface-variant leading-relaxed mb-6">
+                        3D spatial reasoning through assembly. 80% completion across group benchmarks.
+                    </p>
+                    <div class="w-full bg-surface-container h-1">
+                        <div class="bg-secondary h-full" style="width: 80%"></div>
+                    </div>
+                    <div class="flex justify-between mt-2 text-[10px] font-bold text-outline-variant">
+                        <span>80% GROUP SCORE</span>
+                        <span>TARGET: 100%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
