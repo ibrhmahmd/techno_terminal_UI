@@ -7,16 +7,23 @@ export interface LoginCredentials {
 
 export interface User {
   id: number
-  email: string
+  username: string
   role: string
+  is_active: boolean
+  employee_id: number
+  last_login: string
+  created_at: string | null
 }
 
 export interface LoginResponse {
   success: boolean
   data: {
     access_token: string
+    refresh_token: string
+    token_type: string
     user: User
   }
+  message: string
 }
 
 export async function login(credentials: LoginCredentials): Promise<LoginResponse> {
