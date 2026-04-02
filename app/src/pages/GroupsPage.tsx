@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
-import { getDailySchedule, type Group } from '../api/academics'
+import { Modal } from '../components/common/Modal'
+import { GroupForm } from '../components/groups/GroupForm'
+import { getGroups, createGroup, type Group } from '../api/academics'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 
 export function GroupsPage() {
@@ -10,14 +12,15 @@ export function GroupsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   useEffect(() => {
     async function loadGroups() {
       setIsLoading(true)
       setError(null)
       try {
-        const data = await getDailySchedule()
-        setGroups(data.groups || [])
+        const data = await getGroups()
+        setGroups(data)
       } catch (err) {
         setError('Failed to load groups. Please try again.')
       } finally {
@@ -33,8 +36,19 @@ export function GroupsPage() {
     group.instructor_name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleRowClick = (groupId: number) => {
+  const handleRowClick = (groupId: string) => {
     navigate(`/groups/${groupId}`)
+  }
+
+  const handleCreateGroup = async (data: Partial<Omit<Group, 'id'>>) => {
+    try {
+      const newGroup = await createGroup(data as Omit<Group, 'id'>)
+      setGroups(prev => [newGroup, ...prev])
+      setIsCreateModalOpen(false)
+      setError(null)
+    } catch {
+      setError('Failed to create group')
+    }
   }
 
   return (
@@ -48,15 +62,24 @@ export function GroupsPage() {
             <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">Groups</h1>
             <p className="text-sm text-on-surface-variant mt-2">Manage classes, schedules, and attendance</p>
           </div>
-          <div className="flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-lg border border-slate-200">
-            <span className="material-symbols-outlined text-slate-500">search</span>
-            <input
-              type="text"
-              placeholder="Search groups..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-transparent border-none outline-none text-sm text-on-surface min-w-[200px] placeholder-slate-400"
-            />
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-lg border border-slate-200">
+              <span className="material-symbols-outlined text-slate-500">search</span>
+              <input
+                type="text"
+                placeholder="Search groups..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-transparent border-none outline-none text-sm text-on-surface min-w-[200px] placeholder-slate-400"
+              />
+            </div>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
+            >
+              <span className="material-symbols-outlined text-sm">add</span>
+              Create Group
+            </button>
           </div>
         </div>
       </header>
@@ -125,6 +148,19 @@ export function GroupsPage() {
           </div>
         )}
       </section>
+
+      {/* Create Group Modal */}
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Create Group"
+      >
+        <GroupForm
+          onSubmit={handleCreateGroup}
+          onCancel={() => setIsCreateModalOpen(false)}
+          mode="create"
+        />
+      </Modal>
     </div>
   )
 }
