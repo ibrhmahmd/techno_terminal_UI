@@ -65,6 +65,15 @@ export async function createStudent(student: Omit<Student, 'id'>): Promise<Stude
   return response.data.data
 }
 
+export async function updateStudent(id: string, student: Partial<Omit<Student, 'id'>>): Promise<Student> {
+  const response = await client.patch<{ data: Student }>(`/crm/students/${id}`, student)
+  return response.data.data
+}
+
+export async function deleteStudent(id: string): Promise<void> {
+  await client.delete(`/crm/students/${id}`)
+}
+
 // Parents API
 export async function getParents(skip = 0, limit = 15): Promise<Parent[]> {
   const response = await client.get<{ data: Parent[] }>('/crm/parents', {
@@ -88,4 +97,18 @@ export async function getParent(id: string): Promise<Parent> {
 export async function createParent(parent: Omit<Parent, 'id'>): Promise<Parent> {
   const response = await client.post<{ data: Parent }>('/crm/parents', parent)
   return response.data.data
+}
+
+export async function updateParent(id: string, parent: Partial<Omit<Parent, 'id'>>): Promise<Parent> {
+  const response = await client.patch<{ data: Parent }>(`/crm/parents/${id}`, parent)
+  return response.data.data
+}
+
+export async function deleteParent(id: string): Promise<void> {
+  await client.delete(`/crm/parents/${id}`)
+}
+
+export async function getStudentParents(studentId: string): Promise<Parent[]> {
+  const response = await client.get<{ data: Parent[] }>(`/crm/students/${studentId}/parents`)
+  return response.data.data || []
 }

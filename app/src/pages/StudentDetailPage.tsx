@@ -2,11 +2,19 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import { getStudent, type StudentWithDetails } from '../api/crm'
+import { Modal } from '../components/common/Modal'
+import { StudentForm } from '../components/crm/StudentForm'
+import { LinkParentModal } from '../components/crm/LinkParentModal'
+import { 
+  getStudent, 
+  updateStudent, 
+  deleteStudent, 
+  type StudentWithDetails 
+} from '../api/crm'
 
 // Mock data
 const MOCK_STUDENT: StudentWithDetails = {
-  id: 1,
+  id: '1',
   full_name: 'Ahmed Mohamed',
   birth_date: '2010-05-15',
   gender: 'male',
@@ -14,10 +22,10 @@ const MOCK_STUDENT: StudentWithDetails = {
   is_active: true,
   notes: 'Excellent student, strong in robotics',
   parents: [
-    { id: 1, full_name: 'Mohamed Hassan', phone: '+20 111 222 3333', email: 'mohamed@example.com', is_active: true },
+    { id: '1', full_name: 'Mohamed Hassan', phone: '+20 111 222 3333', email: 'mohamed@example.com', is_active: true },
   ],
   enrollments: [
-    { id: 1, group_id: 1, group_name: 'Robotics A', course_name: 'Robotics', level: 1, status: 'active', amount_due: 1200, discount: 0, enrolled_on: '2025-09-01' },
+    { id: '1', group_id: '1', group_name: 'Robotics A', course_name: 'Robotics', level: 1, status: 'active', amount_due: 1200, discount: 0, enrolled_on: '2025-09-01' },
   ],
   balance: 1200,
 }
@@ -25,11 +33,17 @@ const MOCK_STUDENT: StudentWithDetails = {
 export function StudentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const studentId = parseInt(id || '1', 10)
+  const studentId = id || '1'
 
   const [student, setStudent] = useState<StudentWithDetails | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // Modal states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isLinkParentModalOpen, setIsLinkParentModalOpen] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   useEffect(() => {
     async function loadStudent() {
@@ -53,6 +67,42 @@ export function StudentDetailPage() {
     }
     loadStudent()
   }, [studentId])
+
+  const handleUpdateStudent = async (data: Partial<Omit<StudentWithDetails, 'id'>>) => {
+    setIsProcessing(true)
+    try {
+      const updated = await updateStudent(studentId, data)
+      setStudent({
+        ...updated,
+        parents: student?.parents || [],
+        enrollments: student?.enrollments || [],
+        balance: student?.balance ?? 0,
+      })
+      setIsEditModalOpen(false)
+      setError(null)
+    } catch (err) {
+      setError('Failed to update student')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleDeleteStudent = async () => {
+    setIsProcessing(true)
+    try {
+      await deleteStudent(studentId)
+      navigate('/directory')
+    } catch (err) {
+      setError('Failed to delete student')
+      setIsDeleteModalOpen(false)
+      setIsProcessing(false)
+    }
+  }
+
+  const handleParentLinked = () => {
+    // Refresh student data to get updated parents list
+    window.location.reload()
+  }
 
   if (isLoading) {
     return (
@@ -96,13 +146,31 @@ export function StudentDetailPage() {
             <span className="material-symbols-outlined text-sm">arrow_back</span>
             Back to Directory
           </button>
-          <div className="flex items-center gap-4">
-            <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">{student.full_name}</h1>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              student.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
-            }`}>
-              {student.is_active ? 'Active' : 'Inactive'}
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">{student.full_name}</h1>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                student.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
+              }`}>
+                {student.is_active ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">edit</span>
+                Edit
+              </button>
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">delete</span>
+                Delete
+              </button>
+            </div>
           </div>
           <p className="text-sm text-on-surface-variant mt-1">
             {student.gender && `${student.gender.charAt(0).toUpperCase() + student.gender.slice(1)} • `}
@@ -179,7 +247,16 @@ export function StudentDetailPage() {
 
             {/* Parents */}
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-              <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Parents</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-headline text-lg font-semibold text-on-surface">Parents</h2>
+                <button
+                  onClick={() => setIsLinkParentModalOpen(true)}
+                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
+                >
+                  <span className="material-symbols-outlined text-sm">person_add</span>
+                  Link Parent
+                </button>
+              </div>
               {student.parents?.length === 0 ? (
                 <p className="text-slate-500 text-sm">No parents linked</p>
               ) : (
@@ -197,6 +274,59 @@ export function StudentDetailPage() {
           </div>
         </div>
       </section>
+
+      {/* Edit Student Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Student"
+      >
+        <StudentForm
+          initialData={student}
+          onSubmit={handleUpdateStudent}
+          onCancel={() => setIsEditModalOpen(false)}
+          mode="edit"
+        />
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Student"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsDeleteModalOpen(false)}
+              disabled={isProcessing}
+              className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteStudent}
+              disabled={isProcessing}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              {isProcessing && <LoadingSpinner size="sm" />}
+              Delete
+            </button>
+          </div>
+        }
+      >
+        <p className="text-sm text-slate-600">
+          Are you sure you want to delete <strong>{student.full_name}</strong>? This action cannot be undone.
+        </p>
+      </Modal>
+
+      {/* Link Parent Modal */}
+      <LinkParentModal
+        studentId={studentId}
+        isOpen={isLinkParentModalOpen}
+        onClose={() => setIsLinkParentModalOpen(false)}
+        onLinked={handleParentLinked}
+      />
     </div>
   )
 }

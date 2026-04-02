@@ -2,30 +2,37 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import { getParent, type Parent } from '../api/crm'
+import { Modal } from '../components/common/Modal'
+import { ParentForm } from '../components/crm/ParentForm'
+import { getParent, updateParent, deleteParent, type Parent } from '../api/crm'
 
 // Mock data
-const MOCK_PARENT: Parent & { students: { id: number; full_name: string; is_active: boolean }[] } = {
-  id: 1,
+const MOCK_PARENT: Parent & { students: { id: string; full_name: string; is_active: boolean }[] } = {
+  id: '1',
   full_name: 'Mohamed Hassan',
   phone: '+20 111 222 3333',
   email: 'mohamed@example.com',
   address: 'Cairo, Egypt',
   is_active: true,
   students: [
-    { id: 1, full_name: 'Ahmed Mohamed', is_active: true },
-    { id: 2, full_name: 'Fatima Mohamed', is_active: true },
+    { id: '1', full_name: 'Ahmed Mohamed', is_active: true },
+    { id: '2', full_name: 'Fatima Mohamed', is_active: true },
   ],
 }
 
 export function ParentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const parentId = parseInt(id || '1', 10)
+  const parentId = id || '1'
 
   const [parent, setParent] = useState<typeof MOCK_PARENT | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // Modal states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   useEffect(() => {
     async function loadParent() {
@@ -44,6 +51,32 @@ export function ParentDetailPage() {
     }
     loadParent()
   }, [parentId])
+
+  const handleUpdateParent = async (data: Partial<Omit<Parent, 'id'>>) => {
+    setIsProcessing(true)
+    try {
+      const updated = await updateParent(parentId, data)
+      setParent({ ...updated, students: parent?.students || [] })
+      setIsEditModalOpen(false)
+      setError(null)
+    } catch {
+      setError('Failed to update parent')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleDeleteParent = async () => {
+    setIsProcessing(true)
+    try {
+      await deleteParent(parentId)
+      navigate('/directory')
+    } catch {
+      setError('Failed to delete parent')
+      setIsDeleteModalOpen(false)
+      setIsProcessing(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -87,13 +120,31 @@ export function ParentDetailPage() {
             <span className="material-symbols-outlined text-sm">arrow_back</span>
             Back to Directory
           </button>
-          <div className="flex items-center gap-4">
-            <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">{parent.full_name}</h1>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              parent.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
-            }`}>
-              {parent.is_active ? 'Active' : 'Inactive'}
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">{parent.full_name}</h1>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                parent.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
+              }`}>
+                {parent.is_active ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">edit</span>
+                Edit
+              </button>
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">delete</span>
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -170,6 +221,51 @@ export function ParentDetailPage() {
           </div>
         </div>
       </section>
+
+      {/* Edit Parent Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Parent"
+      >
+        <ParentForm
+          initialData={parent}
+          onSubmit={handleUpdateParent}
+          onCancel={() => setIsEditModalOpen(false)}
+          mode="edit"
+        />
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Parent"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsDeleteModalOpen(false)}
+              disabled={isProcessing}
+              className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteParent}
+              disabled={isProcessing}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              {isProcessing && <LoadingSpinner size="sm" />}
+              Delete
+            </button>
+          </div>
+        }
+      >
+        <p className="text-sm text-slate-600">
+          Are you sure you want to delete <strong>{parent.full_name}</strong>? This action cannot be undone.
+        </p>
+      </Modal>
     </div>
   )
 }

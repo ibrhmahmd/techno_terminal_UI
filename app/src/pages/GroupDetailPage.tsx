@@ -4,14 +4,27 @@ import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { GroupHeader } from '../components/groups/GroupHeader'
 import { TabNavigation } from '../components/groups/TabNavigation'
 import { AttendanceGrid } from '../components/attendance/AttendanceGrid'
+import { EditSessionPopup } from '../components/attendance/EditSessionPopup'
+import { AddSessionModal } from '../components/groups/AddSessionModal'
 import { ProgressSection } from '../components/groups/ProgressSection'
 import { SuccessBanner } from '../components/common/SuccessBanner'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import { getGroupDetails, getGroupSessions, getGroupProgress, type Group, type Session, type ProgressLevel } from '../api/academics'
+import { 
+  getGroupDetails, 
+  getGroupSessions, 
+  getGroupProgress, 
+  updateSession,
+  deleteSession,
+  cancelSession,
+  type Group, 
+  type Session, 
+  type ProgressLevel,
+  type UpdateSessionInput
+} from '../api/academics'
 
 // Mock data for fallback
 const MOCK_GROUP: Group = {
-  id: 1,
+  id: '1',
   name: 'Robotics A',
   course_name: 'Robotics',
   instructor_name: 'Ali Mahmoud',
@@ -21,11 +34,11 @@ const MOCK_GROUP: Group = {
 }
 
 const MOCK_SESSIONS: Session[] = [
-  { id: 1, group_id: 1, date: '2026-04-01', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'completed', attendance_marked: true, notes: 'Good session' },
-  { id: 2, group_id: 1, date: '2026-04-08', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'scheduled', attendance_marked: false },
-  { id: 3, group_id: 1, date: '2026-04-15', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'scheduled', attendance_marked: false },
-  { id: 4, group_id: 1, date: '2026-04-22', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'scheduled', attendance_marked: false },
-  { id: 5, group_id: 1, date: '2026-04-29', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'scheduled', attendance_marked: false },
+  { id: '1', group_id: '1', date: '2026-04-01', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'completed', attendance_marked: true, notes: 'Good session' },
+  { id: '2', group_id: '1', date: '2026-04-08', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'scheduled', attendance_marked: false },
+  { id: '3', group_id: '1', date: '2026-04-15', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'scheduled', attendance_marked: false },
+  { id: '4', group_id: '1', date: '2026-04-22', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'scheduled', attendance_marked: false },
+  { id: '5', group_id: '1', date: '2026-04-29', start_time: '15:00', end_time: '16:30', instructor_name: 'Ali Mahmoud', status: 'scheduled', attendance_marked: false },
 ]
 
 const MOCK_PROGRESS: ProgressLevel = {
@@ -39,7 +52,7 @@ const MOCK_PROGRESS: ProgressLevel = {
 
 export function GroupDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const groupId = parseInt(id || '1', 10)
+  const groupId = id || '1'
   
   const [group, setGroup] = useState<Group | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
@@ -47,6 +60,11 @@ export function GroupDetailPage() {
   const [activeTab, setActiveTab] = useState<'roster' | 'attendance' | 'history'>('attendance')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // Session management state
+  const [editingSession, setEditingSession] = useState<Session | null>(null)
+  const [isAddSessionModalOpen, setIsAddSessionModalOpen] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   useEffect(() => {
     async function loadGroupData() {
@@ -73,6 +91,57 @@ export function GroupDetailPage() {
     }
     loadGroupData()
   }, [groupId])
+
+  const handleUpdateSession = async (sessionId: string, data: UpdateSessionInput) => {
+    setIsProcessing(true)
+    try {
+      await updateSession(sessionId, data)
+      // Refresh sessions list
+      const updatedSessions = await getGroupSessions(groupId)
+      setSessions(updatedSessions)
+      setEditingSession(null)
+      setError(null)
+    } catch {
+      setError('Failed to update session')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleDeleteSession = async (sessionId: string) => {
+    if (!confirm('Are you sure you want to delete this session?')) return
+    setIsProcessing(true)
+    try {
+      await deleteSession(sessionId)
+      // Refresh sessions list
+      const updatedSessions = await getGroupSessions(groupId)
+      setSessions(updatedSessions)
+      setError(null)
+    } catch {
+      setError('Failed to delete session')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleCancelSession = async (sessionId: string) => {
+    setIsProcessing(true)
+    try {
+      await cancelSession(sessionId)
+      // Refresh sessions list
+      const updatedSessions = await getGroupSessions(groupId)
+      setSessions(updatedSessions)
+      setError(null)
+    } catch {
+      setError('Failed to cancel session')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleAddSession = async (newSession: Session) => {
+    setSessions(prev => [...prev, newSession])
+  }
 
   return (
     <div className="min-h-screen bg-surface">
@@ -113,7 +182,82 @@ export function GroupDetailPage() {
 
             {/* Tab Content */}
             {activeTab === 'attendance' && (
-              <AttendanceGrid sessions={sessions} />
+              <div className="space-y-4">
+                {/* Add Session Button */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setIsAddSessionModalOpen(true)}
+                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-sm">add</span>
+                    Add Session
+                  </button>
+                </div>
+
+                {/* Sessions List */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
+                    <h3 className="font-semibold text-on-surface">Sessions ({sessions.length})</h3>
+                  </div>
+                  <div className="divide-y divide-slate-100">
+                    {sessions.map((session) => (
+                      <div
+                        key={session.id}
+                        className="flex items-center justify-between px-6 py-4 hover:bg-slate-50"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex flex-col">
+                            <span className="font-medium text-on-surface">{session.date}</span>
+                            <span className="text-sm text-slate-500">
+                              {session.start_time} - {session.end_time}
+                            </span>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            session.status === 'completed' ? 'bg-green-100 text-green-700' :
+                            session.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                            'bg-blue-100 text-blue-700'
+                          }`}>
+                            {session.status}
+                          </span>
+                          {session.attendance_marked && (
+                            <span className="text-xs text-green-600 flex items-center gap-1">
+                              <span className="material-symbols-outlined text-sm">check_circle</span>
+                              Attendance marked
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setEditingSession(session)}
+                            className="p-2 text-slate-400 hover:text-secondary transition-colors"
+                            title="Edit session"
+                          >
+                            <span className="material-symbols-outlined text-sm">edit</span>
+                          </button>
+                          {session.status === 'scheduled' && (
+                            <button
+                              onClick={() => handleCancelSession(session.id)}
+                              disabled={isProcessing}
+                              className="p-2 text-slate-400 hover:text-orange-500 transition-colors disabled:opacity-50"
+                              title="Cancel session"
+                            >
+                              <span className="material-symbols-outlined text-sm">block</span>
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteSession(session.id)}
+                            disabled={isProcessing}
+                            className="p-2 text-slate-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                            title="Delete session"
+                          >
+                            <span className="material-symbols-outlined text-sm">delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
 
             {activeTab === 'roster' && (
@@ -134,6 +278,22 @@ export function GroupDetailPage() {
             {progress && (
               <ProgressSection progress={progress} />
             )}
+
+            {/* Edit Session Modal */}
+            <EditSessionPopup
+              session={editingSession}
+              isOpen={!!editingSession}
+              onClose={() => setEditingSession(null)}
+              onSave={handleUpdateSession}
+            />
+
+            {/* Add Session Modal */}
+            <AddSessionModal
+              groupId={groupId}
+              isOpen={isAddSessionModalOpen}
+              onClose={() => setIsAddSessionModalOpen(false)}
+              onAdded={handleAddSession}
+            />
           </>
         ) : (
           <div className="p-12 text-center text-on-surface-variant">

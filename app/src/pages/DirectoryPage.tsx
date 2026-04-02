@@ -2,20 +2,32 @@ import { useState, useEffect } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { StudentList } from '../components/crm/StudentList'
 import { ParentList } from '../components/crm/ParentList'
-import { getStudents, searchStudents, getParents, searchParents, type Student, type Parent } from '../api/crm'
+import { Modal } from '../components/common/Modal'
+import { StudentForm } from '../components/crm/StudentForm'
+import { ParentForm } from '../components/crm/ParentForm'
+import { 
+  getStudents, 
+  searchStudents, 
+  getParents, 
+  searchParents, 
+  createStudent,
+  createParent,
+  type Student, 
+  type Parent 
+} from '../api/crm'
 
 // Mock data for fallback
 const MOCK_STUDENTS: Student[] = [
-  { id: 1, full_name: 'Ahmed Mohamed', gender: 'male', phone: '+20 123 456 7890', is_active: true, notes: '' },
-  { id: 2, full_name: 'Fatima Ali', gender: 'female', phone: '+20 123 456 7891', is_active: true, notes: '' },
-  { id: 3, full_name: 'Omar Hassan', gender: 'male', phone: '+20 123 456 7892', is_active: true, notes: '' },
-  { id: 4, full_name: 'Aisha Ibrahim', gender: 'female', phone: null, is_active: false, notes: 'Transferred' },
+  { id: '1', full_name: 'Ahmed Mohamed', gender: 'male', phone: '+20 123 456 7890', is_active: true, notes: '' },
+  { id: '2', full_name: 'Fatima Ali', gender: 'female', phone: '+20 123 456 7891', is_active: true, notes: '' },
+  { id: '3', full_name: 'Omar Hassan', gender: 'male', phone: '+20 123 456 7892', is_active: true, notes: '' },
+  { id: '4', full_name: 'Aisha Ibrahim', gender: 'female', phone: null, is_active: false, notes: 'Transferred' },
 ]
 
 const MOCK_PARENTS: Parent[] = [
-  { id: 1, full_name: 'Mohamed Hassan', phone: '+20 111 222 3333', email: 'mohamed@example.com', is_active: true },
-  { id: 2, full_name: 'Ali Kamal', phone: '+20 111 222 4444', email: 'ali@example.com', is_active: true },
-  { id: 3, full_name: 'Sarah Ahmed', phone: '+20 111 222 5555', email: null, is_active: true },
+  { id: '1', full_name: 'Mohamed Hassan', phone: '+20 111 222 3333', email: 'mohamed@example.com', is_active: true },
+  { id: '2', full_name: 'Ali Kamal', phone: '+20 111 222 4444', email: 'ali@example.com', is_active: true },
+  { id: '3', full_name: 'Sarah Ahmed', phone: '+20 111 222 5555', email: null, is_active: true },
 ]
 
 export function DirectoryPage() {
@@ -25,6 +37,10 @@ export function DirectoryPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // Modal states
+  const [isCreateStudentModalOpen, setIsCreateStudentModalOpen] = useState(false)
+  const [isCreateParentModalOpen, setIsCreateParentModalOpen] = useState(false)
 
   useEffect(() => {
     async function loadData() {
@@ -84,6 +100,28 @@ export function DirectoryPage() {
     ? parents
     : parents.filter(p => p.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
 
+  const handleCreateStudent = async (data: Partial<Omit<Student, 'id'>>) => {
+    try {
+      const newStudent = await createStudent(data as Omit<Student, 'id'>)
+      setStudents(prev => [newStudent, ...prev])
+      setIsCreateStudentModalOpen(false)
+      setError(null)
+    } catch {
+      setError('Failed to create student')
+    }
+  }
+
+  const handleCreateParent = async (data: Partial<Omit<Parent, 'id'>>) => {
+    try {
+      const newParent = await createParent(data as Omit<Parent, 'id'>)
+      setParents(prev => [newParent, ...prev])
+      setIsCreateParentModalOpen(false)
+      setError(null)
+    } catch {
+      setError('Failed to create parent')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-surface">
       <TopNavbar activePage="Directory" />
@@ -95,15 +133,34 @@ export function DirectoryPage() {
             <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">Directory</h1>
             <p className="text-sm text-on-surface-variant mt-2">Browse and manage students and parents</p>
           </div>
-          <div className="flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-lg border border-slate-200">
-            <span className="material-symbols-outlined text-slate-500">search</span>
-            <input
-              type="text"
-              placeholder="Search (min 2 chars)..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-transparent border-none outline-none text-sm text-on-surface min-w-[200px] placeholder-slate-400"
-            />
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-lg border border-slate-200">
+              <span className="material-symbols-outlined text-slate-500">search</span>
+              <input
+                type="text"
+                placeholder="Search (min 2 chars)..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-transparent border-none outline-none text-sm text-on-surface min-w-[200px] placeholder-slate-400"
+              />
+            </div>
+            {activeTab === 'students' ? (
+              <button
+                onClick={() => setIsCreateStudentModalOpen(true)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">person_add</span>
+                Add Student
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsCreateParentModalOpen(true)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">person_add</span>
+                Add Parent
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -166,6 +223,32 @@ export function DirectoryPage() {
           />
         )}
       </section>
+
+      {/* Create Student Modal */}
+      <Modal
+        isOpen={isCreateStudentModalOpen}
+        onClose={() => setIsCreateStudentModalOpen(false)}
+        title="Create Student"
+      >
+        <StudentForm
+          onSubmit={handleCreateStudent}
+          onCancel={() => setIsCreateStudentModalOpen(false)}
+          mode="create"
+        />
+      </Modal>
+
+      {/* Create Parent Modal */}
+      <Modal
+        isOpen={isCreateParentModalOpen}
+        onClose={() => setIsCreateParentModalOpen(false)}
+        title="Create Parent"
+      >
+        <ParentForm
+          onSubmit={handleCreateParent}
+          onCancel={() => setIsCreateParentModalOpen(false)}
+          mode="create"
+        />
+      </Modal>
     </div>
   )
 }
