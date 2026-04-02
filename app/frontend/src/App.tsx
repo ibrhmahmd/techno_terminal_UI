@@ -3,6 +3,8 @@ import { useAuthStore } from './store/authStore'
 import { AppLayout } from './components/layout/AppLayout'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { GroupsPage } from './pages/GroupsPage'
+import { GroupDetailPage } from './pages/GroupDetailPage'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useAuthStore()
@@ -27,7 +29,8 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/groups" element={<div>Groups (Phase 3)</div>} />
+                        <Route path="/groups" element={<GroupsPage />} />
+            <Route path="/groups/:id" element={<GroupDetailPage />} />
             <Route path="/directory" element={<div>Directory (Phase 4)</div>} />
             <Route path="/students" element={<div>Students (Phase 4)</div>} />
             <Route path="/enrollments" element={<div>Enrollments (Phase 5)</div>} />
