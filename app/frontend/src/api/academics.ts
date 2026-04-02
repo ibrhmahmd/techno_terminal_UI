@@ -1,7 +1,7 @@
 import client from './client'
 
 export interface Group {
-  id: number
+  id: string
   name: string
   course_name: string
   instructor_name: string
@@ -11,8 +11,8 @@ export interface Group {
 }
 
 export interface Session {
-  id: number
-  group_id: number
+  id: string
+  group_id: string
   date: string
   start_time: string
   end_time: string
@@ -38,30 +38,35 @@ export interface ProgressLevel {
 }
 
 export interface StudentAttendance {
-  student_id: number
+  student_id: string
   student_name: string
   billing_status: 'paid' | 'due'
-  attendance: (boolean | null)[]  // true=present, false=absent, null=unmarked
+  attendance: (boolean | null)[]
   notes?: string
 }
 
 export async function getDailySchedule(date?: string): Promise<DailySchedule> {
   const params = date ? { params: { date } } : {}
-  const response = await client.get<DailySchedule>('/academics/sessions/daily-schedule', params)
-  return response.data
+  const response = await client.get<{ data: DailySchedule }>('/academics/sessions/daily-schedule', params)
+  return response.data.data
 }
 
-export async function getGroupSessions(groupId: number): Promise<Session[]> {
-  const response = await client.get<Session[]>(`/academics/groups/${groupId}/sessions`)
-  return response.data
+export async function getGroupSessions(groupId: string): Promise<Session[]> {
+  const response = await client.get<{ data: Session[] }>(`/academics/groups/${groupId}/sessions`)
+  return response.data.data || []
 }
 
-export async function getGroupDetails(groupId: number): Promise<Group> {
-  const response = await client.get<Group>(`/academics/groups/${groupId}`)
-  return response.data
+export async function getGroupDetails(groupId: string): Promise<Group> {
+  const response = await client.get<{ data: Group }>(`/academics/groups/${groupId}`)
+  return response.data.data
 }
 
-export async function getGroupProgress(groupId: number): Promise<ProgressLevel> {
-  const response = await client.get<ProgressLevel>(`/academics/groups/${groupId}/progress-level`)
-  return response.data
+export async function getGroupProgress(groupId: string): Promise<ProgressLevel> {
+  const response = await client.get<{ data: ProgressLevel }>(`/academics/groups/${groupId}/progress-level`)
+  return response.data.data
+}
+
+export async function getGroups(): Promise<Group[]> {
+  const response = await client.get<{ data: Group[] }>('/academics/groups')
+  return response.data.data || []
 }

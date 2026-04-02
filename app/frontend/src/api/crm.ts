@@ -1,21 +1,21 @@
 import client from './client'
 
 export interface Student {
-  id: number
+  id: string
   full_name: string
-  birth_date?: string
-  gender?: string
-  phone?: string
+  birth_date?: string | null
+  gender?: string | null
+  phone?: string | null
   is_active: boolean
-  notes?: string
+  notes?: string | null
 }
 
 export interface Parent {
-  id: number
+  id: string
   full_name: string
-  phone?: string
-  email?: string
-  address?: string
+  phone?: string | null
+  email?: string | null
+  address?: string | null
   is_active: boolean
 }
 
@@ -26,15 +26,18 @@ export interface StudentWithDetails extends Student {
 }
 
 export interface Enrollment {
-  id: number
-  group_id: number
-  group_name: string
-  course_name: string
+  id: string
+  student_id: string
+  group_id: string
+  student_name?: string
+  group_name?: string
+  course_name?: string
   level: number
   status: 'active' | 'completed' | 'dropped'
   amount_due: number
   discount: number
   enrolled_on: string
+  notes?: string | null
 }
 
 // Students API
@@ -52,7 +55,7 @@ export async function searchStudents(name: string): Promise<Student[]> {
   return response.data.data || []
 }
 
-export async function getStudent(id: number): Promise<StudentWithDetails> {
+export async function getStudent(id: string): Promise<StudentWithDetails> {
   const response = await client.get<{ data: StudentWithDetails }>(`/crm/students/${id}`)
   return response.data.data
 }
@@ -77,7 +80,7 @@ export async function searchParents(name: string): Promise<Parent[]> {
   return response.data.data || []
 }
 
-export async function getParent(id: number): Promise<Parent> {
+export async function getParent(id: string): Promise<Parent> {
   const response = await client.get<{ data: Parent }>(`/crm/parents/${id}`)
   return response.data.data
 }

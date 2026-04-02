@@ -1,34 +1,34 @@
 import client from './client'
 
 export interface AttendanceRecord {
-  id: number
-  session_id: number
-  student_id: number
+  id: string
+  session_id: string
+  student_id: string
   student_name: string
   status: 'present' | 'absent' | 'late' | 'excused' | null
   notes: string | null
 }
 
 export interface AttendanceGridData {
-  session_id: number
-  group_id: number
+  session_id: string
+  group_id: string
   session_date: string
   students: AttendanceRecord[]
 }
 
-export async function getSessionAttendance(sessionId: number): Promise<AttendanceGridData> {
-  const response = await client.get<AttendanceGridData>(`/attendance/session/${sessionId}`)
-  return response.data
+export async function getSessionAttendance(sessionId: string): Promise<AttendanceGridData> {
+  const response = await client.get<{ data: AttendanceGridData }>(`/attendance/session/${sessionId}`)
+  return response.data.data
 }
 
 export interface AttendanceUpdate {
-  student_id: number
+  student_id: string
   status: 'present' | 'absent' | 'late' | 'excused' | null
   notes?: string
 }
 
 export async function markAttendance(
-  sessionId: number,
+  sessionId: string,
   attendance: AttendanceUpdate[]
 ): Promise<void> {
   await client.post(`/attendance/session/${sessionId}/mark`, { attendance })

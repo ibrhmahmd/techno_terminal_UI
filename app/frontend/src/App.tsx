@@ -8,6 +8,9 @@ import { GroupDetailPage } from './pages/GroupDetailPage'
 import { DirectoryPage } from './pages/DirectoryPage'
 import { StudentDetailPage } from './pages/StudentDetailPage'
 import { ParentDetailPage } from './pages/ParentDetailPage'
+import { EnrollmentsPage } from './pages/EnrollmentsPage'
+import { FinancePage } from './pages/FinancePage'
+import { ReportsPage } from './pages/ReportsPage'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useAuthStore()
@@ -37,11 +40,11 @@ function App() {
             <Route path="/directory" element={<DirectoryPage />} />
             <Route path="/students/:id" element={<StudentDetailPage />} />
             <Route path="/parents/:id" element={<ParentDetailPage />} />
-            <Route path="/enrollments" element={<div>Enrollments (Phase 5)</div>} />
-            <Route path="/finance" element={<div>Finance (Phase 6)</div>} />
+            <Route path="/enrollments" element={<EnrollmentsPage />} />
+            <Route path="/finance" element={<FinancePage />} />
             <Route path="/attendance" element={<div>Attendance (Phase 3)</div>} />
             <Route path="/competitions" element={<div>Competitions</div>} />
-            <Route path="/reports" element={<div>Reports (Phase 7)</div>} />
+            <Route path="/reports" element={<ReportsPage />} />
             <Route path="/staff" element={<div>Staff</div>} />
           </Route>
         </Route>
