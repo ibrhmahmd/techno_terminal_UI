@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
 import { AppLayout } from './components/layout/AppLayout'
+import { LoginPage } from './pages/LoginPage'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useAuthStore()
@@ -18,7 +19,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route element={<PublicRoute />}>
-          <Route path="/login" element={<div>Login Page (Phase 1)</div>} />
+          <Route path="/login" element={<LoginPage />} />
         </Route>
 
         {/* Protected Routes */}
