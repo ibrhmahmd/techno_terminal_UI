@@ -1,18 +1,20 @@
 import { useState, type FormEvent } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import type { Student } from '../../api/crm'
+import { ParentSearchDropdown } from './ParentSearchDropdown'
+import type { Student, Parent } from '../../api/crm'
 
 // Define proper input type for creating students
 type CreateStudentInput = Omit<Student, 'id'>
 
 interface StudentFormProps {
   initialData?: Partial<Student>
-  onSubmit: (data: CreateStudentInput) => Promise<void>
+  onSubmit: (data: CreateStudentInput, selectedParent: Parent | null) => Promise<void>
   onCancel: () => void
   mode: 'create' | 'edit'
+  onSearchParents?: (query: string) => Promise<Parent[]>
 }
 
-export function StudentForm({ initialData, onSubmit, onCancel, mode }: StudentFormProps) {
+export function StudentForm({ initialData, onSubmit, onCancel, mode, onSearchParents }: StudentFormProps) {
   const [formData, setFormData] = useState({
     full_name: initialData?.full_name || '',
     date_of_birth: initialData?.date_of_birth || '',
@@ -21,6 +23,7 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode }: StudentFo
     notes: initialData?.notes || '',
     is_active: initialData?.is_active ?? true,
   })
+  const [selectedParent, setSelectedParent] = useState<Parent | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -45,7 +48,7 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode }: StudentFo
         notes: formData.notes || null,
       }
 
-      await onSubmit(submitData)
+      await onSubmit(submitData, mode === 'create' ? selectedParent : null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -164,6 +167,15 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode }: StudentFo
             Active Student
           </label>
         </div>
+      )}
+
+      {/* Parent Selection - only for create mode */}
+      {mode === 'create' && onSearchParents && (
+        <ParentSearchDropdown
+          onSelect={setSelectedParent}
+          selectedParent={selectedParent}
+          onSearchParents={onSearchParents}
+        />
       )}
 
       {/* Actions */}

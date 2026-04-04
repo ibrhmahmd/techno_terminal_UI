@@ -12,6 +12,7 @@ import {
   searchParents, 
   createStudent,
   createParent,
+  linkParentToStudent,
   type Student, 
   type Parent 
 } from '../api/crm'
@@ -129,10 +130,23 @@ export function DirectoryPage() {
   const displayStudents = students
   const displayParents = parents
 
-  const handleCreateStudent = async (data: Omit<Student, 'id'>) => {
+  const handleCreateStudent = async (data: Omit<Student, 'id'>, selectedParent: Parent | null) => {
     try {
       const newStudent = await createStudent(data)
       setStudents(prev => [newStudent, ...prev])
+      
+      // If a parent was selected, link them to the student
+      if (selectedParent) {
+        try {
+          await linkParentToStudent(newStudent.id, selectedParent.id)
+        } catch (linkError) {
+          console.error('Failed to link parent:', linkError)
+          // Show warning but don't fail the entire operation
+          setError('Student created but failed to link parent. You can link manually from the student detail page.')
+          return
+        }
+      }
+      
       setIsCreateStudentModalOpen(false)
       setError(null)
     } catch {
