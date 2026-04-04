@@ -9,8 +9,8 @@ interface GroupsHeaderProps {
 
 export function GroupsHeader({ totalGroups, searchTerm, onSearchChange, onCreateClick }: GroupsHeaderProps) {
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-6">
-      <div className="max-w-[1400px] mx-auto flex items-end justify-between">
+    <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full flex items-end justify-between">
         <div>
           <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">
             Groups ({totalGroups})

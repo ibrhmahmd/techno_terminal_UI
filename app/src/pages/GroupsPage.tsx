@@ -5,106 +5,23 @@ import { Modal } from '../components/common/Modal'
 import { GroupForm } from '../components/groups/GroupForm'
 import { 
   createGroup, 
+  updateGroup,
+  deleteGroup,
   getEnrichedGroups,
   type EnrichedGroupPublic, 
   type ScheduleGroupInput 
 } from '../api/academics'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import { GroupsTable, type SortField, type SortDirection } from '../components/groups/GroupsTable'
+import { GroupsTable } from '../components/groups/GroupsTable'
 import { Pagination } from '../components/common/Pagination'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { GroupsHeader } from '../components/groups/GroupsHeader'
 import { GroupsControls } from '../components/groups/GroupsControls'
 
-/**
- * Custom hook for groups logic to reduce component complexity
- */
-function useGroups() {
-  const [groups, setGroups] = useState<EnrichedGroupPublic[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(20)
-  const [sortField, setSortField] = useState<SortField>('name')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
-
-  const loadGroups = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const result = await getEnrichedGroups()
-      setGroups(result || [])
-    } catch (err: any) {
-      console.error('[useGroups] loadGroups failed:', err)
-      setError('Failed to load groups. Please check your connection.')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    loadGroups()
-  }, [loadGroups])
-
-  const processedGroups = useMemo(() => {
-    let filtered = groups.filter((group) =>
-      group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (group.course_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (group.instructor_name || '').toLowerCase().includes(searchTerm.toLowerCase())
-    )
-
-    return [...filtered].sort((a, b) => {
-      const aRaw = a[sortField as keyof EnrichedGroupPublic]
-      const bRaw = b[sortField as keyof EnrichedGroupPublic]
-      
-      const aValue = sortField === 'max_capacity' ? Number(aRaw) : aRaw
-      const bValue = sortField === 'max_capacity' ? Number(bRaw) : bRaw
-      
-      if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue
-      }
-      
-      const aStr = String(aValue || '').toLowerCase()
-      const bStr = String(bValue || '').toLowerCase()
-      
-      return sortDirection === 'asc' 
-        ? aStr.localeCompare(bStr) 
-        : bStr.localeCompare(aStr)
-    })
-  }, [groups, searchTerm, sortField, sortDirection])
-
-  const paginatedGroups = useMemo(() => {
-    const start = (currentPage - 1) * pageSize
-    return processedGroups.slice(start, start + pageSize)
-  }, [processedGroups, currentPage, pageSize])
-
-  const totalPages = Math.ceil(processedGroups.length / pageSize)
-
-  return {
-    groups,
-    setGroups,
-    totalGroups: groups.length,
-    isLoading,
-    error,
-    searchTerm,
-    setSearchTerm,
-    currentPage,
-    setCurrentPage,
-    pageSize,
-    setPageSize,
-    sortField,
-    setSortField,
-    sortDirection,
-    setSortDirection,
-    processedGroups,
-    paginatedGroups,
-    totalPages,
-    refresh: loadGroups
-  }
-}
+import { useGroups } from '../hooks/useGroups'
 
 export function GroupsPage() {
+  const navigate = useNavigate()
   const {
     totalGroups,
     isLoading,
@@ -116,26 +33,38 @@ export function GroupsPage() {
     pageSize,
     setPageSize,
     sortField,
-    setSortField,
     sortDirection,
-    setSortDirection,
+    handleSort,
     processedGroups,
     paginatedGroups,
     totalPages,
-    setGroups
+    refresh
   } = useGroups()
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
   const [mutationError, setMutationError] = useState<string | null>(null)
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortField(field)
-      setSortDirection('asc')
+  const handleView = (id: number) => {
+    navigate(`/groups/${id}`)
+  }
+
+  const handleEdit = (group: EnrichedGroupPublic) => {
+    setSelectedGroup(group)
+    setIsEditModalOpen(true)
+  }
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Are you sure you want to archive this group? This will stop all future sessions.')) return
+    
+    setMutationError(null)
+    try {
+      await deleteGroup(id)
+      await refresh()
+    } catch (err: any) {
+      setMutationError(err.message || 'Failed to delete group')
     }
-    setCurrentPage(1)
   }
 
   const handleCreateGroup = async (data: ScheduleGroupInput) => {
@@ -143,7 +72,7 @@ export function GroupsPage() {
     try {
       await createGroup(data)
       setIsCreateModalOpen(false)
-      await refresh() // Reload groups to get enriched data with course/instructor names
+      await refresh()
     } catch (err: any) {
       console.error('[GroupsPage] createGroup failed:', err)
       const detail = err?.response?.data?.detail
@@ -160,6 +89,20 @@ export function GroupsPage() {
     }
   }
 
+  const handleUpdateGroup = async (data: any) => {
+    if (!selectedGroup) return
+    setMutationError(null)
+    try {
+      await updateGroup(selectedGroup.id, data)
+      setIsEditModalOpen(false)
+      setSelectedGroup(null)
+      await refresh()
+    } catch (err: any) {
+      setMutationError(err.message || 'Failed to update group')
+      throw err
+    }
+  }
+
   return (
     <div className="min-h-screen bg-surface">
       <TopNavbar activePage="Groups" />
@@ -171,7 +114,7 @@ export function GroupsPage() {
         onCreateClick={() => setIsCreateModalOpen(true)}
       />
 
-      <section className="p-8 max-w-[1400px] mx-auto">
+      <section className="w-full px-4 sm:px-6 lg:px-8 py-8 mx-auto">
         <GroupsControls 
           pageSize={pageSize}
           onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1) }}
@@ -198,6 +141,9 @@ export function GroupsPage() {
                 sortField={sortField}
                 sortDirection={sortDirection}
                 onSort={handleSort}
+                onView={handleView}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
               />
 
               {totalPages > 1 && (
@@ -214,6 +160,7 @@ export function GroupsPage() {
         </ErrorBoundary>
       </section>
 
+      {/* Create Modal */}
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -224,6 +171,22 @@ export function GroupsPage() {
           onSubmit={handleCreateGroup}
           onCancel={() => setIsCreateModalOpen(false)}
         />
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => { setIsEditModalOpen(false); setSelectedGroup(null) }}
+        title="Edit Group"
+      >
+        {selectedGroup && (
+          <GroupForm
+            mode="edit"
+            initialData={selectedGroup}
+            onSubmit={handleUpdateGroup}
+            onCancel={() => { setIsEditModalOpen(false); setSelectedGroup(null) }}
+          />
+        )}
       </Modal>
     </div>
   )

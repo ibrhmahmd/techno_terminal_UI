@@ -73,7 +73,7 @@ export function GroupSessionCard({
         </div>
       </div>
 
-      <AttendanceGrid sessions={sessions} groupId={groupId} level={level} />
+      <AttendanceGrid sessions={sessions} groupId={groupId} level={level} groupInstructorName={instructorName} />
     </div>
   )
 }
