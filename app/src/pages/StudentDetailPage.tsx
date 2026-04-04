@@ -1,16 +1,26 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { ArrowLeft, Edit2, Trash2 } from 'lucide-react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
 import { StudentForm } from '../components/crm/StudentForm'
 import { LinkParentModal } from '../components/crm/LinkParentModal'
+import { StudentTabs, type TabId } from '../components/student/StudentTabs'
+import { OverviewTab } from '../components/student/OverviewTab'
+import { EnrollmentsTab, EnrollDialog } from '../components/student/EnrollmentsTab'
+import { CoursesTab } from '../components/student/CoursesTab'
+import { CompetitionsTab } from '../components/student/CompetitionsTab'
+import { TeamsTab } from '../components/student/TeamsTab'
+import { PaymentsTab } from '../components/student/PaymentsTab'
 import { 
   getStudent, 
   updateStudent, 
-  deleteStudent, 
+  deleteStudent,
+  searchParents,
   type StudentWithDetails 
 } from '../api/crm'
+import { getGroups, enrollStudent } from '../api/academics'
 
 
 export function StudentDetailPage() {
@@ -22,11 +32,18 @@ export function StudentDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
+  const [activeTab, setActiveTab] = useState<TabId>('overview')
+  
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isLinkParentModalOpen, setIsLinkParentModalOpen] = useState(false)
+  const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  
+  // Available groups for enrollment
+  const [availableGroups, setAvailableGroups] = useState<{ id: number; name: string; course_name: string; level: number }[]>([])
+  const [isLoadingGroups, setIsLoadingGroups] = useState(false)
 
   useEffect(() => {
     async function loadStudent() {
@@ -39,6 +56,10 @@ export function StudentDetailPage() {
           parents: data.parents || [],
           enrollments: data.enrollments || [],
           balance: data.balance ?? 0,
+          courses: data.courses || [],
+          competitions: data.competitions || [],
+          teams: data.teams || [],
+          payments: data.payments || [],
         })
       } catch (err) {
         console.error('API Error:', err)
@@ -88,6 +109,97 @@ export function StudentDetailPage() {
     window.location.reload()
   }
 
+  // Load available groups when enrollment dialog is opened
+  useEffect(() => {
+    if (isEnrollDialogOpen) {
+      setIsLoadingGroups(true)
+      getGroups()
+        .then(groups => {
+          // Filter out groups the student is already enrolled in
+          const enrolledGroupIds = student?.enrollments
+            ?.filter(e => e.status === 'active')
+            .map(e => e.group_id) || []
+          const available = groups
+            .filter(g => !enrolledGroupIds.includes(g.id))
+            .map(g => ({
+              id: g.id,
+              name: g.name,
+              course_name: g.course?.name || 'Unknown Course',
+              level: g.level || 1,
+            }))
+          setAvailableGroups(available)
+        })
+        .catch(err => {
+          console.error('Failed to load groups:', err)
+        })
+        .finally(() => {
+          setIsLoadingGroups(false)
+        })
+    }
+  }, [isEnrollDialogOpen, student?.enrollments])
+
+  const handleEnroll = async (groupId: number) => {
+    try {
+      await enrollStudent({
+        student_id: studentId,
+        group_id: groupId,
+        enrolled_on: new Date().toISOString().split('T')[0],
+      })
+      // Refresh student data to get updated enrollments
+      const updatedStudent = await getStudent(studentId)
+      setStudent(prev => ({
+        ...updatedStudent,
+        parents: prev?.parents || [],
+        balance: prev?.balance ?? 0,
+        courses: prev?.courses || [],
+        competitions: prev?.competitions || [],
+        teams: prev?.teams || [],
+        payments: prev?.payments || [],
+      }))
+      setError(null)
+    } catch (err) {
+      console.error('Failed to enroll student:', err)
+      throw err
+    }
+  }
+
+  const renderTabContent = () => {
+    if (!student) return null
+
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <OverviewTab 
+            student={student} 
+            onLinkParent={() => setIsLinkParentModalOpen(true)}
+          />
+        )
+      case 'enrollments':
+        return (
+          <EnrollmentsTab 
+            enrollments={student.enrollments || []}
+            currentGroupName={student.current_group_name}
+            onEnroll={() => setIsEnrollDialogOpen(true)}
+          />
+        )
+      case 'courses':
+        return <CoursesTab courses={student.courses || []} />
+      case 'competitions':
+        return <CompetitionsTab competitions={student.competitions || []} />
+      case 'teams':
+        return <TeamsTab teams={student.teams || []} />
+      case 'payments':
+        return (
+          <PaymentsTab 
+            payments={student.payments || []}
+            totalBalance={student.balance}
+          />
+        )
+      default:
+        return null
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-surface">
@@ -127,12 +239,14 @@ export function StudentDetailPage() {
             onClick={() => navigate('/directory')}
             className="flex items-center gap-1 text-sm text-slate-500 hover:text-on-surface mb-2"
           >
-            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            <ArrowLeft className="w-4 h-4" />
             Back to Directory
           </button>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">{student.full_name}</h1>
+              <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">
+                {student.full_name}
+              </h1>
               <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                 student.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
               }`}>
@@ -144,14 +258,14 @@ export function StudentDetailPage() {
                 onClick={() => setIsEditModalOpen(true)}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
               >
-                <span className="material-symbols-outlined text-sm">edit</span>
+                <Edit2 className="w-4 h-4" />
                 Edit
               </button>
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
               >
-                <span className="material-symbols-outlined text-sm">delete</span>
+                <Trash2 className="w-4 h-4" />
                 Delete
               </button>
             </div>
@@ -164,99 +278,17 @@ export function StudentDetailPage() {
         </div>
       </header>
 
-      {/* Content */}
+      {/* Tabs Navigation */}
+      <StudentTabs activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* Tab Content */}
       <section className="p-8 max-w-[1400px] mx-auto">
         {error && (
           <div className="mb-4 p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm">
             {error}
           </div>
         )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left: Details */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Enrollments */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-              <h2 className="font-headline text-xl font-semibold text-on-surface mb-4">Enrollments</h2>
-              {student.enrollments?.length === 0 ? (
-                <p className="text-slate-500 text-sm">No enrollments found</p>
-              ) : (
-                <div className="space-y-3">
-                  {student.enrollments?.map((enrollment) => (
-                    <div key={enrollment.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                      <div>
-                        <p className="font-semibold text-on-surface">{enrollment.group_name}</p>
-                        <p className="text-sm text-slate-500">{enrollment.course_name} • Level {enrollment.level}</p>
-                        <p className="text-xs text-slate-400 mt-1">Enrolled {enrollment.enrolled_on}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          enrollment.status === 'active' ? 'bg-green-100 text-green-700' :
-                          enrollment.status === 'completed' ? 'bg-blue-100 text-blue-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
-                          {enrollment.status}
-                        </span>
-                        <p className="text-sm font-medium text-on-surface mt-1">
-                          {enrollment.amount_due - enrollment.discount} EGP
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Notes */}
-            {student.notes && (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                <h2 className="font-headline text-xl font-semibold text-on-surface mb-4">Notes</h2>
-                <p className="text-sm text-on-surface-variant">{student.notes}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Right: Parents & Balance */}
-          <div className="space-y-6">
-            {/* Balance */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-              <h2 className="font-headline text-lg font-semibold text-on-surface mb-3">Account Balance</h2>
-              <p className={`text-3xl font-bold ${student.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                {student.balance} EGP
-              </p>
-              <p className="text-sm text-slate-500 mt-1">
-                {student.balance > 0 ? 'Outstanding balance' : 'No balance due'}
-              </p>
-            </div>
-
-            {/* Parents */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-headline text-lg font-semibold text-on-surface">Parents</h2>
-                <button
-                  onClick={() => setIsLinkParentModalOpen(true)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
-                >
-                  <span className="material-symbols-outlined text-sm">person_add</span>
-                  Link Parent
-                </button>
-              </div>
-              {student.parents?.length === 0 ? (
-                <p className="text-slate-500 text-sm">No parents linked</p>
-              ) : (
-                <div className="space-y-3">
-                  {student.parents?.map((parent) => (
-                    <div key={parent.id} className="p-3 bg-slate-50 rounded-lg">
-                      <p className="font-medium text-on-surface">{parent.full_name}</p>
-                      <p className="text-sm text-slate-500">{parent.phone_primary}</p>
-                      {parent.email && <p className="text-xs text-slate-400">{parent.email}</p>}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        {renderTabContent()}
       </section>
 
       {/* Edit Student Modal */}
@@ -310,6 +342,15 @@ export function StudentDetailPage() {
         isOpen={isLinkParentModalOpen}
         onClose={() => setIsLinkParentModalOpen(false)}
         onLinked={handleParentLinked}
+      />
+
+      {/* Enroll Student Dialog */}
+      <EnrollDialog
+        isOpen={isEnrollDialogOpen}
+        onClose={() => setIsEnrollDialogOpen(false)}
+        onEnroll={handleEnroll}
+        availableGroups={availableGroups}
+        isLoading={isLoadingGroups}
       />
     </div>
   )
