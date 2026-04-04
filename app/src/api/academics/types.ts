@@ -30,6 +30,7 @@ export interface Session {
   status: "scheduled" | "completed" | "cancelled";
   is_extra_session: boolean;
   actual_instructor_id: number;
+  instructor_name?: string;  // Populated by backend for display purposes
   notes: string;
 }
 
