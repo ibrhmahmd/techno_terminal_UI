@@ -7,23 +7,26 @@ import { ParentForm } from '../components/crm/ParentForm'
 import { getParent, updateParent, deleteParent, type Parent } from '../api/crm'
 
 // Mock data
-const MOCK_PARENT: Parent & { students: { id: string; full_name: string; is_active: boolean }[] } = {
-  id: '1',
+const MOCK_PARENT: Parent & { students: { id: number; full_name: string; is_active: boolean }[] } = {
+  id: 1,
   full_name: 'Mohamed Hassan',
-  phone: '+20 111 222 3333',
+  phone_primary: '+20 111 222 3333',
+  phone_secondary: null,
   email: 'mohamed@example.com',
+  relation: 'Father',
+  notes: null,
   address: 'Cairo, Egypt',
   is_active: true,
   students: [
-    { id: '1', full_name: 'Ahmed Mohamed', is_active: true },
-    { id: '2', full_name: 'Fatima Mohamed', is_active: true },
+    { id: 1, full_name: 'Ahmed Mohamed', is_active: true },
+    { id: 2, full_name: 'Fatima Mohamed', is_active: true },
   ],
 }
 
 export function ParentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const parentId = id || '1'
+  const parentId = Number(id) || 1
 
   const [parent, setParent] = useState<typeof MOCK_PARENT | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -59,7 +62,8 @@ export function ParentDetailPage() {
       setParent({ ...updated, students: parent?.students || [] })
       setIsEditModalOpen(false)
       setError(null)
-    } catch {
+    } catch (error: any) {
+      console.error('Failed to update parent:', error);
       setError('Failed to update parent')
     } finally {
       setIsProcessing(false)
@@ -71,7 +75,8 @@ export function ParentDetailPage() {
     try {
       await deleteParent(parentId)
       navigate('/directory')
-    } catch {
+    } catch (error: any) {
+      console.error('Failed to delete parent:', error);
       setError('Failed to delete parent')
       setIsDeleteModalOpen(false)
       setIsProcessing(false)
@@ -162,12 +167,12 @@ export function ParentDetailPage() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <h2 className="font-headline text-xl font-semibold text-on-surface mb-4">Contact Information</h2>
             <div className="space-y-4">
-              {parent.phone && (
+              {parent.phone_primary && (
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-slate-400">phone</span>
                   <div>
                     <p className="text-sm text-slate-500">Phone</p>
-                    <p className="text-on-surface">{parent.phone}</p>
+                    <p className="text-on-surface">{parent.phone_primary}</p>
                   </div>
                 </div>
               )}

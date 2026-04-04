@@ -12,28 +12,11 @@ import {
   type StudentWithDetails 
 } from '../api/crm'
 
-// Mock data
-const MOCK_STUDENT: StudentWithDetails = {
-  id: '1',
-  full_name: 'Ahmed Mohamed',
-  birth_date: '2010-05-15',
-  gender: 'male',
-  phone: '+20 123 456 7890',
-  is_active: true,
-  notes: 'Excellent student, strong in robotics',
-  parents: [
-    { id: '1', full_name: 'Mohamed Hassan', phone: '+20 111 222 3333', email: 'mohamed@example.com', is_active: true },
-  ],
-  enrollments: [
-    { id: '1', group_id: '1', group_name: 'Robotics A', course_name: 'Robotics', level: 1, status: 'active', amount_due: 1200, discount: 0, enrolled_on: '2025-09-01' },
-  ],
-  balance: 1200,
-}
 
 export function StudentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const studentId = id || '1'
+  const studentId = Number(id) || 1
 
   const [student, setStudent] = useState<StudentWithDetails | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -59,8 +42,8 @@ export function StudentDetailPage() {
         })
       } catch (err) {
         console.error('API Error:', err)
-        setError('API not available. Showing mock data.')
-        setStudent(MOCK_STUDENT)
+        setError('API not available.')
+  
       } finally {
         setIsLoading(false)
       }
@@ -92,7 +75,8 @@ export function StudentDetailPage() {
     try {
       await deleteStudent(studentId)
       navigate('/directory')
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Failed to delete student:', err)
       setError('Failed to delete student')
       setIsDeleteModalOpen(false)
       setIsProcessing(false)
@@ -174,7 +158,7 @@ export function StudentDetailPage() {
           </div>
           <p className="text-sm text-on-surface-variant mt-1">
             {student.gender && `${student.gender.charAt(0).toUpperCase() + student.gender.slice(1)} • `}
-            {student.birth_date && `Born ${student.birth_date} • `}
+            {student.date_of_birth && `Born ${student.date_of_birth} • `}
             {student.phone}
           </p>
         </div>
@@ -264,7 +248,7 @@ export function StudentDetailPage() {
                   {student.parents?.map((parent) => (
                     <div key={parent.id} className="p-3 bg-slate-50 rounded-lg">
                       <p className="font-medium text-on-surface">{parent.full_name}</p>
-                      <p className="text-sm text-slate-500">{parent.phone}</p>
+                      <p className="text-sm text-slate-500">{parent.phone_primary}</p>
                       {parent.email && <p className="text-xs text-slate-400">{parent.email}</p>}
                     </div>
                   ))}

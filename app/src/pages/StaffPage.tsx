@@ -4,8 +4,10 @@ import { Modal } from '../components/common/Modal'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { EmployeeForm } from '../components/staff/EmployeeForm'
 import { AttendanceLog } from '../components/staff/AttendanceLog'
+import { PaginationControls } from '../components/common/PaginationControls'
+import { usePagination } from '../hooks/usePagination'
 import { 
-  getEmployees, 
+  getEmployeesPaginated, 
   createEmployee,
   updateEmployee,
   deleteEmployee,
@@ -18,71 +20,7 @@ import {
 } from '../api/hr'
 
 // Mock data for fallback
-const MOCK_EMPLOYEES: Employee[] = [
-  {
-    id: '1',
-    full_name: 'Ali Mahmoud',
-    email: 'ali.mahmoud@techno.edu',
-    phone: '+20 111 222 3333',
-    job_title: 'Senior Instructor',
-    department: 'academics',
-    employment_type: 'full_time',
-    salary: 8000,
-    status: 'active',
-    hire_date: '2023-01-15',
-    created_at: '2023-01-15',
-    updated_at: '2024-01-15',
-  },
-  {
-    id: '2',
-    full_name: 'Sarah Ahmed',
-    email: 'sarah.ahmed@techno.edu',
-    phone: '+20 111 222 4444',
-    job_title: 'Instructor',
-    department: 'academics',
-    employment_type: 'full_time',
-    salary: 6000,
-    status: 'active',
-    hire_date: '2023-03-10',
-    created_at: '2023-03-10',
-    updated_at: '2024-01-10',
-  },
-  {
-    id: '3',
-    full_name: 'Omar Hassan',
-    email: 'omar.hassan@techno.edu',
-    phone: '+20 111 222 5555',
-    job_title: 'Operations Manager',
-    department: 'operations',
-    employment_type: 'full_time',
-    salary: 12000,
-    status: 'active',
-    hire_date: '2022-06-01',
-    created_at: '2022-06-01',
-    updated_at: '2024-01-01',
-  },
-  {
-    id: '4',
-    full_name: 'Fatima Ali',
-    email: 'fatima.ali@techno.edu',
-    phone: '+20 111 222 6666',
-    job_title: 'Administrative Assistant',
-    department: 'admin',
-    employment_type: 'part_time',
-    salary: 4000,
-    status: 'on_leave',
-    hire_date: '2023-08-20',
-    created_at: '2023-08-20',
-    updated_at: '2024-02-01',
-  },
-]
-
-const departmentColors: Record<string, string> = {
-  academics: 'bg-blue-100 text-blue-700',
-  operations: 'bg-green-100 text-green-700',
-  admin: 'bg-purple-100 text-purple-700',
-  management: 'bg-amber-100 text-amber-700',
-}
+import { departmentColors } from '../utils/colors'
 
 const statusColors: Record<string, string> = {
   active: 'bg-green-100 text-green-700',
@@ -92,7 +30,6 @@ const statusColors: Record<string, string> = {
 }
 
 export function StaffPage() {
-  const [employees, setEmployees] = useState<Employee[]>([])
   const [stats, setStats] = useState<{
     total_employees: number
     active_employees: number
@@ -100,54 +37,49 @@ export function StaffPage() {
     present_today: number
     monthly_payroll_total: number
   } | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  
+  // Use pagination hook for employees
+  const {
+    items: employees,
+    total: totalEmployees,
+    isLoading,
+    currentPage,
+    setPage,
+    refresh
+  } = usePagination(getEmployeesPaginated, { initialLimit: 20, initialSkip: 0 })
+  
   const [error, setError] = useState<string | null>(null)
-  const [useMockData, setUseMockData] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all')
   
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
-  const [deletingEmployee, setDeletingEmployee] = useState<string | null>(null)
+  const [deletingEmployee, setDeletingEmployee] = useState<number | null>(null)
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [isProcessing, setIsProcessing] = useState(false)
 
+  // Load initial data
   useEffect(() => {
     async function loadData() {
-      setIsLoading(true)
       try {
-        const [employeesData, statsData] = await Promise.all([
-          getEmployees().catch(() => {
-            setUseMockData(true)
-            return MOCK_EMPLOYEES
-          }),
-          getHRStats().catch(() => ({
-            total_employees: 4,
-            active_employees: 3,
-            on_leave: 1,
-            present_today: 3,
-            monthly_payroll_total: 30000,
-          })),
-        ])
-        setEmployees(employeesData)
+        const statsData = await getHRStats()
         setStats(statsData)
       } catch {
-        setEmployees(MOCK_EMPLOYEES)
-        setUseMockData(true)
-      } finally {
-        setIsLoading(false)
+        setError('API unavailable. Failed to load stats.')
       }
+      // Trigger employees load
+      refresh()
     }
     loadData()
-  }, [])
+  }, [refresh])
 
   const handleCreateEmployee = async (data: CreateEmployeeInput) => {
     setIsProcessing(true)
     try {
-      const newEmployee = await createEmployee(data)
-      setEmployees(prev => [newEmployee, ...prev])
+      await createEmployee(data)
+      await refresh() // Refresh the list from server
       setIsAddModalOpen(false)
       setError(null)
     } catch {
@@ -161,8 +93,8 @@ export function StaffPage() {
     if (!editingEmployee) return
     setIsProcessing(true)
     try {
-      const updated = await updateEmployee(editingEmployee.id, data)
-      setEmployees(prev => prev.map(e => e.id === updated.id ? updated : e))
+      await updateEmployee(editingEmployee.id, data)
+      await refresh() // Refresh the list from server
       setEditingEmployee(null)
       setError(null)
     } catch {
@@ -172,11 +104,11 @@ export function StaffPage() {
     }
   }
 
-  const handleDeleteEmployee = async (id: string) => {
+  const handleDeleteEmployee = async (id: number) => {
     setIsProcessing(true)
     try {
       await deleteEmployee(id)
-      setEmployees(prev => prev.filter(e => e.id !== id))
+      await refresh() // Refresh the list from server
       setDeletingEmployee(null)
       setError(null)
     } catch {
@@ -231,11 +163,7 @@ export function StaffPage() {
       </header>
 
       <section className="p-8 max-w-[1400px] mx-auto">
-        {useMockData && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm">
-            API unavailable. Showing demo data.
-          </div>
-        )}
+
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm">
@@ -364,6 +292,15 @@ export function StaffPage() {
                 ))}
               </tbody>
             </table>
+            {/* Pagination Controls */}
+            <div className="mt-4 flex justify-center">
+              <PaginationControls
+                currentPage={currentPage}
+                total={totalEmployees}
+                pageSize={20}
+                onChange={setPage}
+              />
+            </div>
           </div>
         )}
       </section>
@@ -379,6 +316,7 @@ export function StaffPage() {
           onSubmit={handleCreateEmployee}
           onCancel={() => setIsAddModalOpen(false)}
           mode="create"
+          isLoading={isProcessing}
         />
       </Modal>
 
@@ -395,6 +333,7 @@ export function StaffPage() {
             onSubmit={handleUpdateEmployee}
             onCancel={() => setEditingEmployee(null)}
             mode="edit"
+            isLoading={isProcessing}
           />
         )}
       </Modal>

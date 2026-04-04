@@ -1,58 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { EnrollPanel } from '../components/enrollments/EnrollPanel'
 import { TransferPanel } from '../components/enrollments/TransferPanel'
 import { DropPanel } from '../components/enrollments/DropPanel'
-import { getActiveEnrollments, type Enrollment } from '../api/enrollments'
+import { type Enrollment } from '../api/enrollments'
 
 type PanelType = 'enroll' | 'transfer' | 'drop'
 
-// Mock data
-const MOCK_ENROLLMENTS: Enrollment[] = [
-  {
-    id: 'mock-enroll-1',
-    student_id: 'mock-student-1',
-    group_id: 'mock-group-1',
-    student_name: 'Omar Khaled',
-    group_name: 'Robotics A - Saturday',
-    level: 1,
-    status: 'active',
-    amount_due: 150,
-    discount: 0,
-    enrolled_on: '2026-01-15'
-  },
-  {
-    id: 'mock-enroll-2',
-    student_name: 'Sara Ahmed',
-    student_id: 'mock-student-2',
-    group_id: 'mock-group-2',
-    group_name: 'Coding B - Sunday',
-    level: 2,
-    status: 'active',
-    amount_due: 200,
-    discount: 25,
-    enrolled_on: '2026-02-01'
-  }
-]
 
 export function EnrollmentsPage() {
   const [activePanel, setActivePanel] = useState<PanelType>('enroll')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [useMockData, setUseMockData] = useState(false)
-
-  // Detect API availability on mount
-  useEffect(() => {
-    async function checkApi() {
-      try {
-        await getActiveEnrollments()
-      } catch {
-        setUseMockData(true)
-      }
-    }
-    checkApi()
-  }, [])
 
   const handleSuccess = (message: string) => {
     setSuccess(message)
@@ -123,25 +83,19 @@ export function EnrollmentsPage() {
             {success}
           </div>
         )}
-        {useMockData && (
-          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm">
-            API unavailable. Using mock data for testing.
-          </div>
-        )}
 
         {/* Panel Content */}
         {activePanel === 'enroll' && (
           <EnrollPanel
-            useMockData={useMockData}
             isLoading={isLoading}
             onSuccess={handleSuccess}
             onError={handleError}
             setIsLoading={setIsLoading}
+            useMockData={false}
           />
         )}
         {activePanel === 'transfer' && (
           <TransferPanel
-            useMockData={useMockData}
             isLoading={isLoading}
             onSuccess={handleSuccess}
             onError={handleError}
@@ -150,7 +104,6 @@ export function EnrollmentsPage() {
         )}
         {activePanel === 'drop' && (
           <DropPanel
-            useMockData={useMockData}
             isLoading={isLoading}
             onSuccess={handleSuccess}
             onError={handleError}

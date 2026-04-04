@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { login } from '../api/auth'
@@ -25,7 +25,7 @@ export function LoginPage() {
     try {
       const response = await login({ email, password })
       if (response.success) {
-        storeLogin(response.data.access_token, response.data.user)
+        storeLogin(response.data.access_token, response.data.user as any)
         navigate('/dashboard')
       } else {
         setError('Login failed. Please check your credentials.')

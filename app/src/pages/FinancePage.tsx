@@ -11,7 +11,7 @@ export function FinancePage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [createdReceiptId, setCreatedReceiptId] = useState<string | null>(null)
+  const [createdReceiptId, setCreatedReceiptId] = useState<number | null>(null)
   const [useMockData, setUseMockData] = useState(false)
 
   // Detect API availability
@@ -27,7 +27,7 @@ export function FinancePage() {
     checkApi()
   }, [])
 
-  const handleSuccess = (message: string, receiptId?: string) => {
+  const handleSuccess = (message: string, receiptId?: number) => {
     setSuccess(message)
     setError(null)
     setCreatedReceiptId(receiptId || null)
@@ -46,7 +46,7 @@ export function FinancePage() {
     setCreatedReceiptId(null)
   }
 
-  const handleDownloadPdf = async (receiptId: string) => {
+  const handleDownloadPdf = async (receiptId: number) => {
     try {
       if (useMockData) {
         handleError('PDF download not available in mock mode')

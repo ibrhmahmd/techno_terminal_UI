@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { TopNavbar } from '../components/dashboard/TopNavbar'
-import { Modal } from '../components/common/Modal'
+import { TopNavbar } from "../components/dashboard/TopNavbar";
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import { CategoryList } from '../components/competitions/CategoryList'
+import { Modal } from '../components/common/Modal'
 import { TeamRegistrationModal } from '../components/competitions/TeamRegistrationModal'
+import { CategoryList } from '../components/competitions/CategoryList'
 import { 
   getCompetition, 
   getCompetitionCategories,
@@ -18,6 +18,8 @@ import {
   type CreateCategoryInput,
   type RegisterTeamInput
 } from '../api/competitions'
+import { formatDate } from '../utils/formatting'
+import { competitionStatusColors, paymentStatusColors } from '../utils/colors'
 
 // Mock data for fallback
 const MOCK_COMPETITION: Competition = {
@@ -229,12 +231,7 @@ export function CompetitionDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">{competition.name}</h1>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                competition.status === 'upcoming' ? 'bg-blue-100 text-blue-700' :
-                competition.status === 'active' ? 'bg-green-100 text-green-700' :
-                competition.status === 'completed' ? 'bg-slate-100 text-slate-600' :
-                'bg-red-100 text-red-700'
-              }`}>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${competitionStatusColors[competition.status]}`}>
                 {competition.status}
               </span>
             </div>
@@ -376,15 +373,11 @@ export function CompetitionDetailPage() {
               <div key={team.id} className="p-4 bg-slate-50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold text-on-surface">{team.team_name}</h4>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    team.payment_status === 'paid' ? 'bg-green-100 text-green-700' :
-                    team.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-slate-100 text-slate-600'
-                  }`}>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${paymentStatusColors[team.payment_status] || 'bg-slate-100 text-slate-600'}`}>
                     {team.payment_status}
                   </span>
                 </div>
-                <p className="text-sm text-slate-500 mb-2">Registered {new Date(team.registration_date).toLocaleDateString()}</p>
+                <p className="text-sm text-slate-500 mb-2">Registered {formatDate(team.registration_date)}</p>
                 <div className="flex flex-wrap gap-2">
                   {team.members.map(member => (
                     <span key={member.id} className="px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-600">
