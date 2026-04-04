@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import type { Student } from '../../api/crm'
 import { LoadingSpinner } from '../common/LoadingSpinner'
+import { memo } from 'react'
 
 interface StudentListProps {
   students: Student[]
@@ -8,7 +9,7 @@ interface StudentListProps {
   emptyMessage?: string
 }
 
-export function StudentList({ students, isLoading, emptyMessage = 'No students found' }: StudentListProps) {
+function StudentListComponent({ students, isLoading, emptyMessage = 'No students found' }: StudentListProps) {
   const navigate = useNavigate()
 
   if (isLoading) {
@@ -80,3 +81,5 @@ export function StudentList({ students, isLoading, emptyMessage = 'No students f
     </div>
   )
 }
+
+export const StudentList = memo(StudentListComponent)

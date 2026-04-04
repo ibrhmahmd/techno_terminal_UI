@@ -1,20 +1,24 @@
-import { useState, FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { Employee, CreateEmployeeInput, UpdateEmployeeInput } from '../../api/hr'
 
 interface EmployeeFormProps {
   initialData?: Partial<Employee>
-  onSubmit: (data: CreateEmployeeInput | UpdateEmployeeInput) => Promise<void>
+  onSubmit: (data: any) => Promise<void>
   onCancel: () => void
   mode: 'create' | 'edit'
+  isLoading?: boolean
 }
 
-export function EmployeeForm({ initialData, onSubmit, onCancel, mode }: EmployeeFormProps) {
-  const [formData, setFormData] = useState<CreateEmployeeInput & { status?: string }>({
+export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading: isExternalLoading }: EmployeeFormProps) {
+  const [formData, setFormData] = useState({
     full_name: initialData?.full_name || '',
     email: initialData?.email || '',
     phone: initialData?.phone || '',
     national_id: initialData?.national_id || '',
+    university: '', // Required by hr.md
+    major: '',      // Required by hr.md
+    is_graduate: false,
     address: initialData?.address || '',
     date_of_birth: initialData?.date_of_birth || '',
     hire_date: initialData?.hire_date || new Date().toISOString().split('T')[0],
@@ -26,11 +30,13 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode }: Employee
     emergency_contact_phone: initialData?.emergency_contact_phone || '',
     notes: initialData?.notes || '',
     status: initialData?.status || 'active',
+    is_active: initialData?.is_active ?? true,
   })
-  const [isLoading, setIsLoading] = useState(false)
+  const [isInternalLoading, setIsInternalLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const isLoading = isExternalLoading || isInternalLoading
 
-  const handleChange = (field: keyof CreateEmployeeInput, value: string | number) => {
+  const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -43,29 +49,50 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode }: Employee
       setError('Full name is required')
       return
     }
-    if (!formData.email.trim()) {
-      setError('Email is required')
+    if (!formData.phone.trim()) {
+      setError('Phone is required')
       return
     }
-    if (!formData.job_title.trim()) {
-      setError('Job title is required')
-      return
-    }
-    if (formData.salary < 0) {
-      setError('Salary cannot be negative')
+    if (!formData.national_id.trim()) {
+      setError('National ID is required')
       return
     }
 
-    setIsLoading(true)
+    setIsInternalLoading(true)
     try {
-      const submitData = mode === 'edit' 
-        ? { ...formData, status: formData.status as 'active' | 'on_leave' | 'terminated' | 'suspended' }
-        : formData
-      await onSubmit(submitData)
-    } catch {
+      // Map to API compliant structure
+      const apiData: CreateEmployeeInput = {
+        full_name: formData.full_name,
+        phone: formData.phone,
+        email: formData.email || undefined,
+        national_id: formData.national_id,
+        university: formData.university || 'Not Specified',
+        major: formData.major || 'Not Specified',
+        is_graduate: formData.is_graduate,
+        job_title: formData.job_title,
+        employment_type: formData.employment_type as any,
+        monthly_salary: formData.salary,
+        is_active: formData.is_active,
+        // Legacy/Extra fields
+        department: formData.department as any,
+        salary: formData.salary,
+        notes: formData.notes,
+        hire_date: formData.hire_date
+      }
+
+      if (mode === 'edit') {
+        const updateData: UpdateEmployeeInput = {
+          ...apiData,
+          status: formData.status as any
+        }
+        await onSubmit(updateData)
+      } else {
+        await onSubmit(apiData)
+      }
+    } catch (err) {
       setError(`Failed to ${mode} employee`)
     } finally {
-      setIsLoading(false)
+      setIsInternalLoading(false)
     }
   }
 
@@ -112,27 +139,72 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode }: Employee
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-on-surface">Phone</label>
+          <label className="text-sm font-medium text-on-surface">
+            Phone <span className="text-red-500">*</span>
+          </label>
           <input
             type="tel"
             value={formData.phone}
             onChange={(e) => handleChange('phone', e.target.value)}
-            placeholder="+20 XXX XXX XXXX"
+            placeholder="01xxxxxxxxx"
+            required
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-on-surface">National ID</label>
+          <label className="text-sm font-medium text-on-surface">
+            National ID <span className="text-red-500">*</span>
+          </label>
           <input
             type="text"
             value={formData.national_id}
             onChange={(e) => handleChange('national_id', e.target.value)}
-            placeholder="Enter national ID..."
+            placeholder="290xxxxxxxxxxx"
+            required
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
         </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-on-surface">University</label>
+          <input
+            type="text"
+            value={formData.university}
+            onChange={(e) => handleChange('university', e.target.value)}
+            placeholder="Enter university..."
+            disabled={isLoading}
+            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-on-surface">Major</label>
+          <input
+            type="text"
+            value={formData.major}
+            onChange={(e) => handleChange('major', e.target.value)}
+            placeholder="Enter major..."
+            disabled={isLoading}
+            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="is_graduate"
+          checked={formData.is_graduate}
+          onChange={(e) => handleChange('is_graduate', e.target.checked)}
+          disabled={isLoading}
+          className="w-4 h-4 text-secondary border-slate-200 rounded focus:ring-secondary"
+        />
+        <label htmlFor="is_graduate" className="text-sm font-medium text-on-surface cursor-pointer">
+          Is Graduate
+        </label>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

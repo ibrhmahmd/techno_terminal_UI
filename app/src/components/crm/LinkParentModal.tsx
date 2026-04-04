@@ -4,7 +4,7 @@ import { LoadingSpinner } from '../common/LoadingSpinner'
 import { searchParents, getStudentParents, type Parent } from '../../api/crm'
 
 interface LinkParentModalProps {
-  studentId: string
+  studentId: number
   isOpen: boolean
   onClose: () => void
   onLinked: () => void
@@ -54,15 +54,14 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
     }
   }
 
-  const handleLinkParent = async (parentId: string) => {
+  const handleLinkParent = async (parentId: number) => {
     setIsLoading(true)
     setError(null)
 
     try {
       // Note: The actual API endpoint for linking a parent to a student
-      // may need to be added to crm.ts if it doesn't exist yet
-      // For now, we'll call a placeholder function
-      // await linkParentToStudent(studentId, parentId)
+      // is likely POST /crm/students/{studentId}/parents/{parentId}
+      // Since it's not in the docs yet, we'll keep the mock logic but fix types
       
       // Mock success - refresh the list
       await loadLinkedParents()
@@ -75,16 +74,11 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
     }
   }
 
-  const handleUnlinkParent = async (_parentId: string) => {
+  const handleUnlinkParent = async (_parentId: number) => {
     setIsLoading(true)
     setError(null)
 
     try {
-      // Note: The actual API endpoint for unlinking a parent
-      // may need to be added to crm.ts if it doesn't exist yet
-      // For now, we'll call a placeholder function
-      // await unlinkParentFromStudent(studentId, _parentId)
-      
       // Mock success - refresh the list
       await loadLinkedParents()
     } catch {

@@ -1,10 +1,13 @@
-import { useState, FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { Student } from '../../api/crm'
 
+// Define proper input type for creating students
+type CreateStudentInput = Omit<Student, 'id'>
+
 interface StudentFormProps {
   initialData?: Partial<Student>
-  onSubmit: (data: Partial<Omit<Student, 'id'>>) => Promise<void>
+  onSubmit: (data: CreateStudentInput) => Promise<void>
   onCancel: () => void
   mode: 'create' | 'edit'
 }
@@ -12,7 +15,7 @@ interface StudentFormProps {
 export function StudentForm({ initialData, onSubmit, onCancel, mode }: StudentFormProps) {
   const [formData, setFormData] = useState({
     full_name: initialData?.full_name || '',
-    birth_date: initialData?.birth_date || '',
+    date_of_birth: initialData?.date_of_birth || '',
     gender: initialData?.gender || '',
     phone: initialData?.phone || '',
     notes: initialData?.notes || '',
@@ -32,17 +35,15 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode }: StudentFo
         throw new Error('Full name is required')
       }
 
-      // Build submission data
-      const submitData: Partial<Omit<Student, 'id'>> = {
+      // Build submission data with all required fields
+      const submitData: CreateStudentInput = {
         full_name: formData.full_name.trim(),
         is_active: formData.is_active,
+        date_of_birth: formData.date_of_birth || null,
+        gender: formData.gender || null,
+        phone: formData.phone || null,
+        notes: formData.notes || null,
       }
-
-      // Only include optional fields if they have values
-      if (formData.birth_date) submitData.birth_date = formData.birth_date
-      if (formData.gender) submitData.gender = formData.gender
-      if (formData.phone) submitData.phone = formData.phone
-      if (formData.notes) submitData.notes = formData.notes
 
       await onSubmit(submitData)
     } catch (err) {
@@ -85,14 +86,14 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode }: StudentFo
 
       {/* Birth Date */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="birth_date" className="text-sm font-medium text-on-surface">
+        <label htmlFor="date_of_birth" className="text-sm font-medium text-on-surface">
           Birth Date
         </label>
         <input
-          id="birth_date"
+          id="date_of_birth"
           type="date"
-          value={formData.birth_date}
-          onChange={(e) => handleChange('birth_date', e.target.value)}
+          value={formData.date_of_birth}
+          onChange={(e) => handleChange('date_of_birth', e.target.value)}
           disabled={isLoading}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
         />
@@ -113,7 +114,6 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode }: StudentFo
           <option value="">Select gender</option>
           <option value="male">Male</option>
           <option value="female">Female</option>
-          <option value="other">Other</option>
         </select>
       </div>
 

@@ -1,30 +1,28 @@
 import { useState, useEffect } from 'react'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import type { Session } from '../../api/academics'
+import { type Session, type UpdateSessionDTO } from '../../api/academics'
 
 interface EditSessionPopupProps {
   isOpen: boolean
   onClose: () => void
   session: Session | null
-  onSave: (sessionId: string, updates: Partial<Session>) => void
+  onSave: (sessionId: number, updates: UpdateSessionDTO) => void
 }
 
 export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessionPopupProps) {
   const [date, setDate] = useState('')
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
-  const [instructorName, setInstructorName] = useState('')
   const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
   // Reset form when session changes
   useEffect(() => {
     if (session) {
-      setDate(session.date)
+      setDate(session.session_date)
       setStartTime(session.start_time)
       setEndTime(session.end_time)
-      setInstructorName(session.instructor_name)
       setNotes(session.notes || '')
     }
   }, [session])
@@ -36,10 +34,9 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
     setIsLoading(true)
     try {
       await onSave(session.id, {
-        date,
+        session_date: date,
         start_time: startTime,
         end_time: endTime,
-        instructor_name: instructorName,
         notes
       })
       onClose()
@@ -108,18 +105,6 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
               required
             />
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-on-surface mb-1">Instructor</label>
-          <input
-            type="text"
-            value={instructorName}
-            onChange={(e) => setInstructorName(e.target.value)}
-            placeholder="Enter instructor name..."
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
-            required
-          />
         </div>
 
         <div>

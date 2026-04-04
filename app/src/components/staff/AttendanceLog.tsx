@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
+import { formatDate } from '../../utils/formatting'
 import type { Employee, AttendanceRecord, LogAttendanceInput } from '../../api/hr'
 
 interface AttendanceLogProps {
@@ -12,8 +13,8 @@ interface AttendanceLogProps {
 }
 
 export function AttendanceLog({ employees, selectedDate, onLogAttendance, onClose, isOpen }: AttendanceLogProps) {
-  const [attendanceData, setAttendanceData] = useState<Record<string, {
-    status: 'present' | 'absent' | 'late' | 'on_leave' | 'half_day'
+  const [attendanceData, setAttendanceData] = useState<Record<number, {
+    status: 'present' | 'absent' | 'late' | 'early_departure'
     check_in?: string
     check_out?: string
     notes?: string
@@ -21,21 +22,21 @@ export function AttendanceLog({ employees, selectedDate, onLogAttendance, onClos
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleStatusChange = (employeeId: string, status: 'present' | 'absent' | 'late' | 'on_leave' | 'half_day') => {
+  const handleStatusChange = (employeeId: number, status: 'present' | 'absent' | 'late' | 'early_departure') => {
     setAttendanceData(prev => ({
       ...prev,
       [employeeId]: { ...prev[employeeId], status }
     }))
   }
 
-  const handleTimeChange = (employeeId: string, field: 'check_in' | 'check_out', value: string) => {
+  const handleTimeChange = (employeeId: number, field: 'check_in' | 'check_out', value: string) => {
     setAttendanceData(prev => ({
       ...prev,
       [employeeId]: { ...prev[employeeId], [field]: value }
     }))
   }
 
-  const handleNotesChange = (employeeId: string, notes: string) => {
+  const handleNotesChange = (employeeId: number, notes: string) => {
     setAttendanceData(prev => ({
       ...prev,
       [employeeId]: { ...prev[employeeId], notes }
@@ -47,14 +48,14 @@ export function AttendanceLog({ employees, selectedDate, onLogAttendance, onClos
     setError(null)
 
     try {
-      const promises = Object.entries(attendanceData).map(([employeeId, data]) => {
+      const promises = Object.entries(attendanceData).map(([id, data]) => {
+        const employeeId = Number(id)
         if (!data.status) return Promise.resolve()
         return onLogAttendance({
           employee_id: employeeId,
-          date: selectedDate,
           status: data.status,
-          check_in: data.check_in,
-          check_out: data.check_out,
+          check_in: data.check_in ? `${selectedDate}T${data.check_in}:00` : undefined,
+          check_out: data.check_out ? `${selectedDate}T${data.check_out}:00` : undefined,
           notes: data.notes,
         })
       })
@@ -73,8 +74,7 @@ export function AttendanceLog({ employees, selectedDate, onLogAttendance, onClos
     present: 'bg-green-100 text-green-700 border-green-300',
     absent: 'bg-red-100 text-red-700 border-red-300',
     late: 'bg-yellow-100 text-yellow-700 border-yellow-300',
-    on_leave: 'bg-blue-100 text-blue-700 border-blue-300',
-    half_day: 'bg-orange-100 text-orange-700 border-orange-300',
+    early_departure: 'bg-orange-100 text-orange-700 border-orange-300',
   }
 
   const activeEmployees = employees.filter(e => e.status === 'active')
@@ -83,8 +83,8 @@ export function AttendanceLog({ employees, selectedDate, onLogAttendance, onClos
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Log Attendance - ${new Date(selectedDate).toLocaleDateString()}`}
-      size="xl"
+      title={`Log Attendance - ${formatDate(selectedDate)}`}
+      size="lg"
       footer={
         <div className="flex justify-end gap-3">
           <button
@@ -128,7 +128,7 @@ export function AttendanceLog({ employees, selectedDate, onLogAttendance, onClos
                       <p className="text-sm text-slate-500">{employee.job_title} • {employee.department}</p>
                     </div>
                     <div className="flex gap-2">
-                      {(['present', 'absent', 'late', 'on_leave', 'half_day'] as const).map((status) => (
+                      {(['present', 'absent', 'late', 'early_departure'] as const).map((status) => (
                         <button
                           key={status}
                           onClick={() => handleStatusChange(employee.id, status)}
@@ -144,7 +144,7 @@ export function AttendanceLog({ employees, selectedDate, onLogAttendance, onClos
                     </div>
                   </div>
 
-                  {(data.status === 'present' || data.status === 'late' || data.status === 'half_day') && (
+                  {(data.status === 'present' || data.status === 'late' || data.status === 'early_departure') && (
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-slate-600">Check In:</span>

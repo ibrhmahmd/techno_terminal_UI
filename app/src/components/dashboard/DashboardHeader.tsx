@@ -1,3 +1,5 @@
+import { formatTime } from '../../utils/formatting'
+
 interface DashboardHeaderProps {
   title: string
   subtitle: string
@@ -24,7 +26,7 @@ export function DashboardHeader({ title, subtitle, showTime = true }: DashboardH
       {showTime && (
         <div className="flex flex-col items-end gap-1">
           <span className="text-[10px] uppercase font-bold tracking-[0.15em] text-secondary">Local Time</span>
-          <span className="font-headline text-lg font-medium text-on-surface">{getLocalTime()}</span>
+          <span className="font-headline text-lg font-medium text-on-surface">{getLocalTime().replace("GMT+2", "")}</span>
         </div>
       )}
     </div>

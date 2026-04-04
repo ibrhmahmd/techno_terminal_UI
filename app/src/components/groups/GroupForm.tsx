@@ -1,27 +1,83 @@
-import { useState, FormEvent } from 'react'
+import { useState, type FormEvent, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import type { Group } from '../../api/academics'
+import type { ScheduleGroupInput, Course } from '../../api/academics'
+import { getCourses } from '../../api/academics'
+import { getEmployeesPaginated, type Employee } from '../../api/hr'
 
 interface GroupFormProps {
-  initialData?: Partial<Group>
-  onSubmit: (data: Partial<Omit<Group, 'id'>>) => Promise<void>
+  initialData?: Partial<ScheduleGroupInput>
+  onSubmit: (data: ScheduleGroupInput) => Promise<void>
   onCancel: () => void
   mode: 'create' | 'edit'
 }
 
+const DAYS = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+const HOURS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+const MINUTES = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"]
+
+interface TimeState {
+  hour: number
+  minute: string
+  period: 'AM' | 'PM'
+}
+
 export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormProps) {
-  const [formData, setFormData] = useState<Partial<Group>>({
-    name: initialData?.name || '',
-    course_name: initialData?.course_name || '',
-    instructor_name: initialData?.instructor_name || '',
-    level: initialData?.level || 1,
-    schedule_time: initialData?.schedule_time || '',
-  })
+  // Decompose initial times if editing
+  const parseTime = (timeStr?: string): TimeState => {
+    if (!timeStr) return { hour: 3, minute: "00", period: 'PM' }
+    const [h24, m] = timeStr.split(':').map(Number)
+    const period = h24 >= 12 ? 'PM' : 'AM'
+    let hour = h24 % 12
+    if (hour === 0) hour = 12
+    const minute = String(m).padStart(2, '0')
+    return { hour, minute, period: period as 'AM' | 'PM' }
+  }
+
+  const [courseId, setCourseId] = useState(initialData?.course_id || '')
+  const [instructorId, setInstructorId] = useState(initialData?.instructor_id || '')
+  const [maxCapacity, setMaxCapacity] = useState(initialData?.max_capacity || 12)
+  const [defaultDay, setDefaultDay] = useState(initialData?.default_day || 'Saturday')
+  const [startTime, setStartTime] = useState<TimeState>(parseTime(initialData?.default_time_start))
+  const [endTime, setEndTime] = useState<TimeState>(parseTime(initialData?.default_time_end))
+  const [courses, setCourses] = useState<Course[]>([])
+  const [instructors, setInstructors] = useState<Employee[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isFetching, setIsFetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleChange = (field: keyof Group, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+  // Fetch courses and instructors on mount
+  useEffect(() => {
+    async function fetchOptions() {
+      setIsFetching(true)
+      try {
+        const [coursesData, employeesResult] = await Promise.all([
+          getCourses().catch(() => []),
+          getEmployeesPaginated({ skip: 0, limit: 1000 }).then(r => r.items).catch(() => [])
+        ])
+        const employeesData = employeesResult
+        console.log('[GroupForm] Fetched courses:', coursesData.length, coursesData)
+        console.log('[GroupForm] Fetched employees (raw):', employeesData.length, employeesData)
+        setCourses(coursesData)
+        // EmployeeListItem only has: id, full_name, job_title, employment_type, is_active
+        // There is NO department field on the list endpoint — filter by is_active only
+        const activeEmployees = employeesData.filter(e => e.is_active !== false)
+        console.log('[GroupForm] Active employees for instructor dropdown:', activeEmployees.length, activeEmployees)
+        setInstructors(activeEmployees)
+      } catch (err) {
+        console.error('[GroupForm] Failed to fetch dropdown options:', err)
+        // Silently fail - form will fall back to text inputs
+      } finally {
+        setIsFetching(false)
+      }
+    }
+    fetchOptions()
+  }, [])
+
+  const to24h = (time: TimeState): string => {
+    let h = time.hour
+    if (time.period === 'PM' && h < 12) h += 12
+    if (time.period === 'AM' && h === 12) h = 0
+    return `${String(h).padStart(2, '0')}:${time.minute}:00`
   }
 
   const handleSubmit = async (e: FormEvent) => {
@@ -30,26 +86,32 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
     setIsLoading(true)
 
     // Validation
-    if (!formData.name?.trim()) {
-      setError('Group name is required')
+    if (!courseId) {
+      setError('Course is required')
       setIsLoading(false)
       return
     }
-    if (!formData.course_name?.trim()) {
-      setError('Course name is required')
-      setIsLoading(false)
-      return
-    }
-    if (!formData.instructor_name?.trim()) {
-      setError('Instructor name is required')
+    if (!instructorId) {
+      setError('Instructor is required')
       setIsLoading(false)
       return
     }
 
     try {
-      await onSubmit(formData)
-    } catch {
-      setError(`Failed to ${mode} group`)
+      const payload: ScheduleGroupInput = {
+        course_id: Number(courseId),
+        instructor_id: Number(instructorId),
+        max_capacity: maxCapacity,
+        default_day: defaultDay,
+        default_time_start: to24h(startTime),
+        default_time_end: to24h(endTime),
+      }
+      console.log('[GroupForm] Submitting payload:', JSON.stringify(payload, null, 2))
+      await onSubmit(payload)
+      console.log('[GroupForm] Submit succeeded')
+    } catch (err: any) {
+      console.error('[GroupForm] onSubmit threw:', err)
+      setError(err instanceof Error ? err.message : `Failed to ${mode} group`)
     } finally {
       setIsLoading(false)
     }
@@ -65,86 +127,138 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
         </div>
       )}
 
-      {/* Group Name */}
+      {/* Course - Dropdown mandatory */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="name" className="text-sm font-medium text-on-surface">
-          Group Name <span className="text-red-500">*</span>
+        <label htmlFor="course_id" className="text-sm font-medium text-on-surface">
+          Course <span className="text-red-500">*</span>
         </label>
-        <input
-          id="name"
-          type="text"
-          value={formData.name}
-          onChange={(e) => handleChange('name', e.target.value)}
-          placeholder="e.g., Robotics A"
+        <select
+          id="course_id"
+          value={courseId}
+          onChange={(e) => setCourseId(e.target.value)}
           required
-          disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-        />
+          disabled={isLoading || isFetching}
+          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+        >
+          <option value="">Select a course...</option>
+          {courses.filter(c => c.is_active).map(course => (
+            <option key={course.id} value={course.id}>{course.name}</option>
+          ))}
+        </select>
       </div>
 
-      {/* Course Name */}
+      {/* Instructor - Dropdown mandatory */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="course_name" className="text-sm font-medium text-on-surface">
-          Course Name <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="course_name"
-          type="text"
-          value={formData.course_name}
-          onChange={(e) => handleChange('course_name', e.target.value)}
-          placeholder="e.g., Robotics"
-          required
-          disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-        />
-      </div>
-
-      {/* Instructor Name */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="instructor_name" className="text-sm font-medium text-on-surface">
+        <label htmlFor="instructor_id" className="text-sm font-medium text-on-surface">
           Instructor <span className="text-red-500">*</span>
         </label>
-        <input
-          id="instructor_name"
-          type="text"
-          value={formData.instructor_name}
-          onChange={(e) => handleChange('instructor_name', e.target.value)}
-          placeholder="Enter instructor name..."
+        <select
+          id="instructor_id"
+          value={instructorId}
+          onChange={(e) => setInstructorId(e.target.value)}
           required
-          disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-        />
+          disabled={isLoading || isFetching}
+          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+        >
+          <option value="">Select an instructor...</option>
+          {instructors.filter(i => ('is_active' in i ? i.is_active !== false : i.status === 'active')).map(instructor => (
+            <option key={instructor.id} value={instructor.id}>
+              {instructor.full_name} ({instructor.job_title})
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Level and Schedule Time */}
+      {/* Max Capacity and Day */}
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="level" className="text-sm font-medium text-on-surface">
-            Level
+          <label htmlFor="max_capacity" className="text-sm font-medium text-on-surface">
+            Max Capacity
           </label>
           <input
-            id="level"
+            id="max_capacity"
             type="number"
             min={1}
-            value={formData.level}
-            onChange={(e) => handleChange('level', parseInt(e.target.value, 10) || 1)}
+            value={maxCapacity}
+            onChange={(e) => setMaxCapacity(parseInt(e.target.value, 10) || 12)}
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="schedule_time" className="text-sm font-medium text-on-surface">
-            Schedule Time
+          <label htmlFor="default_day" className="text-sm font-medium text-on-surface">
+            Default Day <span className="text-red-500">*</span>
           </label>
-          <input
-            id="schedule_time"
-            type="text"
-            value={formData.schedule_time}
-            onChange={(e) => handleChange('schedule_time', e.target.value)}
-            placeholder="e.g., Sat 15:00"
+          <select
+            id="default_day"
+            value={defaultDay}
+            onChange={(e) => setDefaultDay(e.target.value)}
+            required
             disabled={isLoading}
-            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-          />
+            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+          >
+            {DAYS.map(day => (
+              <option key={day} value={day}>{day}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Start Time - 3 Part Selector */}
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-on-surface">Start Time</label>
+        <div className="grid grid-cols-3 gap-2">
+          <select
+            value={startTime.hour}
+            onChange={(e) => setStartTime(prev => ({ ...prev, hour: parseInt(e.target.value) }))}
+            className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
+          >
+            {HOURS.map(h => <option key={h} value={h}>{String(h).padStart(2, '0')}</option>)}
+          </select>
+          <select
+            value={startTime.minute}
+            onChange={(e) => setStartTime(prev => ({ ...prev, minute: e.target.value }))}
+            className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
+          >
+            {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
+          </select>
+          <select
+            value={startTime.period}
+            onChange={(e) => setStartTime(prev => ({ ...prev, period: e.target.value as 'AM' | 'PM' }))}
+            className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
+          >
+            <option value="AM">AM</option>
+            <option value="PM">PM</option>
+          </select>
+        </div>
+      </div>
+
+      {/* End Time - 3 Part Selector */}
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-on-surface">End Time</label>
+        <div className="grid grid-cols-3 gap-2">
+          <select
+            value={endTime.hour}
+            onChange={(e) => setEndTime(prev => ({ ...prev, hour: parseInt(e.target.value) }))}
+            className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
+          >
+            {HOURS.map(h => <option key={h} value={h}>{String(h).padStart(2, '0')}</option>)}
+          </select>
+          <select
+            value={endTime.minute}
+            onChange={(e) => setEndTime(prev => ({ ...prev, minute: e.target.value }))}
+            className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
+          >
+            {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
+          </select>
+          <select
+            value={endTime.period}
+            onChange={(e) => setEndTime(prev => ({ ...prev, period: e.target.value as 'AM' | 'PM' }))}
+            className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
+          >
+            <option value="AM">AM</option>
+            <option value="PM">PM</option>
+          </select>
         </div>
       </div>
 

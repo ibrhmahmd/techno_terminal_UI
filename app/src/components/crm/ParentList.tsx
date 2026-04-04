@@ -36,6 +36,8 @@ export function ParentList({ parents, isLoading, emptyMessage = 'No parents foun
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Name</th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Phone</th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Email</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Relation</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Notes</th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
           </tr>
@@ -48,8 +50,10 @@ export function ParentList({ parents, isLoading, emptyMessage = 'No parents foun
               className="hover:bg-slate-50 transition-colors cursor-pointer"
             >
               <td className="px-4 py-3 font-semibold text-on-surface">{parent.full_name}</td>
-              <td className="px-4 py-3 text-slate-500">{parent.phone || '-'}</td>
+              <td className="px-4 py-3 text-slate-500">{parent.phone_primary || '-'}</td>
               <td className="px-4 py-3 text-slate-500">{parent.email || '-'}</td>
+              <td className="px-4 py-3 text-slate-500">{parent.relation || '-'}</td>
+              <td className="px-4 py-3 text-slate-500">{parent.notes || '-'}</td>
               <td className="px-4 py-3">
                 <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
                   parent.is_active

@@ -1,23 +1,10 @@
 import { useState, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { searchStudents } from '../../api/crm'
-import { getGroups } from '../../api/academics'
+import { getGroupsPaginated } from '../../api/academics'
 import { createEnrollment } from '../../api/enrollments'
 import type { Student } from '../../api/crm'
 import type { Group } from '../../api/academics'
-
-// Mock data
-const MOCK_STUDENTS: Student[] = [
-  { id: 'mock-student-1', full_name: 'Omar Khaled', phone: '0123456789', is_active: true, gender: 'male' },
-  { id: 'mock-student-2', full_name: 'Sara Ahmed', phone: '0198765432', is_active: true, gender: 'female' },
-  { id: 'mock-student-3', full_name: 'Ali Hassan', phone: '0155112233', is_active: true, gender: 'male' }
-]
-
-const MOCK_GROUPS: Group[] = [
-  { id: 'mock-group-1', name: 'Robotics A', course_name: 'Robotics', instructor_name: 'Ahmed Ali', student_count: 12, level: 1, schedule_time: '15:00' },
-  { id: 'mock-group-2', name: 'Coding B', course_name: 'Coding', instructor_name: 'Sara Mohamed', student_count: 8, level: 2, schedule_time: '16:30' },
-  { id: 'mock-group-3', name: 'Electronics C', course_name: 'Electronics', instructor_name: 'Khaled Omar', student_count: 10, level: 1, schedule_time: '14:00' }
-]
 
 interface EnrollPanelProps {
   useMockData: boolean
@@ -50,9 +37,7 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
         const data = await searchStudents(studentSearch)
         setStudents(data || [])
       } catch {
-        setStudents(MOCK_STUDENTS.filter(s => 
-          s.full_name.toLowerCase().includes(studentSearch.toLowerCase())
-        ))
+        setStudents([])
       }
     }
     const timeout = setTimeout(search, 300)
@@ -63,10 +48,10 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
   useEffect(() => {
     async function load() {
       try {
-        const data = await getGroups()
-        setGroups(data || [])
+        const result = await getGroupsPaginated({ skip: 0, limit: 100 })
+        setGroups(result.items || [])
       } catch {
-        setGroups(MOCK_GROUPS)
+        setGroups([])
       }
     }
     load()
@@ -114,7 +99,7 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
   const filteredGroups = groups.filter(g => 
     !groupSearch || 
     g.name.toLowerCase().includes(groupSearch.toLowerCase()) ||
-    g.course_name.toLowerCase().includes(groupSearch.toLowerCase())
+    (g.course_name || '').toLowerCase().includes(groupSearch.toLowerCase())
   )
 
   return (

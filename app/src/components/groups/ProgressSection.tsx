@@ -5,7 +5,9 @@ interface ProgressSectionProps {
 }
 
 export function ProgressSection({ progress }: ProgressSectionProps) {
-  const percentage = Math.round((progress.group_score / progress.target_score) * 100)
+  const percentage = progress.target_score > 0 
+    ? Math.round((progress.group_score / progress.target_score) * 100) 
+    : 0
 
   return (
     <div className="grid grid-cols-1 gap-8 pt-4">

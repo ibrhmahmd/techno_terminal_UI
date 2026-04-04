@@ -1,4 +1,6 @@
 import type { Competition } from '../../api/competitions'
+import { formatDate } from '../../utils/formatting'
+import { competitionStatusColors } from '../../utils/colors'
 
 interface CompetitionCardProps {
   competition: Competition
@@ -6,21 +8,6 @@ interface CompetitionCardProps {
 }
 
 export function CompetitionCard({ competition, onClick }: CompetitionCardProps) {
-  const statusColors = {
-    upcoming: 'bg-blue-100 text-blue-700',
-    active: 'bg-green-100 text-green-700',
-    completed: 'bg-slate-100 text-slate-600',
-    cancelled: 'bg-red-100 text-red-700',
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
-
   const isRegistrationOpen = () => {
     const now = new Date()
     const deadline = new Date(competition.registration_deadline)
@@ -37,7 +24,7 @@ export function CompetitionCard({ competition, onClick }: CompetitionCardProps) 
           <h3 className="font-headline text-lg font-semibold text-on-surface">{competition.name}</h3>
           <p className="text-sm text-slate-500 mt-1">{competition.location}</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[competition.status]}`}>
+        <span className={`px-3 py-1 rounded-full text-xs font-medium ${competitionStatusColors[competition.status]}`}>
           {competition.status}
         </span>
       </div>

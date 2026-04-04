@@ -1,178 +1,343 @@
-import { useState } from 'react'
-import type { Session } from '../../api/academics'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import type { Session, UpdateSessionDTO } from '../../api/academics'
+import { cancelSession, updateSession } from '../../api/academics'
+import { getGroupRoster, type GroupRosterRowDTO } from '../../api/analytics'
+import { getSessionAttendance, markAttendance, type SessionAttendanceRowDTO } from '../../api/attendance'
+import { LoadingSpinner } from '../common/LoadingSpinner'
+import { useToast } from '../common/Toast'
+import { AttendanceHeader } from './AttendanceHeader'
+import { AttendanceTableBody } from './AttendanceTableBody'
+import { AttendanceFooter } from './AttendanceFooter'
+import { SessionActionsRow } from './SessionActionsRow'
+import { SessionNotesRow } from './SessionNotesRow'
+import { EditSessionPopup } from './EditSessionPopup'
 
-interface StudentAttendance {
-  student_id: number
-  student_name: string
-  gender: 'male' | 'female'
-  billing_status: 'paid' | 'due'
-  attendance: (boolean | null)[]  // true=present, false=absent, null=unmarked
-  notes?: string
+type AttendanceStatus = 'present' | 'absent' | null
+
+// Toggle cycle: null -> present -> absent -> null
+const NEXT_STATE: Record<string, AttendanceStatus> = {
+  'null': 'present',
+  'present': 'absent',
+  'absent': null,
 }
 
 interface AttendanceGridProps {
   sessions: Session[]
+  groupId: number
+  level: number
 }
 
-// Mock students data - in real app, this comes from API
-const MOCK_STUDENTS: StudentAttendance[] = [
-  {
-    student_id: 1,
-    student_name: 'Lucas Meyer',
-    gender: 'male',
-    billing_status: 'paid',
-    attendance: [true, true, null, null, null],
-    notes: '',
-  },
-  {
-    student_id: 2,
-    student_name: 'Sami Khan',
-    gender: 'male',
-    billing_status: 'due',
-    attendance: [true, false, null, null, null],
-    notes: 'Medical leave',
-  },
-  {
-    student_id: 3,
-    student_name: 'Elena Jovic',
-    gender: 'female',
-    billing_status: 'paid',
-    attendance: [false, true, null, null, null],
-    notes: '',
-  },
-]
+interface StudentRow {
+  student_id: string
+  full_name: string
+  gender: 'male' | 'female'
+  billing_status: 'paid' | 'due'
+  balance: number
+  attendance: Map<number, AttendanceStatus>
+}
 
-const SESSION_DATES = ['Dec 07', 'Dec 14', 'Dec 21', 'Dec 28', 'Jan 04']
+export function AttendanceGrid({ sessions, groupId, level }: AttendanceGridProps) {
+  const [students, setStudents] = useState<StudentRow[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  
+  // Session notes state
+  const [sessionNotes, setSessionNotes] = useState<Record<number, string>>({})
+  const [dirtyNotes, setDirtyNotes] = useState<Set<number>>(new Set())
+  
+  // Edit session modal state
+  const [editingSession, setEditingSession] = useState<Session | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
-export function AttendanceGrid({ sessions }: AttendanceGridProps) {
-  const [students, setStudents] = useState<StudentAttendance[]>(MOCK_STUDENTS)
-  const [activeSessionIndex, setActiveSessionIndex] = useState(1) // Highlight session 2 by default
+  const displaySessions = useMemo(() => sessions.slice(0, 5), [sessions])
+  const fetchCycleRef = useRef(0)
 
-  const handleAttendanceClick = (studentIndex: number, sessionIndex: number) => {
-    setStudents((prev) => {
-      const updated = [...prev]
-      const current = updated[studentIndex].attendance[sessionIndex]
-      // Cycle: null -> true -> false -> null
-      updated[studentIndex].attendance[sessionIndex] = 
-        current === null ? true : current === true ? false : null
-      return updated
+  const { showToast, ToastComponent } = useToast()
+
+  // Initialize session notes when sessions change
+  useEffect(() => {
+    const initialNotes: Record<number, string> = {}
+    sessions.forEach(s => {
+      initialNotes[s.id] = s.notes || ''
     })
-  }
+    setSessionNotes(initialNotes)
+    setDirtyNotes(new Set())
+  }, [sessions])
 
-  const getAttendanceIcon = (status: boolean | null) => {
-    if (status === true) {
-      return (
-        <span className="material-symbols-outlined text-secondary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-          check_circle
-        </span>
+  const refetchData = useCallback(async () => {
+    if (!groupId || displaySessions.length === 0) return
+
+    setIsLoading(true)
+    try {
+      fetchCycleRef.current += 1
+      console.debug(
+        `[AttendanceGrid] Fetch #${fetchCycleRef.current} started for group ${groupId} with ${displaySessions.length} sessions`
       )
-    }
-    if (status === false) {
-      return (
-        <span className="material-symbols-outlined text-error text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-          cancel
-        </span>
+
+      const roster = await getGroupRoster(groupId, level)
+      const attendancePromises = displaySessions.map((s) => getSessionAttendance(s.id))
+      const attendanceResults = await Promise.all(attendancePromises)
+
+      const studentRows: StudentRow[] = roster.map((r: GroupRosterRowDTO) => {
+        const attendanceMap = new Map<number, AttendanceStatus>()
+        displaySessions.forEach((session, idx) => {
+          const sessionAttendance = attendanceResults[idx] || []
+          const record = sessionAttendance.find((a: SessionAttendanceRowDTO) => Number(a.student_id) === r.student_id)
+          attendanceMap.set(session.id, (record?.status as AttendanceStatus) || null)
+        })
+
+        return {
+          student_id: String(r.student_id),
+          full_name: r.student_name,
+          gender: 'male', // Default as it's missing from analytics roster
+          billing_status: r.balance < 0 ? 'due' : 'paid',
+          balance: r.balance,
+          attendance: attendanceMap,
+        }
+      })
+
+      setStudents(studentRows)
+      setError(null)
+      console.debug(
+        `[AttendanceGrid] Fetch #${fetchCycleRef.current} completed for group ${groupId} (${studentRows.length} students)`
       )
+    } catch (err) {
+      console.error('Failed to refresh data:', err)
+      setError('Failed to load attendance data')
+      showToast('Failed to refresh data', 'error')
+    } finally {
+      setIsLoading(false)
     }
-    return <div className="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm" />
-  }
+  }, [groupId, level, displaySessions, showToast])
 
-  const getGenderEmoji = (gender: 'male' | 'female') => {
-    return gender === 'male' ? '👦' : '👧'
-  }
+  // Load roster and attendance data
+  useEffect(() => {
+    void refetchData()
+  }, [refetchData])
 
-  const getBillingBadge = (status: 'paid' | 'due') => {
-    return status === 'paid' ? (
-      <span className="text-[9px] font-bold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded-sm">
-        PAID
-      </span>
-    ) : (
-      <span className="text-[9px] font-bold text-error bg-error-container/20 px-1.5 py-0.5 rounded-sm">
-        DUE
-      </span>
+  // Handle note change
+  const handleNoteChange = useCallback((sessionId: number, value: string) => {
+    setSessionNotes(prev => ({ ...prev, [sessionId]: value }))
+    setDirtyNotes(prev => new Set(prev).add(sessionId))
+  }, [])
+
+  // Handle edit session
+  const handleEditSession = useCallback((session: Session) => {
+    setEditingSession(session)
+    setIsEditModalOpen(true)
+  }, [])
+
+  // Handle cancel session
+  const handleCancelSession = useCallback(async (sessionId: number) => {
+    if (!confirm('Are you sure you want to cancel this session?')) return
+    
+    try {
+      await cancelSession(sessionId)
+      showToast('Session cancelled successfully', 'success')
+      await refetchData()
+    } catch (err) {
+      console.error('Failed to cancel session:', err)
+      showToast('Failed to cancel session', 'error')
+    }
+  }, [refetchData, showToast])
+
+  // Handle save edited session
+  const handleSaveEditedSession = useCallback(async (sessionId: number, data: UpdateSessionDTO) => {
+    try {
+      await updateSession(sessionId, data)
+      setIsEditModalOpen(false)
+      setEditingSession(null)
+      showToast('Session updated successfully', 'success')
+      await refetchData()
+    } catch (err) {
+      console.error('Failed to update session:', err)
+      showToast('Failed to update session', 'error')
+    }
+  }, [refetchData, showToast])
+
+  const handleToggle = useCallback(async (studentId: string, sessionId: number) => {
+    // Optimistic UI update
+    setStudents((prev) => {
+      return prev.map((student) => {
+        if (student.student_id !== studentId) return student
+
+        const newAttendance = new Map(student.attendance)
+        const current = newAttendance.get(sessionId) || null
+        const next = NEXT_STATE[String(current)]
+        newAttendance.set(sessionId, next)
+
+        return { ...student, attendance: newAttendance }
+      })
+    })
+
+    // Persist to API
+    try {
+      const student = students.find(s => s.student_id === studentId)
+      if (!student) return
+      
+      const currentStatus = student.attendance.get(sessionId) || null
+      const nextStatus = NEXT_STATE[String(currentStatus)]
+      
+      await markAttendance(sessionId, [{
+        student_id: studentId,
+        status: nextStatus
+      }])
+    } catch (err) {
+      console.error('Failed to update attendance:', err)
+      showToast('Failed to update attendance', 'error')
+      // Revert if needed - simplified here
+    }
+  }, [students, showToast])
+
+  // Save all attendance changes and notes
+  const handleSaveAll = useCallback(async () => {
+    console.log('[Save] handleSaveAll called')
+    console.log('[Save] displaySessions:', displaySessions.length)
+    console.log('[Save] students:', students.length)
+    
+    if (displaySessions.length === 0) {
+      console.log('[Save] No sessions to save, returning early')
+      return
+    }
+
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      // 1. Save attendance for each session
+      const attendancePromises = displaySessions.map((session) => {
+        const payload: Record<string, string> = {}
+        
+        students.forEach((student) => {
+          const status = student.attendance.get(session.id)
+          if (status === 'present' || status === 'absent') {
+            payload[student.student_id] = status
+          }
+        })
+        
+        if (Object.keys(payload).length > 0) {
+          const updates = Object.entries(payload).map(([student_id, status]) => ({
+            student_id,
+            status: status as 'present' | 'absent',
+          }))
+          return markAttendance(session.id, updates)
+        }
+        return Promise.resolve()
+      })
+      
+      // 2. Save notes for dirty sessions
+      const notesPromises = Array.from(dirtyNotes).map(sessionId => {
+        const notes = sessionNotes[sessionId]
+        return updateSession(sessionId, { notes })
+      })
+
+      await Promise.all([...attendancePromises, ...notesPromises])
+      
+      console.log('[Save] All saves completed successfully!')
+      
+      // 3. Clear dirty state
+      setDirtyNotes(new Set())
+      
+      // 4. REFETCH data (soft refresh - no page reload)
+      await refetchData()
+      showToast('All changes saved successfully!', 'success')
+    } catch (err) {
+      console.error('[Save] Failed to save:', err)
+      setError('Failed to save changes')
+      showToast('Failed to save changes', 'error')
+    } finally {
+      setIsSaving(false)
+    }
+  }, [displaySessions, students, dirtyNotes, sessionNotes, refetchData, showToast])
+
+  const handleCancel = useCallback(() => {
+    refetchData()
+  }, [refetchData])
+
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center text-outline-variant flex items-center justify-center gap-2">
+        <LoadingSpinner size="sm" />
+        <span>Loading attendance...</span>
+      </div>
     )
   }
 
-  // Limit to 5 sessions for display
-  const displaySessions = sessions.slice(0, 5)
+  if (students.length === 0) {
+    return (
+      <div className="p-8 text-center text-outline-variant">
+        <p className="mb-2">No students enrolled in this group.</p>
+        <p className="text-sm">Enroll students to start marking attendance.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white border border-outline-variant/10 shadow-sm overflow-hidden">
+      {/* Header Instructions */}
+      <div className="px-4 py-2 bg-surface-container-low border-b border-outline-variant/10">
+        <p className="text-xs text-outline">
+          Click a cell to toggle: empty → present (✓) → absent (✗) → empty
+        </p>
+      </div>
+
+      {error && (
+        <div className="p-3 bg-red-50 border-b border-red-100 text-red-700 text-sm">
+          {error}
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[1000px]">
-          <thead>
-            <tr className="bg-surface-container-lowest">
-              <th 
-                className="px-6 py-5 text-[10px] font-bold text-outline-variant uppercase tracking-[0.2em] border-b border-outline-variant/10" 
-                style={{ width: 280 }}
-              >
-                Student
-              </th>
-              {displaySessions.map((session, idx) => (
-                <th
-                  key={session.id}
-                  className={`px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] border-b border-outline-variant/10 text-center border-l border-outline-variant/5 ${
-                    idx === activeSessionIndex 
-                      ? 'text-secondary bg-secondary/5' 
-                      : 'text-outline-variant'
-                  }`}
-                >
-                  <div className="flex flex-col items-center gap-1">
-                    Session {idx + 1}
-                    <span className="block text-[8px] font-normal tracking-normal opacity-60">
-                      {SESSION_DATES[idx]}
-                    </span>
-                    <button className={`hover:text-secondary ${idx === activeSessionIndex ? 'text-secondary' : 'text-outline-variant'}`}>
-                      <span className="material-symbols-outlined text-xs">sticky_note_2</span>
-                    </button>
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-outline-variant/5">
-            {students.map((student, studentIdx) => (
-              <tr key={student.student_id} className="hover:bg-surface-container-low/20 transition-colors">
-                {/* Student Cell */}
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <span className="text-xs mr-3">{getGenderEmoji(student.gender)}</span>
-                      <div>
-                        <span className="text-sm font-semibold text-on-surface block">
-                          {student.student_name}
-                        </span>
-                        <button className="text-[9px] text-outline hover:text-secondary flex items-center mt-0.5">
-                          <span className="material-symbols-outlined text-[10px] mr-0.5">notes</span>
-                          {student.notes || 'Add student note'}
-                        </button>
-                      </div>
-                    </div>
-                    {getBillingBadge(student.billing_status)}
-                  </div>
-                </td>
-
-                {/* Attendance Cells */}
-                {student.attendance.slice(0, displaySessions.length).map((status, sessionIdx) => (
-                  <td
-                    key={sessionIdx}
-                    className={`px-4 py-4 text-center border-l border-outline-variant/5 ${
-                      sessionIdx === activeSessionIndex ? 'bg-secondary/5' : ''
-                    }`}
-                  >
-                    <button
-                      onClick={() => handleAttendanceClick(studentIdx, sessionIdx)}
-                      className="w-full h-full flex items-center justify-center"
-                    >
-                      {getAttendanceIcon(status)}
-                    </button>
-                  </td>
-                ))}
-              </tr>
-            ))}
+          <AttendanceHeader sessions={sessions} />
+          
+          {/* Session Actions Row */}
+          <tbody>
+            <SessionActionsRow 
+              sessions={sessions} 
+              onEdit={handleEditSession}
+              onCancel={handleCancelSession}
+              disabled={isSaving}
+            />
+          </tbody>
+          
+          <AttendanceTableBody
+            students={students}
+            sessions={sessions}
+            onToggle={handleToggle}
+          />
+          
+          {/* Session Notes Row */}
+          <tbody>
+            <SessionNotesRow 
+              sessions={sessions}
+              notes={sessionNotes}
+              onNoteChange={handleNoteChange}
+              disabled={isSaving}
+            />
           </tbody>
         </table>
       </div>
+
+      <AttendanceFooter
+        isSaving={isSaving}
+        onCancel={handleCancel}
+        onSave={handleSaveAll}
+        hasError={!!error}
+      />
+      
+      {/* Edit Session Modal */}
+      <EditSessionPopup
+        session={editingSession}
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setEditingSession(null)
+        }}
+        onSave={handleSaveEditedSession}
+      />
+      {ToastComponent}
     </div>
   )
 }

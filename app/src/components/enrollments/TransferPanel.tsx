@@ -1,45 +1,11 @@
 import { useState, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import { transferEnrollment, getActiveEnrollments, type Enrollment } from '../../api/enrollments'
-import { getGroups } from '../../api/academics'
+import { transferEnrollment, type Enrollment } from '../../api/enrollments'
+import { getGroupsPaginated } from '../../api/academics'
 import type { Group } from '../../api/academics'
 
-// Mock data
-const MOCK_ENROLLMENTS: Enrollment[] = [
-  {
-    id: 'mock-enroll-1',
-    student_id: 'mock-student-1',
-    group_id: 'mock-group-1',
-    student_name: 'Omar Khaled',
-    group_name: 'Robotics A - Saturday',
-    level: 1,
-    status: 'active',
-    amount_due: 150,
-    discount: 0,
-    enrolled_on: '2026-01-15'
-  },
-  {
-    id: 'mock-enroll-2',
-    student_name: 'Sara Ahmed',
-    student_id: 'mock-student-2',
-    group_id: 'mock-group-2',
-    group_name: 'Coding B - Sunday',
-    level: 2,
-    status: 'active',
-    amount_due: 200,
-    discount: 25,
-    enrolled_on: '2026-02-01'
-  }
-]
-
-const MOCK_GROUPS: Group[] = [
-  { id: 'mock-group-1', name: 'Robotics A', course_name: 'Robotics', instructor_name: 'Ahmed Ali', student_count: 12, level: 1, schedule_time: '15:00' },
-  { id: 'mock-group-2', name: 'Coding B', course_name: 'Coding', instructor_name: 'Sara Mohamed', student_count: 8, level: 2, schedule_time: '16:30' },
-  { id: 'mock-group-3', name: 'Electronics C', course_name: 'Electronics', instructor_name: 'Khaled Omar', student_count: 10, level: 1, schedule_time: '14:00' }
-]
-
 interface TransferPanelProps {
-  useMockData: boolean
+  useMockData?: boolean
   isLoading: boolean
   onSuccess: (message: string) => void
   onError: (message: string) => void
@@ -47,33 +13,19 @@ interface TransferPanelProps {
 }
 
 export function TransferPanel({ useMockData, isLoading, onSuccess, onError, setIsLoading }: TransferPanelProps) {
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([])
   const [selectedEnrollment, setSelectedEnrollment] = useState<Enrollment | null>(null)
   const [groupSearch, setGroupSearch] = useState('')
   const [groups, setGroups] = useState<Group[]>([])
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null)
 
-  // Load enrollments
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await getActiveEnrollments()
-        setEnrollments(data || [])
-      } catch {
-        setEnrollments(MOCK_ENROLLMENTS)
-      }
-    }
-    load()
-  }, [])
-
   // Load groups
   useEffect(() => {
     async function load() {
       try {
-        const data = await getGroups()
-        setGroups(data || [])
+        const result = await getGroupsPaginated({ skip: 0, limit: 100 })
+        setGroups(result.items || [])
       } catch {
-        setGroups(MOCK_GROUPS)
+        setGroups([])
       }
     }
     load()
@@ -82,7 +34,7 @@ export function TransferPanel({ useMockData, isLoading, onSuccess, onError, setI
   const filteredGroups = groupSearch.length >= 2 
     ? groups.filter(g => 
         g.name.toLowerCase().includes(groupSearch.toLowerCase()) ||
-        g.course_name.toLowerCase().includes(groupSearch.toLowerCase())
+        (g.course_name || '').toLowerCase().includes(groupSearch.toLowerCase())
       )
     : []
 
@@ -100,8 +52,9 @@ export function TransferPanel({ useMockData, isLoading, onSuccess, onError, setI
         onSuccess(`Transferred to ${selectedGroup.name}`)
       } else {
         await transferEnrollment({
-          enrollment_id: selectedEnrollment.id,
-          new_group_id: selectedGroup.id
+          student_id: selectedEnrollment.student_id,
+          from_group_id: selectedEnrollment.group_id,
+          to_group_id: selectedGroup.id
         })
         onSuccess('Successfully transferred enrollment')
       }

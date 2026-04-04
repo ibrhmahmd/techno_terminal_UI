@@ -1,59 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import { deleteEnrollment, getActiveEnrollments, type Enrollment } from '../../api/enrollments'
-
-// Mock data
-const MOCK_ENROLLMENTS: Enrollment[] = [
-  {
-    id: 'mock-enroll-1',
-    student_id: 'mock-student-1',
-    group_id: 'mock-group-1',
-    student_name: 'Omar Khaled',
-    group_name: 'Robotics A - Saturday',
-    level: 1,
-    status: 'active',
-    amount_due: 150,
-    discount: 0,
-    enrolled_on: '2026-01-15'
-  },
-  {
-    id: 'mock-enroll-2',
-    student_name: 'Sara Ahmed',
-    student_id: 'mock-student-2',
-    group_id: 'mock-group-2',
-    group_name: 'Coding B - Sunday',
-    level: 2,
-    status: 'active',
-    amount_due: 200,
-    discount: 25,
-    enrolled_on: '2026-02-01'
-  }
-]
+import { deleteEnrollment, type Enrollment } from '../../api/enrollments'
 
 interface DropPanelProps {
-  useMockData: boolean
   isLoading: boolean
   onSuccess: (message: string) => void
   onError: (message: string) => void
   setIsLoading: (loading: boolean) => void
 }
 
-export function DropPanel({ useMockData, isLoading, onSuccess, onError, setIsLoading }: DropPanelProps) {
+export function DropPanel({ isLoading, onSuccess, onError, setIsLoading }: DropPanelProps) {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
   const [selectedEnrollment, setSelectedEnrollment] = useState<Enrollment | null>(null)
-
-  // Load enrollments
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await getActiveEnrollments()
-        setEnrollments(data || [])
-      } catch {
-        setEnrollments(MOCK_ENROLLMENTS)
-      }
-    }
-    load()
-  }, [])
 
   const handleDrop = async () => {
     if (!selectedEnrollment) {
@@ -68,15 +26,9 @@ export function DropPanel({ useMockData, isLoading, onSuccess, onError, setIsLoa
     setIsLoading(true)
     onError('')
     try {
-      if (useMockData) {
-        await new Promise(r => setTimeout(r, 500))
-        onSuccess('Enrollment dropped')
-        setEnrollments(prev => prev.filter(e => e.id !== selectedEnrollment.id))
-      } else {
-        await deleteEnrollment(selectedEnrollment.id)
-        onSuccess('Successfully dropped enrollment')
-        setEnrollments(prev => prev.filter(e => e.id !== selectedEnrollment.id))
-      }
+      await deleteEnrollment(selectedEnrollment.id)
+      onSuccess('Successfully dropped enrollment')
+      setEnrollments(prev => prev.filter(e => e.id !== selectedEnrollment.id))
       setSelectedEnrollment(null)
     } catch {
       onError('Failed to drop enrollment')

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
+import { formatDate, formatTime } from '../../utils/formatting'
 import { searchReceipts, downloadReceiptPdf, type Receipt, type ReceiptSearchParams } from '../../api/finance'
 
 const PAYMENT_METHODS = [
@@ -19,27 +20,27 @@ const ITEM_TYPES = [
 // Mock data
 const MOCK_RECEIPTS: Receipt[] = [
   {
-    id: 'mock-receipt-1',
+    id: 1,
     receipt_number: 'R-2026-0001',
     payer_name: 'Ahmed Mohamed',
     total_amount: 450,
     payment_method: 'cash',
     created_at: '2026-04-01T10:30:00',
     items: [
-      { enrollment_id: 'mock-enroll-1', amount: 150, type: 'tuition', description: 'Robotics A - March' },
-      { enrollment_id: 'mock-enroll-2', amount: 200, type: 'tuition', description: 'Coding B - March' },
-      { enrollment_id: 'mock-enroll-3', amount: 100, type: 'materials', description: 'Kit purchase' }
+      { enrollment_id: 1, amount: 150, type: 'tuition', description: 'Robotics A - March' },
+      { enrollment_id: 2, amount: 200, type: 'tuition', description: 'Coding B - March' },
+      { enrollment_id: 3, amount: 100, type: 'materials', description: 'Kit purchase' }
     ]
   },
   {
-    id: 'mock-receipt-2',
+    id: 2,
     receipt_number: 'R-2026-0002',
     payer_name: 'Sara Khaled',
     total_amount: 175,
     payment_method: 'card',
     created_at: '2026-04-02T14:15:00',
     items: [
-      { enrollment_id: 'mock-enroll-4', amount: 175, type: 'tuition', description: 'Electronics C - April' }
+      { enrollment_id: 4, amount: 175, type: 'tuition', description: 'Electronics C - April' }
     ]
   }
 ]
@@ -87,7 +88,7 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError, setIsLoad
     }
   }
 
-  const handleDownloadPdf = async (receiptId: string) => {
+  const handleDownloadPdf = async (receiptId: number) => {
     try {
       if (useMockData) {
         onError('PDF download not available in mock mode')
@@ -171,7 +172,7 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError, setIsLoad
                     </div>
                     <p className="text-sm text-slate-600 mb-1">Payer: {receipt.payer_name}</p>
                     <p className="text-sm text-slate-500">
-                      {new Date(receipt.created_at).toLocaleDateString()} at {new Date(receipt.created_at).toLocaleTimeString()}
+                      {formatDate(receipt.created_at)} at {formatTime(receipt.created_at)}
                     </p>
                   </div>
                   <div className="text-right">

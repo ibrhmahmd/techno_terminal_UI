@@ -19,9 +19,9 @@ const ITEM_TYPES = [
 ] as const
 
 const MOCK_STUDENTS: Student[] = [
-  { id: 'mock-student-1', full_name: 'Omar Khaled', phone: '0123456789', is_active: true, gender: 'male' },
-  { id: 'mock-student-2', full_name: 'Sara Ahmed', phone: '0198765432', is_active: true, gender: 'female' },
-  { id: 'mock-student-3', full_name: 'Ali Hassan', phone: '0155112233', is_active: true, gender: 'male' }
+  { id: 1, full_name: 'Omar Khaled', phone: '0123456789', is_active: true, gender: 'male' },
+  { id: 2, full_name: 'Sara Ahmed', phone: '0198765432', is_active: true, gender: 'female' },
+  { id: 3, full_name: 'Ali Hassan', phone: '0155112233', is_active: true, gender: 'male' }
 ]
 
 interface ReceiptLineItem {
@@ -29,7 +29,7 @@ interface ReceiptLineItem {
   studentSearch: string
   selectedStudent: Student | null
   students: Student[]
-  enrollmentId: string
+  enrollmentId: number | ''
   amount: number
   type: ReceiptItem['type']
   description: string
@@ -38,7 +38,7 @@ interface ReceiptLineItem {
 interface CreateReceiptPanelProps {
   useMockData: boolean
   isLoading: boolean
-  onSuccess: (message: string, receiptId?: string) => void
+  onSuccess: (message: string, receiptId?: number) => void
   onError: (message: string) => void
   setIsLoading: (loading: boolean) => void
 }
