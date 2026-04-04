@@ -5,12 +5,26 @@ import { sessionStatusColors } from '../../utils/colors'
 
 interface AttendanceHeaderProps {
   sessions: Session[]
+  groupInstructorName?: string  // Fallback from group level for consistency
 }
 
-export function AttendanceHeader({ sessions }: AttendanceHeaderProps) {
+export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHeaderProps) {
   const displaySessions = useMemo(() => sessions.slice(0, 5), [sessions])
 
   const isCancelled = (session: Session) => session.status === 'cancelled'
+
+  // Helper to get instructor name with fallback
+  const getInstructorName = (session: Session) => {
+    // Prefer session-level instructor name if available
+    if (session.instructor_name && session.instructor_name.trim() !== '') {
+      return session.instructor_name
+    }
+    // Fall back to group-level instructor name
+    if (groupInstructorName && groupInstructorName.trim() !== '') {
+      return groupInstructorName
+    }
+    return 'TBA'
+  }
 
   return (
     <thead>
@@ -40,7 +54,7 @@ export function AttendanceHeader({ sessions }: AttendanceHeaderProps) {
                 </span>
                 {/* Instructor name */}
                 <span className="block text-[9px] font-normal text-slate-500 mt-0.5">
-                  Instructor: {session.instructor_name || 'TBA'}
+                  Instructor: {getInstructorName(session)}
                 </span>
                 {cancelled && (
                   <span className={`mt-1 px-2 py-0.5 rounded-full text-[8px] font-medium ${sessionStatusColors.cancelled}`}>

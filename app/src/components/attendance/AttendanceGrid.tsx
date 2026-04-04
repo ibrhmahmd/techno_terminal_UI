@@ -25,6 +25,7 @@ interface AttendanceGridProps {
   sessions: Session[]
   groupId: number
   level: number
+  groupInstructorName?: string  // Fallback instructor name for consistency
 }
 
 interface StudentRow {
@@ -36,7 +37,7 @@ interface StudentRow {
   attendance: Map<number, AttendanceStatus>
 }
 
-export function AttendanceGrid({ sessions, groupId, level }: AttendanceGridProps) {
+export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }: AttendanceGridProps) {
   const [students, setStudents] = useState<StudentRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -290,7 +291,7 @@ export function AttendanceGrid({ sessions, groupId, level }: AttendanceGridProps
 
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[1000px]">
-          <AttendanceHeader sessions={sessions} />
+          <AttendanceHeader sessions={sessions} groupInstructorName={groupInstructorName} />
           
           {/* Session Actions Row */}
           <tbody>
