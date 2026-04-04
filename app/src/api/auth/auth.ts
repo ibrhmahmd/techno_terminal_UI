@@ -1,4 +1,4 @@
-import client from './client'
+import client from '../client'
 
 export interface LoginCredentials {
   email: string
@@ -7,10 +7,11 @@ export interface LoginCredentials {
 
 export interface User {
   id: number
+  employee_id: number
   username: string
+  email: string
   role: string
   is_active: boolean
-  employee_id: number
   last_login: string
   created_at: string | null
 }
