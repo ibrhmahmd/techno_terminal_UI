@@ -1,30 +1,37 @@
 import { useNavigate } from 'react-router-dom'
+import { Edit2, Trash2, Eye } from 'lucide-react'
 import type { Parent } from '../../api/crm'
-import { LoadingSpinner } from '../common/LoadingSpinner'
+import { LoadingState } from '../common/LoadingState'
+import { EmptyState } from '../common/EmptyState'
 
 interface ParentListProps {
   parents: Parent[]
   isLoading?: boolean
   emptyMessage?: string
+  onEdit?: (parent: Parent) => void
+  onDelete?: (parent: Parent) => void
 }
 
-export function ParentList({ parents, isLoading, emptyMessage = 'No parents found' }: ParentListProps) {
+export function ParentList({ 
+  parents, 
+  isLoading, 
+  emptyMessage = 'No parents found',
+  onEdit,
+  onDelete
+}: ParentListProps) {
   const navigate = useNavigate()
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <LoadingSpinner />
-      </div>
-    )
+    return <LoadingState message="Loading parents..." fullHeight />
   }
 
   if (parents.length === 0) {
     return (
-      <div className="p-12 text-center text-slate-500">
-        <span className="material-symbols-outlined text-4xl mb-3 opacity-50">family_restroom</span>
-        <p>{emptyMessage}</p>
-      </div>
+      <EmptyState
+        title="No parents found"
+        message={emptyMessage}
+        icon="search"
+      />
     )
   }
 
@@ -37,23 +44,25 @@ export function ParentList({ parents, isLoading, emptyMessage = 'No parents foun
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Phone</th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Email</th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Relation</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Notes</th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 w-32">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
           {parents.map((parent) => (
             <tr
               key={parent.id}
-              onClick={() => navigate(`/parents/${parent.id}`)}
-              className="hover:bg-slate-50 transition-colors cursor-pointer"
+              className="hover:bg-slate-50 transition-colors"
             >
-              <td className="px-4 py-3 font-semibold text-on-surface">{parent.full_name}</td>
+              <td 
+                className="px-4 py-3 font-semibold text-on-surface cursor-pointer"
+                onClick={() => navigate(`/parents/${parent.id}`)}
+              >
+                {parent.full_name}
+              </td>
               <td className="px-4 py-3 text-slate-500">{parent.phone_primary || '-'}</td>
               <td className="px-4 py-3 text-slate-500">{parent.email || '-'}</td>
               <td className="px-4 py-3 text-slate-500">{parent.relation || '-'}</td>
-              <td className="px-4 py-3 text-slate-500">{parent.notes || '-'}</td>
               <td className="px-4 py-3">
                 <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
                   parent.is_active
@@ -67,15 +76,45 @@ export function ParentList({ parents, isLoading, emptyMessage = 'No parents foun
                 </span>
               </td>
               <td className="px-4 py-3">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigate(`/parents/${parent.id}`)
-                  }}
-                  className="px-3 py-1 text-xs font-medium text-secondary border border-secondary rounded hover:bg-secondary-container transition-colors"
-                >
-                  View
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      navigate(`/parents/${parent.id}`)
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    title="View Details"
+                    aria-label={`View details for ${parent.full_name}`}
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  {onEdit && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onEdit(parent)
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                      title="Edit Parent"
+                      aria-label={`Edit ${parent.full_name}`}
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDelete(parent)
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      title="Delete Parent"
+                      aria-label={`Delete ${parent.full_name}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </td>
             </tr>
           ))}

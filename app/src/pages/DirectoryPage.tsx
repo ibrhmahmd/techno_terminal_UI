@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { Search, Plus } from 'lucide-react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { StudentList } from '../components/crm/StudentList'
 import { ParentList } from '../components/crm/ParentList'
-import { Modal } from '../components/common/Modal'
-import { StudentForm } from '../components/crm/StudentForm'
-import { ParentForm } from '../components/crm/ParentForm'
+import { Pagination } from '../components/common/Pagination'
+import { useSearch } from '../hooks/useSearch'
 import { 
   getStudentsPaginated, 
   searchStudents, 
@@ -20,11 +20,10 @@ export function DirectoryPage() {
   const [activeTab, setActiveTab] = useState<'students' | 'parents'>('students')
   const [students, setStudents] = useState<Student[]>([])
   const [parents, setParents] = useState<Parent[]>([])
-  const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
-  // BUG-27: Pagination state
+  // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(15)
   const [totalStudents, setTotalStudents] = useState(0)
@@ -34,14 +33,21 @@ export function DirectoryPage() {
   const [isCreateStudentModalOpen, setIsCreateStudentModalOpen] = useState(false)
   const [isCreateParentModalOpen, setIsCreateParentModalOpen] = useState(false)
 
+  // Use shared search hook
+  const { searchTerm, setSearchTerm, debouncedSearch, clearSearch } = useSearch({
+    debounceMs: 300,
+    minLength: 2
+  })
+
+  // Load data on mount
   useEffect(() => {
     async function loadData() {
       setIsLoading(true)
       setError(null)
       try {
         const [studentsResult, parentsResult] = await Promise.all([
-          getStudentsPaginated({ skip: 0, limit: 15 }),
-          getParentsPaginated({ skip: 0, limit: 15 }),
+          getStudentsPaginated({ skip: 0, limit: pageSize }),
+          getParentsPaginated({ skip: 0, limit: pageSize }),
         ])
         setStudents(studentsResult.items || [])
         setTotalStudents(studentsResult.total || 0)
@@ -55,14 +61,14 @@ export function DirectoryPage() {
       }
     }
     loadData()
-  }, [])
+  }, [pageSize])
 
-  // BUG-26: Reload initial data when search cleared, API search when >= 2 chars
+  // Handle search and pagination changes
   useEffect(() => {
     async function reloadOrSearch() {
       setIsLoading(true)
       try {
-        if (searchTerm.length < 2) {
+        if (debouncedSearch.length < 2) {
           // Reload initial paginated data
           if (activeTab === 'students') {
             const result = await getStudentsPaginated({ skip: (currentPage - 1) * pageSize, limit: pageSize })
@@ -76,10 +82,10 @@ export function DirectoryPage() {
         } else {
           // API search
           if (activeTab === 'students') {
-            const data = await searchStudents(searchTerm)
+            const data = await searchStudents(debouncedSearch)
             setStudents(data || [])
           } else {
-            const data = await searchParents(searchTerm)
+            const data = await searchParents(debouncedSearch)
             setParents(data || [])
           }
         }
@@ -90,22 +96,23 @@ export function DirectoryPage() {
       }
     }
     
-    const timeout = setTimeout(reloadOrSearch, 300)
-    return () => clearTimeout(timeout)
-  }, [searchTerm, activeTab, currentPage, pageSize])
+    reloadOrSearch()
+  }, [debouncedSearch, activeTab, currentPage, pageSize])
 
-  // BUG-24: Reset search and reload data when tab changes
-  useEffect(() => {
-    setSearchTerm('')
+  // Reset search and reload data when tab changes
+  const handleTabChange = useCallback((tab: 'students' | 'parents') => {
+    setActiveTab(tab)
+    clearSearch()
+    setCurrentPage(1)
     setIsLoading(true)
     async function reloadData() {
       try {
-        if (activeTab === 'students') {
-          const result = await getStudentsPaginated({ skip: 0, limit: 15 })
+        if (tab === 'students') {
+          const result = await getStudentsPaginated({ skip: 0, limit: pageSize })
           setStudents(result.items || [])
           setTotalStudents(result.total || 0)
         } else {
-          const result = await getParentsPaginated({ skip: 0, limit: 15 })
+          const result = await getParentsPaginated({ skip: 0, limit: pageSize })
           setParents(result.items || [])
           setTotalParents(result.total || 0)
         }
@@ -116,7 +123,7 @@ export function DirectoryPage() {
       }
     }
     reloadData()
-  }, [activeTab])
+  }, [clearSearch, pageSize])
 
   // BUG-23: Use API results directly - no double filtering
   const displayStudents = students
@@ -162,21 +169,30 @@ export function DirectoryPage() {
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-lg border border-slate-200">
-              <span className="material-symbols-outlined text-slate-500">search</span>
+              <Search className="w-4 h-4 text-slate-500" />
               <input
                 type="text"
-                placeholder="Search (min 2 chars)..."
+                placeholder="Search by name or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-transparent border-none outline-none text-sm text-on-surface min-w-[200px] placeholder-slate-400"
+                className="bg-transparent border-none outline-none text-sm text-on-surface min-w-[220px] placeholder-slate-400"
               />
+              {searchTerm && (
+                <button
+                  onClick={clearSearch}
+                  className="p-1 hover:bg-slate-200 rounded transition-colors"
+                  aria-label="Clear search"
+                >
+                  <span className="material-symbols-outlined text-sm text-slate-500">close</span>
+                </button>
+              )}
             </div>
             {activeTab === 'students' ? (
               <button
                 onClick={() => setIsCreateStudentModalOpen(true)}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
               >
-                <span className="material-symbols-outlined text-sm">person_add</span>
+                <Plus className="w-4 h-4" />
                 Add Student
               </button>
             ) : (
@@ -184,7 +200,7 @@ export function DirectoryPage() {
                 onClick={() => setIsCreateParentModalOpen(true)}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
               >
-                <span className="material-symbols-outlined text-sm">person_add</span>
+                <Plus className="w-4 h-4" />
                 Add Parent
               </button>
             )}
@@ -197,7 +213,7 @@ export function DirectoryPage() {
         <div className="max-w-[1400px] mx-auto">
           <div className="flex space-x-1">
             <button
-              onClick={() => setActiveTab('students')}
+              onClick={() => handleTabChange('students')}
               className={`px-6 py-3 text-sm font-medium transition-colors relative ${
                 activeTab === 'students'
                   ? 'text-on-surface'
@@ -211,7 +227,7 @@ export function DirectoryPage() {
               )}
             </button>
             <button
-              onClick={() => setActiveTab('parents')}
+              onClick={() => handleTabChange('parents')}
               className={`px-6 py-3 text-sm font-medium transition-colors relative ${
                 activeTab === 'parents'
                   ? 'text-on-surface'
@@ -241,52 +257,47 @@ export function DirectoryPage() {
               students={displayStudents} 
               isLoading={isLoading} 
               emptyMessage={searchTerm.length >= 2 ? 'No students match your search' : 'No students found'}
+              onEdit={(student) => {
+                // TODO: Implement edit student modal
+                console.log('Edit student:', student)
+              }}
+              onDelete={(student) => {
+                // TODO: Implement delete student confirmation
+                console.log('Delete student:', student)
+              }}
             />
           ) : (
             <ParentList 
               parents={displayParents} 
               isLoading={isLoading}
               emptyMessage={searchTerm.length >= 2 ? 'No parents match your search' : 'No parents found'}
+              onEdit={(parent) => {
+                // TODO: Implement edit parent modal
+                console.log('Edit parent:', parent)
+              }}
+              onDelete={(parent) => {
+                // TODO: Implement delete parent confirmation
+                console.log('Delete parent:', parent)
+              }}
             />
           )}
           
-          {/* BUG-27: Pagination Controls - only show when not searching */}
+          {/* Pagination - only show when not searching */}
           {searchTerm.length < 2 && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-500">Show</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1) }}
-                  className="px-2 py-1 text-sm border border-slate-200 rounded bg-white"
-                >
-                  <option value={10}>10</option>
-                  <option value={15}>15</option>
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                </select>
-                <span className="text-sm text-slate-500">entries per page</span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1 || isLoading}
-                  className="px-3 py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50"
-                >
-                  Previous
-                </button>
-                <span className="px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 rounded">
-                  Page {currentPage}
-                </span>
-                <button
-                  onClick={() => setCurrentPage(prev => prev + 1)}
-                  disabled={displayStudents.length < pageSize && displayParents.length < pageSize || isLoading}
-                  className="px-3 py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
+            <div className="mt-6 pt-4 border-t border-slate-200">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil((activeTab === 'students' ? totalStudents : totalParents) / pageSize)}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={(newSize) => {
+                  setPageSize(newSize)
+                  setCurrentPage(1)
+                }}
+                pageSizeOptions={[10, 25, 50, 100]}
+                showTotalInfo={false}
+                loading={isLoading}
+              />
             </div>
           )}
         </section>
@@ -301,6 +312,7 @@ export function DirectoryPage() {
           onSubmit={handleCreateStudent}
           onCancel={() => setIsCreateStudentModalOpen(false)}
           mode="create"
+          onSearchParents={searchParents}
         />
       </Modal>
 
