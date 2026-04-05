@@ -22,8 +22,8 @@ export function AttendanceTableBody({ students, sessions, onToggle }: Attendance
 
   return (
     <tbody className="divide-y divide-outline-variant/5">
-      {students.map((student) => (
-        <tr key={student.student_id} className="hover:bg-surface-container-low/20 transition-colors">
+      {students.map((student, index) => (
+        <tr key={`${student.student_id}-${index}`} className="hover:bg-surface-container-low/20 transition-colors">
           {/* Student Cell */}
           <td className="px-6 py-4">
             <StudentInfo

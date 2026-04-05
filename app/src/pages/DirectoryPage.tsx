@@ -16,6 +16,9 @@ import {
   type Student, 
   type Parent 
 } from '../api/crm'
+import { Modal } from '../components/common/Modal'
+import { StudentForm } from '../components/crm/StudentForm'
+import { ParentForm } from '../components/crm/ParentForm'
 
 export function DirectoryPage() {
   const [activeTab, setActiveTab] = useState<'students' | 'parents'>('students')

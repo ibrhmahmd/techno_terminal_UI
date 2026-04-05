@@ -10,17 +10,14 @@ export async function markAttendance(
   sessionId: number,
   updates: { student_id: string; status: 'present' | 'absent' | 'late' | 'excused' | null }[]
 ): Promise<void> {
-  const student_statuses: Record<string, string> = {}
-  updates.forEach(u => {
-    if (u.status) {
-      student_statuses[u.student_id] = u.status
-    }
-  })
-  
   const payload: MarkAttendanceRequest = {
-    session_id: sessionId,
-    student_statuses: student_statuses as Record<string, 'present' | 'absent' | 'late' | 'excused'>
+    updates: updates
+      .filter(u => u.status !== null)
+      .map(u => ({
+        student_id: parseInt(u.student_id),
+        status: u.status as 'present' | 'absent'
+      }))
   }
   
-  await client.post(`/attendance/session/${sessionId}`, payload)
+  await client.post(`/attendance/session/${sessionId}/mark`, payload)
 }

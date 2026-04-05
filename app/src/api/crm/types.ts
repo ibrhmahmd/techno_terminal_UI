@@ -7,9 +7,25 @@ export interface Student {
   gender?: string | null
   phone?: string | null
   is_active: boolean
+  status?: 'active' | 'waiting' | 'inactive'
   notes?: string | null
   current_group_id?: number | null
   current_group_name?: string | null
+  waiting_since?: string | null
+  waiting_priority?: number | null
+  waiting_notes?: string | null
+  status_history?: StatusHistoryEntry[]
+}
+
+export interface StudentWithDetails extends Student {
+  parents: Parent[]
+  enrollments: Enrollment[]
+  balance: number
+  enrollment_history?: EnrollmentHistory[]
+  courses?: CourseRecord[]
+  competitions?: CompetitionRecord[]
+  teams?: TeamRecord[]
+  payments?: PaymentRecord[]
 }
 
 export interface Parent {
@@ -24,16 +40,6 @@ export interface Parent {
   is_active: boolean
 }
 
-export interface StudentWithDetails extends Student {
-  parents: Parent[]
-  enrollments: Enrollment[]
-  balance: number
-  enrollment_history?: EnrollmentHistory[]
-  courses?: CourseRecord[]
-  competitions?: CompetitionRecord[]
-  teams?: TeamRecord[]
-  payments?: PaymentRecord[]
-}
 
 export interface EnrollmentHistory {
   id: number
@@ -81,4 +87,58 @@ export interface PaymentRecord {
   payment_method?: string | null
   description?: string | null
   status: 'pending' | 'completed' | 'failed' | 'refunded'
+}
+
+
+
+export interface LinkParentInput {
+  student_id: number
+  parent_id: number
+}
+
+// Status Management Types
+export type StudentStatus = 'active' | 'waiting' | 'inactive'
+
+export interface UpdateStudentStatusDTO {
+  status: StudentStatus
+  notes?: string
+}
+
+export interface SetWaitingPriorityDTO {
+  priority: number
+  notes?: string
+}
+
+export interface StudentStatusSummary {
+  total: number
+  active: number
+  waiting: number
+  inactive: number
+}
+
+export interface StatusHistoryEntry {
+  timestamp: string
+  changed_by: number
+  old_status: StudentStatus
+  new_status: StudentStatus
+  notes?: string
+}
+
+export interface StatusHistoryRecord {
+  timestamp: string
+  changed_by: number
+  old_status?: StudentStatus
+  new_status?: StudentStatus
+  action?: string
+  new_priority?: number
+  notes?: string
+}
+
+// Sibling Info
+export interface SiblingInfo {
+  student_id: number
+  full_name: string
+  age: number
+  parent_id: number
+  parent_name: string
 }

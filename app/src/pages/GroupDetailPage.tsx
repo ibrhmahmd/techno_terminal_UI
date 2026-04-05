@@ -9,8 +9,9 @@ import { EditSessionPopup } from '../components/attendance/EditSessionPopup'
 import { AddSessionModal } from '../components/groups/AddSessionModal'
 import { TabNavigation } from '../components/groups/TabNavigation'
 import { SessionsList } from '../components/groups/SessionsList'
-import { RosterPlaceholder } from '../components/groups/RosterPlaceholder'
-import { HistoryPlaceholder } from '../components/groups/HistoryPlaceholder'
+import { RosterTab } from '../components/groups/RosterTab'
+import { AttendanceTab } from '../components/groups/AttendanceTab'
+import { HistoryTab } from '../components/groups/HistoryTab'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { 
   cancelSession,
@@ -96,7 +97,7 @@ export function GroupDetailPage() {
       const updatedSessions = await getGroupSessions(groupId)
       setSessions(updatedSessions)
       setEditingSession(null)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[GroupDetailPage] updateSession failed:', err)
       setMutationError('Failed to update session.')
     } finally {
@@ -111,7 +112,7 @@ export function GroupDetailPage() {
       await deleteSession(sessionId)
       setSessions(prev => prev.filter(s => s.id !== sessionId))
       setDeletingSessionId(null)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[GroupDetailPage] deleteSession failed:', err)
       setMutationError('Failed to delete session.')
     } finally {
@@ -126,7 +127,7 @@ export function GroupDetailPage() {
       await cancelSession(sessionId)
       const updatedSessions = await getGroupSessions(groupId)
       setSessions(updatedSessions)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[GroupDetailPage] cancelSession failed:', err)
       setMutationError('Failed to cancel session.')
     } finally {
@@ -143,9 +144,9 @@ export function GroupDetailPage() {
     setMutationError(null)
     try {
       const updated = await updateGroup(groupId, data)
-      setGroup(prev => prev ? ({ ...prev, ...updated }) : (updated as any))
+      setGroup(prev => prev ? ({ ...prev, ...updated }) : (updated as Record<string, unknown>))
       setIsEditModalOpen(false)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[GroupDetailPage] updateGroup failed:', err)
       setMutationError('Failed to update group.')
     } finally {
@@ -220,8 +221,26 @@ export function GroupDetailPage() {
                 </div>
               )}
 
-              {activeTab === 'roster' && <RosterPlaceholder />}
-              {activeTab === 'history' && <HistoryPlaceholder />}
+              {activeTab === 'roster' && (
+                <RosterTab 
+                  students={group.students || []}
+                  maxCapacity={group.max_capacity}
+                  isLoading={isLoading}
+                />
+              )}
+              {activeTab === 'attendance' && (
+                <AttendanceTab 
+                  sessions={sessions}
+                  students={group.students?.map(s => ({ id: s.id, full_name: s.full_name })) || []}
+                  isLoading={isLoading}
+                />
+              )}
+              {activeTab === 'history' && (
+                <HistoryTab 
+                  sessions={sessions}
+                  isLoading={isLoading}
+                />
+              )}
 
               <EditSessionPopup
                 session={editingSession}

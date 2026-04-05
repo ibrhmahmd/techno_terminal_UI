@@ -124,6 +124,35 @@ Validation:
 }
 ```
 
+#### StudentStatus Enum
+```json
+"active" | "waiting" | "inactive"
+```
+
+#### UpdateStudentStatusDTO
+```json
+{
+  "status": "waiting",
+  "notes": "Waiting for Level 2 morning group to open"
+}
+```
+
+Validation:
+- `status` required - must be one of: "active", "waiting", "inactive", " "
+- `notes` optional - max 500 characters
+
+#### SetWaitingPriorityDTO
+```json
+{
+  "priority": 1,
+  "notes": "VIP student, moved to top of queue"
+}
+```
+
+Validation:
+- `priority` required - integer between 1 and 1000 (1 = highest priority)
+- `notes` optional
+
 ---
 
 ## Endpoints
@@ -237,8 +266,243 @@ Example success response:
 
 ---
 
+## Status Management Endpoints
+
+### 8) Update student enrollment status
+**PATCH** `/api/v1/crm/students/{student_id}/status`
+Auth: `require_admin`
+
+Path params:
+- `student_id` (integer, required)
+
+Request body:
+- `UpdateStudentStatusDTO`
+
+Response:
+- `200 OK` -> `ApiResponse<StudentPublic>`
+
+Example request:
+```json
+{
+  "status": "waiting",
+  "notes": "Waiting for Level 2 morning group to open"
+}
+```
+
+Example response:
+```json
+{
+  "success": true,
+  "data": {
+    "id": 123,
+    "full_name": "Omar Mohamed",
+    "status": "waiting",
+    "waiting_since": "2026-04-05T10:30:00Z",
+    "waiting_priority": null,
+    "waiting_notes": "Waiting for Level 2 morning group to open",
+    "status_history": [
+      {
+        "timestamp": "2026-04-05T10:30:00Z",
+        "changed_by": 5,
+        "old_status": "active",
+        "new_status": "waiting",
+        "notes": "Waiting for Level 2 morning group to open"
+      }
+    ]
+  },
+  "message": "Student status updated to waiting"
+}
+```
+
+Errors:
+- `400` - Invalid status value
+- `401`, `403`, `404`, `422`
+
+### 9) Toggle student status (active <-> waiting)
+**POST** `/api/v1/crm/students/{student_id}/status/toggle`
+Auth: `require_admin`
+
+Path params:
+- `student_id` (integer, required)
+
+Query params:
+- `notes` (optional string) - Audit note for the status change
+
+Response:
+- `200 OK` -> `ApiResponse<StudentPublic>`
+
+Example response (toggled to active):
+```json
+{
+  "success": true,
+  "data": {
+    "id": 123,
+    "status": "active",
+    "waiting_since": null,
+    "waiting_priority": null
+  },
+  "message": "Student status toggled to active"
+}
+```
+
+Notes:
+- Only supports toggling between `active` and `waiting` statuses
+- Returns `400` if called on `inactive` or ` ` students
+
+Errors:
+- `400` - Cannot toggle from current status (only active/waiting supported)
+- `401`, `403`, `404`, `422`
+
+### 10) Get waiting list
+**GET** `/api/v1/crm/students/waiting-list`
+Auth: `require_admin`
+
+Query:
+- `skip` (optional, default `0`, `>= 0`)
+- `limit` (optional, default `200`, `>= 1`, `<= 1000`)
+- `order_by_priority` (optional boolean, default `true`) - Order by priority first, then by wait time
+
+Response:
+- `200 OK` -> `ApiResponse<list<StudentPublic>>`
+
+Example response:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 123,
+      "full_name": "John Doe",
+      "status": "waiting",
+      "waiting_since": "2026-04-01T00:00:00Z",
+      "waiting_priority": 1,
+      "waiting_notes": "VIP student, prioritize",
+      "date_of_birth": "2015-05-15",
+      "gender": "male",
+      "phone": "+1234567890"
+    }
+  ],
+  "message": "Retrieved 1 students from waiting list"
+}
+```
+
+Errors:
+- `401`, `403`
+
+### 11) Set waiting list priority
+**PATCH** `/api/v1/crm/students/{student_id}/waiting-priority`
+Auth: `require_admin`
+
+Path params:
+- `student_id` (integer, required)
+
+Request body:
+- `SetWaitingPriorityDTO`
+
+Response:
+- `200 OK` -> `ApiResponse<StudentPublic>`
+
+Example request:
+```json
+{
+  "priority": 10,
+  "notes": "VIP student, moved to top of queue"
+}
+```
+
+Notes:
+- Only works for students with `status = "waiting"`
+- Priority 1 = highest priority
+
+Errors:
+- `404` - Student not found or not on waiting list
+- `401`, `403`, `422`
+
+### 12) Get students by status
+**GET** `/api/v1/crm/students/by-status/{status}`
+Auth: `require_admin`
+
+Path params:
+- `status` (string, required) - One of: "active", "waiting", "inactive", " "
+
+Query:
+- `skip` (optional, default `0`, `>= 0`)
+- `limit` (optional, default `200`, `>= 1`, `<= 1000`)
+
+Response:
+- `200 OK` -> `ApiResponse<list<StudentPublic>>`
+
+Example: `GET /api/v1/crm/students/by-status/waiting`
+
+Errors:
+- `400` - Invalid status value
+- `401`, `403`, `422`
+
+### 13) Get student status summary
+**GET** `/api/v1/crm/students/status-summary`
+Auth: `require_admin`
+
+Response:
+- `200 OK` -> `ApiResponse<object>`
+
+Example response:
+```json
+{
+  "success": true,
+  "data": {
+    "total": 250,
+    "active": 200,
+    "waiting": 30,
+    "inactive": 15
+  }
+}
+```
+
+Errors:
+- `401`, `403`
+
+### 14) Get student status history
+**GET** `/api/v1/crm/students/{student_id}/status-history`
+Auth: `require_admin`
+
+Path params:
+- `student_id` (integer, required)
+
+Response:
+- `200 OK` -> `ApiResponse<list<object>>`
+
+Example response:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "timestamp": "2026-04-05T10:30:00Z",
+      "changed_by": 5,
+      "old_status": "active",
+      "new_status": "waiting",
+      "notes": "Waiting for Level 2 morning group to open"
+    },
+    {
+      "timestamp": "2026-04-06T14:20:00Z",
+      "changed_by": 3,
+      "action": "priority_change",
+      "new_priority": 5
+    }
+  ]
+}
+```
+
+Errors:
+- `404` - Student not found
+- `401`, `403`
+
+---
+
 ## Router Notes
 
-- This router exposes **7 endpoint signatures**.
+- This router exposes **14 endpoint signatures** (7 core + 7 status management).
 - Student delete is soft-delete behavior in service (`is_active = false`).
+- Status history is stored as JSONB in the `status_history` column.
+- The `waiting_since` timestamp is automatically set when status changes to `waiting`.
 - Siblings endpoint is declared as `SiblingInfo`, but repository output keys differ (`sibling_id`, `sibling_name`), so runtime serialization should be validated in integration tests.

@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import { searchParents, getStudentParents, type Parent } from '../../api/crm'
+import { 
+  searchParents, 
+  getStudentParents, 
+  linkParentToStudent,
+  unlinkParentFromStudent,
+  type Parent 
+} from '../../api/crm'
 
 interface LinkParentModalProps {
   studentId: number
@@ -59,11 +65,7 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
     setError(null)
 
     try {
-      // Note: The actual API endpoint for linking a parent to a student
-      // is likely POST /crm/students/{studentId}/parents/{parentId}
-      // Since it's not in the docs yet, we'll keep the mock logic but fix types
-      
-      // Mock success - refresh the list
+      await linkParentToStudent(studentId, parentId)
       await loadLinkedParents()
       setSearchResults(prev => prev.filter(p => p.id !== parentId))
       onLinked()
@@ -74,12 +76,12 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
     }
   }
 
-  const handleUnlinkParent = async (_parentId: number) => {
+  const handleUnlinkParent = async (parentId: number) => {
     setIsLoading(true)
     setError(null)
 
     try {
-      // Mock success - refresh the list
+      await unlinkParentFromStudent(studentId, parentId)
       await loadLinkedParents()
     } catch {
       setError('Failed to unlink parent')
@@ -140,8 +142,8 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
                   >
                     <div>
                       <p className="font-medium text-on-surface">{parent.full_name}</p>
-                      {parent.phone && (
-                        <p className="text-sm text-slate-500">{parent.phone}</p>
+                      {parent.phone_primary && (
+                        <p className="text-sm text-slate-500">{parent.phone_primary}</p>
                       )}
                     </div>
                     <button
@@ -177,8 +179,8 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
                   >
                     <div>
                       <p className="font-medium text-on-surface">{parent.full_name}</p>
-                      {parent.phone && (
-                        <p className="text-sm text-slate-500">{parent.phone}</p>
+                      {parent.phone_primary && (
+                        <p className="text-sm text-slate-500">{parent.phone_primary}</p>
                       )}
                     </div>
                     <button

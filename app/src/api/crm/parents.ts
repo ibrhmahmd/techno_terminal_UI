@@ -69,7 +69,24 @@ export async function deleteParent(id: number): Promise<void> {
   await client.delete(`/crm/parents/${id}`)
 }
 
-export async function getStudentParents(studentId: number): Promise<Parent[]> {
-  const response = await client.get<ApiResponse<Parent[]>>(`/crm/students/${studentId}/parents`)
-  return response.data.data || []
+export async function linkParentToStudent(
+  studentId: number,
+  parentId: number
+): Promise<void> {
+  const response = await client.post<ApiResponse<void>>(`/crm/students/${studentId}/parents/${parentId}`)
+  
+  if (response.status !== 200) {
+    throw new Error(`Failed to link parent to student: ${response.statusText}`)
+  }
+}
+
+export async function unlinkParentFromStudent(
+  studentId: number,
+  parentId: number
+): Promise<void> {
+  const response = await client.delete<ApiResponse<void>>(`/crm/students/${studentId}/parents/${parentId}`)
+  
+  if (response.status !== 200) {
+    throw new Error(`Failed to unlink parent from student: ${response.statusText}`)
+  }
 }

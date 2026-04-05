@@ -1,9 +1,9 @@
-import { Search, Plus, Inbox } from 'lucide-react'
+import { Search, Plus, Inbox, History } from 'lucide-react'
 
 interface EmptyStateProps {
   title?: string
   message?: string
-  icon?: 'search' | 'inbox' | 'none'
+  icon?: 'search' | 'inbox' | 'history' | 'none'
   actionLabel?: string
   onAction?: () => void
   className?: string
@@ -20,6 +20,7 @@ export function EmptyState({
   const IconComponent = {
     search: Search,
     inbox: Inbox,
+    history: History,
     none: () => null
   }[icon]
 

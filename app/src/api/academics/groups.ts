@@ -22,6 +22,13 @@ export async function getGroupDetails(groupId: number): Promise<Group> {
   return response.data.data;
 }
 
+
+// getGroups
+export async function getGroups() {
+  const response =  await client.get<ApiResponse<Group[]>>("/academics/groups");
+  return response.data.data;
+}
+
 // get groups paginated
 export async function getGroupsPaginated(
   params: PaginationParams = {},
