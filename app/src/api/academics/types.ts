@@ -16,6 +16,7 @@ export interface Group {
 
 export interface EnrichedGroupPublic extends Group {
   course_name: string;
+  group_name: string;
   instructor_name: string;
   schedule_time?: string;
   students?: Array<{ id: number; full_name: string }>;

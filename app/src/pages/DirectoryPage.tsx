@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DataTable, type DataTableColumn, Pagination, PageHeader, PageSection, ActionButton, SearchBar, Modal } from '../components/common'
@@ -11,6 +11,8 @@ import {
   getParentsPaginated, 
   searchParents, 
   createStudent,
+  updateStudent,
+  deleteStudent,
   createParent,
   linkParentToStudent,
   type Student, 
@@ -110,7 +112,7 @@ const parentColumns: DataTableColumn<Parent>[] = [
 
 export function DirectoryPage() {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<'students' | 'parents'>('students')
+  const [activeTab, setActiveTab] = useState<'students' | 'parents' | 'waiting'>('students')
   const [students, setStudents] = useState<Student[]>([])
   const [parents, setParents] = useState<Parent[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -124,6 +126,8 @@ export function DirectoryPage() {
   
   // Modal states
   const [isCreateStudentModalOpen, setIsCreateStudentModalOpen] = useState(false)
+  const [isEditStudentModalOpen, setIsEditStudentModalOpen] = useState(false)
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null)
   const [isCreateParentModalOpen, setIsCreateParentModalOpen] = useState(false)
 
   // Use shared search hook
@@ -193,7 +197,7 @@ export function DirectoryPage() {
   }, [debouncedSearch, activeTab, currentPage, pageSize])
 
   // Reset search and reload data when tab changes
-  const handleTabChange = useCallback((tab: 'students' | 'parents') => {
+  const handleTabChange = useCallback((tab: 'students' | 'parents' | 'waiting') => {
     setActiveTab(tab)
     clearSearch()
     setCurrentPage(1)
@@ -219,8 +223,9 @@ export function DirectoryPage() {
   }, [clearSearch, pageSize])
 
   // BUG-23: Use API results directly - no double filtering
-  const displayStudents = students
+  const displayStudents = students.filter(s => s.status !== 'waiting')
   const displayParents = parents
+  const waitingStudents = useMemo(() => students.filter(s => s.status === 'waiting'), [students])
 
   const handleCreateStudent = async (data: Omit<Student, 'id'>, selectedParent: Parent | null) => {
     try {
@@ -233,7 +238,6 @@ export function DirectoryPage() {
           await linkParentToStudent(newStudent.id, selectedParent.id)
         } catch (linkError) {
           console.error('Failed to link parent:', linkError)
-          // Show warning but don't fail the entire operation
           setError('Student created but failed to link parent. You can link manually from the student detail page.')
           return
         }
@@ -243,6 +247,30 @@ export function DirectoryPage() {
       setError(null)
     } catch {
       setError('Failed to create student')
+    }
+  }
+
+  const handleEditStudent = async (data: Omit<Student, 'id'>) => {
+    if (!editingStudent) return
+    try {
+      const updatedStudent = await updateStudent(editingStudent.id, data)
+      setStudents(prev => prev.map(s => s.id === updatedStudent.id ? updatedStudent : s))
+      setIsEditStudentModalOpen(false)
+      setEditingStudent(null)
+      setError(null)
+    } catch {
+      setError('Failed to update student')
+    }
+  }
+
+  const handleDeleteStudent = async (student: Student) => {
+    if (!confirm(`Are you sure you want to delete "${student.full_name}"?`)) return
+    try {
+      await deleteStudent(student.id)
+      setStudents(prev => prev.filter(s => s.id !== student.id))
+      setError(null)
+    } catch {
+      setError('Failed to delete student')
     }
   }
 
@@ -275,9 +303,15 @@ export function DirectoryPage() {
             />
             <ActionButton 
               icon="add" 
-              onClick={() => activeTab === 'students' ? setIsCreateStudentModalOpen(true) : setIsCreateParentModalOpen(true)}
+              onClick={() => {
+                if (activeTab === 'parents') {
+                  setIsCreateParentModalOpen(true)
+                } else {
+                  setIsCreateStudentModalOpen(true)
+                }
+              }}
             >
-              Add {activeTab === 'students' ? 'Student' : 'Parent'}
+              Add {activeTab === 'parents' ? 'Parent' : 'Student'}
             </ActionButton>
           </>
         }
@@ -315,6 +349,20 @@ export function DirectoryPage() {
                 <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-t"></span>
               )}
             </button>
+            <button
+              onClick={() => handleTabChange('waiting')}
+              className={`px-6 py-3 text-sm font-medium transition-colors relative ${
+                activeTab === 'waiting'
+                  ? 'text-on-surface'
+                  : 'text-slate-400 hover:text-on-surface'
+              }`}
+            >
+              <span className="material-symbols-outlined inline-block mr-2 align-text-bottom">schedule</span>
+              Waiting ({waitingStudents.length})
+              {activeTab === 'waiting' && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-t"></span>
+              )}
+            </button>
           </div>
         </div>
       </div>
@@ -327,7 +375,7 @@ export function DirectoryPage() {
             </div>
           )}
 
-          {activeTab === 'students' ? (
+          {activeTab === 'students' && (
             <DataTable
               data={displayStudents}
               columns={studentColumns}
@@ -338,11 +386,34 @@ export function DirectoryPage() {
               onRowClick={(student) => navigate(`/students/${student.id}`)}
               actions={{
                 view: (student) => navigate(`/students/${student.id}`),
-                edit: (student) => console.log('Edit student:', student),
-                delete: (student) => console.log('Delete student:', student)
+                edit: (student) => {
+                  setEditingStudent(student)
+                  setIsEditStudentModalOpen(true)
+                },
+                delete: handleDeleteStudent
               }}
             />
-          ) : (
+          )}
+          {activeTab === 'waiting' && (
+            <DataTable
+              data={waitingStudents}
+              columns={studentColumns}
+              keyExtractor={(s) => s.id.toString()}
+              isLoading={isLoading}
+              emptyMessage="No students on waiting list"
+              emptyIcon="schedule"
+              onRowClick={(student) => navigate(`/students/${student.id}`)}
+              actions={{
+                view: (student) => navigate(`/students/${student.id}`),
+                edit: (student) => {
+                  setEditingStudent(student)
+                  setIsEditStudentModalOpen(true)
+                },
+                delete: handleDeleteStudent
+              }}
+            />
+          )}
+          {activeTab === 'parents' && (
             <DataTable
               data={displayParents}
               columns={parentColumns}
@@ -389,6 +460,27 @@ export function DirectoryPage() {
           onSubmit={handleCreateStudent}
           onCancel={() => setIsCreateStudentModalOpen(false)}
           mode="create"
+          onSearchParents={searchParents}
+        />
+      </Modal>
+
+      {/* Edit Student Modal */}
+      <Modal
+        isOpen={isEditStudentModalOpen}
+        onClose={() => {
+          setIsEditStudentModalOpen(false)
+          setEditingStudent(null)
+        }}
+        title="Edit Student"
+      >
+        <StudentForm
+          initialData={editingStudent || undefined}
+          onSubmit={handleEditStudent}
+          onCancel={() => {
+            setIsEditStudentModalOpen(false)
+            setEditingStudent(null)
+          }}
+          mode="edit"
           onSearchParents={searchParents}
         />
       </Modal>

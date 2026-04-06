@@ -20,7 +20,8 @@ export function GroupInfoCard({
   onLevelUp,
   canLevelUp,
 }: GroupInfoCardProps) {
-  const formatTime = (time: string) => {
+  const formatTime = (time: string | null | undefined) => {
+    if (!time) return '--:--'
     return time.slice(0, 5)
   }
 

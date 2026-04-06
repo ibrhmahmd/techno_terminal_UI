@@ -38,7 +38,7 @@ export interface DataTableProps<T> {
   /** Empty state message */
   emptyMessage?: string
   /** Empty state icon - supports specific icon names */
-  emptyIcon?: 'search' | 'inbox' | 'history' | 'none'
+  emptyIcon?: 'search' | 'inbox' | 'history' | 'schedule' | 'none'
   /** Row click handler */
   onRowClick?: (row: T) => void
   /** Current sort field */

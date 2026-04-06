@@ -22,6 +22,7 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode, onSearchPar
     phone: initialData?.phone || '',
     notes: initialData?.notes || '',
     is_active: initialData?.is_active ?? true,
+    status: (initialData?.status as 'active' | 'waiting' | 'inactive') || 'active',
   })
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -42,6 +43,7 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode, onSearchPar
       const submitData: CreateStudentInput = {
         full_name: formData.full_name.trim(),
         is_active: formData.is_active,
+        status: formData.status,
         date_of_birth: formData.date_of_birth || null,
         gender: formData.gender || null,
         phone: formData.phone || null,
@@ -134,6 +136,28 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode, onSearchPar
           disabled={isLoading}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
         />
+      </div>
+
+      {/* Status Toggle */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-on-surface">Status</label>
+        <div className="flex gap-2">
+          {(['active', 'waiting', 'inactive'] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => handleChange('status', s)}
+              disabled={isLoading}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors disabled:opacity-50 ${
+                formData.status === s
+                  ? 'bg-secondary text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Notes */}

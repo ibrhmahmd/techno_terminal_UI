@@ -22,7 +22,7 @@ const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
     key: 'name',
     header: 'Group Name',
     sortable: true,
-    cell: (group) => <span className="font-semibold text-slate-900">{group.name}</span>
+    cell: (group) => <span className="font-semibold text-slate-900">{group.group_name}</span>
   },
   {
     key: 'course_name',

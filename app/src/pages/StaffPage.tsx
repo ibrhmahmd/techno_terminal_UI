@@ -229,11 +229,11 @@ export function StaffPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">{employee.job_title}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600 capitalize">{employee.employment_type.replace('_', ' ')}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{employee.salary.toLocaleString()} EGP</td>
+                    <td className="px-6 py-4 text-sm text-slate-600 capitalize">{(employee.employment_type || 'full_time').replace('_', ' ')}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{employee.salary?.toLocaleString() ?? '0'} EGP</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[employee.status]}`}>
-                        {employee.status.replace('_', ' ')}
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[employee.status || 'active']}`}>
+                        {(employee.status || 'active').replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
