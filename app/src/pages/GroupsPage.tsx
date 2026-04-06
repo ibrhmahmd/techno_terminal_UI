@@ -51,7 +51,7 @@ const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
       <div className="flex flex-col gap-0.5">
         <span className="text-xs font-semibold text-slate-900">{group.default_day}</span>
         <span className="text-[10px] text-slate-500">
-          {group.default_time_start.slice(0, 5)} - {group.default_time_end.slice(0, 5)}
+          {group.default_time_start?.slice(0, 5) ?? ''} - {group.default_time_end?.slice(0, 5) ?? ''}
         </span>
       </div>
     )

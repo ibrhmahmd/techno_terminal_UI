@@ -36,7 +36,7 @@ export function EnrollmentHistoryTable({
     return <LoadingState message="Loading enrollment history..." />
   }
 
-  if (data.length === 0) {
+  if (data?.length === 0) {
     return (
       <EmptyState
         icon="inbox"
