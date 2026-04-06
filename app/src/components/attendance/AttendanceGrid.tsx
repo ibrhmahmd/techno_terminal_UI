@@ -32,7 +32,7 @@ interface StudentRow {
   student_id: string
   full_name: string
   gender: 'male' | 'female'
-  billing_status: 'paid' | 'Not Yet'
+  billing_status: 'paid' | 'due'
   balance: number
   attendance: Map<number, AttendanceStatus>
 }
@@ -92,7 +92,7 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
           student_id: String(r.student_id),
           full_name: r.student_name,
           gender: 'male', 
-          billing_status: r.balance < 0 ? 'Not Yet' : 'paid',
+          billing_status: (r.balance < 0 ? 'Not Yet' : 'paid') as 'due' | 'paid',
           balance: r.balance,
           attendance: attendanceMap,
         }

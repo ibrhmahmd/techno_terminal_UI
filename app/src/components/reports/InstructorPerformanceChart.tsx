@@ -60,10 +60,10 @@ export function InstructorPerformanceChart({ data }: InstructorPerformanceChartP
             borderRadius: '8px',
             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
           }}
-          formatter={(value: number) => [`${value}%`, 'Attendance Rate']}
+          formatter={(value) => [`${value}%`, 'Attendance Rate']}
         />
         <Bar dataKey="attendanceRate" name="Attendance Rate" radius={[4, 4, 0, 0]}>
-          {chartData.map((entry, index) => (
+          {chartData.map((_entry, index) => (
             <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
           ))}
         </Bar>

@@ -159,7 +159,7 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError,
       if (useMockData) {
         await new Promise(r => setTimeout(r, 500))
         const mockId = `mock-receipt-${Date.now()}`
-        onSuccess('Receipt created successfully: R-2026-MOCK', mockId)
+        onSuccess('Receipt created successfully: R-2026-MOCK', Number(mockId))
       } else {
         const result = await createReceipt({
           payer_name: payerName,

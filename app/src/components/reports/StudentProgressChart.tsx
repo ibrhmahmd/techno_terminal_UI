@@ -54,17 +54,19 @@ export function StudentProgressChart({ completed, inProgress, notStarted }: Stud
             borderRadius: '8px',
             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
           }}
-          formatter={(value: number, name: string) => {
-            const percentage = ((value / total) * 100).toFixed(1)
-            return [`${value} (${percentage}%)`, name]
+          formatter={(value, name) => {
+            const numValue = Number(value)
+            const percentage = ((numValue / total) * 100).toFixed(1)
+            return [`${numValue} (${percentage}%)`, name]
           }}
         />
         <Legend 
           verticalAlign="bottom" 
           height={36}
-          formatter={(value: string, entry: { payload: { color: string; value: number } }) => {
-            const percentage = ((entry.payload.value / total) * 100).toFixed(1)
-            return `${value}: ${entry.payload.value} (${percentage}%)`
+          formatter={(value, entry: any) => {
+            const numValue = Number(entry?.payload?.value || 0)
+            const percentage = ((numValue / total) * 100).toFixed(1)
+            return `${value}: ${numValue} (${percentage}%)`
           }}
         />
       </PieChart>

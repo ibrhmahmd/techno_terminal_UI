@@ -27,7 +27,7 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
       setStartTime(session.start_time)
       setEndTime(session.end_time)
       setActualInstructorId(session.actual_instructor_id)
-      setIsSubstitute(session.is_substitute || false)
+      setIsSubstitute((session as any).is_substitute || false)
       setStatus(session.status)
       setNotes(session.notes || '')
     }

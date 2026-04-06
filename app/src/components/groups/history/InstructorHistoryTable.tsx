@@ -51,7 +51,7 @@ export function InstructorHistoryTable({ data, isLoading }: InstructorHistoryTab
       key: 'type',
       header: 'Type',
       width: '18%',
-      render: (row: InstructorAssignmentDTO) => {
+      cell: (row: InstructorAssignmentDTO) => {
         const config = assignmentTypeConfig[row.assignment_type]
         return (
           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${config.color}`}>

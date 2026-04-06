@@ -179,7 +179,7 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
             type="number"
             min={1}
             value={formData.max_teams || ''}
-            onChange={(e) => handleChange('max_teams', e.target.value ? parseInt(e.target.value, 10) : undefined)}
+            onChange={(e) => handleChange('max_teams', e.target.value ? parseInt(e.target.value, 10) : 0)}
             placeholder="No limit"
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"

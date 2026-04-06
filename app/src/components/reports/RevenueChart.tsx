@@ -47,7 +47,10 @@ export function RevenueChart({ data }: RevenueChartProps) {
           tick={{ fill: '#64748b', fontSize: 12 }}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) => `${value.toLocaleString()}`}
+          tickFormatter={(value) => {
+            const numValue = Number(value)
+            return `${(numValue / 1000).toFixed(0)}K`
+          }}
         />
         <Tooltip 
           contentStyle={{ 
@@ -56,7 +59,11 @@ export function RevenueChart({ data }: RevenueChartProps) {
             borderRadius: '8px',
             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
           }}
-          formatter={(value: number) => [`${value.toLocaleString()} EGP`, 'Revenue']}
+          formatter={(value, entry: any) => {
+            const numValue = Number(entry?.payload?.value || 0)
+            const percentage = ((numValue / 1000000) * 100).toFixed(1)
+            return `${value}: ${numValue} (${percentage}%)`
+          }}
         />
         <Area 
           type="monotone" 
