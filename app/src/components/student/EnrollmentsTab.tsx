@@ -14,7 +14,7 @@ interface EnrollDialogProps {
   isOpen: boolean
   onClose: () => void
   onEnroll: (groupId: number) => Promise<void>
-  availableGroups: { id: number; name: string; course_name: string; level: number }[]
+  availableGroups: { id: number; group_name: string; course_name: string; level: number }[]
   isLoading?: boolean
 }
 
