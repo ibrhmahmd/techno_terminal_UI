@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Edit2, Trash2 } from 'lucide-react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
-import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import { Modal } from '../components/common/Modal'
+import { PageSection, Modal, LoadingSpinner } from '../components/common'
 import { StudentForm } from '../components/crm/StudentForm'
 import { LinkParentModal } from '../components/crm/LinkParentModal'
 import { StudentTabs, type TabId } from '../components/student/StudentTabs'
@@ -282,14 +281,14 @@ export function StudentDetailPage() {
       <StudentTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Tab Content */}
-      <section className="p-8 max-w-[1400px] mx-auto">
+      <PageSection>
         {error && (
           <div className="mb-4 p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm">
             {error}
           </div>
         )}
         {renderTabContent()}
-      </section>
+      </PageSection>
 
       {/* Edit Student Modal */}
       <Modal

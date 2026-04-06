@@ -14,7 +14,7 @@ const navSections = [
     items: [
       { path: '/enrollments', label: 'Enrollments', icon: 'assignment_ind' },
       { path: '/finance', label: 'Finance', icon: 'payments' },
-      { path: '/attendance', label: 'Attendance', icon: 'check_circle' },
+      // { path: '/attendance', label: 'Attendance', icon: 'check_circle' },
     ],
   },
   {

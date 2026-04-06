@@ -22,7 +22,7 @@ export function EmptyState({
     inbox: Inbox,
     history: History,
     none: () => null
-  }[icon]
+  }[icon] || Inbox // fallback to Inbox for invalid values
 
   return (
     <div className={`flex flex-col items-center justify-center p-8 text-center ${className}`}>

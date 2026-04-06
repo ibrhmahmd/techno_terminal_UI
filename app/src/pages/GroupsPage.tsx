@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
-import { Modal } from '../components/common/Modal'
+import { DataTable, type DataTableColumn, PageSection, Modal, LoadingSpinner, Pagination } from '../components/common'
 import { GroupForm } from '../components/groups/GroupForm'
 import { 
   createGroup, 
@@ -11,14 +11,79 @@ import {
   type EnrichedGroupPublic, 
   type ScheduleGroupInput 
 } from '../api/academics'
-import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import { GroupsTable } from '../components/groups/GroupsTable'
-import { Pagination } from '../components/common/Pagination'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { GroupsHeader } from '../components/groups/GroupsHeader'
 import { GroupsControls } from '../components/groups/GroupsControls'
 
-import { useGroups } from '../hooks/useGroups'
+import { useGroups, type SortField } from '../hooks/useGroups'
+
+// Column configuration for Groups DataTable
+const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
+  {
+    key: 'name',
+    header: 'Group Name',
+    sortable: true,
+    cell: (group) => <span className="font-semibold text-slate-900">{group.name}</span>
+  },
+  {
+    key: 'course_name',
+    header: 'Course',
+    sortable: true,
+    cell: (group) => (
+      <span className="text-sm text-slate-600 bg-slate-100/50 px-2.5 py-1 rounded-md border border-slate-200">
+        {group.course_name}
+      </span>
+    )
+  },
+  {
+    key: 'instructor_name',
+    header: 'Instructor',
+    sortable: true,
+    cell: (group) => (
+      <span className="text-sm text-slate-600 font-medium">
+        {group.instructor_name || <span className="text-slate-400 italic">Unassigned</span>}
+      </span>
+    )
+  },
+  {
+    key: 'schedule',
+    header: 'Schedule',
+    cell: (group) => (
+      <div className="flex flex-col gap-0.5">
+        <span className="text-xs font-semibold text-slate-900">{group.default_day}</span>
+        <span className="text-[10px] text-slate-500">
+          {group.default_time_start.slice(0, 5)} - {group.default_time_end.slice(0, 5)}
+        </span>
+      </div>
+    )
+  },
+  {
+    key: 'max_capacity',
+    header: 'Capacity',
+    sortable: true,
+    align: 'center',
+    cell: (group) => (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700">
+        <span className="material-symbols-outlined text-xs">group</span>
+        {group.max_capacity}
+      </span>
+    )
+  },
+  {
+    key: 'is_active',
+    header: 'Status',
+    cell: (group) => (
+      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+        group.is_active 
+          ? 'bg-green-100 text-green-700' 
+          : 'bg-slate-100 text-slate-600'
+      }`}>
+        <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+        {group.is_active ? 'Active' : 'Archived'}
+      </span>
+    )
+  }
+]
 
 export function GroupsPage() {
   const navigate = useNavigate()
@@ -114,7 +179,7 @@ export function GroupsPage() {
         onCreateClick={() => setIsCreateModalOpen(true)}
       />
 
-      <section className="w-full px-4 sm:px-6 lg:px-8 py-8 mx-auto">
+      <PageSection>
         <GroupsControls 
           pageSize={pageSize}
           onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1) }}
@@ -136,14 +201,21 @@ export function GroupsPage() {
                   {mutationError}
                 </div>
               )}
-              <GroupsTable
-                groups={paginatedGroups}
+              <DataTable
+                data={paginatedGroups}
+                columns={groupColumns}
+                keyExtractor={(g) => g.id.toString()}
                 sortField={sortField}
                 sortDirection={sortDirection}
                 onSort={handleSort}
-                onView={handleView}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
+                onRowClick={(g) => handleView(g.id)}
+                actions={{
+                  view: (g) => handleView(g.id),
+                  edit: handleEdit,
+                  delete: (g) => handleDelete(g.id)
+                }}
+                emptyMessage="No groups matched your selection"
+                emptyIcon="group_off"
               />
 
               {totalPages > 1 && (
@@ -158,7 +230,7 @@ export function GroupsPage() {
             </>
           )}
         </ErrorBoundary>
-      </section>
+      </PageSection>
 
       {/* Create Modal */}
       <Modal

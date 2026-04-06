@@ -37,8 +37,8 @@ export function useGroups() {
   }, [loadGroups])
 
   const processedGroups = useMemo(() => {
-    let filtered = groups.filter((group) =>
-      group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const filtered = groups.filter((group) =>
+      (group.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (group.course_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (group.instructor_name || '').toLowerCase().includes(searchTerm.toLowerCase())
     )

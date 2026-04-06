@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
-import { Modal } from '../components/common/Modal'
-import { LoadingSpinner } from '../components/common/LoadingSpinner'
+import { PageHeader, PageSection, ActionButton, SearchBar, DataTableContainer, ModalFooter, LoadingSpinner, Modal, PaginationControls } from '../components/common'
 import { EmployeeForm } from '../components/staff/EmployeeForm'
 import { AttendanceLog } from '../components/staff/AttendanceLog'
-import { PaginationControls } from '../components/common/PaginationControls'
 import { usePagination } from '../hooks/usePagination'
 import { 
   getEmployeesPaginated, 
@@ -135,34 +133,29 @@ export function StaffPage() {
       <TopNavbar activePage="Staff" />
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-6">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="flex items-end justify-between">
-            <div>
-              <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">Staff Management</h1>
-              <p className="text-sm text-on-surface-variant mt-2">Manage employees, attendance, and payroll</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsAttendanceModalOpen(true)}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
-              >
-                <span className="material-symbols-outlined text-sm">schedule</span>
-                Log Attendance
-              </button>
-              <button
-                onClick={() => setIsAddModalOpen(true)}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
-              >
-                <span className="material-symbols-outlined text-sm">person_add</span>
-                Add Employee
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PageHeader 
+        title="Staff Management"
+        subtitle="Manage employees, attendance, and payroll"
+        actions={
+          <>
+            <ActionButton 
+              variant="secondary" 
+              icon="schedule" 
+              onClick={() => setIsAttendanceModalOpen(true)}
+            >
+              Log Attendance
+            </ActionButton>
+            <ActionButton 
+              icon="person_add" 
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              Add Employee
+            </ActionButton>
+          </>
+        }
+      />
 
-      <section className="p-8 max-w-[1400px] mx-auto">
+      <PageSection>
 
 
         {error && (
@@ -195,16 +188,11 @@ export function StaffPage() {
 
         {/* Filters */}
         <div className="flex items-center gap-4 mb-6">
-          <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-lg border border-slate-200 flex-1 max-w-md">
-            <span className="material-symbols-outlined text-slate-400">search</span>
-            <input
-              type="text"
-              placeholder="Search employees..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-transparent border-none outline-none text-sm text-on-surface w-full placeholder-slate-400"
-            />
-          </div>
+          <SearchBar
+            placeholder="Search employees..."
+            onSearch={setSearchTerm}
+            className="flex-1 max-w-md"
+          />
           <select
             value={selectedDepartment}
             onChange={(e) => setSelectedDepartment(e.target.value)}
@@ -235,56 +223,56 @@ export function StaffPage() {
             <p className="text-slate-500">No employees found</p>
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Employee</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Department</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Job Title</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Type</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Salary</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Status</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-slate-500">Actions</th>
+          <DataTableContainer>
+            <table className="w-full border-collapse text-left">
+              <thead className="bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Employee</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Department</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Job Title</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Type</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Salary</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
+                  <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {filteredEmployees.map((employee) => (
-                  <tr key={employee.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="py-3 px-4">
+                  <tr key={employee.id} className="group/row border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4">
                       <div>
-                        <p className="font-medium text-on-surface">{employee.full_name}</p>
+                        <p className="font-semibold text-slate-900">{employee.full_name}</p>
                         <p className="text-sm text-slate-500">{employee.email}</p>
                       </div>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${departmentColors[employee.department]}`}>
                         {employee.department}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-slate-600">{employee.job_title}</td>
-                    <td className="py-3 px-4 text-slate-600 capitalize">{employee.employment_type.replace('_', ' ')}</td>
-                    <td className="py-3 px-4 text-slate-600">{employee.salary.toLocaleString()} EGP</td>
-                    <td className="py-3 px-4">
+                    <td className="px-6 py-4 text-sm text-slate-600">{employee.job_title}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600 capitalize">{employee.employment_type.replace('_', ' ')}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{employee.salary.toLocaleString()} EGP</td>
+                    <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[employee.status]}`}>
                         {employee.status.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
                         <button
                           onClick={() => setEditingEmployee(employee)}
-                          className="p-2 text-slate-400 hover:text-secondary transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-secondary rounded-lg hover:bg-secondary-container transition-colors"
                           title="Edit"
                         >
-                          <span className="material-symbols-outlined text-sm">edit</span>
+                          <span className="material-symbols-outlined text-xl">edit</span>
                         </button>
                         <button
                           onClick={() => setDeletingEmployee(employee.id)}
-                          className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                           title="Delete"
                         >
-                          <span className="material-symbols-outlined text-sm">delete</span>
+                          <span className="material-symbols-outlined text-xl">delete</span>
                         </button>
                       </div>
                     </td>
@@ -301,9 +289,9 @@ export function StaffPage() {
                 onChange={setPage}
               />
             </div>
-          </div>
+          </DataTableContainer>
         )}
-      </section>
+      </PageSection>
 
       {/* Add Employee Modal */}
       <Modal
@@ -345,23 +333,15 @@ export function StaffPage() {
         title="Delete Employee"
         size="sm"
         footer={
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={() => setDeletingEmployee(null)}
-              disabled={isProcessing}
-              className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => deletingEmployee && handleDeleteEmployee(deletingEmployee)}
-              disabled={isProcessing}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-            >
-              {isProcessing && <LoadingSpinner size="sm" />}
-              Delete
-            </button>
-          </div>
+          <ModalFooter
+            onCancel={() => setDeletingEmployee(null)}
+            onConfirm={() => deletingEmployee && handleDeleteEmployee(deletingEmployee)}
+            confirmText="Delete"
+            variant="danger"
+            isProcessing={isProcessing}
+            cancelDisabled={isProcessing}
+            confirmDisabled={isProcessing}
+          />
         }
       >
         <p className="text-sm text-slate-600">

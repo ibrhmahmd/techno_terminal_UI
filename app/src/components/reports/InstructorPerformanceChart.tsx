@@ -8,10 +8,10 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts'
-import type { InstructorPerformance } from '../../api/reports'
+import type { InstructorPerformanceReport } from '../../api/reports'
 
 interface InstructorPerformanceChartProps {
-  data: InstructorPerformance[]
+  data: InstructorPerformanceReport[]
 }
 
 export function InstructorPerformanceChart({ data }: InstructorPerformanceChartProps) {

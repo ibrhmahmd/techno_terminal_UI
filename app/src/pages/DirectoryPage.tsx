@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Search, Plus } from 'lucide-react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
-import { StudentList } from '../components/crm/StudentList'
-import { ParentList } from '../components/crm/ParentList'
-import { Pagination } from '../components/common/Pagination'
+import { DataTable, type DataTableColumn, Pagination, PageHeader, PageSection, ActionButton, SearchBar, Modal } from '../components/common'
+import { StudentForm } from '../components/crm/StudentForm'
+import { ParentForm } from '../components/crm/ParentForm'
 import { useSearch } from '../hooks/useSearch'
 import { 
   getStudentsPaginated, 
@@ -16,9 +15,97 @@ import {
   type Student, 
   type Parent 
 } from '../api/crm'
-import { Modal } from '../components/common/Modal'
-import { StudentForm } from '../components/crm/StudentForm'
-import { ParentForm } from '../components/crm/ParentForm'
+
+import { useNavigate } from 'react-router-dom'
+
+// Column configuration for Students DataTable
+const studentColumns: DataTableColumn<Student>[] = [
+  {
+    key: 'full_name',
+    header: 'Name',
+    cell: (student) => <span className="font-semibold text-slate-900">{student.full_name}</span>
+  },
+  {
+    key: 'phone',
+    header: 'Phone',
+    cell: (student) => <span className="text-slate-600">{student.phone || '-'}</span>
+  },
+  {
+    key: 'current_group',
+    header: 'Current Group',
+    cell: (student) => (
+      student.current_group_name ? (
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-medium">
+          <span className="material-symbols-outlined text-sm">group</span>
+          {student.current_group_name}
+        </span>
+      ) : (
+        <span className="text-slate-400 text-xs">Not enrolled</span>
+      )
+    )
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    cell: (student) => (
+      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+        student.is_active
+          ? 'bg-green-100 text-green-700'
+          : 'bg-slate-100 text-slate-600'
+      }`}>
+        <span className="material-symbols-outlined text-sm">
+          {student.is_active ? 'check_circle' : 'cancel'}
+        </span>
+        {student.is_active ? 'Active' : 'Inactive'}
+      </span>
+    )
+  },
+  {
+    key: 'notes',
+    header: 'Notes',
+    cell: (student) => <span className="text-slate-600 max-w-xs truncate">{student.notes || '-'}</span>
+  }
+]
+
+// Column configuration for Parents DataTable
+const parentColumns: DataTableColumn<Parent>[] = [
+  {
+    key: 'full_name',
+    header: 'Name',
+    cell: (parent) => <span className="font-semibold text-slate-900">{parent.full_name}</span>
+  },
+  {
+    key: 'phone',
+    header: 'Phone',
+    cell: (parent) => <span className="text-slate-600">{parent.phone_primary || '-'}</span>
+  },
+  {
+    key: 'email',
+    header: 'Email',
+    cell: (parent) => <span className="text-slate-600">{parent.email || '-'}</span>
+  },
+  {
+    key: 'relation',
+    header: 'Relation',
+    cell: (parent) => <span className="text-slate-600">{parent.relation || '-'}</span>
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    cell: (parent) => (
+      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+        parent.is_active
+          ? 'bg-green-100 text-green-700'
+          : 'bg-slate-100 text-slate-600'
+      }`}>
+        <span className="material-symbols-outlined text-sm">
+          {parent.is_active ? 'check_circle' : 'cancel'}
+        </span>
+        {parent.is_active ? 'Active' : 'Inactive'}
+      </span>
+    )
+  }
+]
 
 export function DirectoryPage() {
   const [activeTab, setActiveTab] = useState<'students' | 'parents'>('students')
@@ -173,57 +260,26 @@ export function DirectoryPage() {
       <TopNavbar activePage="Directory" />
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-6">
-        <div className="max-w-[1400px] mx-auto flex items-end justify-between">
-          <div>
-            <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">
-              Directory 
-              <span className="text-lg font-normal text-slate-500 ml-2">
-                ({activeTab === 'students' ? totalStudents : totalParents} {activeTab})
-              </span>
-            </h1>
-            <p className="text-sm text-on-surface-variant mt-2">Browse and manage students and parents</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-lg border border-slate-200">
-              <Search className="w-4 h-4 text-slate-500" />
-              <input
-                type="text"
-                placeholder="Search by name or phone..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-transparent border-none outline-none text-sm text-on-surface min-w-[220px] placeholder-slate-400"
-              />
-              {searchTerm && (
-                <button
-                  onClick={clearSearch}
-                  className="p-1 hover:bg-slate-200 rounded transition-colors"
-                  aria-label="Clear search"
-                >
-                  <span className="material-symbols-outlined text-sm text-slate-500">close</span>
-                </button>
-              )}
-            </div>
-            {activeTab === 'students' ? (
-              <button
-                onClick={() => setIsCreateStudentModalOpen(true)}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Add Student
-              </button>
-            ) : (
-              <button
-                onClick={() => setIsCreateParentModalOpen(true)}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Add Parent
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
+      <PageHeader 
+        title="Directory"
+        count={activeTab === 'students' ? totalStudents : totalParents}
+        subtitle="Browse and manage students and parents"
+        actions={
+          <>
+            <SearchBar
+              placeholder="Search by name or phone..."
+              onSearch={setSearchTerm}
+              className="min-w-[220px]"
+            />
+            <ActionButton 
+              icon="add" 
+              onClick={() => activeTab === 'students' ? setIsCreateStudentModalOpen(true) : setIsCreateParentModalOpen(true)}
+            >
+              Add {activeTab === 'students' ? 'Student' : 'Parent'}
+            </ActionButton>
+          </>
+        }
+      />
 
       {/* Tab Navigation */}
       <div className="px-8 pt-4 border-b border-slate-200">
@@ -262,7 +318,7 @@ export function DirectoryPage() {
       </div>
 
         {/* Content */}
-        <section className="p-8 max-w-[1400px] mx-auto">
+        <PageSection>
           {error && (
             <div className="mb-4 p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm">
               {error}
@@ -270,31 +326,33 @@ export function DirectoryPage() {
           )}
 
           {activeTab === 'students' ? (
-            <StudentList 
-              students={displayStudents} 
-              isLoading={isLoading} 
+            <DataTable
+              data={displayStudents}
+              columns={studentColumns}
+              keyExtractor={(s) => s.id.toString()}
+              isLoading={isLoading}
               emptyMessage={searchTerm.length >= 2 ? 'No students match your search' : 'No students found'}
-              onEdit={(student) => {
-                // TODO: Implement edit student modal
-                console.log('Edit student:', student)
-              }}
-              onDelete={(student) => {
-                // TODO: Implement delete student confirmation
-                console.log('Delete student:', student)
+              emptyIcon="search"
+              onRowClick={(student) => navigate(`/students/${student.id}`)}
+              actions={{
+                view: (student) => navigate(`/students/${student.id}`),
+                edit: (student) => console.log('Edit student:', student),
+                delete: (student) => console.log('Delete student:', student)
               }}
             />
           ) : (
-            <ParentList 
-              parents={displayParents} 
+            <DataTable
+              data={displayParents}
+              columns={parentColumns}
+              keyExtractor={(p) => p.id.toString()}
               isLoading={isLoading}
               emptyMessage={searchTerm.length >= 2 ? 'No parents match your search' : 'No parents found'}
-              onEdit={(parent) => {
-                // TODO: Implement edit parent modal
-                console.log('Edit parent:', parent)
-              }}
-              onDelete={(parent) => {
-                // TODO: Implement delete parent confirmation
-                console.log('Delete parent:', parent)
+              emptyIcon="search"
+              onRowClick={(parent) => navigate(`/parents/${parent.id}`)}
+              actions={{
+                view: (parent) => navigate(`/parents/${parent.id}`),
+                edit: (parent) => console.log('Edit parent:', parent),
+                delete: (parent) => console.log('Delete parent:', parent)
               }}
             />
           )}
@@ -317,7 +375,7 @@ export function DirectoryPage() {
               />
             </div>
           )}
-        </section>
+        </PageSection>
 
       {/* Create Student Modal */}
       <Modal

@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom'
-import { Edit2, Trash2, Eye } from 'lucide-react'
+import { Eye, Edit2, Trash2 } from 'lucide-react'
 import type { Student } from '../../api/crm'
 import { LoadingState } from '../common/LoadingState'
 import { EmptyState } from '../common/EmptyState'
+import { DataTableContainer } from '../common/DataTableContainer'
 
 interface StudentListProps {
   students: Student[]
@@ -36,32 +37,32 @@ export function StudentList({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl bg-white border border-slate-200 shadow-sm">
+    <DataTableContainer>
       <table className="w-full border-collapse text-sm">
-        <thead className="bg-slate-50">
+        <thead className="bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Name</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Phone</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Current Group</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Notes</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 w-32">Actions</th>
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Name</th>
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Phone</th>
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Current Group</th>
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Notes</th>
+            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 w-32">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
           {students.map((student) => (
             <tr
               key={student.id}
-              className="hover:bg-slate-50 transition-colors"
+              className="group/row hover:bg-slate-50/50 transition-colors"
             >
               <td 
-                className="px-4 py-3 font-semibold text-on-surface cursor-pointer"
+                className="px-6 py-4 font-semibold text-on-surface cursor-pointer"
                 onClick={() => navigate(`/students/${student.id}`)}
               >
                 {student.full_name}
               </td>
-              <td className="px-4 py-3 text-slate-500">{student.phone || '-'}</td>
-              <td className="px-4 py-3 text-slate-500">
+              <td className="px-6 py-4 text-slate-500">{student.phone || '-'}</td>
+              <td className="px-6 py-4 text-slate-500">
                 {student.current_group_name ? (
                   <span 
                     className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-medium cursor-pointer hover:bg-blue-100 transition-colors"
@@ -74,7 +75,7 @@ export function StudentList({
                   <span className="text-slate-400 text-xs">Not enrolled</span>
                 )}
               </td>
-              <td className="px-4 py-3">
+              <td className="px-6 py-4">
                 <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
                   student.is_active
                     ? 'bg-green-100 text-green-700'
@@ -86,15 +87,15 @@ export function StudentList({
                   {student.is_active ? 'Active' : 'Inactive'}
                 </span>
               </td>
-              <td className="px-4 py-3 text-slate-500 max-w-xs truncate">{student.notes || '-'}</td>
-              <td className="px-4 py-3">
+              <td className="px-6 py-4 text-slate-500 max-w-xs truncate">{student.notes || '-'}</td>
+              <td className="px-6 py-4">
                 <div className="flex items-center gap-1">
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
                       navigate(`/students/${student.id}`)
                     }}
-                    className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     title="View Details"
                     aria-label={`View details for ${student.full_name}`}
                   >
@@ -106,7 +107,7 @@ export function StudentList({
                         e.stopPropagation()
                         onEdit(student)
                       }}
-                      className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                      className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
                       title="Edit Student"
                       aria-label={`Edit ${student.full_name}`}
                     >
@@ -119,7 +120,7 @@ export function StudentList({
                         e.stopPropagation()
                         onDelete(student)
                       }}
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Delete Student"
                       aria-label={`Delete ${student.full_name}`}
                     >
@@ -132,7 +133,7 @@ export function StudentList({
           ))}
         </tbody>
       </table>
-    </div>
+    </DataTableContainer>
   )
 }
 
