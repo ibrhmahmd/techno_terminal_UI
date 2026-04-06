@@ -17,6 +17,8 @@ export interface Group {
 export interface EnrichedGroupPublic extends Group {
   course_name: string;
   instructor_name: string;
+  schedule_time?: string;
+  students?: Array<{ id: number; full_name: string }>;
 }
 
 export interface Session {
@@ -131,4 +133,62 @@ export interface CourseStats {
   active_groups: number;
   total_students_ever: number;
   active_students: number;
+}
+
+// New DTOs for Group Details Page
+
+export interface GroupLevelHistoryDTO {
+  id: number;
+  level_number: number;
+  level_name: string;
+  start_date: string;
+  end_date?: string;
+  pricing_snapshot: {
+    monthly_fee: number;
+    session_fee: number;
+    currency: string;
+  };
+  enrollment_count_start: number;
+  enrollment_count_end?: number;
+  sessions_count: number;
+  completion_rate: number;
+}
+
+export interface EnrollmentHistoryDTO {
+  id: number;
+  student_id: number;
+  student_name: string;
+  action: 'enrolled' | 'transferred_in' | 'withdrawn' | 'transferred_out' | 'graduated';
+  date: string;
+  level_at_time: number;
+  notes?: string;
+}
+
+export interface CompetitionParticipationDTO {
+  id: number;
+  
+  competition_id: number;
+  competition_name: string;
+  level_at_time: number;
+  event_date: string;
+  result?: 'winner' | 'runner_up' | 'participant' | 'disqualified';
+  score?: number;
+  notes?: string;
+}
+
+export interface InstructorAssignmentDTO {
+  id: number;
+  instructor_id: number;
+  instructor_name: string;
+  start_date: string;
+  end_date?: string;
+  assignment_type: 'primary' | 'substitute' | 'assistant';
+  reason?: string;
+}
+
+export interface EnrollmentHistoryFilters {
+  level?: number;
+  action?: EnrollmentHistoryDTO['action'];
+  skip?: number;
+  limit?: number;
 }

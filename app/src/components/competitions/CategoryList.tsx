@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { CompetitionCategory, TeamRegistration } from '../../api/competitions'
+import type { CompetitionCategory } from '../../api/competitions'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 

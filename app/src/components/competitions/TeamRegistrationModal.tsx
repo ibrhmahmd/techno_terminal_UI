@@ -1,7 +1,7 @@
-import { useState, FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import type { CompetitionCategory, TeamRegistration, RegisterTeamInput } from '../../api/competitions'
+import type { CompetitionCategory, RegisterTeamInput } from '../../api/competitions'
 
 interface TeamRegistrationModalProps {
   category: CompetitionCategory | null

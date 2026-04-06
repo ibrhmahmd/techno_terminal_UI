@@ -1,9 +1,13 @@
-import React from 'react'
 
 interface PaginationProps {
   currentPage: number
   totalPages: number
   onPageChange: (page: number) => void
+  pageSize?: number
+  onPageSizeChange?: (size: number) => void
+  pageSizeOptions?: number[]
+  showTotalInfo?: boolean
+  loading?: boolean
 }
 
 export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {

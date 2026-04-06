@@ -17,9 +17,6 @@ import {
   type LogAttendanceInput
 } from '../api/hr'
 
-// Mock data for fallback
-import { departmentColors } from '../utils/colors'
-
 const statusColors: Record<string, string> = {
   active: 'bg-green-100 text-green-700',
   on_leave: 'bg-blue-100 text-blue-700',
@@ -48,7 +45,6 @@ export function StaffPage() {
   
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedDepartment, setSelectedDepartment] = useState<string>('all')
   
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -124,8 +120,7 @@ export function StaffPage() {
     const matchesSearch = employee.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          employee.job_title.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesDepartment = selectedDepartment === 'all' || employee.department === selectedDepartment
-    return matchesSearch && matchesDepartment
+    return matchesSearch
   })
 
   return (
@@ -193,17 +188,6 @@ export function StaffPage() {
             onSearch={setSearchTerm}
             className="flex-1 max-w-md"
           />
-          <select
-            value={selectedDepartment}
-            onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="px-4 py-2 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
-          >
-            <option value="all">All Departments</option>
-            <option value="academics">Academics</option>
-            <option value="operations">Operations</option>
-            <option value="admin">Administration</option>
-            <option value="management">Management</option>
-          </select>
           <input
             type="date"
             value={selectedDate}
@@ -228,7 +212,6 @@ export function StaffPage() {
               <thead className="bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Employee</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Department</th>
                   <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Job Title</th>
                   <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Type</th>
                   <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Salary</th>
@@ -244,11 +227,6 @@ export function StaffPage() {
                         <p className="font-semibold text-slate-900">{employee.full_name}</p>
                         <p className="text-sm text-slate-500">{employee.email}</p>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${departmentColors[employee.department]}`}>
-                        {employee.department}
-                      </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">{employee.job_title}</td>
                     <td className="px-6 py-4 text-sm text-slate-600 capitalize">{employee.employment_type.replace('_', ' ')}</td>

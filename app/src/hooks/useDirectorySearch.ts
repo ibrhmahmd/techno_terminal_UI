@@ -45,7 +45,7 @@ export function useDirectorySearch<T>(
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
-  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastQueryRef = useRef('')
 
   const performSearch = useCallback(async (searchQuery: string) => {

@@ -1,4 +1,5 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import { Component, type ErrorInfo } from 'react'
 import { DataTableContainer } from './DataTableContainer'
 import { EmptyState } from './EmptyState'
 
@@ -46,7 +47,7 @@ export interface DataTableProps<T> {
   /** Current sort direction */
   sortDirection?: 'asc' | 'desc'
   /** Sort handler */
-  onSort?: (field: string) => void
+  onSort?: (field: string | any) => void
   /** Row actions */
   actions?: DataTableActions<T>
   /** Custom action labels */

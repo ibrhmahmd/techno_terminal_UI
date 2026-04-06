@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import { transferEnrollment, type Enrollment } from '../../api/enrollments'
+import { transferEnrollment, getEnrollments, type Enrollment } from '../../api/enrollments'
 import { getGroupsPaginated } from '../../api/academics'
-import type { Group } from '../../api/academics'
+import type { EnrichedGroupPublic } from '../../api/academics'
 
 interface TransferPanelProps {
   useMockData?: boolean
@@ -14,17 +14,23 @@ interface TransferPanelProps {
 
 export function TransferPanel({ useMockData, isLoading, onSuccess, onError, setIsLoading }: TransferPanelProps) {
   const [selectedEnrollment, setSelectedEnrollment] = useState<Enrollment | null>(null)
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([])
   const [groupSearch, setGroupSearch] = useState('')
-  const [groups, setGroups] = useState<Group[]>([])
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null)
+  const [groups, setGroups] = useState<EnrichedGroupPublic[]>([])
+  const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
 
-  // Load groups
+  // Load enrollments and groups
   useEffect(() => {
     async function load() {
       try {
-        const result = await getGroupsPaginated({ skip: 0, limit: 100 })
-        setGroups(result.items || [])
+        const [enrollmentsResult, groupsResult] = await Promise.all([
+          getEnrollments(),
+          getGroupsPaginated({ skip: 0, limit: 100 })
+        ])
+        setEnrollments(enrollmentsResult.filter(e => e.status === 'active'))
+        setGroups((groupsResult.items || []) as EnrichedGroupPublic[])
       } catch {
+        setEnrollments([])
         setGroups([])
       }
     }

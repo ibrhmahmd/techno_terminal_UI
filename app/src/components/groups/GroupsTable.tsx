@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState } from 'react'
 import type { EnrichedGroupPublic } from '../../api/academics'
 import type { SortField, SortDirection } from '../../hooks/useGroups'
 

@@ -1,4 +1,4 @@
-import React from 'react'
+import { Users, GraduationCap } from 'lucide-react'
 
 export function RosterPlaceholder() {
   return (

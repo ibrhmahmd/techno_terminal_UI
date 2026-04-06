@@ -18,7 +18,6 @@ import {
   type CreateCategoryInput,
   type RegisterTeamInput
 } from '../api/competitions'
-import { formatDate } from '../utils/formatting'
 import { competitionStatusColors, paymentStatusColors } from '../utils/colors'
 
 // Mock data for fallback
@@ -88,7 +87,6 @@ export function CompetitionDetailPage() {
   const [isTeamsModalOpen, setIsTeamsModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<CompetitionCategory | null>(null)
   const [selectedCategoryName, setSelectedCategoryName] = useState('')
-  const [isProcessing, setIsProcessing] = useState(false)
 
   useEffect(() => {
     async function loadCompetitionData() {

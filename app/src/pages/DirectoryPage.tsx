@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DataTable, type DataTableColumn, Pagination, PageHeader, PageSection, ActionButton, SearchBar, Modal } from '../components/common'
 import { StudentForm } from '../components/crm/StudentForm'
@@ -16,7 +17,7 @@ import {
   type Parent 
 } from '../api/crm'
 
-import { useNavigate } from 'react-router-dom'
+
 
 // Column configuration for Students DataTable
 const studentColumns: DataTableColumn<Student>[] = [
@@ -108,6 +109,7 @@ const parentColumns: DataTableColumn<Parent>[] = [
 ]
 
 export function DirectoryPage() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<'students' | 'parents'>('students')
   const [students, setStudents] = useState<Student[]>([])
   const [parents, setParents] = useState<Parent[]>([])

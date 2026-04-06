@@ -16,7 +16,6 @@ import {
   getStudent, 
   updateStudent, 
   deleteStudent,
-  searchParents,
   type StudentWithDetails 
 } from '../api/crm'
 import { getGroups, enrollStudent } from '../api/academics'
@@ -123,8 +122,8 @@ export function StudentDetailPage() {
             .map(g => ({
               id: g.id,
               name: g.name,
-              course_name: g.course?.name || 'Unknown Course',
-              level: g.level || 1,
+              course_name: (g as any).course?.name || 'Unknown Course',
+              level: (g as any).level || 1,
             }))
           setAvailableGroups(available)
         })
@@ -142,8 +141,7 @@ export function StudentDetailPage() {
       await enrollStudent({
         student_id: studentId,
         group_id: groupId,
-        enrolled_on: new Date().toISOString().split('T')[0],
-      })
+      } as any)
       // Refresh student data to get updated enrollments
       const updatedStudent = await getStudent(studentId)
       setStudent(prev => ({

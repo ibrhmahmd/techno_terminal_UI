@@ -1,4 +1,4 @@
-import React from 'react'
+import { Users, Clock } from 'lucide-react'
 
 export function HistoryPlaceholder() {
   return (

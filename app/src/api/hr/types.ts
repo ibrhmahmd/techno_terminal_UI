@@ -36,12 +36,15 @@ export interface CreateEmployeeInput {
   major?: string
   is_graduate?: boolean
   job_title?: string
+  department?: string  // Added for staff forms
   employment_type: 'full_time' | 'part_time' | 'contract'
   monthly_salary?: number
   contract_percentage?: number
   is_active?: boolean
   notes?: string
   hire_date?: string
+  emergency_contact_name?: string  // Added for staff forms
+  emergency_contact_phone?: string  // Added for staff forms
 }
 
 export interface UpdateEmployeeInput extends CreateEmployeeInput {

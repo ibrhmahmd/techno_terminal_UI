@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { CreateCompetitionInput, UpdateCompetitionInput } from '../../api/competitions'
 

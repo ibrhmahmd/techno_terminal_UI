@@ -4,7 +4,7 @@ import { searchStudents } from '../../api/crm'
 import { getGroupsPaginated } from '../../api/academics'
 import { createEnrollment } from '../../api/enrollments'
 import type { Student } from '../../api/crm'
-import type { Group } from '../../api/academics'
+import type { EnrichedGroupPublic } from '../../api/academics'
 
 interface EnrollPanelProps {
   useMockData: boolean
@@ -18,9 +18,9 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
   const [studentSearch, setStudentSearch] = useState('')
   const [groupSearch, setGroupSearch] = useState('')
   const [students, setStudents] = useState<Student[]>([])
-  const [groups, setGroups] = useState<Group[]>([])
+  const [groups, setGroups] = useState<EnrichedGroupPublic[]>([])
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null)
+  const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
   const [level, setLevel] = useState(1)
   const [amount, setAmount] = useState(150)
   const [discount, setDiscount] = useState(0)
@@ -49,7 +49,7 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
     async function load() {
       try {
         const result = await getGroupsPaginated({ skip: 0, limit: 100 })
-        setGroups(result.items || [])
+        setGroups((result.items || []) as EnrichedGroupPublic[])
       } catch {
         setGroups([])
       }

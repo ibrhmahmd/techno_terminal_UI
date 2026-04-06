@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DataTable, type DataTableColumn, PageSection, Modal, LoadingSpinner, Pagination } from '../components/common'
@@ -7,7 +7,6 @@ import {
   createGroup, 
   updateGroup,
   deleteGroup,
-  getEnrichedGroups,
   type EnrichedGroupPublic, 
   type ScheduleGroupInput 
 } from '../api/academics'
@@ -15,7 +14,7 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { GroupsHeader } from '../components/groups/GroupsHeader'
 import { GroupsControls } from '../components/groups/GroupsControls'
 
-import { useGroups, type SortField } from '../hooks/useGroups'
+import { useGroups } from '../hooks/useGroups'
 
 // Column configuration for Groups DataTable
 const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [

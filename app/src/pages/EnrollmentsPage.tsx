@@ -3,7 +3,6 @@ import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { EnrollPanel } from '../components/enrollments/EnrollPanel'
 import { TransferPanel } from '../components/enrollments/TransferPanel'
 import { DropPanel } from '../components/enrollments/DropPanel'
-import { type Enrollment } from '../api/enrollments'
 
 type PanelType = 'enroll' | 'transfer' | 'drop'
 

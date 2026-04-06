@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState } from 'react'
 
 interface GroupsControlsProps {
   pageSize: number

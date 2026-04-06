@@ -4,6 +4,11 @@ import type {
   TransferEnrollmentRequest, TransferEnrollmentResponse, DeleteEnrollmentResponse
 } from './types'
 
+export async function getEnrollments(): Promise<Enrollment[]> {
+  const response = await client.get<{ data: Enrollment[] }>('/enrollments')
+  return response.data.data || []
+}
+
 export async function getStudentEnrollments(studentId: number): Promise<Enrollment[]> {
   const response = await client.get<{ data: Enrollment[] }>(`/enrollments/student/${studentId}`)
   return response.data.data || []

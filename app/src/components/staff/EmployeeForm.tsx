@@ -23,11 +23,8 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
     date_of_birth: initialData?.date_of_birth || '',
     hire_date: initialData?.hire_date || new Date().toISOString().split('T')[0],
     job_title: initialData?.job_title || '',
-    department: initialData?.department || 'operations',
     employment_type: initialData?.employment_type || 'full_time',
     salary: initialData?.salary || 0,
-    emergency_contact_name: initialData?.emergency_contact_name || '',
-    emergency_contact_phone: initialData?.emergency_contact_phone || '',
     notes: initialData?.notes || '',
     status: initialData?.status || 'active',
     is_active: initialData?.is_active ?? true,
@@ -73,9 +70,6 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
         employment_type: formData.employment_type as any,
         monthly_salary: formData.salary,
         is_active: formData.is_active,
-        // Legacy/Extra fields
-        department: formData.department as any,
-        salary: formData.salary,
         notes: formData.notes,
         hire_date: formData.hire_date
       }
@@ -263,23 +257,6 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
               className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
             />
           </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-on-surface">
-              Department <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.department}
-              onChange={(e) => handleChange('department', e.target.value as 'academics' | 'operations' | 'admin' | 'management')}
-              required
-              disabled={isLoading}
-              className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-            >
-              <option value="academics">Academics</option>
-              <option value="operations">Operations</option>
-              <option value="admin">Administration</option>
-              <option value="management">Management</option>
-            </select>
-          </div>
         </div>
       </div>
 
@@ -322,7 +299,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
           <label className="text-sm font-medium text-on-surface">Status</label>
           <select
             value={formData.status}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, status: e.target.value as Employee['status'] })}
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           >
@@ -333,35 +310,6 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
           </select>
         </div>
       )}
-
-      {/* Emergency Contact */}
-      <div className="border-t border-slate-200 pt-4">
-        <h4 className="font-medium text-on-surface mb-3">Emergency Contact</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-on-surface">Contact Name</label>
-            <input
-              type="text"
-              value={formData.emergency_contact_name}
-              onChange={(e) => handleChange('emergency_contact_name', e.target.value)}
-              placeholder="Emergency contact name..."
-              disabled={isLoading}
-              className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-on-surface">Contact Phone</label>
-            <input
-              type="tel"
-              value={formData.emergency_contact_phone}
-              onChange={(e) => handleChange('emergency_contact_phone', e.target.value)}
-              placeholder="Emergency contact phone..."
-              disabled={isLoading}
-              className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-            />
-          </div>
-        </div>
-      </div>
 
       {/* Notes */}
       <div className="flex flex-col gap-1.5">

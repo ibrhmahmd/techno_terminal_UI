@@ -1,288 +1,223 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import { Modal } from '../components/common/Modal'
-import { GroupForm } from '../components/groups/GroupForm'
-import { GroupHeader } from '../components/groups/GroupHeader'
-import { EditSessionPopup } from '../components/attendance/EditSessionPopup'
-import { AddSessionModal } from '../components/groups/AddSessionModal'
+import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import { TabNavigation } from '../components/groups/TabNavigation'
-import { SessionsList } from '../components/groups/SessionsList'
-import { RosterTab } from '../components/groups/RosterTab'
 import { AttendanceTab } from '../components/groups/AttendanceTab'
-import { HistoryTab } from '../components/groups/HistoryTab'
+import { HistoryTab } from '../components/groups/history/HistoryTab'
+import { GroupInfoCard } from '../components/groups/detail/GroupInfoCard'
+import { LevelSelector } from '../components/groups/detail/LevelSelector'
+import { LevelInfoPanel } from '../components/groups/detail/LevelInfoPanel'
+import { GroupPricingCard } from '../components/groups/detail/GroupPricingCard'
+import { EditGroupDialog } from '../components/groups/detail/EditGroupDialog'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
-import { 
-  cancelSession,
-  updateGroup,
-  getEnrichedGroup,
-  getGroupSessions,
-  updateSession,
-  deleteSession,
-  type EnrichedGroupPublic,
-  type Session, 
-  type UpdateSessionDTO,
-  type ScheduleGroupInput
-} from '../api/academics'
-
-/**
- * Custom hook to manage group detail data and logic
- */
-function useGroupDetail(groupId: number) {
-  const [group, setGroup] = useState<EnrichedGroupPublic | null>(null)
-  const [sessions, setSessions] = useState<Session[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const loadData = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const [groupData, sessionsData] = await Promise.all([
-        getEnrichedGroup(groupId),
-        getGroupSessions(groupId)
-      ])
-      setGroup(groupData)
-      setSessions(sessionsData)
-    } catch (err) {
-      console.error('[useGroupDetail] loadData failed:', err)
-      setError('Failed to load group details. Please try again later.')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [groupId])
-
-  useEffect(() => {
-    loadData()
-  }, [loadData])
-
-  return {
-    group,
-    setGroup,
-    sessions,
-    setSessions,
-    isLoading,
-    error,
-    refresh: loadData
-  }
-}
+import { useGroupDetail } from '../hooks/useGroupDetail'
+import { useGroupHistory } from '../hooks/useGroupHistory'
+import { useGroupMutations } from '../hooks/useGroupMutations'
+import { useToast } from '../components/common/Toast'
+import type { UpdateGroupDTO } from '../api/academics'
 
 export function GroupDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const groupId = Number(id) || 1
-  
+  const groupId = Number(id) || 0
+  const { showToast } = useToast()
+
+  const [activeTab, setActiveTab] = useState<'info' | 'attendance' | 'history'>('info')
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+
   const {
     group,
-    setGroup,
+    levels,
+    currentLevel,
     sessions,
-    setSessions,
     isLoading,
-    error
+    error,
+    refresh,
+    setActiveLevel,
+    activeLevelId,
   } = useGroupDetail(groupId)
 
-  const [activeTab, setActiveTab] = useState<'roster' | 'attendance' | 'history'>('attendance')
-  const [editingSession, setEditingSession] = useState<Session | null>(null)
-  const [deletingSessionId, setDeletingSessionId] = useState<number | null>(null)
-  const [isAddSessionModalOpen, setIsAddSessionModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [mutationError, setMutationError] = useState<string | null>(null)
+  const {
+    enrollmentHistory,
+    competitions,
+    instructorHistory,
+    isLoading: isHistoryLoading,
+    pagination,
+    setEnrollmentPage,
+  } = useGroupHistory(groupId)
 
-  const handleUpdateSession = async (sessionId: number, data: UpdateSessionDTO) => {
-    setIsProcessing(true)
-    setMutationError(null)
+  const { updateGroup, deleteGroup, levelUp, error: mutationError } = useGroupMutations(groupId)
+
+  const handleUpdateGroup = async (data: UpdateGroupDTO & { name?: string; notes?: string; status?: 'active' | 'inactive' | 'archived' }) => {
     try {
-      await updateSession(sessionId, data)
-      const updatedSessions = await getGroupSessions(groupId)
-      setSessions(updatedSessions)
-      setEditingSession(null)
-    } catch (err: unknown) {
-      console.error('[GroupDetailPage] updateSession failed:', err)
-      setMutationError('Failed to update session.')
-    } finally {
-      setIsProcessing(false)
+      await updateGroup(data)
+      showToast('Group updated successfully', 'success')
+      await refresh()
+      setIsEditDialogOpen(false)
+    } catch {
+      showToast(mutationError || 'Failed to update group', 'error')
     }
   }
 
-  const handleDeleteSession = async (sessionId: number) => {
-    setIsProcessing(true)
-    setMutationError(null)
+  const handleDeleteGroup = async () => {
     try {
-      await deleteSession(sessionId)
-      setSessions(prev => prev.filter(s => s.id !== sessionId))
-      setDeletingSessionId(null)
-    } catch (err: unknown) {
-      console.error('[GroupDetailPage] deleteSession failed:', err)
-      setMutationError('Failed to delete session.')
-    } finally {
-      setIsProcessing(false)
+      await deleteGroup()
+      showToast('Group deleted successfully', 'success')
+      window.location.href = '/groups'
+    } catch {
+      showToast(mutationError || 'Failed to delete group', 'error')
+      setIsDeleteDialogOpen(false)
     }
   }
 
-  const handleCancelSession = async (sessionId: number) => {
-    setIsProcessing(true)
-    setMutationError(null)
+  const handleLevelUp = async () => {
     try {
-      await cancelSession(sessionId)
-      const updatedSessions = await getGroupSessions(groupId)
-      setSessions(updatedSessions)
-    } catch (err: unknown) {
-      console.error('[GroupDetailPage] cancelSession failed:', err)
-      setMutationError('Failed to cancel session.')
-    } finally {
-      setIsProcessing(false)
+      await levelUp()
+      showToast('Group leveled up successfully', 'success')
+      await refresh()
+    } catch {
+      showToast(mutationError || 'Failed to level up group', 'error')
     }
   }
 
-  const handleAddSession = (newSession: Session) => {
-    setSessions(prev => [...prev, newSession])
+  const buildPricingHistory = () => {
+    if (!levels.length) return []
+    return levels.map((level) => ({
+      levelNumber: level.level_number,
+      dateRange: { start: level.start_date, end: level.end_date },
+      monthlyFee: level.pricing_snapshot.monthly_fee,
+      sessionFee: level.pricing_snapshot.session_fee,
+      isActive: !level.end_date,
+    }))
   }
 
-  const handleUpdateGroup = async (data: ScheduleGroupInput) => {
-    setIsProcessing(true)
-    setMutationError(null)
-    try {
-      const updated = await updateGroup(groupId, data)
-      setGroup(prev => prev ? ({ ...prev, ...updated }) : (updated as Record<string, unknown>))
-      setIsEditModalOpen(false)
-    } catch (err: unknown) {
-      console.error('[GroupDetailPage] updateGroup failed:', err)
-      setMutationError('Failed to update group.')
-    } finally {
-      setIsProcessing(false)
-    }
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-surface">
+        <TopNavbar activePage="Groups" />
+        <div className="flex items-center justify-center py-20">
+          <LoadingSpinner />
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-surface">
+        <TopNavbar activePage="Groups" />
+        <div className="p-8 max-w-[1400px] mx-auto">
+          <div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center">
+            <span className="material-symbols-outlined text-4xl text-red-500 mb-2">error</span>
+            <h2 className="text-xl font-bold text-red-800 mb-2">Error</h2>
+            <p className="text-red-600">{error}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!group) {
+    return (
+      <div className="min-h-screen bg-surface">
+        <TopNavbar activePage="Groups" />
+        <div className="p-8 max-w-[1400px] mx-auto">
+          <div className="p-12 text-center text-on-surface-variant">
+            <p>Group not found</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-surface">
       <TopNavbar activePage="Groups" />
-      
-      <div className="p-8 max-w-[1400px] mx-auto space-y-8">
+
+      <div className="p-4 md:p-8 max-w-[1400px] mx-auto space-y-6">
         <ErrorBoundary>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <LoadingSpinner />
-            </div>
-          ) : error ? (
-            <div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center">
-              <span className="material-symbols-outlined text-4xl text-red-500 mb-2">error</span>
-              <h2 className="text-xl font-bold text-red-800 mb-2">Error</h2>
-              <p className="text-red-600">{error}</p>
-            </div>
-          ) : group ? (
-            <>
-              <GroupHeader 
-                groupId={String(group.id)}
-                name={group.name}
-                scheduleTime={`${group.default_day} ${group.default_time_start}`}
-                level={group.level_number}
-                instructor={group.instructor_name || 'No Instructor'}
-                enrollmentCount={0} // Standard Group doesn't return active count
-                maxEnrollment={group.max_capacity}
-                onEdit={() => setIsEditModalOpen(true)}
-              />
+          <GroupInfoCard
+            group={group}
+            currentLevel={currentLevel}
+            onEdit={() => setIsEditDialogOpen(true)}
+            onDelete={() => setIsDeleteDialogOpen(true)}
+            onLevelUp={handleLevelUp}
+            canLevelUp={currentLevel?.completion_rate === 100}
+          />
 
-              <TabNavigation 
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                sessionCount={sessions.length}
-              />
+          <TabNavigation
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            sessionCount={sessions.length}
+          />
 
-              {mutationError && (
-                <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg">error</span>
-                  {mutationError}
-                </div>
-              )}
-
-              {activeTab === 'attendance' && (
-                <div className="space-y-4">
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => setIsAddSessionModalOpen(true)}
-                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-sm">add</span>
-                      Add Session
-                    </button>
-                  </div>
-
-                  <SessionsList 
-                    sessions={sessions}
-                    deletingSessionId={deletingSessionId}
-                    isProcessing={isProcessing}
-                    onEdit={setEditingSession}
-                    onCancel={handleCancelSession}
-                    onDeleteRequest={setDeletingSessionId}
-                    onDeleteConfirm={handleDeleteSession}
-                    onDeleteCancel={() => setDeletingSessionId(null)}
-                  />
-                </div>
-              )}
-
-              {activeTab === 'roster' && (
-                <RosterTab 
-                  students={group.students || []}
-                  maxCapacity={group.max_capacity}
-                  isLoading={isLoading}
+          {activeTab === 'info' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                <LevelSelector
+                  levels={levels}
+                  activeLevelId={activeLevelId}
+                  onLevelChange={setActiveLevel}
+                  currentLevelNumber={group.level_number}
                 />
-              )}
-              {activeTab === 'attendance' && (
-                <AttendanceTab 
-                  sessions={sessions}
-                  students={group.students?.map(s => ({ id: s.id, full_name: s.full_name })) || []}
-                  isLoading={isLoading}
-                />
-              )}
-              {activeTab === 'history' && (
-                <HistoryTab 
-                  sessions={sessions}
-                  isLoading={isLoading}
-                />
-              )}
-
-              <EditSessionPopup
-                session={editingSession}
-                isOpen={!!editingSession}
-                onClose={() => setEditingSession(null)}
-                onSave={handleUpdateSession}
-              />
-
-              <AddSessionModal
-                groupId={Number(groupId)}
-                levelNumber={group?.level_number || 1}
-                isOpen={isAddSessionModalOpen}
-                onClose={() => setIsAddSessionModalOpen(false)}
-                onAdded={handleAddSession}
-              />
-
-              <Modal 
-                isOpen={isEditModalOpen} 
-                onClose={() => setIsEditModalOpen(false)} 
-                title="Edit Group"
-              >
-                <GroupForm 
-                  mode="edit"
-                  initialData={{
-                    course_id: group.course_id,
-                    instructor_id: group.instructor_id,
-                    max_capacity: group.max_capacity,
-                    default_day: group.default_day,
-                    default_time_start: group.default_time_start,
-                    default_time_end: group.default_time_end,
-                    notes: '',
+                <LevelInfoPanel
+                  level={currentLevel}
+                  isActiveLevel={currentLevel?.level_number === group.level_number}
+                  attendanceStats={{
+                    completedSessions: sessions.filter((s) => s.status === 'completed').length,
+                    totalSessions: sessions.length,
+                    averageAttendance: 85,
                   }}
-                  onSubmit={handleUpdateGroup}
-                  onCancel={() => setIsEditModalOpen(false)}
                 />
-              </Modal>
-            </>
-          ) : (
-            <div className="p-12 text-center text-on-surface-variant">
-              <p>Group not found</p>
+              </div>
+              <div className="space-y-6">
+                <GroupPricingCard
+                  pricingHistory={buildPricingHistory()}
+                  currency={currentLevel?.pricing_snapshot.currency || 'EGP'}
+                />
+              </div>
             </div>
           )}
+
+          {activeTab === 'attendance' && (
+            <AttendanceTab
+              sessions={sessions}
+              students={group.students?.map((s) => ({ id: s.id, full_name: s.full_name })) || []}
+              isLoading={isLoading}
+            />
+          )}
+
+          {activeTab === 'history' && (
+            <HistoryTab
+              enrollmentHistory={enrollmentHistory}
+              competitions={competitions}
+              instructorHistory={instructorHistory}
+              isLoading={isHistoryLoading}
+              totalEnrollment={pagination.enrollment.total}
+              onEnrollmentPageChange={setEnrollmentPage}
+              enrollmentSkip={pagination.enrollment.skip}
+              enrollmentLimit={pagination.enrollment.limit}
+            />
+          )}
+
+          <EditGroupDialog
+            isOpen={isEditDialogOpen}
+            group={group}
+            onClose={() => setIsEditDialogOpen(false)}
+            onSave={handleUpdateGroup}
+          />
+
+          <ConfirmDialog
+            isOpen={isDeleteDialogOpen}
+            onCancel={() => setIsDeleteDialogOpen(false)}
+            onConfirm={handleDeleteGroup}
+            title="Delete Group"
+            message="Are you sure you want to delete this group? This action cannot be undone."
+            confirmText="Delete"
+            variant="danger"
+          />
         </ErrorBoundary>
       </div>
     </div>

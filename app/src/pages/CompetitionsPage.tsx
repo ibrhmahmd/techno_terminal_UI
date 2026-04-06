@@ -10,7 +10,8 @@ import {
   createCompetition,
   deleteCompetition,
   type Competition,
-  type CreateCompetitionInput
+  type CreateCompetitionInput,
+  type UpdateCompetitionInput
 } from '../api/competitions'
 
 // Mock data for fallback
@@ -88,10 +89,10 @@ export function CompetitionsPage() {
     loadCompetitions()
   }, [])
 
-  const handleCreateCompetition = async (data: CreateCompetitionInput) => {
+  const handleCreateCompetition = async (data: CreateCompetitionInput | UpdateCompetitionInput) => {
     setIsProcessing(true)
     try {
-      const newCompetition = await createCompetition(data)
+      const newCompetition = await createCompetition(data as CreateCompetitionInput)
       setCompetitions(prev => [newCompetition, ...prev])
       setIsCreateModalOpen(false)
       setError(null)

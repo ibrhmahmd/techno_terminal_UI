@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { formatDate } from '../../utils/formatting'
-import type { Employee, AttendanceRecord, LogAttendanceInput } from '../../api/hr'
+import type { Employee, LogAttendanceInput } from '../../api/hr'
 
 interface AttendanceLogProps {
   employees: Employee[]
@@ -125,7 +125,7 @@ export function AttendanceLog({ employees, selectedDate, onLogAttendance, onClos
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <h4 className="font-semibold text-on-surface">{employee.full_name}</h4>
-                      <p className="text-sm text-slate-500">{employee.job_title} • {employee.department}</p>
+                      <p className="text-sm text-slate-500">{employee.job_title}</p>
                     </div>
                     <div className="flex gap-2">
                       {(['present', 'absent', 'late', 'early_departure'] as const).map((status) => (

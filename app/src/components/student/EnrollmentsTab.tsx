@@ -123,8 +123,8 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
   )
 }
 
-export function EnrollmentsTab({ enrollments, currentGroupName, onEnroll }: EnrollmentsTabProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+export function EnrollmentsTab({ enrollments, onEnroll }: EnrollmentsTabProps) {
+  const [, setIsDialogOpen] = useState(false)
 
   // Separate current and past enrollments
   const currentEnrollment = enrollments.find(e => e.status === 'active')

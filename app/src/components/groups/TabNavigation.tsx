@@ -1,12 +1,12 @@
 interface TabNavigationProps {
-  activeTab: 'roster' | 'attendance' | 'history'
-  onTabChange: (tab: 'roster' | 'attendance' | 'history') => void
+  activeTab: 'info' | 'attendance' | 'history'
+  onTabChange: (tab: 'info' | 'attendance' | 'history') => void
   sessionCount: number
 }
 
 export function TabNavigation({ activeTab, onTabChange, sessionCount }: TabNavigationProps) {
   const tabs = [
-    { id: 'roster' as const, label: 'Roster' },
+    { id: 'info' as const, label: 'Info' },
     { id: 'attendance' as const, label: 'Attendance Grid' },
     { id: 'history' as const, label: 'History' },
   ]
