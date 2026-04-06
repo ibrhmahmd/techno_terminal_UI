@@ -1,4 +1,4 @@
-import { Users, Trophy, UserCog, TrendingUp } from 'lucide-react'
+import { Users, Trophy, UserCog } from 'lucide-react'
 
 interface HistoryStatsProps {
   totalEnrollments: number

@@ -1,4 +1,3 @@
-import { formatTime } from '../../utils/formatting'
 
 interface DashboardHeaderProps {
   title: string

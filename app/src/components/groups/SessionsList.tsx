@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import type { Session } from '../../api/academics'
 import { formatDate } from '../../utils/formatting'
 import { sessionStatusColors } from '../../utils/colors'

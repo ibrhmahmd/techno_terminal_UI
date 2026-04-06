@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Users, UserPlus, UserMinus, MoreHorizontal } from 'lucide-react'
+import { UserPlus, UserMinus } from 'lucide-react'
 import type { Student } from '../../api/crm'
 import { EmptyState } from '../common/EmptyState'
 
@@ -84,11 +84,8 @@ export function RosterTab({
           <EmptyState
             title="No students enrolled"
             message="This group currently has no students enrolled."
-            icon="users"
-            action={onEnrollStudent ? {
-              label: "Enroll Student",
-              onClick: onEnrollStudent
-            } : undefined}
+            actionLabel={onEnrollStudent ? "Enroll Student" : undefined}
+            onAction={onEnrollStudent || undefined}
           />
         ) : (
           <div className="divide-y divide-slate-100">

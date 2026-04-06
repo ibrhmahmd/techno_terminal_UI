@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { Component, type ErrorInfo } from 'react'
 import { DataTableContainer } from './DataTableContainer'
 import { EmptyState } from './EmptyState'
 
@@ -38,8 +37,8 @@ export interface DataTableProps<T> {
   isLoading?: boolean
   /** Empty state message */
   emptyMessage?: string
-  /** Empty state icon */
-  emptyIcon?: string
+  /** Empty state icon - supports specific icon names */
+  emptyIcon?: 'search' | 'inbox' | 'history' | 'none'
   /** Row click handler */
   onRowClick?: (row: T) => void
   /** Current sort field */

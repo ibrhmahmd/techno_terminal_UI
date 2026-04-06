@@ -10,7 +10,6 @@ import type {
   ScheduleGroupInput,
   UpdateGroupDTO,
   Session,
-  PaginatedGroupsResponse,
   GroupLevelHistoryDTO,
   EnrollmentHistoryDTO,
   EnrollmentHistoryFilters,

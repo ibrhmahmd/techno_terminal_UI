@@ -1,18 +1,6 @@
-import { useState } from 'react'
-import { Calendar, CheckCircle2, XCircle, MinusCircle, Clock, Users } from 'lucide-react'
+import { CheckCircle2, XCircle, MinusCircle, Clock } from 'lucide-react'
 import type { Session } from '../../api/academics'
 import { EmptyState } from '../common/EmptyState'
-
-interface AttendanceRecord {
-  student_id: number
-  student_name: string
-  status: 'present' | 'absent' | 'excused' | 'late' | null
-}
-
-interface SessionAttendance {
-  session: Session
-  records: AttendanceRecord[]
-}
 
 interface AttendanceTabProps {
   sessions: Session[]
@@ -27,10 +15,8 @@ export function AttendanceTab({
   onUpdateAttendance,
   isLoading 
 }: AttendanceTabProps) {
-  const [selectedSession, setSelectedSession] = useState<Session | null>(null)
 
   // Calculate attendance stats
-  const totalSessions = sessions.length
   const completedSessions = sessions.filter(s => s.status === 'completed').length
   const upcomingSessions = sessions.filter(s => s.status === 'scheduled').length
 
@@ -76,9 +62,9 @@ export function AttendanceTab({
   if (sessions.length === 0) {
     return (
       <EmptyState
-        title="No sessions scheduled"
+        icon="inbox"
+        title="No sessions available"
         message="There are no sessions scheduled for this group yet."
-        icon="calendar"
       />
     )
   }

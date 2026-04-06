@@ -100,7 +100,7 @@ export function EnrollmentHistoryTable({
       <DataTable
         columns={columns}
         data={data}
-        keyExtractor={(row) => row.id}
+        keyExtractor={(row) => row.id.toString()}
       />
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
         <p className="text-sm text-slate-500">

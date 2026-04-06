@@ -87,6 +87,7 @@ export function CompetitionDetailPage() {
   const [isTeamsModalOpen, setIsTeamsModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<CompetitionCategory | null>(null)
   const [selectedCategoryName, setSelectedCategoryName] = useState('')
+  const [_isProcessing, setIsProcessing] = useState(false)
 
   useEffect(() => {
     async function loadCompetitionData() {

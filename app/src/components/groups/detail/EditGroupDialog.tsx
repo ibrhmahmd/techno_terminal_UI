@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
-import { getCourses, type EnrichedGroupPublic, type UpdateGroupDTO } from '../../../api/academics'
+import { type EnrichedGroupPublic, type UpdateGroupDTO } from '../../../api/academics'
 import { getEmployeesPaginated } from '../../../api/hr/employees'
-import type { Course, Employee } from '../../../api/academics'
+import type { Employee } from '../../../api/hr'
 
 interface EditGroupDialogProps {
   isOpen: boolean

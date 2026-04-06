@@ -95,7 +95,7 @@ export function InstructorsTab({ instructors, isLoading, error, onRetry }: Instr
         keyExtractor={(i) => i.instructor_id.toString()}
         isLoading={isLoading}
         emptyMessage="No instructor data available"
-        emptyIcon="school"
+        emptyIcon="none"
       />
     </div>
   )

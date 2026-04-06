@@ -3,7 +3,7 @@ import { Search, Plus, Inbox, History } from 'lucide-react'
 interface EmptyStateProps {
   title?: string
   message?: string
-  icon?: 'search' | 'inbox' | 'history' | 'none'
+  icon?: 'search' | 'inbox' | 'history' | 'none' | string
   actionLabel?: string
   onAction?: () => void
   className?: string

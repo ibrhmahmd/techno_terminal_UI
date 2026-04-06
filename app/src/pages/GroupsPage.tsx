@@ -214,7 +214,7 @@ export function GroupsPage() {
                   delete: (g) => handleDelete(g.id)
                 }}
                 emptyMessage="No groups matched your selection"
-                emptyIcon="group_off"
+                emptyIcon="none"
               />
 
               {totalPages > 1 && (
