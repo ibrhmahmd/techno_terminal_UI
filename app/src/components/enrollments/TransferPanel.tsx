@@ -39,7 +39,7 @@ export function TransferPanel({ useMockData, isLoading, onSuccess, onError, setI
 
   const filteredGroups = groupSearch.length >= 2 
     ? groups.filter(g => 
-        g.name.toLowerCase().includes(groupSearch.toLowerCase()) ||
+        g.group_name?.toLowerCase().includes(groupSearch.toLowerCase()) ||
         (g.course_name || '').toLowerCase().includes(groupSearch.toLowerCase())
       )
     : []
@@ -55,7 +55,7 @@ export function TransferPanel({ useMockData, isLoading, onSuccess, onError, setI
     try {
       if (useMockData) {
         await new Promise(r => setTimeout(r, 500))
-        onSuccess(`Transferred to ${selectedGroup.name}`)
+        onSuccess(`Transferred to ${selectedGroup.group_name}`)
       } else {
         await transferEnrollment({
           student_id: selectedEnrollment.student_id,
@@ -115,7 +115,7 @@ export function TransferPanel({ useMockData, isLoading, onSuccess, onError, setI
           {selectedGroup ? (
             <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg mb-4">
               <div>
-                <span className="font-medium">{selectedGroup.name}</span>
+                <span className="font-medium">{selectedGroup.group_name}</span>
                 <p className="text-xs text-slate-500">{selectedGroup.course_name}</p>
               </div>
               <button 
@@ -144,7 +144,7 @@ export function TransferPanel({ useMockData, isLoading, onSuccess, onError, setI
                     onClick={() => setSelectedGroup(g)}
                     className="w-full px-4 py-2 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0"
                   >
-                    <p className="font-medium text-sm">{g.name}</p>
+                    <p className="font-medium text-sm">{g.group_name}</p>
                     <p className="text-xs text-slate-500">{g.course_name} • {g.instructor_name}</p>
                   </button>
                 ))}

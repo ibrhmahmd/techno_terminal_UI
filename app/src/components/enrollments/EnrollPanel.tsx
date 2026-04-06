@@ -68,7 +68,7 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
     try {
       if (useMockData) {
         await new Promise(r => setTimeout(r, 500))
-        onSuccess(`Enrolled ${selectedStudent.full_name} in ${selectedGroup.name}`)
+        onSuccess(`Enrolled ${selectedStudent.full_name} in ${selectedGroup.group_name}`)
       } else {
         await createEnrollment({
           student_id: selectedStudent.id,
@@ -98,7 +98,7 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
 
   const filteredGroups = groups.filter(g => 
     !groupSearch || 
-    g.name.toLowerCase().includes(groupSearch.toLowerCase()) ||
+    g.group_name?.toLowerCase().includes(groupSearch.toLowerCase()) ||
     (g.course_name || '').toLowerCase().includes(groupSearch.toLowerCase())
   )
 

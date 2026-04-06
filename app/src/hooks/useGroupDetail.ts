@@ -38,6 +38,11 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
         listSessionsForGroup(groupId),
       ])
       setGroup(groupData)
+      console.log('[DEBUG] GroupDetail loaded:', {
+        id: groupData.id,
+        name: groupData.name,
+        group_name: (groupData as any).group_name
+      })
       setLevels(levelsData)
       setSessions(sessionsData)
 

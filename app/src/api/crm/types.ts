@@ -12,8 +12,6 @@ export interface Student {
   current_group_id?: number | null
   current_group_name?: string | null
   waiting_since?: string | null
-  waiting_priority?: number | null
-  waiting_notes?: string | null
   status_history?: StatusHistoryEntry[]
 }
 

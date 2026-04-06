@@ -29,7 +29,7 @@ export function GroupInfoCard({
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{group.name}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{group.group_name}</h1>
           <div className="flex items-center gap-3 mt-2">
             <GroupStatusBadge status={group.is_active ? 'active' : 'inactive'} />
             {currentLevel && (

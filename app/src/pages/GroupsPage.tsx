@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
-import { DataTable, type DataTableColumn, PageSection, Modal, LoadingSpinner, Pagination } from '../components/common'
+import { DataTable, type DataTableColumn, PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialog } from '../components/common'
+import { useToast } from '../components/common/Toast'
 import { GroupForm } from '../components/groups/GroupForm'
 import { 
   createGroup, 
@@ -107,6 +108,9 @@ export function GroupsPage() {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [deletingGroupId, setDeletingGroupId] = useState<number | null>(null)
+  const { showToast, ToastComponent } = useToast()
   const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
   const [mutationError, setMutationError] = useState<string | null>(null)
 
@@ -119,16 +123,32 @@ export function GroupsPage() {
     setIsEditModalOpen(true)
   }
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to archive this group? This will stop all future sessions.')) return
+  const handleDeleteClick = (id: number) => {
+    setDeletingGroupId(id)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deletingGroupId) return
     
     setMutationError(null)
     try {
-      await deleteGroup(id)
+      await deleteGroup(deletingGroupId)
       await refresh()
+      showToast('Group deleted successfully', 'success')
     } catch (err: any) {
-      setMutationError(err.message || 'Failed to delete group')
+      const msg = err.message || 'Failed to delete group'
+      setMutationError(msg)
+      showToast(msg, 'error')
+    } finally {
+      setIsDeleteDialogOpen(false)
+      setDeletingGroupId(null)
     }
+  }
+
+  const handleCancelDelete = () => {
+    setIsDeleteDialogOpen(false)
+    setDeletingGroupId(null)
   }
 
   const handleCreateGroup = async (data: ScheduleGroupInput) => {
@@ -211,7 +231,7 @@ export function GroupsPage() {
                 actions={{
                   view: (g) => handleView(g.id),
                   edit: handleEdit,
-                  delete: (g) => handleDelete(g.id)
+                  delete: (g) => handleDeleteClick(g.id)
                 }}
                 emptyMessage="No groups matched your selection"
                 emptyIcon="none"
@@ -259,6 +279,21 @@ export function GroupsPage() {
           />
         )}
       </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        title="Delete Group"
+        message="Are you sure you want to delete this group? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        variant="danger"
+      />
+
+      {/* Toast Notifications */}
+      {ToastComponent}
     </div>
   )
 }

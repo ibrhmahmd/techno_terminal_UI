@@ -15,11 +15,11 @@ interface EditGroupDialogProps {
 const DAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 
 export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDialogProps) {
-  const [name, setName] = useState(group.name)
+  const [name, setName] = useState(group.group_name || '')
   const [instructorId, setInstructorId] = useState(String(group.instructor_id))
   const [day, setDay] = useState(group.default_day)
-  const [startTime, setStartTime] = useState(group.default_time_start.slice(0, 5))
-  const [endTime, setEndTime] = useState(group.default_time_end.slice(0, 5))
+  const [startTime, setStartTime] = useState(group.default_time_start?.slice(0, 5) || '')
+  const [endTime, setEndTime] = useState(group.default_time_end?.slice(0, 5) || '')
   const [maxCapacity, setMaxCapacity] = useState(group.max_capacity)
   const [status, setStatus] = useState<'active' | 'inactive' | 'archived'>(group.is_active ? 'active' : 'inactive')
   const [notes, setNotes] = useState('')
@@ -29,11 +29,11 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
 
   useEffect(() => {
     if (isOpen) {
-      setName(group.name)
+      setName(group.group_name || '')
       setInstructorId(String(group.instructor_id))
       setDay(group.default_day)
-      setStartTime(group.default_time_start.slice(0, 5))
-      setEndTime(group.default_time_end.slice(0, 5))
+      setStartTime(group.default_time_start?.slice(0, 5) || '')
+      setEndTime(group.default_time_end?.slice(0, 5) || '')
       setMaxCapacity(group.max_capacity)
       setStatus(group.is_active ? 'active' : 'inactive')
     }

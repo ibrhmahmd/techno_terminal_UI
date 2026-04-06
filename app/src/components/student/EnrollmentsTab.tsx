@@ -105,7 +105,7 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-on-surface">{group.name}</p>
+                    <p className="font-medium text-on-surface">{group.group_name}</p>
                     <p className="text-sm text-slate-500">
                       {group.course_name} • Level {group.level}
                     </p>

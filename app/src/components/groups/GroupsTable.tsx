@@ -90,7 +90,7 @@ export function GroupsTable({
                 className="group/row hover:bg-slate-50/50 transition-colors cursor-pointer"
                 onClick={() => onView(group.id)}
               >
-                <td className="px-6 py-4 font-semibold text-slate-900">{group.name}</td>
+                <td className="px-6 py-4 font-semibold text-slate-900">{group.group_name}</td>
                 <td className="px-6 py-4">
                   <span className="text-sm text-slate-600 bg-slate-100/50 px-2.5 py-1 rounded-md border border-slate-200">
                     {group.course_name}
@@ -102,7 +102,7 @@ export function GroupsTable({
                 <td className="px-6 py-4">
                   <div className="flex flex-col gap-0.5">
                     <span className="text-xs font-semibold text-slate-900">{group.default_day}</span>
-                    <span className="text-[10px] text-slate-500">{group.default_time_start.slice(0, 5)} - {group.default_time_end.slice(0, 5)}</span>
+                    <span className="text-[10px] text-slate-500">{group.default_time_start?.slice(0, 5) ?? '--:--'} - {group.default_time_end?.slice(0, 5) ?? '--:--'}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4">
@@ -126,7 +126,7 @@ export function GroupsTable({
                     <button 
                       onClick={() => onView(group.id)}
                       title="View Details"
-                      aria-label={`View group ${group.name} details`}
+                      aria-label={`View group ${group.group_name || 'Unnamed'} details`}
                       className="p-1.5 text-slate-400 hover:text-secondary rounded-lg hover:bg-secondary-container transition-all"
                     >
                       <span className="material-symbols-outlined text-xl">visibility</span>
@@ -134,7 +134,7 @@ export function GroupsTable({
                     <button 
                       onClick={() => onEdit(group)}
                       title="Edit Group"
-                      aria-label={`Edit group ${group.name}`}
+                      aria-label={`Edit group ${group.group_name || 'Unnamed'}`}
                       className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all"
                     >
                       <span className="material-symbols-outlined text-xl">edit</span>
@@ -142,7 +142,7 @@ export function GroupsTable({
                     <button 
                       onClick={() => onDelete(group.id)}
                       title="Delete (Archive)"
-                      aria-label={`Delete group ${group.name}`}
+                      aria-label={`Delete group ${group.group_name || 'Unnamed'}`}
                       className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all text-destructive"
                     >
                       <span className="material-symbols-outlined text-xl">delete</span>
