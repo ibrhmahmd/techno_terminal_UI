@@ -6,8 +6,9 @@ interface SessionsListProps {
   sessions: Session[]
   deletingSessionId: number | null
   isProcessing: boolean
-  onEdit: (session: Session) => void
+  onEdit?: (session: Session) => void
   onCancel: (sessionId: number) => void
+  onReactivate?: (sessionId: number) => void
   onDeleteRequest: (sessionId: number) => void
   onDeleteConfirm: (sessionId: number) => void
   onDeleteCancel: () => void
@@ -19,6 +20,7 @@ export function SessionsList({
   isProcessing,
   onEdit,
   onCancel,
+  onReactivate,
   onDeleteRequest,
   onDeleteConfirm,
   onDeleteCancel
@@ -75,13 +77,15 @@ export function SessionsList({
                   </div>
                 ) : (
                   <>
-                    <button
-                      onClick={() => onEdit(session)}
-                      className="p-2 text-slate-400 hover:text-secondary transition-colors"
-                      title="Edit session"
-                    >
-                      <span className="material-symbols-outlined text-sm">edit</span>
-                    </button>
+                    {onEdit && (
+                      <button
+                        onClick={() => onEdit(session)}
+                        className="p-2 text-slate-400 hover:text-secondary transition-colors"
+                        title="Edit session"
+                      >
+                        <span className="material-symbols-outlined text-sm">edit</span>
+                      </button>
+                    )}
                     {session.status === 'scheduled' && (
                       <button
                         onClick={() => onCancel(session.id)}
@@ -90,6 +94,16 @@ export function SessionsList({
                         title="Cancel session"
                       >
                         <span className="material-symbols-outlined text-sm">block</span>
+                      </button>
+                    )}
+                    {session.status === 'cancelled' && onReactivate && (
+                      <button
+                        onClick={() => onReactivate(session.id)}
+                        disabled={isProcessing}
+                        className="p-2 text-slate-400 hover:text-green-500 transition-colors disabled:opacity-50"
+                        title="Reactivate session"
+                      >
+                        <span className="material-symbols-outlined text-sm">restore</span>
                       </button>
                     )}
                     <button

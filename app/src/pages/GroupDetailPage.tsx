@@ -11,11 +11,13 @@ import { LevelSelector } from '../components/groups/detail/LevelSelector'
 import { LevelInfoPanel } from '../components/groups/detail/LevelInfoPanel'
 import { GroupPricingCard } from '../components/groups/detail/GroupPricingCard'
 import { EditGroupDialog } from '../components/groups/detail/EditGroupDialog'
+import { SessionsList } from '../components/groups/SessionsList'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { useGroupDetail } from '../hooks/useGroupDetail'
 import { useGroupHistory } from '../hooks/useGroupHistory'
 import { useGroupMutations } from '../hooks/useGroupMutations'
 import { useToast } from '../components/common/Toast'
+import { reactivateSession, cancelSession, deleteSession } from '../api/academics'
 import type { UpdateGroupDTO } from '../api/academics'
 
 export function GroupDetailPage() {
@@ -26,6 +28,10 @@ export function GroupDetailPage() {
   const [activeTab, setActiveTab] = useState<'info' | 'attendance' | 'history'>('info')
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  
+  // Session management state
+  const [isProcessingSession, setIsProcessingSession] = useState(false)
+  const [deletingSessionId, setDeletingSessionId] = useState<number | null>(null)
 
   const {
     group,
@@ -79,6 +85,47 @@ export function GroupDetailPage() {
       await refresh()
     } catch {
       showToast(mutationError || 'Failed to level up group', 'error')
+    }
+  }
+
+  // Session handlers
+  const handleCancelSession = async (sessionId: number) => {
+    setIsProcessingSession(true)
+    try {
+      await cancelSession(sessionId)
+      showToast('Session cancelled successfully', 'success')
+      await refresh()
+    } catch (err: any) {
+      showToast(err.message || 'Failed to cancel session', 'error')
+    } finally {
+      setIsProcessingSession(false)
+    }
+  }
+
+  const handleReactivateSession = async (sessionId: number) => {
+    setIsProcessingSession(true)
+    try {
+      await reactivateSession(sessionId)
+      showToast('Session reactivated successfully', 'success')
+      await refresh()
+    } catch (err: any) {
+      showToast(err.message || 'Failed to reactivate session', 'error')
+    } finally {
+      setIsProcessingSession(false)
+    }
+  }
+
+  const handleDeleteSession = async (sessionId: number) => {
+    setIsProcessingSession(true)
+    try {
+      await deleteSession(sessionId)
+      showToast('Session deleted successfully', 'success')
+      await refresh()
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete session', 'error')
+    } finally {
+      setIsProcessingSession(false)
+      setDeletingSessionId(null)
     }
   }
 
@@ -170,6 +217,16 @@ export function GroupDetailPage() {
                     totalSessions: sessions.length,
                     averageAttendance: 85,
                   }}
+                />
+                <SessionsList
+                  sessions={sessions}
+                  deletingSessionId={deletingSessionId}
+                  isProcessing={isProcessingSession}
+                  onCancel={handleCancelSession}
+                  onReactivate={handleReactivateSession}
+                  onDeleteRequest={setDeletingSessionId}
+                  onDeleteConfirm={handleDeleteSession}
+                  onDeleteCancel={() => setDeletingSessionId(null)}
                 />
               </div>
               <div className="space-y-6">

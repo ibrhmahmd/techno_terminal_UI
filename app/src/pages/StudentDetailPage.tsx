@@ -40,7 +40,7 @@ export function StudentDetailPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   
   // Available groups for enrollment
-  const [availableGroups, setAvailableGroups] = useState<{ id: number; name: string; course_name: string; level: number }[]>([])
+  const [availableGroups, setAvailableGroups] = useState<{ id: number; group_name: string; course_name: string; level: number }[]>([])
   const [isLoadingGroups, setIsLoadingGroups] = useState(false)
 
   useEffect(() => {
@@ -121,7 +121,7 @@ export function StudentDetailPage() {
             .filter(g => !enrolledGroupIds.includes(g.id))
             .map(g => ({
               id: g.id,
-              name: g.name,
+              group_name: (g as any).group_name || g.name,
               course_name: (g as any).course?.name || 'Unknown Course',
               level: (g as any).level || 1,
             }))

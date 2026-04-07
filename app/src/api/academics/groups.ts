@@ -15,6 +15,9 @@ import type {
   EnrollmentHistoryFilters,
   CompetitionParticipationDTO,
   InstructorAssignmentDTO,
+  GroupByField,
+  GroupedGroupsResponse,
+  EnrichedGroupPublicWithCompetition,
 } from "./types";
 
 
@@ -37,7 +40,7 @@ export async function getGroups() {
 export async function getGroupsPaginated(
   params: PaginationParams = {},
 ): Promise<PaginationResult<Group>> {
-  const { skip = 0, limit = 100 } = params;
+  const { skip = 0, limit = 50 } = params;
   const response = await client.get<PaginatedApiResponse<Group>>(
     "/academics/groups",
     { params: { skip, limit } },
@@ -170,4 +173,40 @@ export async function getGroupInstructorHistory(
     `/academics/groups/${groupId}/instructor-history`,
   );
   return response.data.data || [];
+}
+
+// Grouping API Functions for Groups Page Enhancement
+
+// Get groups with server-side grouping
+export async function getGroupsGrouped(
+  groupBy: GroupByField,
+  params: PaginationParams = {},
+): Promise<GroupedGroupsResponse> {
+  const { skip = 0, limit = 50 } = params;
+  const response = await client.get<ApiResponse<GroupedGroupsResponse>>(
+    "/academics/groups/grouped",
+    { params: { group_by: groupBy, skip, limit } },
+  );
+  return response.data.data || { groups: [], total: 0, groupBy };
+}
+
+// Get groups with competition data for competition grouping
+export async function getGroupsWithCompetitions(): Promise<EnrichedGroupPublicWithCompetition[]> {
+  const groups = await getEnrichedGroups();
+  // Fetch competition data for each group
+  const groupsWithCompetitions = await Promise.all(
+    groups.map(async (group) => {
+      try {
+        const competitions = await getGroupCompetitions(group.id);
+        return {
+          ...group,
+          competitions,
+          is_in_competition: competitions.length > 0,
+        };
+      } catch {
+        return { ...group, competitions: [], is_in_competition: false };
+      }
+    })
+  );
+  return groupsWithCompetitions;
 }

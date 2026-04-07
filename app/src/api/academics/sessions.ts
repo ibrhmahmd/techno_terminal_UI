@@ -39,12 +39,19 @@ export async function cancelSession(sessionId: number): Promise<Session> {
   return response.data.data
 }
 
+export async function reactivateSession(sessionId: number): Promise<Session> {
+  const response = await client.post<ApiResponse<Session>>(
+    `/academics/sessions/${sessionId}/reactivate`
+  )
+  return response.data.data
+}
+
 export async function markSubstituteInstructor(
-  sessionId: number, substituteId: number
+  sessionId: number, instructorId: number
 ): Promise<Session> {
   const response = await client.post<ApiResponse<Session>>(
     `/academics/sessions/${sessionId}/substitute`,
-    { substitute_instructor_id: substituteId }
+    { instructor_id: instructorId }
   )
   return response.data.data
 }
