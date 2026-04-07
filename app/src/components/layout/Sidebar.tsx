@@ -7,6 +7,7 @@ const navSections = [
       { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
       { path: '/groups', label: 'Groups', icon: 'group' },
       { path: '/directory', label: 'Directory', icon: 'person_search' },
+      { path: '/courses', label: 'Courses', icon: 'school' },
     ],
   },
   {

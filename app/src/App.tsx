@@ -12,8 +12,10 @@ import { EnrollmentsPage } from './pages/EnrollmentsPage'
 import { FinancePage } from './pages/FinancePage'
 import { CompetitionsPage } from './pages/CompetitionsPage'
 import { CompetitionDetailPage } from './pages/CompetitionDetailPage'
-import { StaffPage } from './pages/StaffPage'
+import { CoursesPage } from './pages/CoursesPage'
+import { CourseDetailPage } from './pages/CourseDetailPage'
 import { ReportsPage } from './pages/ReportsPage'
+import { StaffPage } from './pages/StaffPage'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useAuthStore()
@@ -38,6 +40,8 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/courses" element={<CoursesPage />} />
+            <Route path="/courses/:id" element={<CourseDetailPage />} />
             <Route path="/groups" element={<GroupsPage />} />
             <Route path="/groups/:id" element={<GroupDetailPage />} />
             <Route path="/directory" element={<DirectoryPage />} />

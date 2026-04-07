@@ -7,10 +7,48 @@ import type {
   CourseStats,
   EnrichedGroupPublic,
 } from "./types";
+import type { PaginationParams, PaginationResult } from "../../types/pagination";
 
 export async function getCourses(): Promise<Course[]> {
   const response = await client.get<PaginatedApiResponse<Course>>("/academics/courses");
   return response.data.data || [];
+}
+
+export async function getCoursesPaginated(
+  params: PaginationParams = {},
+): Promise<PaginationResult<Course>> {
+  const { skip = 0, limit = 100 } = params;
+  const response = await client.get<PaginatedApiResponse<Course>>(
+    "/academics/courses",
+    { params: { skip, limit } },
+  );
+  const paginatedData = response.data;
+  const items = paginatedData.data || [];
+  const total = paginatedData.total || 0;
+  return {
+    items,
+    total,
+    hasMore: total > skip + items.length,
+  };
+}
+
+export async function searchCourses(
+  query: string,
+  params: PaginationParams = {},
+): Promise<PaginationResult<Course>> {
+  const { skip = 0, limit = 100 } = params;
+  const response = await client.get<PaginatedApiResponse<Course>>(
+    "/academics/courses/search",
+    { params: { query, skip, limit } },
+  );
+  const paginatedData = response.data;
+  const items = paginatedData.data || [];
+  const total = paginatedData.total || 0;
+  return {
+    items,
+    total,
+    hasMore: total > skip + items.length,
+  };
 }
 
 export async function createCourse(data: AddNewCourseInput): Promise<Course> {
