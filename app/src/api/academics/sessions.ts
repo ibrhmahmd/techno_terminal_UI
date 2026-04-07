@@ -1,64 +1,12 @@
-import client from '../client'
-import type { ApiResponse } from '../../types/api'
-import type { Session, UpdateSessionDTO, AddExtraSessionInput } from './types'
+/**
+ * @deprecated This file is maintained for backward compatibility.
+ * Please import from the new modular structure:
+ *   import { getGroupSessions, cancelSession, reactivateSession } from './sessions'
+ * 
+ * The API functions have been reorganized into:
+ *   - sessions/ - Session-related API functions
+ *     - core.ts - Main router functions (CRUD, cancel, reactivate)
+ */
 
-export async function getGroupSessions(groupId: number): Promise<Session[]> {
-  const response = await client.get<ApiResponse<Session[]>>(
-    `/academics/groups/${groupId}/sessions`
-  )
-  const sessions = response.data.data || []
-  return [...sessions].sort((a, b) =>
-    (a.session_date || '').localeCompare(b.session_date || '')
-  )
-}
-
-export async function getSessionDetails(sessionId: number): Promise<Session> {
-  const response = await client.get<ApiResponse<Session>>(
-    `/academics/sessions/${sessionId}`
-  )
-  return response.data.data
-}
-
-export async function updateSession(
-  sessionId: number, data: UpdateSessionDTO
-): Promise<Session> {
-  const response = await client.patch<ApiResponse<Session>>(
-    `/academics/sessions/${sessionId}`, data
-  )
-  return response.data.data
-}
-
-export async function deleteSession(sessionId: number): Promise<void> {
-  await client.delete(`/academics/sessions/${sessionId}`)
-}
-
-export async function cancelSession(sessionId: number): Promise<Session> {
-  const response = await client.post<ApiResponse<Session>>(
-    `/academics/sessions/${sessionId}/cancel`
-  )
-  return response.data.data
-}
-
-export async function reactivateSession(sessionId: number): Promise<Session> {
-  const response = await client.post<ApiResponse<Session>>(
-    `/academics/sessions/${sessionId}/reactivate`
-  )
-  return response.data.data
-}
-
-export async function markSubstituteInstructor(
-  sessionId: number, instructorId: number
-): Promise<Session> {
-  const response = await client.post<ApiResponse<Session>>(
-    `/academics/sessions/${sessionId}/substitute`,
-    { instructor_id: instructorId }
-  )
-  return response.data.data
-}
-
-export async function addExtraSession(data: AddExtraSessionInput): Promise<Session> {
-  const response = await client.post<ApiResponse<Session>>(
-    `/academics/groups/${data.group_id}/sessions`, data
-  )
-  return response.data.data
-}
+// Re-export everything from the new modular structure
+export * from './sessions/index';
