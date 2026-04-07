@@ -1,11 +1,17 @@
 # Academics API - Groups Router
 
-Router sources:
-- Main Groups: `app/api/routers/academics/groups.py`
-- Group Lifecycle: `app/api/routers/academics/group_lifecycle.py`
-- Group Competitions: `app/api/routers/academics/group_competitions.py`
+Router source: `app/api/routers/academics/groups.py`
 
 Mounted prefix: `/api/v1`
+
+---
+
+## Related Documentation
+
+This file documents the **main Groups Router**. For related endpoints, see:
+
+- **Group Lifecycle Router**: [group_lifecycle.md](group_lifecycle.md) - Level management, history, analytics
+- **Group Competitions Router**: [group_competitions.md](group_competitions.md) - Teams and competition participation
 
 ---
 
@@ -85,6 +91,42 @@ Validation:
 - `level_number` required (integer)
 - `start_date` optional (`YYYY-MM-DD`), defaults to current date if omitted
 
+#### ScheduleGroupLevelRequest
+```json
+{
+  "level_number": 2,
+  "instructor_id": 8,
+  "price_override": 1200.00,
+  "start_date": "2026-05-01"
+}
+```
+
+Validation:
+- `level_number` required integer
+- `instructor_id` optional (override group's default instructor)
+- `price_override` optional (None/0 uses course default price)
+- `start_date` optional date, defaults to next weekday from today
+
+#### ProgressGroupLevelRequest
+```json
+{
+  "price_override": 1200.00
+}
+```
+
+Validation:
+- `price_override` optional (None/0 uses course default price)
+
+#### CancelLevelInput
+```json
+{
+  "reason": "Low enrollment"
+}
+```
+
+Validation:
+- `reason` optional string, max 500 characters
+
 ### Response DTOs
 
 #### GroupPublic
@@ -151,42 +193,37 @@ Validation:
 }
 ```
 
-#### GroupLevelDTO
+#### GroupedGroupsResponse
 ```json
 {
-  "id": 25,
-  "group_id": 10,
-  "level_number": 1,
-  "course_id": 1,
-  "course_name": "Robotics Fundamentals",
-  "instructor_id": 7,
-  "instructor_name": "Ahmed Hassan",
-  "sessions_planned": 16,
-  "price_override": 1200.00,
-  "status": "active",
-  "effective_from": "2026-04-01T10:00:00",
-  "effective_to": null,
-  "created_at": "2026-04-01T10:00:00"
+  "groups": [
+    {
+      "key": "saturday",
+      "label": "Saturday",
+      "count": 5,
+      "groups": [
+        {
+          "id": 10,
+          "name": "Saturday 2:00 PM - Robotics Fundamentals",
+          "course_name": "Robotics Fundamentals",
+          "instructor_name": "Ahmed Hassan",
+          "...": "..."
+        }
+      ]
+    }
+  ],
+  "total": 7,
+  "group_by": "day"
 }
 ```
 
-#### GroupCompetitionParticipationDTO
-```json
-{
-  "participation_id": 15,
-  "competition_id": 3,
-  "competition_name": "National Robotics Championship 2026",
-  "category_id": 5,
-  "category_name": "Junior Level",
-  "team_id": 12,
-  "team_name": "RoboStars",
-  "entered_at": "2026-03-15T09:00:00",
-  "left_at": null,
-  "is_active": true,
-  "final_placement": null,
-  "notes": "First time competing"
-}
-```
+Fields:
+- `groups`: array of grouped items
+- `key`: grouping key (e.g., "saturday", "1", "active")
+- `label`: display label (e.g., "Saturday", "Robotics Fundamentals", "Active")
+- `count`: number of groups in this category
+- `total`: total number of groups across all categories
+- `group_by`: the field used for grouping
 
 ---
 
@@ -216,7 +253,84 @@ Response:
 Errors:
 - `401`, `403`
 
-### 3) Get group by ID
+### 3) Get groups grouped by field
+**GET** `/api/v1/academics/groups/grouped`  
+Auth: `require_any`
+
+Query:
+- `group_by` (required): Field to group by - one of `day`, `course`, `instructor`, `status`
+- `skip` (optional, default `0`, `>= 0`): Pagination offset
+- `limit` (optional, default `50`, `>= 1`, `<= 200`): Page size
+- `search` (optional): Search term to filter groups by name/course/instructor
+
+Response:
+- `200 OK` -> `ApiResponse<GroupedGroupsResponse>`
+
+Errors:
+- `401`, `403`, `422`
+
+Example Response:
+```json
+{
+  "success": true,
+  "data": {
+    "groups": [
+      {
+        "key": "saturday",
+        "label": "Saturday",
+        "count": 5,
+        "groups": [ /* EnrichedGroupPublic array */ ]
+      },
+      {
+        "key": "sunday",
+        "label": "Sunday",
+        "count": 3,
+        "groups": [ /* EnrichedGroupPublic array */ ]
+      }
+    ],
+    "total": 2,
+    "group_by": "day"
+  }
+}
+```
+
+Notes:
+- Groups are organized by the specified field for easier navigation.
+- Supports pagination at the group level.
+- Search filters groups before grouping.
+
+### 4) Get groups by course
+**GET** `/api/v1/academics/groups/course/{course_id}`  
+Auth: `require_any`
+
+Path params:
+- `course_id` (integer, required)
+
+Query:
+- `skip` (optional, default `0`, `>= 0`)
+- `limit` (optional, default `50`, `>= 1`, `<= 200`)
+
+Response:
+- `200 OK` -> `PaginatedResponse<GroupListItem>`
+
+Errors:
+- `401`, `403`, `404`, `422`
+
+### 4) Get archived groups (paginated)
+**GET** `/api/v1/academics/groups/archived`  
+Auth: `require_any`
+
+Query:
+- `skip` (optional, default `0`, `>= 0`)
+- `limit` (optional, default `50`, `>= 1`, `<= 200`)
+
+Response:
+- `200 OK` -> `PaginatedResponse<GroupListItem>`
+
+Errors:
+- `401`, `403`, `422`
+
+### 5) Get group by ID
 **GET** `/api/v1/academics/groups/{group_id}`  
 Auth: `require_any`
 
@@ -229,7 +343,7 @@ Response:
 Errors:
 - `401`, `403`, `404`, `422`
 
-### 4) Get enriched group by ID
+### 6) Get enriched group by ID
 **GET** `/api/v1/academics/groups/{group_id}/enriched`  
 Auth: `require_any`
 
@@ -242,7 +356,7 @@ Response:
 Errors:
 - `401`, `403`, `404`, `422`
 
-### 5) Schedule a new group
+### 7) Schedule a new group
 **POST** `/api/v1/academics/groups`  
 Auth: `require_admin`
 
@@ -260,7 +374,7 @@ Notes:
 - Auto-generates first-level sessions in the same transaction.
 - Creates initial level snapshot in `group_levels` table.
 
-### 6) Update a group
+### 8) Update a group
 **PATCH** `/api/v1/academics/groups/{group_id}`  
 Auth: `require_admin`
 
@@ -276,7 +390,7 @@ Response:
 Errors:
 - `401`, `403`, `404`, `422`
 
-### 7) List sessions for a group
+### 9) List sessions for a group
 **GET** `/api/v1/academics/groups/{group_id}/sessions`  
 Auth: `require_any`
 
@@ -292,27 +406,7 @@ Response:
 Errors:
 - `401`, `403`, `422`
 
-### 8) Progress group to next level
-**POST** `/api/v1/academics/groups/{group_id}/progress-level`  
-Auth: `require_admin`
-
-Path params:
-- `group_id` (integer, required)
-
-Response:
-- `200 OK` -> `ApiResponse<GroupPublic>`
-
-Errors:
-- `401`, `403`, `404`, `422`
-
-Notes:
-- Increments `level_number`
-- Creates new level snapshot in `group_levels` table
-- Preserves current level history (sets `effective_to`)
-- Updates active enrollments to new level and increases `amount_due`
-- Auto-generates regular sessions for the new level
-
-### 9) Soft delete (archive) group
+### 10) Soft delete (archive) group
 **DELETE** `/api/v1/academics/groups/{group_id}`  
 Auth: `require_admin`
 
@@ -329,7 +423,7 @@ Implementation note:
 - Group archive is applied by setting internal `status = "inactive"`.
 - All level snapshots are preserved in history.
 
-### 10) Generate sessions for a specific level
+### 11) Generate sessions for a specific level
 **POST** `/api/v1/academics/groups/{group_id}/generate-sessions`  
 Auth: `require_admin`
 
@@ -347,208 +441,119 @@ Errors:
 
 `409` occurs when sessions already exist for that group level.
 
----
-
-## Endpoints - Group Lifecycle
-
-Router source: `app/api/routers/academics/group_lifecycle.py`
-
-### 11) Get full lifecycle history
-**GET** `/api/v1/academics/groups/{group_id}/history`  
-Auth: `require_any`
-
-Path params:
-- `group_id` (integer, required)
-
-Response:
-- `200 OK` -> `ApiResponse<dict>` containing:
-  - group metadata (id, name, created_at)
-  - current_level, total_levels, completed_levels
-  - levels_timeline: chronological level snapshots
-  - course_assignments: course change history
-  - enrollment_transitions: student level progressions
-
-Errors:
-- `401`, `403`, `404`
-
-### 12) List all level snapshots for a group
-**GET** `/api/v1/academics/groups/{group_id}/levels`  
-Auth: `require_any`
-
-Path params:
-- `group_id` (integer, required)
-
-Query:
-- `status` (optional): Filter by status (`active`, `completed`, `cancelled`)
-- `include_inactive` (optional, default `false`): Include inactive levels
-
-Response:
-- `200 OK` -> `ApiResponse<list<GroupLevelDTO>>`
-
-Errors:
-- `401`, `403`, `404`
-
-### 13) Get specific level details
-**GET** `/api/v1/academics/groups/{group_id}/levels/{level_number}`  
-Auth: `require_any`
-
-Path params:
-- `group_id` (integer, required)
-- `level_number` (integer, required)
-
-Response:
-- `200 OK` -> `ApiResponse<GroupLevelDTO>`
-
-Errors:
-- `401`, `403`, `404`
-
-### 14) Complete a level and progress to next
-**POST** `/api/v1/academics/groups/{group_id}/levels/{level_number}/complete`  
+### 12) Schedule a new level for a group
+**POST** `/api/v1/academics/groups/{group_id}/schedule-level`  
 Auth: `require_admin`
 
 Path params:
 - `group_id` (integer, required)
-- `level_number` (integer, required)
+
+Request body:
+- `ScheduleGroupLevelRequest`
 
 Response:
-- `200 OK` -> `ApiResponse<dict>` with completed and new level info
+- `201 Created` -> `ApiResponse<dict>`:
+  - `level_id`, `level_number`, `group_id`
+  - `sessions_created`: count
+  - `sessions`: array of `{id, session_number, date}`
 
 Errors:
-- `401`, `403`, `404`, `400`
+- `401`, `403`, `404`, `422`
 
 Notes:
-- Marks current level as `completed` with `effective_to` timestamp
-- Creates new level snapshot at `level_number + 1`
-- Preserves complete audit trail
+- Creates GroupLevel record and generates sessions for the new level.
+- Uses group's default instructor if `instructor_id` not provided.
 
-### 15) Get course assignment history
-**GET** `/api/v1/academics/groups/{group_id}/courses/history`  
-Auth: `require_any`
+### 13) Progress group to next level
+**POST** `/api/v1/academics/groups/{group_id}/progress-level`  
+Auth: `require_admin`
 
 Path params:
 - `group_id` (integer, required)
 
+Request body:
+- `ProgressGroupLevelRequest` (price_override optional)
+
 Response:
-- `200 OK` -> `ApiResponse<list<dict>>` with course assignment records:
-  - `course_id`, `assigned_at`, `removed_at`
-  - `assigned_by_user_id`, `notes`
+- `200 OK` -> `ApiResponse<ProgressGroupLevelResult>`
+
+Errors:
+- `401`, `403`, `404`, `422`
+
+Notes:
+- Completes current level, creates new level, migrates enrollments.
+
+### 14) Search groups by name
+**GET** `/api/v1/academics/groups/search`  
+Auth: `require_any`
+
+Query:
+- `query` (required, min length 2): Search string
+- `status` (optional): Filter by status
+- `skip` (optional, default `0`)
+- `limit` (optional, default `20`, max `100`)
+
+Response:
+- `200 OK` -> `PaginatedResponse<GroupListItem>`
+
+Errors:
+- `401`, `403`, `422`
+
+### 15) List groups by type
+**GET** `/api/v1/academics/groups/by-type/{group_type}`  
+Auth: `require_any`
+
+Path params:
+- `group_type` (string, required)
+
+Query:
+- `status` (optional): Filter by status
+- `skip` (optional, default `0`)
+- `limit` (optional, default `50`, max `200`)
+
+Response:
+- `200 OK` -> `PaginatedResponse<GroupListItem>`
 
 Errors:
 - `401`, `403`, `404`
 
-### 16) Get enrollment level transitions
-**GET** `/api/v1/academics/groups/{group_id}/enrollments/history`  
+### 16) List groups by course
+**GET** `/api/v1/academics/groups/by-course/{course_id}`  
 Auth: `require_any`
 
 Path params:
-- `group_id` (integer, required)
+- `course_id` (integer, required, > 0)
 
 Query:
-- `student_id` (optional): Filter by specific student
+- `include_inactive` (optional, default `false`)
+- `level_number` (optional, > 0): Filter by level
+- `skip` (optional, default `0`)
+- `limit` (optional, default `50`, max `200`)
 
 Response:
-- `200 OK` -> `ApiResponse<list<dict>>` with transition records:
-  - `enrollment_id`, `student_id`, `group_level_id`
-  - `level_entered_at`, `level_completed_at`, `status`
+- `200 OK` -> `PaginatedResponse<EnrichedGroupPublic>`
 
 Errors:
 - `401`, `403`, `404`
 
 ---
 
-## Endpoints - Group Competitions
+## Related Documentation
 
-Router source: `app/api/routers/academics/group_competitions.py`
-
-### 17) List competition participations for a group
-**GET** `/api/v1/academics/groups/{group_id}/competitions`  
-Auth: `require_any`
-
-Path params:
-- `group_id` (integer, required)
-
-Query:
-- `is_active` (optional): Filter by active status (true/false/null for all)
-
-Response:
-- `200 OK` -> `ApiResponse<list<GroupCompetitionParticipationDTO>>`
-
-Errors:
-- `401`, `403`, `404`
-
-### 18) List teams linked to a group
-**GET** `/api/v1/academics/groups/{group_id}/teams`  
-Auth: `require_any`
-
-Path params:
-- `group_id` (integer, required)
-
-Query:
-- `include_inactive` (optional, default `false`): Include soft-deleted teams
-
-Response:
-- `200 OK` -> `ApiResponse<list<dict>>` with team info:
-  - `id`, `team_name`, `group_id`, `coach_id`, `created_at`, `is_deleted`
-
-Errors:
-- `401`, `403`, `404`
-
-### 19) Link an existing team to a group
-**POST** `/api/v1/academics/groups/{group_id}/teams/{team_id}/link`  
-Auth: `require_admin`
-
-Path params:
-- `group_id` (integer, required)
-- `team_id` (integer, required)
-
-Response:
-- `200 OK` -> `ApiResponse<dict>` with linked team info
-
-Errors:
-- `401`, `403`, `404`
-
-### 20) Register a team for a competition
-**POST** `/api/v1/academics/groups/{group_id}/competitions/{competition_id}/register`  
-Auth: `require_admin`
-
-Path params:
-- `group_id` (integer, required)
-- `competition_id` (integer, required)
-
-Query params:
-- `team_id` (integer, required): Team to register
-- `category_id` (integer, optional): Competition category
-
-Response:
-- `200 OK` -> `ApiResponse<dict>` with participation record
-
-Errors:
-- `401`, `403`, `404`, `400` (if already registered)
-
-### 21) Mark competition participation as completed
-**PATCH** `/api/v1/academics/groups/{group_id}/competitions/{participation_id}/complete`  
-Auth: `require_admin`
-
-Path params:
-- `group_id` (integer, required)
-- `participation_id` (integer, required)
-
-Query:
-- `final_placement` (integer, optional): Final ranking/placement
-
-Response:
-- `200 OK` -> `ApiResponse<dict>` with updated participation
-
-Errors:
-- `401`, `403`, `404`
+For group lifecycle and competition endpoints, see:
+- **[Group Lifecycle Router](group_lifecycle.md)** - Level management, history, and analytics
+- **[Group Competitions Router](group_competitions.md)** - Team and competition integration
 
 ---
 
 ## Router Notes
 
-- The main Groups router exposes **10 unique endpoint signatures**.
-- The Group Lifecycle router exposes **6 new endpoints** for level and history management.
-- The Group Competitions router exposes **5 new endpoints** for competition integration.
-- Total: **21 unique endpoint signatures** across all group-related routers.
+- The main Groups router exposes **17 unique endpoint signatures** (including the new `/grouped` endpoint).
+- All list endpoints support pagination with `skip` and `limit` parameters.
 - Immutable level snapshots: Each level progression creates a new `group_levels` record, preserving historical configuration.
-- Soft delete: Teams and groups use soft delete (`is_deleted` flag) to preserve historical data integrity.
+- Soft delete: Groups use soft delete (status change) to preserve historical data integrity.
+
+## See Also
+
+- **[Group Lifecycle Router](group_lifecycle.md)** - Level management, history, and analytics endpoints
+- **[Group Competitions Router](group_competitions.md)** - Team and competition integration endpoints
