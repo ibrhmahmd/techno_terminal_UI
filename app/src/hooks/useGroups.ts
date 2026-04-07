@@ -1,5 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { getEnrichedGroups, type EnrichedGroupPublic } from '../api/academics'
+import {
+  getEnrichedGroups,
+  getGroupsGrouped,
+  getGroupsWithCompetitions,
+  type EnrichedGroupPublic,
+  type GroupByField,
+  type GroupGroup,
+  type EnrichedGroupPublicWithCompetition,
+} from '../api/academics'
 
 export type SortField = 'name' | 'course_name' | 'instructor_name' | 'max_capacity'
 export type SortDirection = 'asc' | 'desc'
@@ -14,9 +22,12 @@ export function useGroups() {
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(20)
+  const [pageSize, setPageSize] = useState(50)
   const [sortField, setSortField] = useState<SortField>('name')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+  const [groupBy, setGroupBy] = useState<GroupByField>(null)
+  const [groupedData, setGroupedData] = useState<GroupGroup[]>([])
+  const [isGroupedView, setIsGroupedView] = useState(false)
 
   const loadGroups = useCallback(async () => {
     setIsLoading(true)
@@ -38,9 +49,48 @@ export function useGroups() {
     }
   }, [])
 
+  const loadGroupsGrouped = useCallback(async () => {
+    if (!groupBy) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      if (groupBy === 'competition') {
+        // Special handling: fetch competition data client-side
+        const groupsWithComp = await getGroupsWithCompetitions()
+        const grouped = groupByCompetition(groupsWithComp)
+        setGroupedData(grouped)
+      } else {
+        const result = await getGroupsGrouped(groupBy, { skip: 0, limit: 50 })
+        setGroupedData(result.groups)
+      }
+      setIsGroupedView(true)
+    } catch (err: any) {
+      console.error('[useGroups] loadGroupsGrouped failed:', err)
+      setError('Failed to load grouped groups. Please check your connection.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [groupBy])
+
+  // Group by competition helper
+  const groupByCompetition = (groups: EnrichedGroupPublicWithCompetition[]): GroupGroup[] => {
+    const inComp = groups.filter((g) => g.is_in_competition)
+    const notInComp = groups.filter((g) => !g.is_in_competition)
+    return [
+      { key: 'in_competition', label: 'In Competition', count: inComp.length, groups: inComp },
+      { key: 'not_in_competition', label: 'Not in Competition', count: notInComp.length, groups: notInComp },
+    ]
+  }
+
+  // Effect to load grouped data when groupBy changes
   useEffect(() => {
-    loadGroups()
-  }, [loadGroups])
+    if (groupBy) {
+      loadGroupsGrouped()
+    } else {
+      setIsGroupedView(false)
+      setGroupedData([])
+    }
+  }, [groupBy, loadGroupsGrouped])
 
   const processedGroups = useMemo(() => {
     const filtered = groups.filter((group) =>
@@ -104,6 +154,10 @@ export function useGroups() {
     processedGroups,
     paginatedGroups,
     totalPages,
-    refresh: loadGroups
+    groupBy,
+    setGroupBy,
+    groupedData,
+    isGroupedView,
+    refresh: loadGroups,
   }
 }

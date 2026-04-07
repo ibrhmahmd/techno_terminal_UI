@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useState } from 'react'
 import { DataTableContainer } from './DataTableContainer'
 import { EmptyState } from './EmptyState'
 
@@ -57,6 +58,19 @@ export interface DataTableProps<T> {
   }
   /** Additional CSS class */
   className?: string
+  /** Grouped data for grouped view */
+  groupedData?: Array<{
+    key: string
+    label: string
+    count: number
+    items: T[]
+  }>
+  /** Whether groups are expandable */
+  expandableGroups?: boolean
+  /** Default expanded group keys */
+  defaultExpandedGroups?: string[]
+  /** Callback when group is toggled */
+  onGroupToggle?: (groupKey: string, isExpanded: boolean) => void
 }
 
 /**
@@ -96,8 +110,21 @@ export function DataTable<T>({
   onSort,
   actions,
   actionLabels = { view: 'View', edit: 'Edit', delete: 'Delete' },
-  className = ''
+  className = '',
+  groupedData,
+  expandableGroups = true,
+  defaultExpandedGroups = [],
+  onGroupToggle,
 }: DataTableProps<T>) {
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(defaultExpandedGroups)
+
+  const toggleGroup = (key: string) => {
+    const newExpanded = expandedGroups.includes(key)
+      ? expandedGroups.filter(k => k !== key)
+      : [...expandedGroups, key]
+    setExpandedGroups(newExpanded)
+    onGroupToggle?.(key, !expandedGroups.includes(key))
+  }
   if (isLoading) {
     return (
       <DataTableContainer>
@@ -145,6 +172,120 @@ export function DataTable<T>({
           message={emptyMessage}
           icon={emptyIcon}
         />
+      </DataTableContainer>
+    )
+  }
+
+  // Grouped view rendering
+  if (groupedData && groupedData.length > 0) {
+    return (
+      <DataTableContainer className={className}>
+        <div className="space-y-4">
+          {groupedData.map((group) => (
+            <div key={group.key} className="border border-slate-200 rounded-lg overflow-hidden">
+              {/* Group Header */}
+              <div
+                className="flex items-center justify-between px-4 py-3 bg-slate-100 cursor-pointer hover:bg-slate-200 transition-colors"
+                onClick={() => expandableGroups && toggleGroup(group.key)}
+              >
+                <div className="flex items-center gap-2">
+                  {expandableGroups && (
+                    <span className="material-symbols-outlined text-slate-500">
+                      {expandedGroups.includes(group.key) ? 'expand_less' : 'expand_more'}
+                    </span>
+                  )}
+                  <span className="font-semibold text-slate-800">{group.label}</span>
+                  <span className="text-sm text-slate-500">({group.count})</span>
+                </div>
+              </div>
+
+              {/* Group Content */}
+              {expandedGroups.includes(group.key) && (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-sm">
+                    <thead className="bg-slate-50/80">
+                      <tr>
+                        {columns.map((col) => (
+                          <th
+                            key={col.key}
+                            className={`px-6 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 ${
+                              col.sortable ? 'cursor-pointer group select-none' : ''
+                            } ${getAlignClass(col.align)}`}
+                            style={{ width: col.width }}
+                            onClick={() => col.sortable && onSort?.(col.key)}
+                          >
+                            <div className={`flex items-center gap-2 ${col.align === 'right' ? 'justify-end' : ''}`}>
+                              <span>{col.header}</span>
+                              {col.sortable && <SortIndicator field={col.key} />}
+                            </div>
+                          </th>
+                        ))}
+                        {actions && (
+                          <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-500 w-32">
+                            Actions
+                          </th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {group.items.map((row) => (
+                        <tr
+                          key={keyExtractor(row)}
+                          className={`group/row hover:bg-slate-50/50 transition-colors ${
+                            onRowClick ? 'cursor-pointer' : ''
+                          }`}
+                          onClick={() => onRowClick?.(row)}
+                        >
+                          {columns.map((col) => (
+                            <td
+                              key={col.key}
+                              className={`px-6 py-4 ${getAlignClass(col.align)}`}
+                            >
+                              {col.cell(row)}
+                            </td>
+                          ))}
+                          {actions && (
+                            <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                                {actions.view && (
+                                  <button
+                                    onClick={() => actions.view?.(row)}
+                                    className="p-1.5 text-slate-400 hover:text-secondary rounded-lg hover:bg-secondary-container transition-colors"
+                                    title={actionLabels.view}
+                                  >
+                                    <span className="material-symbols-outlined text-xl">visibility</span>
+                                  </button>
+                                )}
+                                {actions.edit && (
+                                  <button
+                                    onClick={() => actions.edit?.(row)}
+                                    className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                                    title={actionLabels.edit}
+                                  >
+                                    <span className="material-symbols-outlined text-xl">edit</span>
+                                  </button>
+                                )}
+                                {actions.delete && (
+                                  <button
+                                    onClick={() => actions.delete?.(row)}
+                                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                                    title={actionLabels.delete}
+                                  >
+                                    <span className="material-symbols-outlined text-xl">delete</span>
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </DataTableContainer>
     )
   }

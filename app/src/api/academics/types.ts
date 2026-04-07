@@ -86,6 +86,11 @@ export interface AddExtraSessionInput {
   notes?: string | null;
 }
 
+// Request DTO for marking substitute instructor (aligns with API docs)
+export interface SubstituteInstructorRequest {
+  instructor_id: number;
+}
+
 export interface ScheduleGroupInput {
   course_id: number;
   instructor_id: number;
@@ -192,4 +197,30 @@ export interface EnrollmentHistoryFilters {
   action?: EnrollmentHistoryDTO['action'];
   skip?: number;
   limit?: number;
+}
+
+// Grouping Types for Groups Page Enhancement
+
+/** Field to group groups by */
+export type GroupByField = 'day' | 'course' | 'instructor' | 'status' | 'competition' | null;
+
+/** A single group of groups with metadata */
+export interface GroupGroup {
+  key: string; // Group identifier (e.g., "monday", "Course A")
+  label: string; // Display label
+  count: number; // Number of groups in this group
+  groups: EnrichedGroupPublic[]; // Groups in this group
+}
+
+/** API response for grouped groups */
+export interface GroupedGroupsResponse {
+  groups: GroupGroup[];
+  total: number;
+  groupBy: GroupByField;
+}
+
+/** Extended EnrichedGroupPublic with competition data for competition grouping */
+export interface EnrichedGroupPublicWithCompetition extends EnrichedGroupPublic {
+  competitions?: CompetitionParticipationDTO[]; // Fetched separately
+  is_in_competition?: boolean;
 }

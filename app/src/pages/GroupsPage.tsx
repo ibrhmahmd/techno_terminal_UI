@@ -103,7 +103,12 @@ export function GroupsPage() {
     processedGroups,
     paginatedGroups,
     totalPages,
-    refresh
+    refresh,
+    // Grouping
+    groupBy,
+    setGroupBy,
+    groupedData,
+    isGroupedView,
   } = useGroups()
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -204,7 +209,9 @@ export function GroupsPage() {
           onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1) }}
           totalGroups={totalGroups}
           currentPage={currentPage}
-          processedCount={processedGroups.length}
+          processedCount={isGroupedView ? groupedData.reduce((sum, g) => sum + g.count, 0) : processedGroups.length}
+          groupBy={groupBy}
+          onGroupByChange={setGroupBy}
         />
 
         <ErrorBoundary>
@@ -221,7 +228,8 @@ export function GroupsPage() {
                 </div>
               )}
               <DataTable
-                data={paginatedGroups}
+                data={isGroupedView ? [] : paginatedGroups}
+                groupedData={isGroupedView ? groupedData.map(g => ({ ...g, items: g.groups })) : undefined}
                 columns={groupColumns}
                 keyExtractor={(g) => g.id.toString()}
                 sortField={sortField}
@@ -235,9 +243,11 @@ export function GroupsPage() {
                 }}
                 emptyMessage="No groups matched your selection"
                 emptyIcon="none"
+                expandableGroups={true}
+                defaultExpandedGroups={isGroupedView ? groupedData.map(g => g.key) : []}
               />
 
-              {totalPages > 1 && (
+              {!isGroupedView && totalPages > 1 && (
                 <div className="mt-6 flex justify-center">
                   <Pagination
                     currentPage={currentPage}
