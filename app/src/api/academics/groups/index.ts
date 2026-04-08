@@ -21,6 +21,7 @@ export {
   createGroup,
   updateGroup,
   deleteGroup,
+  archiveGroup,
   levelUpGroup,
   listSessionsForGroup,
   getGroupsGrouped,
@@ -32,6 +33,7 @@ export {
   getGroupLevels,
   getGroupEnrollmentHistory,
   getGroupInstructorHistory,
+  createNewLevel,
 } from './lifecycle';
 
 // Competitions router functions

@@ -72,6 +72,19 @@ export interface InstructorAssignmentDTO {
 }
 
 /**
+ * Input for creating a new group level
+ */
+export interface CreateNewLevelInput {
+  level_number: number;
+  pricing_snapshot: {
+    monthly_fee: number;
+    session_fee: number;
+    currency: string;
+  };
+  notes?: string;
+}
+
+/**
  * Student attendance record for a session
  */
 export interface StudentAttendance {

@@ -105,6 +105,14 @@ export async function deleteGroup(groupId: number): Promise<void> {
   await client.delete(`/academics/groups/${groupId}`);
 }
 
+// archive group
+export async function archiveGroup(groupId: number): Promise<Group> {
+  const response = await client.patch<ApiResponse<Group>>(
+    `/academics/groups/${groupId}/archive`,
+  );
+  return response.data.data;
+}
+
 // level up group
 export async function levelUpGroup(groupId: number): Promise<Group> {
   const response = await client.post<ApiResponse<Group>>(

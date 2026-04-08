@@ -6,7 +6,7 @@
 // Base Group type (GroupPublic from API)
 export interface Group {
   id: number;
-  name: string;
+  group_name: string;
   course_id: number;
   instructor_id: number;
   level_number: number;
@@ -25,6 +25,7 @@ export interface GroupListItem {
   level_number: number;
   default_day: string;
   default_time_start: string;
+  status?: string;
   is_active: boolean;
 }
 
@@ -32,8 +33,10 @@ export interface GroupListItem {
 export interface EnrichedGroupPublic extends Group {
   course_name: string;
   group_name: string;
-  instructor_name: string;
+  instructor_name: string; 
   schedule_time?: string;
+  notes?: string | null;  // Added for editable group notes
+  status: 'active' | 'inactive' | 'archived';  
   students?: Array<{ id: number; full_name: string }>;
 }
 
