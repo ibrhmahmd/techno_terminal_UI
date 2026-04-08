@@ -121,7 +121,7 @@ export function StudentDetailPage() {
             .filter(g => !enrolledGroupIds.includes(g.id))
             .map(g => ({
               id: g.id,
-              group_name: (g as any).group_name || g.name,
+              group_name: (g as any).group_name || 'Unknown Group',
               course_name: (g as any).course?.name || 'Unknown Course',
               level: (g as any).level || 1,
             }))

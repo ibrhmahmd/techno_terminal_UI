@@ -104,7 +104,7 @@ export function EnrollmentHistoryTable({
       />
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
         <p className="text-sm text-slate-500">
-          Showing {skip + 1}-{Math.min(skip + data.length, total)} of {total}
+          Showing {skip + 1}-{Math.min(skip + (data?.length || 0), total)} of {total}
         </p>
         <div className="flex items-center gap-2">
           <button

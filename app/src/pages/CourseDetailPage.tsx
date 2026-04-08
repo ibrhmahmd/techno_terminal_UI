@@ -292,7 +292,7 @@ export function CourseDetailPage() {
                         <div className="flex justify-between">
                           <dt className="text-slate-500">Estimated Duration</dt>
                           <dd className="font-medium text-slate-900">
-                            ~{Math.ceil((course.sessions_per_level || 0) / 4)} months
+                            ~{Math.ceil((course.sessions_per_level || 0))} 
                           </dd>
                         </div>
                       </dl>

@@ -67,8 +67,8 @@ export function useGroupHistory(groupId: number): UseGroupHistoryReturn {
 
       setEnrollmentHistory(enrollmentData.items)
       setEnrollmentPagination((prev) => ({ ...prev, total: enrollmentData.total }))
-      setCompetitions(competitionsData)
-      setInstructorHistory(instructorData)
+      setCompetitions(Array.isArray(competitionsData) ? competitionsData : [])
+      setInstructorHistory(Array.isArray(instructorData) ? instructorData : [])
     } catch (err: any) {
       setError(err.message || 'Failed to load history data')
     } finally {

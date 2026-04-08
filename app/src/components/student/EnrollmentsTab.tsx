@@ -201,7 +201,7 @@ export function EnrollmentsTab({ enrollments, onEnroll }: EnrollmentsTabProps) {
               <label className="text-sm text-slate-500">Enrolled On</label>
               <p className="font-medium text-on-surface flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-slate-400" />
-                {currentEnrollment.enrolled_on}
+                {currentEnrollment.enrolled_at}
               </p>
             </div>
           </div>
@@ -233,20 +233,20 @@ export function EnrollmentsTab({ enrollments, onEnroll }: EnrollmentsTabProps) {
                         {enrollment.status.charAt(0).toUpperCase() + enrollment.status.slice(1)}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-500">{enrollment.course_name} • Level {enrollment.level}</p>
+                    <p className="text-sm text-slate-500">{enrollment.course_name} • Level {enrollment.level_number}</p>
                     <div className="flex items-center gap-4 text-sm text-slate-500">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
-                        Enrolled: {enrollment.enrolled_on}
+                        Enrolled: {enrollment.enrolled_at}
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium text-on-surface">
-                      {enrollment.amount_due - enrollment.discount} EGP
+                      {enrollment.amount_due - enrollment.discount_applied} EGP
                     </p>
                     <p className="text-xs text-slate-500">
-                      after {enrollment.discount} EGP discount
+                      after {enrollment.discount_applied} EGP discount
                     </p>
                   </div>
                 </div>
