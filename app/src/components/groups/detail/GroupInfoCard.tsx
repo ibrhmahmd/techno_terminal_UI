@@ -1,4 +1,5 @@
-import { Edit2, Trash2, ArrowUpCircle, Users, Calendar, Clock, BookOpen } from 'lucide-react'
+import { Edit2, Trash2, Archive, ArrowUpCircle, Users, Calendar, Clock, BookOpen, PlusCircle } from 'lucide-react'
+import { useState } from 'react'
 import type { EnrichedGroupPublic, GroupLevelHistoryDTO } from '../../../api/academics'
 import { LevelBadge } from '../shared/LevelBadge'
 import { GroupStatusBadge } from '../shared/GroupStatusBadge'
@@ -6,23 +7,39 @@ import { GroupStatusBadge } from '../shared/GroupStatusBadge'
 interface GroupInfoCardProps {
   group: EnrichedGroupPublic
   currentLevel: GroupLevelHistoryDTO | null
+  currentLevelEnrollmentCount: number
   onEdit: () => void
   onDelete: () => void
+  onArchive: () => void
   onLevelUp: () => void
+  onCreateNewLevel: () => void
   canLevelUp: boolean
+  onNotesChange?: (notes: string) => void
+  isSavingNotes?: boolean
 }
 
 export function GroupInfoCard({
   group,
   currentLevel,
+  currentLevelEnrollmentCount,
   onEdit,
   onDelete,
+  onArchive,
   onLevelUp,
+  onCreateNewLevel,
   canLevelUp,
+  onNotesChange,
+  isSavingNotes,
 }: GroupInfoCardProps) {
+  const [notes, setNotes] = useState(group.notes || '')
   const formatTime = (time: string | null | undefined) => {
     if (!time) return '--:--'
     return time.slice(0, 5)
+  }
+
+  const handleNotesChange = (value: string) => {
+    setNotes(value)
+    onNotesChange?.(value)
   }
 
   return (
@@ -31,7 +48,7 @@ export function GroupInfoCard({
         <div>
           <h1 className="text-2xl font-bold text-slate-900">{group.group_name}</h1>
           <div className="flex items-center gap-3 mt-2">
-            <GroupStatusBadge status={group.is_active ? 'active' : 'inactive'} />
+            <GroupStatusBadge status={group.status} />
             {currentLevel && (
               <span className="flex items-center gap-1.5 text-sm text-slate-600">
                 <LevelBadge level={currentLevel.level_number} size="sm" isActive />
@@ -51,21 +68,37 @@ export function GroupInfoCard({
             </button>
           )}
           <button
+            onClick={onCreateNewLevel}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+          >
+            <PlusCircle className="w-4 h-4" />
+            New Level
+          </button>
+          <button
             onClick={onEdit}
             className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            title="Edit Group"
           >
             <Edit2 className="w-4 h-4" />
           </button>
           <button
+            onClick={onArchive}
+            className="p-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors"
+            title="Archive Group"
+          >
+            <Archive className="w-4 h-4" />
+          </button>
+          <button
             onClick={onDelete}
             className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+            title="Delete Group"
           >
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
           <Users className="w-5 h-5 text-slate-500" />
           <div>
@@ -87,12 +120,37 @@ export function GroupInfoCard({
           <div>
             <p className="text-sm text-slate-500">Schedule</p>
             <p className="font-medium text-slate-900 flex items-center gap-1">
-              {group.default_day}
+              {group.default_day || 'No day'}
               <Clock className="w-3 h-3" />
               {formatTime(group.default_time_start)} - {formatTime(group.default_time_end)}
             </p>
           </div>
         </div>
+
+        <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <Users className="w-5 h-5 text-slate-500" />
+          <div>
+            <p className="text-sm text-slate-500">Students in Level</p>
+            <p className="font-medium text-slate-900">
+              {currentLevelEnrollmentCount} / {group.max_capacity || '∞'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Notes Section */}
+      <div className="mt-6">
+        <label className="block text-sm font-medium text-slate-700 mb-2">
+          Group Notes
+          {isSavingNotes && <span className="ml-2 text-xs text-slate-400">Saving...</span>}
+        </label>
+        <textarea
+          value={notes}
+          onChange={(e) => handleNotesChange(e.target.value)}
+          placeholder="Add notes about this group..."
+          className="w-full px-3 py-2 text-sm text-slate-700 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary resize-none"
+          rows={3}
+        />
       </div>
     </div>
   )

@@ -1,17 +1,19 @@
 import { useState } from 'react'
-import { Users, Trophy, UserCog } from 'lucide-react'
+import { Users, Trophy, UserCog, BookOpen } from 'lucide-react'
 import type { EnrollmentHistoryDTO, CompetitionParticipationDTO, InstructorAssignmentDTO } from '../../../api/academics'
 import { EnrollmentHistoryTable } from './EnrollmentHistoryTable'
 import { CompetitionRecords } from './CompetitionRecords'
 import { InstructorHistoryTable } from './InstructorHistoryTable'
+import { CoursesHistoryTable } from './CoursesHistoryTable'
 import { HistoryStats } from './HistoryStats'
 
-type HistorySubTab = 'enrollment' | 'competitions' | 'instructors'
+type HistorySubTab = 'enrollment' | 'competitions' | 'instructors' | 'courses'
 
 interface HistoryTabProps {
   enrollmentHistory: EnrollmentHistoryDTO[]
   competitions: CompetitionParticipationDTO[]
   instructorHistory: InstructorAssignmentDTO[]
+  coursesHistory: { level_number: number; course_name: string; start_date: string; end_date?: string }[]
   isLoading: boolean
   totalEnrollment: number
   onEnrollmentPageChange: (skip: number) => void
@@ -23,6 +25,7 @@ export function HistoryTab({
   enrollmentHistory,
   competitions,
   instructorHistory,
+  coursesHistory,
   isLoading,
   totalEnrollment,
   onEnrollmentPageChange,
@@ -35,6 +38,7 @@ export function HistoryTab({
     { id: 'enrollment' as const, label: 'Enrollment', icon: Users, count: totalEnrollment },
     { id: 'competitions' as const, label: 'Competitions', icon: Trophy, count: competitions.length },
     { id: 'instructors' as const, label: 'Instructors', icon: UserCog, count: instructorHistory.length },
+    { id: 'courses' as const, label: 'Courses', icon: BookOpen, count: coursesHistory.length },
   ]
 
   return (
@@ -43,6 +47,7 @@ export function HistoryTab({
         totalEnrollments={totalEnrollment}
         totalCompetitions={competitions.length}
         totalInstructorChanges={instructorHistory.length}
+        totalCourses={coursesHistory.length}
         isLoading={isLoading}
       />
 
@@ -81,6 +86,9 @@ export function HistoryTab({
           )}
           {activeTab === 'instructors' && (
             <InstructorHistoryTable data={instructorHistory} isLoading={isLoading} />
+          )}
+          {activeTab === 'courses' && (
+            <CoursesHistoryTable data={coursesHistory} isLoading={isLoading} />
           )}
         </div>
       </div>

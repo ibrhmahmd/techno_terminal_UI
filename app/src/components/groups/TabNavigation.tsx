@@ -1,13 +1,13 @@
 interface TabNavigationProps {
-  activeTab: 'info' | 'attendance' | 'history'
-  onTabChange: (tab: 'info' | 'attendance' | 'history') => void
-  sessionCount: number
+  activeTab: 'attendance' | 'students' | 'history'
+  onTabChange: (tab: 'attendance' | 'students' | 'history') => void
+  enrollmentCount: number
 }
 
-export function TabNavigation({ activeTab, onTabChange, sessionCount }: TabNavigationProps) {
+export function TabNavigation({ activeTab, onTabChange, enrollmentCount }: TabNavigationProps) {
   const tabs = [
-    { id: 'info' as const, label: 'Info' },
-    { id: 'attendance' as const, label: 'Attendance Grid' },
+    { id: 'attendance' as const, label: 'Attendance' },
+    { id: 'students' as const, label: 'Students' },
     { id: 'history' as const, label: 'History' },
   ]
 
@@ -30,7 +30,7 @@ export function TabNavigation({ activeTab, onTabChange, sessionCount }: TabNavig
       </div>
       <div className="pb-3 flex space-x-4">
         <span className="text-[10px] uppercase font-bold text-outline">
-          Show: {sessionCount} Sessions
+          {enrollmentCount} Students Enrolled
         </span>
       </div>
     </div>
