@@ -5,19 +5,15 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import { TabNavigation } from '../components/groups/TabNavigation'
 import { AttendanceTab } from '../components/groups/AttendanceTab'
+import { StudentsTab } from '../components/groups/StudentsTab'
 import { HistoryTab } from '../components/groups/history/HistoryTab'
 import { GroupInfoCard } from '../components/groups/detail/GroupInfoCard'
-import { LevelSelector } from '../components/groups/detail/LevelSelector'
-import { LevelInfoPanel } from '../components/groups/detail/LevelInfoPanel'
-import { GroupPricingCard } from '../components/groups/detail/GroupPricingCard'
 import { EditGroupDialog } from '../components/groups/detail/EditGroupDialog'
-import { SessionsList } from '../components/groups/SessionsList'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { useGroupDetail } from '../hooks/useGroupDetail'
 import { useGroupHistory } from '../hooks/useGroupHistory'
 import { useGroupMutations } from '../hooks/useGroupMutations'
 import { useToast } from '../components/common/Toast'
-import { reactivateSession, cancelSession, deleteSession } from '../api/academics'
 import type { UpdateGroupDTO } from '../api/academics'
 
 export function GroupDetailPage() {
@@ -25,13 +21,11 @@ export function GroupDetailPage() {
   const groupId = Number(id) || 0
   const { showToast } = useToast()
 
-  const [activeTab, setActiveTab] = useState<'info' | 'attendance' | 'history'>('info')
+  const [activeTab, setActiveTab] = useState<'attendance' | 'students' | 'history'>('attendance')
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  
-  // Session management state
-  const [isProcessingSession, setIsProcessingSession] = useState(false)
-  const [deletingSessionId, setDeletingSessionId] = useState<number | null>(null)
+  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false)
+  const [isSavingNotes, setIsSavingNotes] = useState(false)
 
   const {
     group,
@@ -54,9 +48,27 @@ export function GroupDetailPage() {
     setEnrollmentPage,
   } = useGroupHistory(groupId)
 
-  const { updateGroup, deleteGroup, levelUp, error: mutationError } = useGroupMutations(groupId)
+  const { 
+    updateGroup, 
+    deleteGroup, 
+    archiveGroup,
+    levelUp, 
+    createNewLevel,
+    error: mutationError 
+  } = useGroupMutations(groupId)
 
-  const handleUpdateGroup = async (data: UpdateGroupDTO & { name?: string; notes?: string; status?: 'active' | 'inactive' | 'archived' }) => {
+  // Calculate current level enrollment count from levels data
+  const currentLevelEnrollmentCount = currentLevel?.enrollment_count_start || 0
+
+  // Build courses history from levels
+  const coursesHistory = levels.map(level => ({
+    level_number: level.level_number,
+    course_name: group?.course_name || 'Unknown Course',
+    start_date: level.start_date,
+    end_date: level.end_date,
+  }))
+
+  const handleUpdateGroup = async (data: UpdateGroupDTO & { notes?: string; status?: 'active' | 'inactive' | 'archived' }) => {
     try {
       await updateGroup(data)
       showToast('Group updated successfully', 'success')
@@ -78,6 +90,18 @@ export function GroupDetailPage() {
     }
   }
 
+  const handleArchiveGroup = async () => {
+    try {
+      await archiveGroup()
+      showToast('Group archived successfully', 'success')
+      await refresh()
+      setIsArchiveDialogOpen(false)
+    } catch {
+      showToast(mutationError || 'Failed to archive group', 'error')
+      setIsArchiveDialogOpen(false)
+    }
+  }
+
   const handleLevelUp = async () => {
     try {
       await levelUp()
@@ -88,44 +112,38 @@ export function GroupDetailPage() {
     }
   }
 
-  // Session handlers
-  const handleCancelSession = async (sessionId: number) => {
-    setIsProcessingSession(true)
+  const handleCreateNewLevel = async () => {
+    console.log('[DEBUG] handleCreateNewLevel called')
+    console.log('[DEBUG] currentLevel:', currentLevel)
+    if (!currentLevel) {
+      console.error('[DEBUG] No current level, cannot create new level')
+      return
+    }
     try {
-      await cancelSession(sessionId)
-      showToast('Session cancelled successfully', 'success')
+      console.log('[DEBUG] Calling createNewLevel with:', {
+        level_number: currentLevel.level_number + 1,
+        pricing_snapshot: currentLevel.pricing_snapshot,
+      })
+      await createNewLevel({
+        level_number: currentLevel.level_number + 1,
+        pricing_snapshot: currentLevel.pricing_snapshot,
+      })
+      showToast('New level created successfully', 'success')
       await refresh()
     } catch (err: any) {
-      showToast(err.message || 'Failed to cancel session', 'error')
-    } finally {
-      setIsProcessingSession(false)
+      console.error('[DEBUG] createNewLevel failed:', err)
+      showToast(mutationError || 'Failed to create new level', 'error')
     }
   }
 
-  const handleReactivateSession = async (sessionId: number) => {
-    setIsProcessingSession(true)
+  const handleNotesChange = async (notes: string) => {
+    setIsSavingNotes(true)
     try {
-      await reactivateSession(sessionId)
-      showToast('Session reactivated successfully', 'success')
-      await refresh()
-    } catch (err: any) {
-      showToast(err.message || 'Failed to reactivate session', 'error')
+      await updateGroup({ notes } as UpdateGroupDTO)
+    } catch {
+      // Error handled by mutation hook
     } finally {
-      setIsProcessingSession(false)
-    }
-  }
-
-  const handleDeleteSession = async (sessionId: number) => {
-    setIsProcessingSession(true)
-    try {
-      await deleteSession(sessionId)
-      showToast('Session deleted successfully', 'success')
-      await refresh()
-    } catch (err: any) {
-      showToast(err.message || 'Failed to delete session', 'error')
-    } finally {
-      setIsProcessingSession(false)
-      setDeletingSessionId(null)
+      setIsSavingNotes(false)
     }
   }
 
@@ -188,61 +206,44 @@ export function GroupDetailPage() {
           <GroupInfoCard
             group={group}
             currentLevel={currentLevel}
+            currentLevelEnrollmentCount={currentLevelEnrollmentCount}
             onEdit={() => setIsEditDialogOpen(true)}
             onDelete={() => setIsDeleteDialogOpen(true)}
+            onArchive={() => setIsArchiveDialogOpen(true)}
             onLevelUp={handleLevelUp}
+            onCreateNewLevel={handleCreateNewLevel}
             canLevelUp={currentLevel?.completion_rate === 100}
+            onNotesChange={handleNotesChange}
+            isSavingNotes={isSavingNotes}
           />
 
           <TabNavigation
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            sessionCount={sessions.length}
+            enrollmentCount={currentLevelEnrollmentCount}
           />
-
-          {activeTab === 'info' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <LevelSelector
-                  levels={levels}
-                  activeLevelId={activeLevelId}
-                  onLevelChange={setActiveLevel}
-                  currentLevelNumber={group.level_number}
-                />
-                <LevelInfoPanel
-                  level={currentLevel}
-                  isActiveLevel={currentLevel?.level_number === group.level_number}
-                  attendanceStats={{
-                    completedSessions: sessions.filter((s) => s.status === 'completed').length,
-                    totalSessions: sessions.length,
-                    averageAttendance: 85,
-                  }}
-                />
-                <SessionsList
-                  sessions={sessions}
-                  deletingSessionId={deletingSessionId}
-                  isProcessing={isProcessingSession}
-                  onCancel={handleCancelSession}
-                  onReactivate={handleReactivateSession}
-                  onDeleteRequest={setDeletingSessionId}
-                  onDeleteConfirm={handleDeleteSession}
-                  onDeleteCancel={() => setDeletingSessionId(null)}
-                />
-              </div>
-              <div className="space-y-6">
-                <GroupPricingCard
-                  pricingHistory={buildPricingHistory()}
-                  currency={currentLevel?.pricing_snapshot.currency || 'EGP'}
-                />
-              </div>
-            </div>
-          )}
 
           {activeTab === 'attendance' && (
             <AttendanceTab
+              groupId={groupId}
+              levels={levels}
               sessions={sessions}
-              students={group.students?.map((s) => ({ id: s.id, full_name: s.full_name })) || []}
-              isLoading={isLoading}
+              activeLevelId={activeLevelId}
+              currentLevelNumber={group.level_number}
+              pricingHistory={buildPricingHistory()}
+              currency={currentLevel?.pricing_snapshot.currency || 'EGP'}
+              instructorName={group.instructor_name}
+              onLevelChange={setActiveLevel}
+            />
+          )}
+
+          {activeTab === 'students' && (
+            <StudentsTab
+              groupId={groupId}
+              levels={levels}
+              activeLevelId={activeLevelId}
+              currentLevelNumber={group.level_number}
+              onLevelChange={setActiveLevel}
             />
           )}
 
@@ -251,6 +252,7 @@ export function GroupDetailPage() {
               enrollmentHistory={enrollmentHistory}
               competitions={competitions}
               instructorHistory={instructorHistory}
+              coursesHistory={coursesHistory}
               isLoading={isHistoryLoading}
               totalEnrollment={pagination.enrollment.total}
               onEnrollmentPageChange={setEnrollmentPage}
@@ -274,6 +276,16 @@ export function GroupDetailPage() {
             message="Are you sure you want to delete this group? This action cannot be undone."
             confirmText="Delete"
             variant="danger"
+          />
+
+          <ConfirmDialog
+            isOpen={isArchiveDialogOpen}
+            onCancel={() => setIsArchiveDialogOpen(false)}
+            onConfirm={handleArchiveGroup}
+            title="Archive Group"
+            message="Are you sure you want to archive this group? It will be hidden from the main groups list but can be accessed later."
+            confirmText="Archive"
+            variant="warning"
           />
         </ErrorBoundary>
       </div>

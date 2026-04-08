@@ -70,18 +70,22 @@ const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
     )
   },
   {
-    key: 'is_active',
+    key: 'status',
     header: 'Status',
-    cell: (group) => (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-        group.is_active 
-          ? 'bg-green-100 text-green-700' 
-          : 'bg-slate-100 text-slate-600'
-      }`}>
-        <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-        {group.is_active ? 'Active' : 'Archived'}
-      </span>
-    )
+    cell: (group) => {
+      const statusConfig = {
+        active: { label: 'Active', className: 'bg-green-100 text-green-700' },
+        inactive: { label: 'Inactive', className: 'bg-slate-100 text-slate-600' },
+        archived: { label: 'Archived', className: 'bg-amber-100 text-amber-700' },
+      }
+      const config = statusConfig[group.status] || statusConfig.inactive
+      return (
+        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${config.className}`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+          {config.label}
+        </span>
+      )
+    }
   }
 ]
 
@@ -283,7 +287,7 @@ export function GroupsPage() {
         {selectedGroup && (
           <GroupForm
             mode="edit"
-            initialData={selectedGroup}
+            initialData={selectedGroup as any}
             onSubmit={handleUpdateGroup}
             onCancel={() => { setIsEditModalOpen(false); setSelectedGroup(null) }}
           />

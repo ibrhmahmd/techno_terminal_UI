@@ -40,18 +40,21 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
       setGroup(groupData)
       console.log('[DEBUG] GroupDetail loaded:', {
         id: groupData.id,
-        name: groupData.name,
-        group_name: (groupData as any).group_name
+        group_name: groupData.group_name,
       })
+      console.log('[DEBUG] Levels loaded:', levelsData)
       setLevels(levelsData)
       setSessions(sessionsData)
 
       // Set active level to current level by default
       const current = levelsData.find((l) => !l.end_date)
+      console.log('[DEBUG] Current level (no end_date):', current)
       if (current) {
         setActiveLevelId(current.id)
       } else if (levelsData.length > 0) {
         setActiveLevelId(levelsData[levelsData.length - 1].id)
+      } else {
+        console.log('[DEBUG] No levels found, activeLevelId remains null')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load group details')

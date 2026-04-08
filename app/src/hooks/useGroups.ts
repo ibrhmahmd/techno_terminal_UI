@@ -37,8 +37,7 @@ export function useGroups() {
       console.log('[DEBUG] Groups loaded from API:', result)
       console.log('[DEBUG] First group sample:', result?.[0] ? { 
         id: result[0].id, 
-        name: result[0].name, 
-        group_name: (result[0] as any).group_name 
+        group_name: result[0].group_name 
       } : 'No groups')
       setGroups(result || [])
     } catch (err: any) {
@@ -81,6 +80,11 @@ export function useGroups() {
       { key: 'not_in_competition', label: 'Not in Competition', count: notInComp.length, groups: notInComp },
     ]
   }
+
+  // Effect to load groups on initial mount
+  useEffect(() => {
+    loadGroups()
+  }, [loadGroups])
 
   // Effect to load grouped data when groupBy changes
   useEffect(() => {

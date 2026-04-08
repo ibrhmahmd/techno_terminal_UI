@@ -17,6 +17,7 @@ import type {
   GroupLevelHistoryDTO,
   EnrollmentHistoryDTO,
   InstructorAssignmentDTO,
+  CreateNewLevelInput,
 } from "../types/groups";
 
 // generate level sessions manually
@@ -28,9 +29,9 @@ export async function generateLevelSessions(groupId: number): Promise<void> {
 export async function getGroupLevels(
   groupId: number,
 ): Promise<GroupLevelHistoryDTO[]> {
-  const response = await client.get<ApiResponse<GroupLevelHistoryDTO[]>>(
-    `/academics/groups/${groupId}/levels`,
-  );
+  const response = await client.get<
+    { data: GroupLevelHistoryDTO[]; total: number; skip: number; limit: number }
+  >(`/academics/groups/${groupId}/levels`);
   return response.data.data || [];
 }
 
@@ -50,6 +51,18 @@ export async function getGroupEnrollmentHistory(
       total: 0,
     }
   );
+}
+
+// create new level for a group
+export async function createNewLevel(
+  groupId: number,
+  data: CreateNewLevelInput,
+): Promise<GroupLevelHistoryDTO> {
+  const response = await client.post<ApiResponse<GroupLevelHistoryDTO>>(
+    `/academics/groups/${groupId}/levels`,
+    data,
+  );
+  return response.data.data;
 }
 
 // get instructor assignment history for a group
