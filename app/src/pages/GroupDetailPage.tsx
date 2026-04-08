@@ -152,8 +152,8 @@ export function GroupDetailPage() {
     return levels.map((level) => ({
       levelNumber: level.level_number,
       dateRange: { start: level.start_date, end: level.end_date },
-      monthlyFee: level.pricing_snapshot.monthly_fee,
-      sessionFee: level.pricing_snapshot.session_fee,
+      monthlyFee: level.pricing_snapshot?.monthly_fee ?? level.price_override ?? 0,
+      sessionFee: level.pricing_snapshot?.session_fee ?? 0,
       isActive: !level.end_date,
     }))
   }
@@ -231,7 +231,7 @@ export function GroupDetailPage() {
               activeLevelId={activeLevelId}
               currentLevelNumber={group.level_number}
               pricingHistory={buildPricingHistory()}
-              currency={currentLevel?.pricing_snapshot.currency || 'EGP'}
+              currency={currentLevel?.pricing_snapshot?.currency || 'EGP'}
               instructorName={group.instructor_name}
               onLevelChange={setActiveLevel}
             />

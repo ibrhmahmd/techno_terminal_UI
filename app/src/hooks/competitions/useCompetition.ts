@@ -17,21 +17,22 @@ interface UseCompetitionReturn {
   remove: () => Promise<void>
 }
 
-export function useCompetition(id: string): UseCompetitionReturn {
+export function useCompetition(id: number | string): UseCompetitionReturn {
   const [competition, setCompetition] = useState<Competition | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isMutating, setIsMutating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetchCompetition = useCallback(async () => {
-    if (!id) {
+    if (!id || id === '') {
       setIsLoading(false)
       return
     }
     setIsLoading(true)
     setError(null)
     try {
-      const data = await getCompetition(id)
+      const numericId = typeof id === 'string' ? parseInt(id, 10) : id
+      const data = await getCompetition(numericId)
       setCompetition(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load competition')
@@ -46,10 +47,11 @@ export function useCompetition(id: string): UseCompetitionReturn {
   }, [fetchCompetition])
 
   const update = useCallback(async (data: UpdateCompetitionInput) => {
-    if (!id) return
+    if (!id || id === '') return
     setIsMutating(true)
     try {
-      const updated = await updateCompetition(id, data)
+      const numericId = typeof id === 'string' ? parseInt(id, 10) : id
+      const updated = await updateCompetition(numericId, data)
       setCompetition(updated)
     } catch (err) {
       throw err
@@ -59,10 +61,11 @@ export function useCompetition(id: string): UseCompetitionReturn {
   }, [id])
 
   const remove = useCallback(async () => {
-    if (!id) return
+    if (!id || id === '') return
     setIsMutating(true)
     try {
-      await deleteCompetition(id)
+      const numericId = typeof id === 'string' ? parseInt(id, 10) : id
+      await deleteCompetition(numericId)
       setCompetition(null)
     } catch (err) {
       throw err

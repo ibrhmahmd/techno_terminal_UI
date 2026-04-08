@@ -1,4 +1,5 @@
 import client from '../client'
+import type { AxiosError } from 'axios'
 import type { PaginationParams, PaginationResult } from '../../types/pagination'
 import type { PaginatedApiResponse, ApiResponse } from '../../types/api'
 import type { 
@@ -46,13 +47,50 @@ export async function getStudent(id: number): Promise<StudentWithDetails> {
 }
 
 export async function createStudent(student: Omit<Student, 'id'>): Promise<Student> {
-  const response = await client.post<ApiResponse<Student>>('/crm/students', student)
-  return response.data.data
+  try {
+    const payload = { student_data: student }
+    console.log('[API] createStudent - Request:', { url: '/crm/students', payload })
+    const response = await client.post<ApiResponse<Student>>('/crm/students', payload)
+    console.log('[API] createStudent - Success:', { status: response.status, data: response.data })
+    return response.data.data
+  } catch (error) {
+    const axiosError = error as AxiosError
+    console.error('[API] createStudent - Error:', {
+      message: axiosError.message,
+      status: axiosError.response?.status,
+      statusText: axiosError.response?.statusText,
+      responseData: axiosError.response?.data,
+      requestUrl: axiosError.config?.url,
+      requestMethod: axiosError.config?.method,
+      requestPayload: axiosError.config?.data,
+      headers: axiosError.response?.headers,
+      stack: axiosError.stack
+    })
+    throw error
+  }
 }
 
 export async function updateStudent(id: number, student: Partial<Omit<Student, 'id'>>): Promise<Student> {
-  const response = await client.patch<ApiResponse<Student>>(`/crm/students/${id}`, student)
-  return response.data.data
+  try {
+    console.log('[API] updateStudent - Request:', { url: `/crm/students/${id}`, payload: student })
+    const response = await client.patch<ApiResponse<Student>>(`/crm/students/${id}`, student)
+    console.log('[API] updateStudent - Success:', { status: response.status, data: response.data })
+    return response.data.data
+  } catch (error) {
+    const axiosError = error as AxiosError
+    console.error('[API] updateStudent - Error:', {
+      message: axiosError.message,
+      status: axiosError.response?.status,
+      statusText: axiosError.response?.statusText,
+      responseData: axiosError.response?.data,
+      requestUrl: axiosError.config?.url,
+      requestMethod: axiosError.config?.method,
+      requestPayload: axiosError.config?.data,
+      headers: axiosError.response?.headers,
+      stack: axiosError.stack
+    })
+    throw error
+  }
 }
 
 export async function deleteStudent(id: number): Promise<void> {

@@ -97,7 +97,7 @@ export function TransferPanel({ useMockData, isLoading, onSuccess, onError, setI
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="font-medium text-sm">{e.student_name || 'Unknown Student'}</p>
-                      <p className="text-xs text-slate-500">{e.group_name || 'Unknown Group'} • Level {e.level}</p>
+                      <p className="text-xs text-slate-500">{e.group_name || 'Unknown Group'} • Level {e.level_number}</p>
                     </div>
                     <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
                       {e.status}

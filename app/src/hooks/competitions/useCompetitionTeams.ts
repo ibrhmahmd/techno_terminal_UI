@@ -16,7 +16,7 @@ interface UseCompetitionTeamsReturn {
 }
 
 export function useCompetitionTeams(
-  competitionId: string,
+  competitionId: number | string,
   categoryId: string | null
 ): UseCompetitionTeamsReturn {
   const [teams, setTeams] = useState<TeamRegistration[]>([])
@@ -25,7 +25,7 @@ export function useCompetitionTeams(
   const [error, setError] = useState<string | null>(null)
 
   const fetchTeams = useCallback(async () => {
-    if (!competitionId || !categoryId) {
+    if (!competitionId || competitionId === '' || !categoryId) {
       setIsLoading(false)
       setTeams([])
       return
@@ -33,7 +33,8 @@ export function useCompetitionTeams(
     setIsLoading(true)
     setError(null)
     try {
-      const data = await getCategoryTeams(competitionId, categoryId)
+      const numericId = typeof competitionId === 'string' ? parseInt(competitionId, 10) : competitionId
+      const data = await getCategoryTeams(numericId, categoryId)
       setTeams(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load teams')

@@ -164,7 +164,7 @@ export function DataTable<T>({
     )
   }
 
-  if (data.length === 0) {
+  if (data?.length === 0) {
     return (
       <DataTableContainer>
         <EmptyState
@@ -337,7 +337,7 @@ export function DataTable<T>({
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
-          {data.map((row) => (
+          {(data || []).map((row) => (
             <tr
               key={keyExtractor(row)}
               className={`group/row hover:bg-slate-50/50 transition-colors ${

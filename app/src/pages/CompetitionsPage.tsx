@@ -22,7 +22,7 @@ export function CompetitionsPage() {
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [deletingCompetition, setDeletingCompetition] = useState<string | null>(null)
+  const [deletingCompetition, setDeletingCompetition] = useState<number | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
 
@@ -40,7 +40,7 @@ export function CompetitionsPage() {
     }
   }
 
-  const handleDeleteCompetition = async (id: string) => {
+  const handleDeleteCompetition = async (id: number) => {
     setIsProcessing(true)
     setActionError(null)
     try {
@@ -51,15 +51,6 @@ export function CompetitionsPage() {
       setActionError('Failed to delete competition')
     } finally {
       setIsProcessing(false)
-    }
-  }
-
-  const getStatusFilter = (status: string) => {
-    switch (status) {
-      case 'upcoming': return competitions.filter(c => c.status === 'upcoming')
-      case 'active': return competitions.filter(c => c.status === 'active')
-      case 'completed': return competitions.filter(c => c.status === 'completed')
-      default: return competitions
     }
   }
 
@@ -109,54 +100,14 @@ export function CompetitionsPage() {
             </button>
           </div>
         ) : (
-          <div className="space-y-8">
-            {/* Upcoming Competitions */}
-            {getStatusFilter('upcoming').length > 0 && (
-              <div>
-                <h2 className="font-headline text-xl font-semibold text-on-surface mb-4">Upcoming Competitions</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {getStatusFilter('upcoming').map(competition => (
-                    <CompetitionCard
-                      key={competition.id}
-                      competition={competition}
-                      onClick={() => navigate(`/competitions/${competition.id}`)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Active Competitions */}
-            {getStatusFilter('active').length > 0 && (
-              <div>
-                <h2 className="font-headline text-xl font-semibold text-on-surface mb-4">Active Competitions</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {getStatusFilter('active').map(competition => (
-                    <CompetitionCard
-                      key={competition.id}
-                      competition={competition}
-                      onClick={() => navigate(`/competitions/${competition.id}`)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Completed Competitions */}
-            {getStatusFilter('completed').length > 0 && (
-              <div>
-                <h2 className="font-headline text-xl font-semibold text-on-surface mb-4">Past Competitions</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {getStatusFilter('completed').map(competition => (
-                    <CompetitionCard
-                      key={competition.id}
-                      competition={competition}
-                      onClick={() => navigate(`/competitions/${competition.id}`)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {competitions.map(competition => (
+              <CompetitionCard
+                key={competition.id}
+                competition={competition}
+                onClick={() => navigate(`/competitions/${competition.id}`)}
+              />
+            ))}
           </div>
         )}
       </section>

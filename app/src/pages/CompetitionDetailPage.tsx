@@ -1,14 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { TopNavbar } from "../components/dashboard/TopNavbar";
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
 import { TeamRegistrationModal } from '../components/competitions/TeamRegistrationModal'
 import { CategoryList } from '../components/competitions/CategoryList'
-import { useCompetition, useCompetitionCategories, useCompetitionTeams } from '../hooks/competitions'
+import { useCompetition, useCompetitionCategories } from '../hooks/competitions'
 import { getCategoryTeams, registerTeam, type CreateCategoryInput, type RegisterTeamInput, type TeamRegistration } from '../api/competitions'
-import { competitionStatusColors, paymentStatusColors } from '../utils/colors'
-import { isRegistrationOpen } from '../utils/competition'
+import { paymentStatusColors } from '../utils/colors'
 
 export function CompetitionDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -38,7 +37,7 @@ export function CompetitionDetailPage() {
 
   // Teams state for viewing modal
   const [teams, setTeams] = useState<TeamRegistration[]>([])
-  const [teamsLoading, setTeamsLoading] = useState(false)
+  const [, setTeamsLoading] = useState(false)
 
   const isLoading = competitionLoading || categoriesLoading
 
@@ -74,7 +73,8 @@ export function CompetitionDetailPage() {
     setIsTeamsModalOpen(true)
     setTeamsLoading(true)
     try {
-      const teamsData = await getCategoryTeams(competitionId, categoryId)
+      const numericCompetitionId = parseInt(competitionId, 10)
+      const teamsData = await getCategoryTeams(numericCompetitionId, categoryId)
       setTeams(teamsData)
     } catch {
       setTeams([])
@@ -137,15 +137,13 @@ export function CompetitionDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">{competition.name}</h1>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${competitionStatusColors[competition.status]}`}>
-                {competition.status}
-              </span>
+              {competition.edition && (
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                  {competition.edition}
+                </span>
+              )}
             </div>
-            {competition && isRegistrationOpen(competition) && (
-              <span className="px-4 py-2 bg-secondary-container text-secondary text-sm rounded-lg font-medium">
-                Registration Open
-              </span>
-            )}
+            {/* Registration status removed - not supported by current API */}
           </div>
         </div>
       </header>
@@ -163,7 +161,7 @@ export function CompetitionDetailPage() {
             {/* Competition Info */}
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">About This Competition</h2>
-              <p className="text-slate-600 mb-4">{competition.description}</p>
+              {competition.notes && <p className="text-slate-600 mb-4">{competition.notes}</p>}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="material-symbols-outlined text-slate-400">location_on</span>
@@ -171,15 +169,15 @@ export function CompetitionDetailPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="material-symbols-outlined text-slate-400">payments</span>
-                  <span>{competition.fee_per_participant} EGP per participant</span>
+                  <span>{competition.fee_per_student} EGP per student</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="material-symbols-outlined text-slate-400">event</span>
-                  <span>{formatDate(competition.start_date)} - {formatDate(competition.end_date)}</span>
+                  <span>{competition.competition_date ? formatDate(competition.competition_date) : 'Date TBD'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="material-symbols-outlined text-slate-400">schedule</span>
-                  <span>Registration closes {formatDate(competition.registration_deadline)}</span>
+                  <span>Created {formatDate(competition.created_at)}</span>
                 </div>
               </div>
             </div>
@@ -200,33 +198,35 @@ export function CompetitionDetailPage() {
             />
           </div>
 
-          {/* Sidebar - Stats */}
+          {/* Sidebar - Basic Info */}
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h3 className="font-semibold text-on-surface mb-4">Registration Stats</h3>
+              <h3 className="font-semibold text-on-surface mb-4">Competition Details</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Registered Teams</span>
-                  <span className="font-semibold text-on-surface">{competition.registered_teams}</span>
+                  <span className="text-sm text-slate-600">Location</span>
+                  <span className="font-semibold text-on-surface">{competition.location}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Total Participants</span>
-                  <span className="font-semibold text-on-surface">{competition.total_participants}</span>
+                  <span className="text-sm text-slate-600">Fee per Student</span>
+                  <span className="font-semibold text-on-surface">{competition.fee_per_student} EGP</span>
                 </div>
-                {competition.max_teams && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Competition Date</span>
+                  <span className="font-semibold text-on-surface">
+                    {competition.competition_date ? formatDate(competition.competition_date) : 'TBD'}
+                  </span>
+                </div>
+                {competition.edition && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Available Slots</span>
-                    <span className="font-semibold text-on-surface">
-                      {competition.max_teams - competition.registered_teams}
-                    </span>
+                    <span className="text-sm text-slate-600">Edition</span>
+                    <span className="font-semibold text-on-surface">{competition.edition}</span>
                   </div>
                 )}
                 <div className="pt-4 border-t border-slate-100">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Total Revenue</span>
-                    <span className="font-semibold text-green-600">
-                      {(competition.total_participants * competition.fee_per_participant).toLocaleString()} EGP
-                    </span>
+                    <span className="text-sm text-slate-600">Created</span>
+                    <span className="font-semibold text-slate-500">{formatDate(competition.created_at)}</span>
                   </div>
                 </div>
               </div>

@@ -4,7 +4,6 @@ interface PricingHistoryItem {
   levelNumber: number
   dateRange: { start: string; end?: string }
   monthlyFee: number
-  sessionFee: number
   isActive: boolean
 }
 
@@ -50,12 +49,6 @@ export function GroupPricingCard({ pricingHistory, currency }: GroupPricingCardP
               <p className="text-xs text-slate-500">Monthly Fee</p>
               <p className="text-lg font-bold text-slate-900">
                 {currentPricing.monthlyFee} {currency}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">Session Fee</p>
-              <p className="text-lg font-bold text-slate-900">
-                {currentPricing.sessionFee} {currency}
               </p>
             </div>
           </div>

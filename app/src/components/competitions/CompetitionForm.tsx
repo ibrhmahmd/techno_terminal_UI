@@ -12,13 +12,11 @@ interface CompetitionFormProps {
 export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: CompetitionFormProps) {
   const [formData, setFormData] = useState<CreateCompetitionInput>({
     name: initialData?.name || '',
-    description: initialData?.description || '',
+    edition: initialData?.edition || '',
+    competition_date: initialData?.competition_date || '',
     location: initialData?.location || '',
-    start_date: initialData?.start_date || '',
-    end_date: initialData?.end_date || '',
-    registration_deadline: initialData?.registration_deadline || '',
-    max_teams: initialData?.max_teams,
-    fee_per_participant: initialData?.fee_per_participant || 0,
+    notes: initialData?.notes || '',
+    fee_per_student: initialData?.fee_per_student ?? 0,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -40,19 +38,7 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
       setError('Location is required')
       return
     }
-    if (!formData.start_date) {
-      setError('Start date is required')
-      return
-    }
-    if (!formData.end_date) {
-      setError('End date is required')
-      return
-    }
-    if (!formData.registration_deadline) {
-      setError('Registration deadline is required')
-      return
-    }
-    if (formData.fee_per_participant < 0) {
+    if (formData.fee_per_student < 0) {
       setError('Fee cannot be negative')
       return
     }
@@ -93,14 +79,14 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="description" className="text-sm font-medium text-on-surface">
-          Description
+        <label htmlFor="notes" className="text-sm font-medium text-on-surface">
+          Notes / Description
         </label>
         <textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => handleChange('description', e.target.value)}
-          placeholder="Enter competition description..."
+          id="notes"
+          value={formData.notes}
+          onChange={(e) => handleChange('notes', e.target.value)}
+          placeholder="Enter competition notes or description..."
           rows={3}
           disabled={isLoading}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 resize-none"
@@ -125,81 +111,48 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="start_date" className="text-sm font-medium text-on-surface">
-            Start Date <span className="text-red-500">*</span>
+          <label htmlFor="competition_date" className="text-sm font-medium text-on-surface">
+            Competition Date
           </label>
           <input
-            id="start_date"
+            id="competition_date"
             type="date"
-            value={formData.start_date}
-            onChange={(e) => handleChange('start_date', e.target.value)}
-            required
+            value={formData.competition_date}
+            onChange={(e) => handleChange('competition_date', e.target.value)}
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="end_date" className="text-sm font-medium text-on-surface">
-            End Date <span className="text-red-500">*</span>
+          <label htmlFor="edition" className="text-sm font-medium text-on-surface">
+            Edition
           </label>
           <input
-            id="end_date"
-            type="date"
-            value={formData.end_date}
-            onChange={(e) => handleChange('end_date', e.target.value)}
-            required
+            id="edition"
+            type="text"
+            value={formData.edition}
+            onChange={(e) => handleChange('edition', e.target.value)}
+            placeholder="e.g., 2024, Summer, etc."
             disabled={isLoading}
-            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
         </div>
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="registration_deadline" className="text-sm font-medium text-on-surface">
-          Registration Deadline <span className="text-red-500">*</span>
+        <label htmlFor="fee_per_student" className="text-sm font-medium text-on-surface">
+          Fee per Student (EGP) <span className="text-red-500">*</span>
         </label>
         <input
-          id="registration_deadline"
-          type="date"
-          value={formData.registration_deadline}
-          onChange={(e) => handleChange('registration_deadline', e.target.value)}
+          id="fee_per_student"
+          type="number"
+          min={0}
+          value={formData.fee_per_student}
+          onChange={(e) => handleChange('fee_per_student', parseInt(e.target.value, 10) || 0)}
           required
           disabled={isLoading}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
         />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="max_teams" className="text-sm font-medium text-on-surface">
-            Max Teams (Optional)
-          </label>
-          <input
-            id="max_teams"
-            type="number"
-            min={1}
-            value={formData.max_teams || ''}
-            onChange={(e) => handleChange('max_teams', e.target.value ? parseInt(e.target.value, 10) : 0)}
-            placeholder="No limit"
-            disabled={isLoading}
-            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="fee_per_participant" className="text-sm font-medium text-on-surface">
-            Fee per Participant (EGP) <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="fee_per_participant"
-            type="number"
-            min={0}
-            value={formData.fee_per_participant}
-            onChange={(e) => handleChange('fee_per_participant', parseInt(e.target.value, 10) || 0)}
-            required
-            disabled={isLoading}
-            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-          />
-        </div>
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">

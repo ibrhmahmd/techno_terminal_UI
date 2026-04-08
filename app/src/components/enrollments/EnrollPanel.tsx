@@ -73,9 +73,8 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
         await createEnrollment({
           student_id: selectedStudent.id,
           group_id: selectedGroup.id,
-          level,
-          amount_due: amount,
-          discount,
+          level_number: level,
+          discount_applied: discount,
           notes
         })
         onSuccess(`Successfully enrolled ${selectedStudent.full_name}`)
@@ -156,7 +155,7 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
           {selectedGroup ? (
             <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
               <div>
-                <span className="font-medium">{selectedGroup.name}</span>
+                <span className="font-medium">{selectedGroup.group_name}</span>
                 <p className="text-xs text-slate-500">{selectedGroup.course_name} • {selectedGroup.schedule_time}</p>
               </div>
               <button 
@@ -185,7 +184,7 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
                     onClick={() => setSelectedGroup(g)}
                     className="w-full px-4 py-2 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0"
                   >
-                    <p className="font-medium text-sm">{g.name}</p>
+                    <p className="font-medium text-sm">{g.group_name}</p>
                     <p className="text-xs text-slate-500">{g.course_name} • {g.instructor_name} • {g.schedule_time}</p>
                   </button>
                 ))}

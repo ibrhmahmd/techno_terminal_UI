@@ -1,16 +1,21 @@
 export interface Competition {
-  id: string
+  id: number
   name: string
-  description?: string
+  edition?: string | null
+  competition_date?: string | null
   location: string
-  start_date: string
-  end_date: string
-  registration_deadline: string
-  status: 'upcoming' | 'active' | 'completed' | 'cancelled'
-  max_teams?: number
-  registered_teams: number
-  total_participants: number
-  fee_per_participant: number
+  notes?: string | null
+  fee_per_student: number
+  created_at: string
+  // Keeping optional fields for extended API responses
+  description?: string
+  start_date?: string
+  end_date?: string
+  registration_deadline?: string
+  status?: 'upcoming' | 'active' | 'completed' | 'cancelled'
+  registered_teams?: number
+  total_participants?: number
+  fee_per_participant?: number
   categories?: CompetitionCategory[]
 }
 
@@ -45,19 +50,29 @@ export interface TeamMember {
 
 export interface CreateCompetitionInput {
   name: string
-  description?: string
+  edition?: string
+  competition_date?: string
   location: string
-  start_date: string
-  end_date: string
-  registration_deadline: string
+  notes?: string
+  fee_per_student: number
+  // Legacy fields for compatibility
+  description?: string
+  start_date?: string
+  end_date?: string
+  registration_deadline?: string
   max_teams?: number
-  fee_per_participant: number
+  fee_per_participant?: number
 }
 
 export interface UpdateCompetitionInput {
   name?: string
-  description?: string
+  edition?: string
+  competition_date?: string
   location?: string
+  notes?: string
+  fee_per_student?: number
+  // Legacy fields for compatibility
+  description?: string
   start_date?: string
   end_date?: string
   registration_deadline?: string

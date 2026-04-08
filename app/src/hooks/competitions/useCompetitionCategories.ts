@@ -18,7 +18,7 @@ interface UseCompetitionCategoriesReturn {
 }
 
 export function useCompetitionCategories(
-  competitionId: string
+  competitionId: number | string
 ): UseCompetitionCategoriesReturn {
   const [categories, setCategories] = useState<CompetitionCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -26,14 +26,15 @@ export function useCompetitionCategories(
   const [error, setError] = useState<string | null>(null)
 
   const fetchCategories = useCallback(async () => {
-    if (!competitionId) {
+    if (!competitionId || competitionId === '') {
       setIsLoading(false)
       return
     }
     setIsLoading(true)
     setError(null)
     try {
-      const data = await getCompetitionCategories(competitionId)
+      const numericId = typeof competitionId === 'string' ? parseInt(competitionId, 10) : competitionId
+      const data = await getCompetitionCategories(numericId)
       setCategories(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load categories')
@@ -49,10 +50,11 @@ export function useCompetitionCategories(
 
   const add = useCallback(
     async (data: CreateCategoryInput) => {
-      if (!competitionId) throw new Error('No competition ID')
+      if (!competitionId || competitionId === '') throw new Error('No competition ID')
       setIsMutating(true)
       try {
-        const newCategory = await addCompetitionCategory(competitionId, data)
+        const numericId = typeof competitionId === 'string' ? parseInt(competitionId, 10) : competitionId
+        const newCategory = await addCompetitionCategory(numericId, data)
         setCategories((prev) => [...prev, newCategory])
         return newCategory
       } finally {
@@ -64,10 +66,11 @@ export function useCompetitionCategories(
 
   const remove = useCallback(
     async (categoryId: string) => {
-      if (!competitionId) throw new Error('No competition ID')
+      if (!competitionId || competitionId === '') throw new Error('No competition ID')
       setIsMutating(true)
       try {
-        await deleteCategory(competitionId, categoryId)
+        const numericId = typeof competitionId === 'string' ? parseInt(competitionId, 10) : competitionId
+        await deleteCategory(numericId, categoryId)
         setCategories((prev) => prev.filter((c) => c.id !== categoryId))
       } finally {
         setIsMutating(false)
