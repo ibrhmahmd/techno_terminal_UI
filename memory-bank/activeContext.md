@@ -1,12 +1,56 @@
 # Active Context - TechnoTerminal CRM
 
 ## Current Focus
-**Status**: ✅ MVP Frontend Complete - React + Vite + TypeScript Implementation
-**Last Updated**: April 2, 2026  
+**Status**: 🔄 Phase 2 Backend Integration - API Contract Alignment & Debugging
+**Last Updated**: April 8, 2026  
 
 ## Recent Changes
 
-### Completed (April 2, 2026)
+### Completed (April 8, 2026) - Backend Integration & Debugging
+
+#### 1. 🔧 Groups Module Debugging & Fixes
+- **Issue**: Groups page table loading was delayed
+  - **Fix**: Added `useEffect` hook to call `loadGroups` on initial mount in `useGroups.ts`
+  - **Root Cause**: Initial data fetch was not triggered on component mount
+
+- **Issue**: "Add Level" button in Group Detail page not working
+  - **Fix**: Fixed `getGroupLevels` API client to handle `PaginatedResponse` structure
+  - **Root Cause**: Backend returns `{ data: [...] }` wrapper, frontend expected flat array
+  - **Files**: `app/src/api/academics/groups/lifecycle.ts`
+
+- **Issue**: All groups showing "Archived" status in table
+  - **Fix**: Updated status column to use `group.status` enum instead of deprecated `is_active` boolean
+  - **Root Cause**: API migration from boolean `is_active` to enum `status` field
+  - **Files**: `app/src/pages/GroupsPage.tsx`
+
+#### 2. 🏆 Competitions Module Major Refactoring
+- **Created Modular Hooks**:
+  - `useCompetitions.ts` - List fetching with pagination/filtering
+  - `useCompetition.ts` - Single competition CRUD operations
+  - `useCompetitionCategories.ts` - Category management
+  - `useCompetitionTeams.ts` - Team registration handling
+  - `index.ts` - Barrel exports for clean imports
+
+- **Created Utility Functions**:
+  - `app/src/utils/competition.ts` - Registration status, revenue calculation, date formatting
+
+- **Component Refactoring**:
+  - `CompetitionsPage.tsx` - Now uses `useCompetitions` hook
+  - `CompetitionDetailPage.tsx` - Uses new hooks, removed mock data fallbacks
+
+#### 3. 🐛 Competitions Display Bug Fix
+- **Issue**: Competitions not displaying despite API returning data
+  - **Root Cause**: Severe API contract mismatch between frontend interfaces and backend response
+  - **Frontend Expected**: `id: string`, `status`, `start_date`, `end_date`, `fee_per_participant`, `description`, `registered_teams`
+  - **Backend Returns**: `id: number`, `competition_date`, `fee_per_student`, `notes`, `edition`, `created_at`
+
+- **Solution**: Comprehensive type alignment across 16 files
+  - Updated `Competition` interface to match actual API
+  - Changed ID types from `string` to `number` throughout API layer
+  - Updated all components to use actual API fields
+  - Removed status-based filtering (not supported by API)
+
+### Completed (April 2, 2026) - MVP Frontend
 
 #### 1. ✅ MVP Frontend Implementation (Phases 0-7)
 
@@ -175,14 +219,16 @@ app/frontend/
 
 #### 7. ✅ Key Technical Decisions
 
-1. **React 18 + TypeScript** - Modern component architecture
+1. **React 19 + TypeScript** - Modern component architecture
 2. **Tailwind CSS v3.4** - Utility-first styling (not inline styles)
 3. **Zustand** - Lightweight state management (vs Context API)
 4. **Modular components** - Each page split into sub-components
-5. **Mock data fallbacks** - All pages work without backend
-6. **UUID string IDs** - Matching backend API format
-7. **Response unwrapping** - `response.data.data` pattern
-8. **Type-only imports** - For interfaces (avoids circular deps)
+5. **Custom React Hooks** - Data fetching with loading/error states
+6. **Domain-based API clients** - Organized by feature (academics, competitions, etc.)
+7. **Number IDs (not UUIDs)** - Backend uses integer IDs, frontend adapted
+8. **Response unwrapping** - `response.data.data` pattern
+9. **Type-only imports** - For interfaces (avoids circular deps)
+10. **API-first development** - Frontend types driven by actual API responses
 
 ## Standardized Sidebar Structure
 ```
@@ -234,10 +280,12 @@ TechnoTerminal (Brand)
 - **Key Rule**: "No-Line" - use tonal layering instead of borders
 
 ### Architecture Decisions
-- **Static Files**: No build process, no database, no backend required
-- **Tailwind CSS**: Inline utility classes for all styling
+- **Build Process**: Vite + React + TypeScript with hot reload
+- **API Client**: Axios with JWT interceptor, domain-based modules
+- **State Management**: Zustand for auth, React hooks for server state
+- **Styling**: Tailwind CSS utility classes
 - **Material Icons**: Consistent iconography throughout
-- **File Structure**: Flat module organization in `/build/` directory
+- **File Structure**: React app in `app/src/`, feature-based organization
 
 ### Navigation Pattern
 - **Entry Point**: `index.html` (hub) with module cards
@@ -245,34 +293,37 @@ TechnoTerminal (Brand)
 - **Active States**: Teal highlight with right border indicator
 - **Cross-Module Access**: 6 primary links on every page
 
-## Next Steps (Future Phases)
+## Next Steps
 
-### Phase 2: Backend Integration
-- Add API connectivity for real data
-- Implement authentication system
-- Create database schema
+### Phase 2: Backend Integration (In Progress)
+- ✅ JWT authentication working with real backend
+- ✅ API connectivity for Groups module
+- ✅ API connectivity for Competitions module
+- 🔄 API connectivity for remaining modules (Directory, Enrollments, Finance)
+- 🔄 Handle additional API contract mismatches as discovered
+- ⏳ Create database schema documentation
 
-### Phase 3: Enhanced Features
+### Phase 3: Enhanced Features (Planned)
 - Mobile responsive layouts
 - Real-time WebSocket updates
 - Advanced search functionality
 - Data visualization charts
 
-### Phase 4: User Experience
+### Phase 4: User Experience (Planned)
 - Parent portal access
 - Automated notifications
-- Competition registration workflows
+- Competition registration workflows (partially started)
 - Financial report exports
 
 ## Open Questions
 
-1. **Backend Choice**: What technology stack for Phase 2 API?
-2. **Hosting**: Where will the CRM be deployed?
-3. **Data Migration**: How to import existing student records?
-4. **Mobile**: Priority level for mobile-optimized layouts?
+1. **Backend API Consistency**: Will all endpoints follow same response pattern?
+2. **Missing Fields**: Will backend add missing fields (status, registered_teams) to competitions?
+3. **Error Handling**: Standardize error response format across all endpoints?
+4. **Data Types**: Confirm all ID fields will be integers vs UUIDs?
 
 ## Current Blockers
-**None** - Project is complete and ready for deployment.
+**None** - Backend integration proceeding smoothly with iterative fixes.
 
 ## Immediate Action Items
 

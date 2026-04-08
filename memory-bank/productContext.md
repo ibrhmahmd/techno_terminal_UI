@@ -53,7 +53,9 @@ We propose a **specialized CRM platform** that provides:
 1. **Precision Engine Design**: Lab-like, high-density interface vs. generic SaaS look
 2. **Robotics-Specific**: Purpose-built for education centers, not adapted from generic CRM
 3. **Zero-Friction Navigation**: Every module accessible from any page
-4. **Static Deployment**: No server setup, database, or build process required
+4. **Modern Architecture**: React + TypeScript + Vite with real backend integration (FastAPI)
+
+> **Update (April 8, 2026)**: Backend integration is now active with FastAPI + PostgreSQL. JWT authentication working. Groups and Competitions modules fully integrated with real API. Remaining modules pending integration.
 
 ## Design Philosophy
 

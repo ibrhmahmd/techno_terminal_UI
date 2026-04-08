@@ -6,13 +6,21 @@
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | Vite | 6.x | Build tool & dev server |
-| React | 18.x | UI framework |
+| React | 19.x | UI framework |
 | TypeScript | 5.x | Type safety |
 | Tailwind CSS | 3.4.x | Styling and layout |
-| React Router | 6.x | Client-side routing |
-| Zustand | 4.x | State management |
+| React Router | 7.x | Client-side routing |
+| Zustand | 5.x | State management |
 | Axios | 1.x | HTTP client |
 | Material Symbols | - | Iconography |
+
+### Backend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| FastAPI | Latest | Python web framework |
+| PostgreSQL | Latest | Relational database |
+| JWT | - | Authentication tokens |
+| Python 3.x | - | Backend runtime |
 
 ### Fonts
 - **Space Grotesk** (Google Fonts) - Display/Headlines
@@ -32,46 +40,67 @@
 
 ### File Structure
 ```
-app/frontend/
-├── src/
-│   ├── api/                 # API clients per domain
-│   │   ├── client.ts       # Axios instance with JWT
-│   │   ├── auth.ts         # Authentication API
-│   │   ├── academics.ts    # Groups, sessions, schedule
-│   │   ├── attendance.ts   # Attendance marking
-│   │   ├── crm.ts          # Students, parents
-│   │   ├── enrollments.ts  # Enrollment management
-│   │   ├── finance.ts      # Receipts, payments
-│   │   └── analytics.ts    # Reports & dashboards
-│   ├── components/         # React components
-│   │   ├── layout/        # AppLayout, Sidebar
-│   │   ├── dashboard/     # DaySelectorBar, GroupSessionCard
-│   │   ├── groups/        # GroupHeader, TabNavigation
-│   │   ├── crm/           # StudentList, ParentList
-│   │   ├── enrollments/   # EnrollPanel, TransferPanel, DropPanel
-│   │   ├── finance/       # CreateReceiptPanel, SearchReceiptsPanel
-│   │   ├── attendance/    # AttendanceGrid, EditSessionPopup
-│   │   └── common/        # LoadingSpinner, Modal, SearchBar, DataTable
-│   ├── pages/             # Route pages
-│   │   ├── LoginPage.tsx
-│   │   ├── DashboardPage.tsx
-│   │   ├── GroupsPage.tsx
-│   │   ├── GroupDetailPage.tsx
-│   │   ├── DirectoryPage.tsx
-│   │   ├── StudentDetailPage.tsx
-│   │   ├── ParentDetailPage.tsx
-│   │   ├── EnrollmentsPage.tsx
-│   │   ├── FinancePage.tsx
-│   │   └── ReportsPage.tsx
-│   ├── store/             # Zustand stores
-│   │   └── authStore.ts   # JWT + user state
-│   ├── App.tsx            # Router + routes
-│   ├── main.tsx           # React entry
-│   └── index.css          # Tailwind imports
-├── index.html             # HTML entry
-├── vite.config.ts         # Vite config + proxy
-├── tailwind.config.js    # Tailwind theme
-└── package.json           # Dependencies
+app/src/
+├── api/                    # API clients per domain
+│   ├── client.ts          # Axios instance with JWT interceptor
+│   ├── auth.ts            # Authentication endpoints
+│   ├── academics/         # Groups, sessions, schedule
+│   │   ├── index.ts
+│   │   ├── groups.ts
+│   │   ├── lifecycle.ts   # Group levels API
+│   │   └── types.ts
+│   ├── competitions/      # Competitions API
+│   │   ├── index.ts
+│   │   ├── competitions.ts
+│   │   └── types.ts
+│   ├── crm.ts             # Students, parents
+│   ├── enrollments.ts     # Enrollment management
+│   ├── finance.ts         # Receipts, payments
+│   ├── attendance.ts      # Attendance marking
+│   └── analytics.ts       # Reports & dashboards
+├── components/            # React components
+│   ├── common/           # Shared: LoadingSpinner, Modal, SearchBar
+│   ├── layout/           # AppLayout, Sidebar, TopNavbar
+│   ├── dashboard/        # DaySelectorBar, GroupSessionCard
+│   ├── groups/           # GroupHeader, TabNavigation, AttendanceGrid
+│   ├── crm/              # StudentList, ParentList
+│   ├── competitions/     # CompetitionCard, CompetitionForm, CategoryList
+│   ├── enrollments/      # EnrollPanel, TransferPanel, DropPanel
+│   ├── finance/          # CreateReceiptPanel, SearchReceiptsPanel
+│   └── attendance/       # AttendanceGrid, EditSessionPopup
+├── hooks/                # Custom React hooks
+│   ├── competitions/   # Competition data fetching hooks
+│   │   ├── useCompetitions.ts
+│   │   ├── useCompetition.ts
+│   │   ├── useCompetitionCategories.ts
+│   │   ├── useCompetitionTeams.ts
+│   │   └── index.ts
+│   ├── useGroups.ts
+│   ├── useGroupDetail.ts
+│   └── ...
+├── pages/                # Route pages
+│   ├── LoginPage.tsx
+│   ├── DashboardPage.tsx
+│   ├── GroupsPage.tsx
+│   ├── GroupDetailPage.tsx
+│   ├── DirectoryPage.tsx
+│   ├── StudentDetailPage.tsx
+│   ├── ParentDetailPage.tsx
+│   ├── EnrollmentsPage.tsx
+│   ├── FinancePage.tsx
+│   ├── ReportsPage.tsx
+│   ├── CompetitionsPage.tsx
+│   └── CompetitionDetailPage.tsx
+├── utils/               # Utility functions
+│   ├── formatting.ts   # Date/formatting utilities
+│   ├── colors.ts       # Color constants
+│   └── competition.ts  # Competition-specific utilities
+├── store/              # Zustand stores
+│   └── authStore.ts   # JWT + user state
+├── App.tsx            # Router + routes
+├── main.tsx           # React entry
+└── index.css          # Tailwind imports
+```
 
 ### Development Server (Vite)
 ```bash
@@ -194,9 +223,62 @@ npm run build
 - API security (CORS, tokens)
 - Data validation and sanitization
 
-## API Considerations (Future)
+## API Architecture
 
-## API Endpoints Implemented
+### Domain-Based API Client Structure
+API clients are organized by domain/feature for maintainability:
+- `academics/` - Groups, sessions, progress levels
+- `competitions/` - Competitions, categories, teams
+- `crm.ts` - Students, parents
+- `enrollments.ts` - Enrollment operations
+- `finance.ts` - Receipts, balance
+
+### TypeScript Patterns for API Integration
+
+#### Handling Multiple Response Formats
+```typescript
+// Backend uses inconsistent response wrappers
+// Pattern 1: { success, data }
+// Pattern 2: { data, total, skip, limit } (paginated)
+// Pattern 3: { data } (single item)
+
+export async function getCompetitions(): Promise<PaginatedCompetitionsResponse> {
+  const response = await client.get<PaginatedCompetitionsResponse>('/competitions')
+  return {
+    data: response.data.data || [],
+    total: response.data.total || 0,
+    skip: response.data.skip || 0,
+    limit: response.data.limit || 50,
+  }
+}
+```
+
+#### ID Type Conversion Pattern
+```typescript
+// URL params are strings, backend uses numbers
+export function useCompetition(id: number | string) {
+  const fetchCompetition = useCallback(async () => {
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id
+    const data = await getCompetition(numericId)
+    // ...
+  }, [id])
+}
+```
+
+#### Error Handling Pattern
+```typescript
+try {
+  const data = await apiCall()
+  setData(data)
+} catch (err) {
+  setError(err instanceof Error ? err.message : 'Failed to load data')
+  setData([])
+} finally {
+  setIsLoading(false)
+}
+```
+
+### API Endpoints Status
 
 ### Authentication
 - `POST /api/v1/auth/login` - JWT login
@@ -238,8 +320,25 @@ npm run build
 - `GET /api/v1/analytics/attendance` - Attendance report
 - `GET /api/v1/analytics/enrollment-trends` - Enrollment trends
 
-### Recommended Backend Stack
-- **Node.js + Express** (JavaScript ecosystem)
-- **PostgreSQL** (relational data)
-- **Prisma** (ORM)
-- **JWT** (authentication)
+### Competitions (Newly Integrated)
+- `GET /api/v1/competitions` - List competitions (paginated)
+- `GET /api/v1/competitions/{id}` - Get competition details
+- `POST /api/v1/competitions` - Create competition
+- `PATCH /api/v1/competitions/{id}` - Update competition
+- `DELETE /api/v1/competitions/{id}` - Delete competition
+- `GET /api/v1/competitions/{id}/categories` - List categories
+- `POST /api/v1/competitions/{id}/categories` - Add category
+- `DELETE /api/v1/competitions/{id}/categories/{catId}` - Delete category
+
+### Current Backend Stack
+- **FastAPI** (Python) - Active backend implementation
+- **PostgreSQL** (relational database)
+- **JWT** (authentication via Bearer tokens)
+- **SQLAlchemy** (ORM)
+
+### Known API Contract Issues (Resolved)
+1. **Competitions Field Names**: Frontend expected `start_date`, `fee_per_participant`, `description` - Backend returns `competition_date`, `fee_per_student`, `notes`
+2. **ID Types**: Frontend assumed UUID strings - Backend uses integer IDs
+3. **Response Wrappers**: Inconsistent patterns across endpoints - Standardized in client layer
+
+See `apiContracts.md` for detailed field mappings and type definitions.

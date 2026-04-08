@@ -161,37 +161,64 @@ body-md:       0.875rem (data tables)
 label-sm:      0.75rem  (captions, meta)
 ```
 
-## File Organization Pattern
+## File Organization Pattern (React + TypeScript)
 
 ```
 techno_terminal_UI/
-├── app/                          # Application code
-│   ├── index.html               # Hub/Entry point
-│   ├── {module}.html            # Module pages (one per module)
-│   └── shared/                  # Shared components
-│       ├── page-template.html
-│       ├── precision-engine.css
-│       ├── sidebar-component.html
-│       ├── sidebar-nav.html
-│       └── tailwind-config.js
+├── app/                          # React application
+│   ├── src/
+│   │   ├── api/                 # Domain-based API clients
+│   │   │   ├── client.ts       # Axios instance with JWT
+│   │   │   ├── auth.ts         # Authentication endpoints
+│   │   │   ├── academics/      # Groups, sessions, schedule
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── groups.ts
+│   │   │   │   ├── lifecycle.ts
+│   │   │   │   └── types.ts
+│   │   │   ├── competitions/   # Competitions endpoints
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── competitions.ts
+│   │   │   │   └── types.ts
+│   │   │   ├── crm.ts          # Students, parents
+│   │   │   ├── enrollments.ts  # Enrollment management
+│   │   │   ├── finance.ts      # Receipts, payments
+│   │   │   ├── attendance.ts   # Attendance marking
+│   │   │   └── analytics.ts    # Reports & dashboards
+│   │   ├── components/         # React components
+│   │   │   ├── common/        # Shared components
+│   │   │   ├── dashboard/     # Dashboard-specific
+│   │   │   ├── groups/        # Group components
+│   │   │   ├── crm/           # CRM components
+│   │   │   ├── competitions/  # Competition components
+│   │   │   └── ...
+│   │   ├── hooks/             # Custom React hooks
+│   │   │   ├── competitions/  # Competition hooks
+│   │   │   ├── useGroups.ts
+│   │   │   ├── useGroupDetail.ts
+│   │   │   └── ...
+│   │   ├── pages/             # Route pages
+│   │   ├── store/             # Zustand stores
+│   │   ├── utils/             # Utility functions
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   ├── index.html
+│   ├── vite.config.ts
+│   ├── tailwind.config.js
+│   └── package.json
 ├── docs/                         # All documentation
 │   ├── api/                     # API documentation
-│   │   └── api-reference.html
 │   ├── design/                  # Design specifications
-│   │   ├── design-system.html
-│   │   └── DESIGN.md
 │   ├── memory-bank/             # Project context & memory
-│   │   ├── activeContext.md
-│   │   ├── productContext.md
-│   │   ├── progress.md
-│   │   ├── projectbrief.md
-│   │   ├── systemPatterns.md
-│   │   └── techContext.md
 │   └── project/                 # Project reports
-│       ├── COMPLETION-REPORT.md
-│       └── PROJECT-INDEX.md
-├── product_requirements_document.md  # PRD (root)
-└── techno_terminal_crm_prd.html      # Landing page (root)
+├── memory-bank/                  # Windsurf memory files
+│   ├── activeContext.md
+│   ├── productContext.md
+│   ├── progress.md
+│   ├── projectbrief.md
+│   ├── systemPatterns.md
+│   ├── techContext.md
+│   └── apiContracts.md         # API patterns
+└── product_requirements_document.md
 ```
 
 **Naming Convention**:
@@ -208,35 +235,127 @@ techno_terminal_UI/
 
 ## Technical Patterns
 
-### Static Site Architecture
-- No build process required
-- Pure HTML + Tailwind CSS CDN
-- Client-side JavaScript for interactivity
-- Ready for any static hosting
+### React + TypeScript Architecture
+- **Build Tool**: Vite 6.x with hot module replacement
+- **UI Framework**: React 19.x with TypeScript 5.x
+- **Styling**: Tailwind CSS 3.4.x with custom config
+- **State Management**: Zustand for auth, React hooks for server state
+- **Routing**: React Router 6.x
+- **HTTP Client**: Axios with JWT interceptor
 
-### Tailwind Configuration
-- Using Tailwind CDN (no custom config)
-- Standard utility classes only
-- Custom colors via arbitrary values (e.g., `bg-[#006a61]`)
+### API Response Patterns
+
+#### Pattern 1: Standard Success Response
+```typescript
+interface ApiResponse<T> {
+  success: boolean
+  data: T
+  message?: string | null
+}
+```
+Used by: Auth, CRM, most endpoints
+
+#### Pattern 2: Paginated Response
+```typescript
+interface PaginatedResponse<T> {
+  data: T[]
+  total: number
+  skip: number
+  limit: number
+}
+```
+Used by: Groups list, Competitions list
+
+#### Pattern 3: Data Wrapper Response
+```typescript
+interface DataWrapper<T> {
+  data: T
+}
+```
+Used by: Single item endpoints (getGroup, getCompetition)
+
+### Custom Hook Architecture Pattern
+
+```typescript
+// useDomainData.ts - Standard pattern for all modules
+interface UseDomainDataReturn<T> {
+  data: T | null
+  isLoading: boolean
+  error: string | null
+  refresh: () => Promise<void>
+  update?: (data: UpdateInput) => Promise<void>
+}
+
+export function useDomainData(id: number | string): UseDomainDataReturn<T> {
+  const [data, setData] = useState<T | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchData = useCallback(async () => {
+    if (!id || id === '') {
+      setIsLoading(false)
+      return
+    }
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id
+    // ... fetch logic
+  }, [id])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  return { data, isLoading, error, refresh: fetchData }
+}
+```
+
+### ID Type Handling Pattern
+- Backend uses `number` (integer) IDs
+- URL params come as `string` from React Router
+- Hooks convert: `const numericId = typeof id === 'string' ? parseInt(id, 10) : id`
+
+### API Client Pattern (Domain-Based)
+```typescript
+// src/api/competitions/competitions.ts
+export async function getCompetitions(
+  params?: GetCompetitionsParams
+): Promise<PaginatedCompetitionsResponse> {
+  const response = await client.get<PaginatedCompetitionsResponse>('/competitions', { params })
+  return {
+    data: response.data.data || [],
+    total: response.data.total || 0,
+    skip: response.data.skip || 0,
+    limit: response.data.limit || 50,
+  }
+}
+```
 
 ### Responsive Strategy
 - Desktop-first design (current)
 - `ml-64` offset for sidebar on all pages
 - Future: Add mobile breakpoints
 
-## Data Flow (Future Backend)
+## Data Flow (Current Implementation)
 
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Browser    │────▶│  Static HTML │────▶│  REST API    │
-└──────────────┘     └──────────────┘     └──────────────┘
-                                                        │
-                                               ┌────────▼────────┐
-                                               │   Database      │
-                                               │ (PostgreSQL/    │
-                                               │   MongoDB)      │
-                                               └─────────────────┘
+│   Browser    │────▶│  React App   │────▶│  REST API    │
+│  (localhost: │     │  (Vite dev   │     │  (FastAPI    │
+│     5173)    │     │   server)    │     │  localhost:  │
+└──────────────┘     └──────────────┘     │     8000)    │
+                                          └──────────────┘
+                                                    │
+                                           ┌────────▼────────┐
+                                           │   Database      │
+                                           │   (PostgreSQL)  │
+                                           └─────────────────┘
 ```
+
+### JWT Authentication Flow
+1. User submits credentials to `POST /auth/login`
+2. Backend returns `{ success, data: { access_token, user } }`
+3. Frontend stores token in Zustand auth store
+4. Axios interceptor adds `Authorization: Bearer {token}` header
+5. Token automatically sent with all API requests
 
 ## Extension Points
 
@@ -248,7 +367,8 @@ techno_terminal_UI/
 5. Document in `docs/project/PROJECT-INDEX.md`
 
 ### Future Patterns to Implement
-- Authentication gates
-- API integration layer
-- State management (if needed)
+- Authentication gates (role-based access control)
+- WebSocket real-time updates
+- Optimistic UI updates
 - Mobile responsive layouts
+- Service worker for offline support
