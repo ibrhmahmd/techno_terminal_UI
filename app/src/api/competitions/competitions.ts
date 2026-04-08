@@ -2,12 +2,26 @@ import client from '../client'
 import type { 
   Competition, CreateCompetitionInput, UpdateCompetitionInput,
   CompetitionCategory, CreateCategoryInput, RegisterTeamInput,
-  TeamRegistration
+  TeamRegistration, PaginatedCompetitionsResponse, CompetitionStatus
 } from './types'
 
-export async function getCompetitions(): Promise<Competition[]> {
-  const response = await client.get<{ data: Competition[] }>('/competitions')
-  return response.data.data || []
+export interface GetCompetitionsParams {
+  status?: CompetitionStatus
+  skip?: number
+  limit?: number
+  search?: string
+}
+
+export async function getCompetitions(
+  params?: GetCompetitionsParams
+): Promise<PaginatedCompetitionsResponse> {
+  const response = await client.get<PaginatedCompetitionsResponse>('/competitions', { params })
+  return {
+    data: response.data.data || [],
+    total: response.data.total || 0,
+    skip: response.data.skip || 0,
+    limit: response.data.limit || 50,
+  }
 }
 
 export async function getCompetition(id: string): Promise<Competition> {
@@ -73,3 +87,6 @@ export async function getCompetitionStats(competitionId: string): Promise<{
   } }>(`/competitions/${competitionId}/stats`)
   return response.data.data
 }
+
+// Re-export types for convenience
+export type { Competition, CompetitionStatus, PaymentStatus } from './types'

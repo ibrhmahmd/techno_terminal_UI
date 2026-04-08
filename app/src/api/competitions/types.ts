@@ -80,3 +80,23 @@ export interface RegisterTeamInput {
   team_name: string
   members: { student_id: string; role: 'leader' | 'member' }[]
 }
+
+// API Response Types
+export interface PaginatedCompetitionsResponse {
+  data: Competition[]
+  total: number
+  skip: number
+  limit: number
+}
+
+export interface CompetitionStatsResponse {
+  total_teams: number
+  total_participants: number
+  total_revenue: number
+  paid_count: number
+  pending_count: number
+}
+
+// Re-export types for convenience
+export type CompetitionStatus = 'upcoming' | 'active' | 'completed' | 'cancelled'
+export type PaymentStatus = 'pending' | 'paid' | 'waived'

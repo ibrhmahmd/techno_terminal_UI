@@ -1,103 +1,40 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { Modal } from '../components/common/Modal'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { CompetitionCard } from '../components/competitions/CompetitionCard'
 import { CompetitionForm } from '../components/competitions/CompetitionForm'
-import { 
-  getCompetitions, 
-  createCompetition,
-  deleteCompetition,
-  type Competition,
-  type CreateCompetitionInput,
-  type UpdateCompetitionInput
-} from '../api/competitions'
-
-// Mock data for fallback
-const MOCK_COMPETITIONS: Competition[] = [
-  {
-    id: '1',
-    name: 'Robotics Championship 2026',
-    description: 'Annual robotics competition featuring line following, maze solving, and sumo wrestling challenges.',
-    location: 'Cairo STEM Center',
-    start_date: '2026-05-15',
-    end_date: '2026-05-17',
-    registration_deadline: '2026-04-30',
-    status: 'upcoming',
-    max_teams: 50,
-    registered_teams: 32,
-    total_participants: 96,
-    fee_per_participant: 200,
-  },
-  {
-    id: '2',
-    name: 'AI Innovation Hackathon',
-    description: '48-hour hackathon focused on AI and machine learning solutions for real-world problems.',
-    location: 'Alexandria Tech Hub',
-    start_date: '2026-03-20',
-    end_date: '2026-03-22',
-    registration_deadline: '2026-03-15',
-    status: 'upcoming',
-    max_teams: 30,
-    registered_teams: 24,
-    total_participants: 72,
-    fee_per_participant: 150,
-  },
-  {
-    id: '3',
-    name: 'Coding Olympiad Finals',
-    description: 'National coding competition finals with algorithmic challenges and problem-solving tasks.',
-    location: 'Giza Innovation Center',
-    start_date: '2025-12-10',
-    end_date: '2025-12-12',
-    registration_deadline: '2025-11-30',
-    status: 'completed',
-    max_teams: 40,
-    registered_teams: 38,
-    total_participants: 114,
-    fee_per_participant: 100,
-  },
-]
+import { useCompetitions } from '../hooks/competitions'
+import { createCompetition, deleteCompetition } from '../api/competitions'
+import type { CreateCompetitionInput, UpdateCompetitionInput } from '../api/competitions'
 
 export function CompetitionsPage() {
   const navigate = useNavigate()
-  const [competitions, setCompetitions] = useState<Competition[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [useMockData, setUseMockData] = useState(false)
-  
+  const {
+    competitions,
+    totalCount,
+    isLoading,
+    error: hookError,
+    setStatusFilter,
+    refresh,
+  } = useCompetitions()
+
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [deletingCompetition, setDeletingCompetition] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
-
-  useEffect(() => {
-    async function loadCompetitions() {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const data = await getCompetitions()
-        setCompetitions(data)
-      } catch {
-        setCompetitions(MOCK_COMPETITIONS)
-        setUseMockData(true)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    loadCompetitions()
-  }, [])
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const handleCreateCompetition = async (data: CreateCompetitionInput | UpdateCompetitionInput) => {
     setIsProcessing(true)
+    setActionError(null)
     try {
-      const newCompetition = await createCompetition(data as CreateCompetitionInput)
-      setCompetitions(prev => [newCompetition, ...prev])
+      await createCompetition(data as CreateCompetitionInput)
+      await refresh()
       setIsCreateModalOpen(false)
-      setError(null)
     } catch {
-      setError('Failed to create competition')
+      setActionError('Failed to create competition')
     } finally {
       setIsProcessing(false)
     }
@@ -105,13 +42,13 @@ export function CompetitionsPage() {
 
   const handleDeleteCompetition = async (id: string) => {
     setIsProcessing(true)
+    setActionError(null)
     try {
       await deleteCompetition(id)
-      setCompetitions(prev => prev.filter(c => c.id !== id))
+      await refresh()
       setDeletingCompetition(null)
-      setError(null)
     } catch {
-      setError('Failed to delete competition')
+      setActionError('Failed to delete competition')
     } finally {
       setIsProcessing(false)
     }
@@ -125,6 +62,8 @@ export function CompetitionsPage() {
       default: return competitions
     }
   }
+
+  const error = hookError || actionError
 
   return (
     <div className="min-h-screen bg-surface">
@@ -148,12 +87,6 @@ export function CompetitionsPage() {
       </header>
 
       <section className="p-8 max-w-[1400px] mx-auto">
-        {useMockData && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm">
-            API unavailable. Showing demo data.
-          </div>
-        )}
-
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm">
             {error}

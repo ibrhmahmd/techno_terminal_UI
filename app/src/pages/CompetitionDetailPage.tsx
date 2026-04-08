@@ -5,167 +5,81 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
 import { TeamRegistrationModal } from '../components/competitions/TeamRegistrationModal'
 import { CategoryList } from '../components/competitions/CategoryList'
-import { 
-  getCompetition, 
-  getCompetitionCategories,
-  getCategoryTeams,
-  addCompetitionCategory,
-  deleteCategory,
-  registerTeam,
-  type Competition,
-  type CompetitionCategory,
-  type TeamRegistration,
-  type CreateCategoryInput,
-  type RegisterTeamInput
-} from '../api/competitions'
+import { useCompetition, useCompetitionCategories, useCompetitionTeams } from '../hooks/competitions'
+import { getCategoryTeams, registerTeam, type CreateCategoryInput, type RegisterTeamInput, type TeamRegistration } from '../api/competitions'
 import { competitionStatusColors, paymentStatusColors } from '../utils/colors'
-
-// Mock data for fallback
-const MOCK_COMPETITION: Competition = {
-  id: '1',
-  name: 'Robotics Championship 2026',
-  description: 'Annual robotics competition featuring line following, maze solving, and sumo wrestling challenges. Open to all students aged 10-18.',
-  location: 'Cairo STEM Center',
-  start_date: '2026-05-15',
-  end_date: '2026-05-17',
-  registration_deadline: '2026-04-30',
-  status: 'upcoming',
-  max_teams: 50,
-  registered_teams: 32,
-  total_participants: 96,
-  fee_per_participant: 200,
-}
-
-const MOCK_CATEGORIES: CompetitionCategory[] = [
-  { id: '1', competition_id: '1', name: 'Line Follower', description: 'Build a robot that follows a line track', min_age: 10, max_age: 14, max_team_size: 3, registered_teams: 12 },
-  { id: '2', competition_id: '1', name: 'Maze Solver', description: 'Navigate through a complex maze autonomously', min_age: 12, max_age: 16, max_team_size: 3, registered_teams: 8 },
-  { id: '3', competition_id: '1', name: 'Sumo Wrestling', description: 'Push opponent robot out of the ring', min_age: 14, max_age: 18, max_team_size: 2, registered_teams: 12 },
-]
-
-const MOCK_TEAMS: TeamRegistration[] = [
-  {
-    id: '1',
-    category_id: '1',
-    team_name: 'Robo Warriors',
-    members: [
-      { id: '1', student_id: 's1', student_name: 'Ahmed Ali', role: 'leader', fee_paid: true },
-      { id: '2', student_id: 's2', student_name: 'Mohamed Hassan', role: 'member', fee_paid: true },
-    ],
-    registration_date: '2026-03-15',
-    payment_status: 'paid',
-    total_fee: 400,
-  },
-  {
-    id: '2',
-    category_id: '1',
-    team_name: 'Tech Titans',
-    members: [
-      { id: '3', student_id: 's3', student_name: 'Sarah Ahmed', role: 'leader', fee_paid: false },
-      { id: '4', student_id: 's4', student_name: 'Fatima Omar', role: 'member', fee_paid: false },
-    ],
-    registration_date: '2026-03-18',
-    payment_status: 'pending',
-    total_fee: 400,
-  },
-]
+import { isRegistrationOpen } from '../utils/competition'
 
 export function CompetitionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const competitionId = id || ''
-  
-  const [competition, setCompetition] = useState<Competition | null>(null)
-  const [categories, setCategories] = useState<CompetitionCategory[]>([])
-  const [teams, setTeams] = useState<TeamRegistration[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [useMockData, setUseMockData] = useState(false)
+
+  // Use custom hooks for data management
+  const {
+    competition,
+    isLoading: competitionLoading,
+    error: competitionError,
+  } = useCompetition(competitionId)
+
+  const {
+    categories,
+    isLoading: categoriesLoading,
+    add: addCategory,
+    remove: deleteCategory,
+  } = useCompetitionCategories(competitionId)
 
   // Modal states
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false)
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false)
   const [isTeamsModalOpen, setIsTeamsModalOpen] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState<CompetitionCategory | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState(categories.find(c => c.id === '') || null)
   const [selectedCategoryName, setSelectedCategoryName] = useState('')
-  const [_isProcessing, setIsProcessing] = useState(false)
 
-  useEffect(() => {
-    async function loadCompetitionData() {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const [compData, catData] = await Promise.all([
-          getCompetition(competitionId).catch(() => {
-            setUseMockData(true)
-            return MOCK_COMPETITION
-          }),
-          getCompetitionCategories(competitionId).catch(() => {
-            setUseMockData(true)
-            return MOCK_CATEGORIES
-          }),
-        ])
-        setCompetition(compData)
-        setCategories(catData)
-      } catch {
-        setCompetition(MOCK_COMPETITION)
-        setCategories(MOCK_CATEGORIES)
-        setUseMockData(true)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    loadCompetitionData()
-  }, [competitionId])
+  // Teams state for viewing modal
+  const [teams, setTeams] = useState<TeamRegistration[]>([])
+  const [teamsLoading, setTeamsLoading] = useState(false)
+
+  const isLoading = competitionLoading || categoriesLoading
 
   const handleAddCategory = async (data: CreateCategoryInput) => {
-    setIsProcessing(true)
     try {
-      const newCategory = await addCompetitionCategory(competitionId, data)
-      setCategories(prev => [...prev, newCategory])
+      await addCategory(data)
       setIsAddCategoryModalOpen(false)
-      setError(null)
     } catch {
-      setError('Failed to add category')
-    } finally {
-      setIsProcessing(false)
+      // Error handled by hook
     }
   }
 
   const handleDeleteCategory = async (categoryId: string) => {
     try {
-      await deleteCategory(competitionId, categoryId)
-      setCategories(prev => prev.filter(c => c.id !== categoryId))
-      setError(null)
+      await deleteCategory(categoryId)
     } catch {
-      setError('Failed to delete category')
+      // Error handled by hook
     }
   }
 
   const handleRegisterTeam = async (data: RegisterTeamInput) => {
-    setIsProcessing(true)
     try {
       await registerTeam(data)
       setIsRegistrationModalOpen(false)
       setSelectedCategory(null)
-      // Refresh categories to show updated team count
-      const updatedCategories = await getCompetitionCategories(competitionId).catch(() => categories)
-      setCategories(updatedCategories)
-      setError(null)
     } catch {
-      setError('Failed to register team')
-    } finally {
-      setIsProcessing(false)
+      // Error handled by modal
     }
   }
 
   const handleViewTeams = async (categoryId: string, categoryName: string) => {
     setSelectedCategoryName(categoryName)
     setIsTeamsModalOpen(true)
+    setTeamsLoading(true)
     try {
-      const teamsData = await getCategoryTeams(competitionId, categoryId).catch(() => MOCK_TEAMS)
+      const teamsData = await getCategoryTeams(competitionId, categoryId)
       setTeams(teamsData)
     } catch {
-      setTeams(MOCK_TEAMS)
+      setTeams([])
+    } finally {
+      setTeamsLoading(false)
     }
   }
 
@@ -175,13 +89,6 @@ export function CompetitionDetailPage() {
       day: 'numeric',
       year: 'numeric',
     })
-  }
-
-  const isRegistrationOpen = () => {
-    if (!competition) return false
-    const now = new Date()
-    const deadline = new Date(competition.registration_deadline)
-    return now <= deadline && (competition.status === 'upcoming' || competition.status === 'active')
   }
 
   if (isLoading) {
@@ -234,7 +141,7 @@ export function CompetitionDetailPage() {
                 {competition.status}
               </span>
             </div>
-            {isRegistrationOpen() && (
+            {competition && isRegistrationOpen(competition) && (
               <span className="px-4 py-2 bg-secondary-container text-secondary text-sm rounded-lg font-medium">
                 Registration Open
               </span>
@@ -244,15 +151,9 @@ export function CompetitionDetailPage() {
       </header>
 
       <section className="p-8 max-w-[1400px] mx-auto">
-        {useMockData && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm">
-            API unavailable. Showing demo data.
-          </div>
-        )}
-
-        {error && (
+        {competitionError && (
           <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm">
-            {error}
+            {competitionError}
           </div>
         )}
 
