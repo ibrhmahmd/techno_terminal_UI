@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { transferEnrollment, getEnrollments, type Enrollment } from '../../api/enrollments'
-import { getGroupsPaginated } from '../../api/academics'
+import { getEnrichedGroups } from '../../api/academics'
 import type { EnrichedGroupPublic } from '../../api/academics'
 
 interface TransferPanelProps {
@@ -25,10 +25,10 @@ export function TransferPanel({ useMockData, isLoading, onSuccess, onError, setI
       try {
         const [enrollmentsResult, groupsResult] = await Promise.all([
           getEnrollments(),
-          getGroupsPaginated({ skip: 0, limit: 100 })
+          getEnrichedGroups()
         ])
         setEnrollments(enrollmentsResult.filter(e => e.status === 'active'))
-        setGroups((groupsResult.items || []) as EnrichedGroupPublic[])
+        setGroups(groupsResult || [])
       } catch {
         setEnrollments([])
         setGroups([])
@@ -58,8 +58,7 @@ export function TransferPanel({ useMockData, isLoading, onSuccess, onError, setI
         onSuccess(`Transferred to ${selectedGroup.group_name}`)
       } else {
         await transferEnrollment({
-          student_id: selectedEnrollment.student_id,
-          from_group_id: selectedEnrollment.group_id,
+          from_enrollment_id: selectedEnrollment.id,
           to_group_id: selectedGroup.id
         })
         onSuccess('Successfully transferred enrollment')

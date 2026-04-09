@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { searchStudents } from '../../api/crm'
-import { getGroupsPaginated } from '../../api/academics'
+import { getEnrichedGroups } from '../../api/academics'
 import { createEnrollment } from '../../api/enrollments'
 import type { Student } from '../../api/crm'
 import type { EnrichedGroupPublic } from '../../api/academics'
@@ -21,7 +21,6 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
   const [groups, setGroups] = useState<EnrichedGroupPublic[]>([])
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
-  const [level, setLevel] = useState(1)
   const [amount, setAmount] = useState(150)
   const [discount, setDiscount] = useState(0)
   const [notes, setNotes] = useState('')
@@ -48,8 +47,8 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
   useEffect(() => {
     async function load() {
       try {
-        const result = await getGroupsPaginated({ skip: 0, limit: 100 })
-        setGroups((result.items || []) as EnrichedGroupPublic[])
+        const result = await getEnrichedGroups()
+        setGroups(result || [])
       } catch {
         setGroups([])
       }
@@ -73,8 +72,8 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
         await createEnrollment({
           student_id: selectedStudent.id,
           group_id: selectedGroup.id,
-          level_number: level,
-          discount_applied: discount,
+          amount_due: amount,
+          discount,
           notes
         })
         onSuccess(`Successfully enrolled ${selectedStudent.full_name}`)
@@ -84,7 +83,6 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
       setSelectedGroup(null)
       setStudentSearch('')
       setGroupSearch('')
-      setLevel(1)
       setAmount(150)
       setDiscount(0)
       setNotes('')
@@ -195,17 +193,7 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
       </div>
 
       {/* Enrollment Details */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-on-surface mb-2">Level</label>
-          <input
-            type="number"
-            min={1}
-            value={level}
-            onChange={(e) => setLevel(parseInt(e.target.value) || 1)}
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-on-surface mb-2">Amount Due (EGP)</label>
           <input
