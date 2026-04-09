@@ -9,7 +9,7 @@ import {
   type EnrichedGroupPublicWithCompetition,
 } from '../api/academics'
 
-export type SortField = 'name' | 'course_name' | 'instructor_name' | 'max_capacity'
+export type SortField = 'name' | 'course_name' | 'instructor_name' | 'current_student_count'
 export type SortDirection = 'asc' | 'desc'
 
 /**
@@ -107,8 +107,8 @@ export function useGroups() {
       const aRaw = a[sortField as keyof EnrichedGroupPublic]
       const bRaw = b[sortField as keyof EnrichedGroupPublic]
       
-      const aValue = sortField === 'max_capacity' ? Number(aRaw) : aRaw
-      const bValue = sortField === 'max_capacity' ? Number(bRaw) : bRaw
+      const aValue = sortField === 'current_student_count' ? Number(aRaw) : aRaw
+      const bValue = sortField === 'current_student_count' ? Number(bRaw) : bRaw
       
       if (typeof aValue === 'number' && typeof bValue === 'number') {
         const diff = aValue - bValue

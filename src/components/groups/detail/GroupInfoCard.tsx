@@ -132,7 +132,7 @@ export function GroupInfoCard({
           <div>
             <p className="text-sm text-slate-500">Students in Level</p>
             <p className="font-medium text-slate-900">
-              {currentLevelEnrollmentCount} / {group.max_capacity || '∞'}
+              {group.current_student_count | 0}
             </p>
           </div>
         </div>

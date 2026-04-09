@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
-
-type AttendanceStatus = 'present' | 'absent' | null
+import type { AttendanceStatus } from '../../api/attendance'
 
 interface AttendanceCellProps {
   status: AttendanceStatus
@@ -18,6 +17,11 @@ const ICONS = {
       cancel
     </span>
   ),
+  cancelled: (
+    <span className="material-symbols-outlined text-slate-400 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+      block
+    </span>
+  ),
   empty: <div className="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm" />
 }
 
@@ -32,7 +36,9 @@ export function AttendanceCell({ status, onToggle }: AttendanceCellProps) {
       className="w-full h-full flex items-center justify-center hover:bg-surface-container-low/50 rounded transition-colors py-2"
       aria-label={`Toggle attendance: ${status || 'empty'}`}
     >
-      {status === 'present' ? ICONS.present : status === 'absent' ? ICONS.absent : ICONS.empty}
+      {status === 'present' ? ICONS.present :
+       status === 'absent' ? ICONS.absent :
+       status === 'cancelled' ? ICONS.cancelled : ICONS.empty}
     </button>
   )
 }

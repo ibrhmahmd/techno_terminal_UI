@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { type Session, type UpdateSessionDTO } from '../../api/academics'
+import { getEmployeesPaginated } from '../../api/hr'
+import type { Employee } from '../../api/hr'
 
 interface EditSessionPopupProps {
   isOpen: boolean
@@ -14,11 +16,26 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
   const [date, setDate] = useState('')
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
-  const [actualInstructorId, setActualInstructorId] = useState<number>(0)
+  const [selectedInstructorId, setSelectedInstructorId] = useState<number>(0)
+  const [originalInstructorId, setOriginalInstructorId] = useState<number>(0)
   const [isSubstitute, setIsSubstitute] = useState(false)
   const [status, setStatus] = useState<'scheduled' | 'completed' | 'cancelled'>('scheduled')
   const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [instructors, setInstructors] = useState<Employee[]>([])
+
+  // Load instructors on mount
+  useEffect(() => {
+    async function loadInstructors() {
+      try {
+        const result = await getEmployeesPaginated({ limit: 100 })
+        setInstructors(result.items)
+      } catch {
+        setInstructors([])
+      }
+    }
+    loadInstructors()
+  }, [])
 
   // Reset form when session changes
   useEffect(() => {
@@ -26,12 +43,19 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
       setDate(session.session_date)
       setStartTime(session.start_time)
       setEndTime(session.end_time)
-      setActualInstructorId(session.actual_instructor_id)
-      setIsSubstitute((session as any).is_substitute || false)
+      setSelectedInstructorId(session.actual_instructor_id)
+      setOriginalInstructorId(session.actual_instructor_id)
+      setIsSubstitute(session.is_substitute || false)
       setStatus(session.status)
       setNotes(session.notes || '')
     }
   }, [session])
+
+  // Handle instructor change - auto-set is_substitute if different from original
+  const handleInstructorChange = (instructorId: number) => {
+    setSelectedInstructorId(instructorId)
+    setIsSubstitute(instructorId !== originalInstructorId)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,7 +67,7 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
         session_date: date,
         start_time: startTime,
         end_time: endTime,
-        actual_instructor_id: actualInstructorId,
+        actual_instructor_id: selectedInstructorId,
         is_substitute: isSubstitute,
         status: status,
         notes
@@ -143,14 +167,19 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-on-surface mb-1">Actual Instructor ID</label>
-          <input
-            type="number"
-            value={actualInstructorId}
-            onChange={(e) => setActualInstructorId(Number(e.target.value))}
+          <label className="block text-sm font-medium text-on-surface mb-1">Instructor</label>
+          <select
+            value={selectedInstructorId}
+            onChange={(e) => handleInstructorChange(Number(e.target.value))}
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
-            placeholder="Enter instructor ID"
-          />
+          >
+            <option value={0}>Select instructor...</option>
+            {instructors.map(inst => (
+              <option key={inst.id} value={inst.id}>
+                {inst.full_name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>

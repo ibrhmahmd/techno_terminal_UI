@@ -8,16 +8,16 @@ export async function getSessionAttendance(sessionId: number): Promise<SessionAt
 
 export async function markAttendance(
   sessionId: number,
-  updates: { student_id: string; status: 'present' | 'absent' | 'late' | 'excused' | null }[]
+  entries: { student_id: string; status: 'present' | 'absent' | 'cancelled' | null }[]
 ): Promise<void> {
   const payload: MarkAttendanceRequest = {
-    updates: updates
-      .filter(u => u.status !== null)
-      .map(u => ({
-        student_id: parseInt(u.student_id),
-        status: u.status as 'present' | 'absent'
+    entries: entries
+      .filter(e => e.status !== null)
+      .map(e => ({
+        student_id: parseInt(e.student_id),
+        status: e.status as 'present' | 'absent' | 'cancelled'
       }))
   }
-  
+
   await client.post(`/attendance/session/${sessionId}/mark`, payload)
 }

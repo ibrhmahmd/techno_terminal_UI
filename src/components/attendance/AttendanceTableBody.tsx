@@ -1,8 +1,7 @@
 import { StudentInfo } from './StudentInfo'
 import { AttendanceCell } from './AttendanceCell'
 import type { Session } from '../../api/academics'
-
-type AttendanceStatus = 'present' | 'absent' | null
+import type { AttendanceStatus } from '../../api/attendance'
 
 interface StudentRowData {
   student_id: string

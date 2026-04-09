@@ -18,6 +18,7 @@ export interface Session {
   is_extra_session: boolean;
   actual_instructor_id: number;
   instructor_name?: string; // Populated by backend for display purposes
+  is_substitute?: boolean;
   notes: string;
 }
 

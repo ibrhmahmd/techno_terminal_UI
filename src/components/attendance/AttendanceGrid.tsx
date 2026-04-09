@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { Session, UpdateSessionDTO } from '../../api/academics'
 import { cancelSession, updateSession } from '../../api/academics'
 import { getGroupRoster, type GroupRosterRowDTO } from '../../api/analytics'
-import { getSessionAttendance, markAttendance, type SessionAttendanceRowDTO } from '../../api/attendance'
+import { getSessionAttendance, markAttendance, type SessionAttendanceRowDTO, type AttendanceStatus } from '../../api/attendance'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useToast } from '../common/Toast'
 import { AttendanceHeader } from './AttendanceHeader'
@@ -12,13 +12,12 @@ import { SessionActionsRow } from './SessionActionsRow'
 import { SessionNotesRow } from './SessionNotesRow'
 import { EditSessionPopup } from './EditSessionPopup'
 
-type AttendanceStatus = 'present' | 'absent' | null
-
-// Toggle cycle: null -> present -> absent -> null
+// Toggle cycle: null -> present -> absent -> cancelled -> null
 const NEXT_STATE: Record<string, AttendanceStatus> = {
   'null': 'present',
   'present': 'absent',
-  'absent': null,
+  'absent': 'cancelled',
+  'cancelled': null,
 }
 
 interface AttendanceGridProps {
@@ -51,6 +50,14 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
   const [editingSession, setEditingSession] = useState<Session | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
+  // Debounced attendance state
+  const [pendingAttendance, setPendingAttendance] = useState<{
+    studentId: string
+    sessionId: number
+    status: AttendanceStatus
+  } | null>(null)
+  const attendanceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   const displaySessions = useMemo(() => sessions.slice(0, 5), [sessions])
   const fetchCycleRef = useRef(0)
 
@@ -65,6 +72,15 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
     setSessionNotes(initialNotes)
     setDirtyNotes(new Set())
   }, [sessions])
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (attendanceTimeoutRef.current) {
+        clearTimeout(attendanceTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const refetchData = useCallback(async () => {
     if (!groupId || displaySessions.length === 0) return
@@ -157,38 +173,52 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
     }
   }, [refetchData, showToast])
 
-  const handleToggle = useCallback(async (studentId: string, sessionId: number) => {
+  const handleToggle = useCallback((studentId: string, sessionId: number) => {
+    // Get current student data before optimistic update
+    const student = students.find(s => s.student_id === studentId)
+    if (!student) return
+
+    const currentStatus = student.attendance.get(sessionId) || null
+    const nextStatus = NEXT_STATE[String(currentStatus)]
+
     // Optimistic UI update
     setStudents((prev) => {
-      return prev.map((student) => {
-        if (student.student_id !== studentId) return student
-
-        const newAttendance = new Map(student.attendance)
-        const current = newAttendance.get(sessionId) || null
-        const next = NEXT_STATE[String(current)]
-        newAttendance.set(sessionId, next)
-
-        return { ...student, attendance: newAttendance }
+      return prev.map((s) => {
+        if (s.student_id !== studentId) return s
+        const newAttendance = new Map(s.attendance)
+        newAttendance.set(sessionId, nextStatus)
+        return { ...s, attendance: newAttendance }
       })
     })
 
-    // Persist to API
-    try {
-      const student = students.find(s => s.student_id === studentId)
-      if (!student) return
-      
-      const currentStatus = student.attendance.get(sessionId) || null
-      const nextStatus = NEXT_STATE[String(currentStatus)]
-      
-      await markAttendance(sessionId, [{
-        student_id: studentId,
-        status: nextStatus
-      }])
-    } catch (err) {
-      console.error('Failed to update attendance:', err)
-      showToast('Failed to update attendance', 'error')
-      // Revert if needed - simplified here
+    // Clear any existing timeout
+    if (attendanceTimeoutRef.current) {
+      clearTimeout(attendanceTimeoutRef.current)
     }
+
+    // Set pending attendance
+    setPendingAttendance({
+      studentId,
+      sessionId,
+      status: nextStatus
+    })
+
+    // Debounce for 5 seconds
+    attendanceTimeoutRef.current = setTimeout(async () => {
+      if (nextStatus !== null) {
+        try {
+          await markAttendance(sessionId, [{
+            student_id: studentId,
+            status: nextStatus
+          }])
+          showToast('Attendance saved', 'success')
+        } catch (err) {
+          console.error('Failed to save attendance:', err)
+          showToast('Failed to save attendance', 'error')
+        }
+      }
+      setPendingAttendance(null)
+    }, 5000)
   }, [students, showToast])
 
   // Save all attendance changes and notes
@@ -196,7 +226,15 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
     console.log('[Save] handleSaveAll called')
     console.log('[Save] displaySessions:', displaySessions.length)
     console.log('[Save] students:', students.length)
-    
+
+    // Clear any pending debounced attendance to avoid double-saving
+    if (attendanceTimeoutRef.current) {
+      clearTimeout(attendanceTimeoutRef.current)
+      attendanceTimeoutRef.current = null
+    }
+    // If there's pending attendance, include it in the batch save
+    setPendingAttendance(null)
+
     if (displaySessions.length === 0) {
       console.log('[Save] No sessions to save, returning early')
       return
@@ -208,21 +246,21 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
     try {
       // 1. Save attendance for each session
       const attendancePromises = displaySessions.map((session) => {
-        const payload: Record<string, string> = {}
-        
+        const payload: Record<string, AttendanceStatus> = {}
+
         students.forEach((student) => {
           const status = student.attendance.get(session.id)
-          if (status === 'present' || status === 'absent') {
+          if (status === 'present' || status === 'absent' || status === 'cancelled') {
             payload[student.student_id] = status
           }
         })
-        
+
         if (Object.keys(payload).length > 0) {
-          const updates = Object.entries(payload).map(([student_id, status]) => ({
+          const entries = Object.entries(payload).map(([student_id, status]) => ({
             student_id,
-            status: status as 'present' | 'absent',
+            status,
           }))
-          return markAttendance(session.id, updates)
+          return markAttendance(session.id, entries)
         }
         return Promise.resolve()
       })

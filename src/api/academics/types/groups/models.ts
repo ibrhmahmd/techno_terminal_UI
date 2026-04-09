@@ -38,6 +38,7 @@ export interface EnrichedGroupPublic extends Group {
   notes?: string | null;  // Added for editable group notes
   status: 'active' | 'inactive' | 'archived';  
   students?: Array<{ id: number; full_name: string }>;
+  current_student_count: number;
 }
 
 // Progress tracking for levels

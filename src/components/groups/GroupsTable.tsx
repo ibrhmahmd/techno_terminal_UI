@@ -62,10 +62,10 @@ export function GroupsTable({
                 <span>Schedule</span>
               </th>
               <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 cursor-pointer group select-none"
-                  onClick={() => onSort('max_capacity')}>
+                  onClick={() => onSort('current_student_count')}>
                 <div className="flex items-center gap-2">
-                  <span>Capacity</span>
-                  <SortIndicator field="max_capacity" sortField={sortField} sortDirection={sortDirection} />
+                  <span>Students</span>
+                  <SortIndicator field="current_student_count" sortField={sortField} sortDirection={sortDirection} />
                 </div>
               </th>
               <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
@@ -108,7 +108,7 @@ export function GroupsTable({
                 <td className="px-6 py-4">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700">
                     <span className="material-symbols-outlined text-xs">group</span>
-                    {group.max_capacity}
+                    {group.current_student_count}
                   </span>
                 </td>
                 <td className="px-6 py-4">
