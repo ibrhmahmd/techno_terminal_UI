@@ -4,6 +4,7 @@ import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DashboardHeader } from '../components/dashboard/DashboardHeader'
 import { DaySelectorBar } from '../components/dashboard/DaySelectorBar'
 import { GroupSessionCard } from '../components/dashboard/GroupSessionCard'
+import { QuickActionsGrid } from '../components/dashboard/QuickActionsGrid'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 
 import { getTodayISO } from '../utils/formatting'
@@ -75,6 +76,7 @@ export function DashboardPage() {
           subtitle="Real-time status of active groups and attendance tracking."
           showTime
         />
+        <QuickActionsGrid todaySessionCount={scheduleItems.length} />
         <DaySelectorBar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
 
         {isLoading ? (

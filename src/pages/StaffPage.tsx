@@ -54,7 +54,7 @@ export function StaffPage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [isProcessing, setIsProcessing] = useState(false)
 
-  // Load initial data
+  // Load initial data - only on mount to prevent infinite loops
   useEffect(() => {
     async function loadData() {
       try {
@@ -67,7 +67,8 @@ export function StaffPage() {
       refresh()
     }
     loadData()
-  }, [refresh])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty dependency array - run once on mount only
 
   const handleCreateEmployee = async (data: CreateEmployeeInput) => {
     setIsProcessing(true)

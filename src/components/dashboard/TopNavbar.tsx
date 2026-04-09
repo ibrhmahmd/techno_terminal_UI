@@ -18,27 +18,27 @@ export function TopNavbar({ activePage = 'Dashboard' }: TopNavbarProps) {
         </nav>
 
         {/* Search Bar */}
-        <div className="relative w-64">
+        {/* <div className="relative w-64">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">search</span>
           <input 
             type="text" 
             placeholder="Search data..." 
             className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-100 rounded text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-secondary focus:bg-white transition-all"
           />
-        </div>
+        </div> */}
       </div>
 
       <div className="flex items-center gap-4">
-        <button 
+        <button
           className="px-4 py-1.5 bg-secondary text-white rounded text-xs font-semibold hover:opacity-90 transition-opacity"
-          onClick={() => navigate('/enrollments/new')}
+          onClick={() => navigate('/enrollments')}
         >
           New Enrollment
         </button>
-        <div className="w-px h-6 bg-slate-200"></div>
+        {/* <div className="w-px h-6 bg-slate-200"></div>
         <button className="px-4 py-1.5 border border-slate-200 rounded text-xs font-bold font-headline text-on-surface hover:bg-slate-50 transition-colors">
           AR / EN
-        </button>
+        </button> */}
       </div>
     </header>
   )
