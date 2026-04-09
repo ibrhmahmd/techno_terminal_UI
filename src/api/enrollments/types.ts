@@ -27,8 +27,8 @@ export type EnrollmentPublic = Enrollment
 export interface CreateEnrollmentRequest {
   student_id: number
   group_id: number
-  level_number: number
-  discount_applied?: number
+  amount_due?: number
+  discount?: number
   notes?: string
   created_by?: number
 }
@@ -41,11 +41,9 @@ export interface CreateEnrollmentResponse {
 
 /** TransferStudentInput - Request body for transferring */
 export interface TransferEnrollmentRequest {
-  student_id: number
-  from_group_id: number
+  from_enrollment_id: number
   to_group_id: number
-  transfer_date?: string
-  notes?: string
+  created_by?: number
 }
 
 export interface TransferEnrollmentResponse {
@@ -59,12 +57,6 @@ export interface ApplyDiscountInput {
 }
 
 export interface ApplyDiscountResponse {
-  success: boolean
-  data: Enrollment
-}
-
-/** Complete enrollment response */
-export interface CompleteEnrollmentResponse {
   success: boolean
   data: Enrollment
 }

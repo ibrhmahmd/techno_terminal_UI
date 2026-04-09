@@ -3,19 +3,13 @@ import type { ApiResponse } from '../../types/api'
 import type { 
   Enrollment, CreateEnrollmentRequest, CreateEnrollmentResponse,
   TransferEnrollmentRequest, TransferEnrollmentResponse, DeleteEnrollmentResponse,
-  ApplyDiscountInput, ApplyDiscountResponse, CompleteEnrollmentResponse,
+  ApplyDiscountResponse,
   StudentEnrollmentSummary
 } from './types'
 
 // get all enrollments
 export async function getEnrollments(): Promise<Enrollment[]> {
   const response = await client.get<ApiResponse<Enrollment[]>>('/enrollments')
-  return response.data.data || []
-}
-
-// get student enrollment history
-export async function getStudentEnrollments(studentId: number): Promise<Enrollment[]> {
-  const response = await client.get<ApiResponse<Enrollment[]>>(`/enrollments/student/${studentId}`)
   return response.data.data || []
 }
 
@@ -37,21 +31,16 @@ export async function deleteEnrollment(enrollmentId: number): Promise<Enrollment
   return response.data.data
 }
 
-// apply sibling discount to enrollment
+// apply sibling discount to enrollment (discount_amount as query param)
 export async function applyDiscount(
-  enrollmentId: number, 
+  enrollmentId: number,
   discountAmount: number
 ): Promise<Enrollment> {
   const response = await client.post<ApplyDiscountResponse>(
     `/enrollments/${enrollmentId}/discount`,
-    { discount_amount: discountAmount } as ApplyDiscountInput
+    null,
+    { params: { discount_amount: discountAmount } }
   )
-  return response.data.data
-}
-
-// mark enrollment as completed
-export async function completeEnrollment(enrollmentId: number): Promise<Enrollment> {
-  const response = await client.post<CompleteEnrollmentResponse>(`/enrollments/${enrollmentId}/complete`)
   return response.data.data
 }
 
