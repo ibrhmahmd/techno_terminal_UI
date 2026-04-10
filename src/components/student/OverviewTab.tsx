@@ -1,13 +1,17 @@
 import { useNavigate } from 'react-router-dom'
-import { User, Mail, Phone, Calendar, Users, Wallet, FileText } from 'lucide-react'
-import type { StudentWithDetails, Parent } from '../../api/crm'
+import { User, Mail, Phone, Calendar, Users, Wallet, FileText, UsersRound } from 'lucide-react'
+import type { Student, StudentBalance, SiblingInfo, Parent } from '../../api/crm/students/'
+import { getStatusColorClass, getStatusLabel } from '../../api/crm/students/utils'
 
 interface OverviewTabProps {
-  student: StudentWithDetails
+  student: Student
+  balance: StudentBalance | null
+  siblings: SiblingInfo[]
+  parents: Parent[]
   onLinkParent?: () => void
 }
 
-export function OverviewTab({ student, onLinkParent }: OverviewTabProps) {
+export function OverviewTab({ student, balance, siblings, parents, onLinkParent }: OverviewTabProps) {
   const navigate = useNavigate()
 
   return (
@@ -45,10 +49,8 @@ export function OverviewTab({ student, onLinkParent }: OverviewTabProps) {
             </div>
             <div>
               <label className="text-sm text-slate-500">Status</label>
-              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                student.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
-              }`}>
-                {student.is_active ? 'Active' : 'Inactive'}
+              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColorClass(student.status)}`}>
+                {getStatusLabel(student.status)}
               </span>
             </div>
           </div>
@@ -60,30 +62,10 @@ export function OverviewTab({ student, onLinkParent }: OverviewTabProps) {
             <Users className="w-5 h-5 text-slate-500" />
             Current Enrollment
           </h3>
-          {student.current_group_name ? (
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-on-surface">{student.current_group_name}</p>
-                  {student.current_group_id && (
-                    <button
-                      onClick={() => navigate(`/groups/${student.current_group_id}`)}
-                      className="text-sm text-blue-600 hover:text-blue-700 hover:underline mt-1"
-                    >
-                      View Group Details →
-                    </button>
-                  )}
-                </div>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                  Active
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-6 bg-slate-50 rounded-lg">
-              <p className="text-slate-500">Not currently enrolled in any group</p>
-            </div>
-          )}
+          {/* Current enrollment info would come from enrollments tab or separate fetch */}
+          <div className="text-center py-6 bg-slate-50 rounded-lg">
+            <p className="text-slate-500">View enrollments in the Enrollments tab</p>
+          </div>
         </div>
 
         {/* Notes */}
@@ -107,12 +89,34 @@ export function OverviewTab({ student, onLinkParent }: OverviewTabProps) {
             Account Balance
           </h3>
           <div className="text-center py-4">
-            <p className={`text-4xl font-bold ${student.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-              {student.balance} EGP
-            </p>
-            <p className="text-sm text-slate-500 mt-2">
-              {student.balance > 0 ? 'Outstanding balance' : 'No balance due'}
-            </p>
+            {balance ? (
+              <>
+                <p className={`text-4xl font-bold ${balance.net_balance < 0 ? 'text-red-600' : balance.net_balance > 0 ? 'text-green-600' : 'text-slate-600'}`}>
+                  {Math.abs(balance.net_balance).toLocaleString()} EGP
+                </p>
+                <p className="text-sm text-slate-500 mt-2">
+                  {balance.net_balance < 0 ? 'Outstanding balance' : balance.net_balance > 0 ? 'Credit balance' : 'No balance due'}
+                </p>
+                {/* Enrollment breakdown summary */}
+                {balance.enrollments?.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    {balance.enrollments.filter(e => e.remaining_balance > 0).slice(0, 3).map(enrollment => (
+                      <div key={enrollment.enrollment_id} className="flex justify-between text-sm">
+                        <span className="text-slate-600">{enrollment.group_name}</span>
+                        <span className="text-red-600">{enrollment.remaining_balance.toLocaleString()} EGP</span>
+                      </div>
+                    ))}
+                    {balance.enrollments.filter(e => e.remaining_balance > 0).length > 3 && (
+                      <p className="text-xs text-slate-400">
+                        +{balance.enrollments.filter(e => e.remaining_balance > 0).length - 3} more
+                      </p>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-slate-400">Loading balance...</p>
+            )}
           </div>
         </div>
 
@@ -133,7 +137,7 @@ export function OverviewTab({ student, onLinkParent }: OverviewTabProps) {
             )}
           </div>
           
-          {student.parents?.length === 0 ? (
+          {parents.length === 0 ? (
             <div className="text-center py-4">
               <p className="text-slate-500 text-sm">No parents linked</p>
               {onLinkParent && (
@@ -147,7 +151,7 @@ export function OverviewTab({ student, onLinkParent }: OverviewTabProps) {
             </div>
           ) : (
             <div className="space-y-3">
-              {student.parents?.map((parent: Parent) => (
+              {parents.map((parent: Parent) => (
                 <div
                   key={parent.id}
                   className="p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
@@ -176,6 +180,35 @@ export function OverviewTab({ student, onLinkParent }: OverviewTabProps) {
             </div>
           )}
         </div>
+
+        {/* Siblings Section */}
+        {siblings.length > 0 && (
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-lg text-on-surface flex items-center gap-2">
+                <UsersRound className="w-5 h-5 text-slate-500" />
+                Siblings
+              </h3>
+              <span className="text-sm text-slate-500">{siblings.length} sibling(s)</span>
+            </div>
+            <div className="space-y-3">
+              {siblings.map((sibling: SiblingInfo) => (
+                <div
+                  key={sibling.student_id}
+                  className="p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+                  onClick={() => navigate(`/students/${sibling.student_id}`)}
+                >
+                  <p className="font-medium text-on-surface">{sibling.full_name}</p>
+                  <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
+                    <span>Age {sibling.age}</span>
+                    <span>•</span>
+                    <span>Same parent: {sibling.parent_name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

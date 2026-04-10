@@ -13,11 +13,13 @@ import { CompetitionsTab } from '../components/student/CompetitionsTab'
 import { TeamsTab } from '../components/student/TeamsTab'
 import { PaymentsTab } from '../components/student/PaymentsTab'
 import { 
-  getStudent, 
-  updateStudent, 
+  updateStudent,
   deleteStudent,
-  type StudentWithDetails 
-} from '../api/crm'
+  type Student,
+  getStatusColorClass,
+  getStatusLabel
+} from '../api/crm/students/'
+import { useStudentDetail } from '../hooks/students'
 import { getGroups, enrollStudent } from '../api/academics'
 
 
@@ -26,9 +28,16 @@ export function StudentDetailPage() {
   const navigate = useNavigate()
   const studentId = Number(id) || 1
 
-  const [student, setStudent] = useState<StudentWithDetails | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // Use new hook for student data
+  const { 
+    student, 
+    balance, 
+    siblings, 
+    details,
+    isLoading, 
+    error,
+    refresh 
+  } = useStudentDetail(studentId)
   
   const [activeTab, setActiveTab] = useState<TabId>('overview')
   
@@ -43,47 +52,19 @@ export function StudentDetailPage() {
   const [availableGroups, setAvailableGroups] = useState<{ id: number; group_name: string; course_name: string; level: number }[]>([])
   const [isLoadingGroups, setIsLoadingGroups] = useState(false)
 
-  useEffect(() => {
-    async function loadStudent() {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const data = await getStudent(studentId)
-        setStudent({
-          ...data,
-          parents: data.parents || [],
-          enrollments: data.enrollments || [],
-          balance: data.balance ?? 0,
-          courses: data.courses || [],
-          competitions: data.competitions || [],
-          teams: data.teams || [],
-          payments: data.payments || [],
-        })
-      } catch (err) {
-        console.error('API Error:', err)
-        setError('API not available.')
-  
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    loadStudent()
-  }, [studentId])
+  // Refresh data after successful operations
+  const handleRefresh = async () => {
+    await refresh()
+  }
 
-  const handleUpdateStudent = async (data: Partial<Omit<StudentWithDetails, 'id'>>) => {
+  const handleUpdateStudent = async (data: Partial<Omit<Student, 'id'>>) => {
     setIsProcessing(true)
     try {
-      const updated = await updateStudent(studentId, data)
-      setStudent({
-        ...updated,
-        parents: student?.parents || [],
-        enrollments: student?.enrollments || [],
-        balance: student?.balance ?? 0,
-      })
+      await updateStudent(studentId, data)
+      await handleRefresh()
       setIsEditModalOpen(false)
-      setError(null)
     } catch (err) {
-      setError('Failed to update student')
+      console.error('Failed to update student:', err)
     } finally {
       setIsProcessing(false)
     }
@@ -96,8 +77,8 @@ export function StudentDetailPage() {
       navigate('/directory')
     } catch (err: any) {
       console.error('Failed to delete student:', err)
-      setError('Failed to delete student')
       setIsDeleteModalOpen(false)
+    } finally {
       setIsProcessing(false)
     }
   }
@@ -143,17 +124,7 @@ export function StudentDetailPage() {
         group_id: groupId,
       } as any)
       // Refresh student data to get updated enrollments
-      const updatedStudent = await getStudent(studentId)
-      setStudent(prev => ({
-        ...updatedStudent,
-        parents: prev?.parents || [],
-        balance: prev?.balance ?? 0,
-        courses: prev?.courses || [],
-        competitions: prev?.competitions || [],
-        teams: prev?.teams || [],
-        payments: prev?.payments || [],
-      }))
-      setError(null)
+      await handleRefresh()
     } catch (err) {
       console.error('Failed to enroll student:', err)
       throw err
@@ -167,29 +138,31 @@ export function StudentDetailPage() {
       case 'overview':
         return (
           <OverviewTab 
-            student={student} 
+            student={student}
+            balance={balance}
+            siblings={siblings}
+            parents={details?.parents || []}
             onLinkParent={() => setIsLinkParentModalOpen(true)}
           />
         )
       case 'enrollments':
         return (
           <EnrollmentsTab 
-            enrollments={student.enrollments || []}
-            currentGroupName={student.current_group_name}
+            enrollments={details?.enrollments || []}
+            currentGroupName={details?.enrollments?.find(e => e.status === 'active')?.group_name}
             onEnroll={() => setIsEnrollDialogOpen(true)}
           />
         )
       case 'courses':
-        return <CoursesTab courses={student.courses || []} />
+        return <CoursesTab courses={details?.courses || []} />
       case 'competitions':
-        return <CompetitionsTab competitions={student.competitions || []} />
+        return <CompetitionsTab competitions={details?.competitions || []} />
       case 'teams':
-        return <TeamsTab teams={student.teams || []} />
+        return <TeamsTab teams={details?.teams || []} />
       case 'payments':
         return (
           <PaymentsTab 
-            payments={student.payments || []}
-            totalBalance={student.balance}
+            balance={balance}
           />
         )
       default:
@@ -244,10 +217,8 @@ export function StudentDetailPage() {
               <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">
                 {student.full_name}
               </h1>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                student.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
-              }`}>
-                {student.is_active ? 'Active' : 'Inactive'}
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColorClass(student.status)}`}>
+                {getStatusLabel(student.status)}
               </span>
             </div>
             <div className="flex items-center gap-2">
