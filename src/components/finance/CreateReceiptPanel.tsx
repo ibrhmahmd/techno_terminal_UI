@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { searchStudents } from '../../api/crm'
-import { createReceipt, previewOverpaymentRisk, type Receipt, type ReceiptItem } from '../../api/finance'
+import { useReceipts } from '../../hooks/finance'
 import type { Student } from '../../api/crm'
+import type { CreateReceiptRequest } from '../../api/finance'
 
 const PAYMENT_METHODS = [
   { value: 'cash', label: 'Cash' },
@@ -12,7 +13,8 @@ const PAYMENT_METHODS = [
 ] as const
 
 const ITEM_TYPES = [
-  { value: 'tuition', label: 'Tuition' },
+  { value: 'tuition', label: 'Tuition (Course Level)' },
+  { value: 'competition', label: 'Competition' },
   { value: 'materials', label: 'Materials' },
   { value: 'registration', label: 'Registration' },
   { value: 'other', label: 'Other' }
@@ -31,7 +33,8 @@ interface ReceiptLineItem {
   students: Student[]
   enrollmentId: number | ''
   amount: number
-  type: ReceiptItem['type']
+  type: 'tuition' | 'materials' | 'registration' | 'other' | 'competition'
+  discount: number
   description: string
 }
 
@@ -40,12 +43,12 @@ interface CreateReceiptPanelProps {
   isLoading: boolean
   onSuccess: (message: string, receiptId?: number) => void
   onError: (message: string) => void
-  setIsLoading: (loading: boolean) => void
 }
 
-export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError, setIsLoading }: CreateReceiptPanelProps) {
+export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError }: CreateReceiptPanelProps) {
+  const { create, previewRisk, isCreating, createError, overpaymentRisk, clearOverpaymentRisk } = useReceipts()
   const [payerName, setPayerName] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<Receipt['payment_method']>('cash')
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer' | 'other'>('cash')
   const [notes, setNotes] = useState('')
   const [lineItems, setLineItems] = useState<ReceiptLineItem[]>([
     {
@@ -56,10 +59,11 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError,
       enrollmentId: '',
       amount: 0,
       type: 'tuition',
+      discount: 0,
       description: ''
     }
   ])
-  const [overpaymentRisk, setOverpaymentRisk] = useState<{ has_risk: boolean; message?: string } | null>(null)
+  const [localOverpaymentRisk, setLocalOverpaymentRisk] = useState<{ has_risk: boolean; message?: string } | null>(null)
 
   const totalAmount = lineItems.reduce((sum, item) => sum + (item.amount || 0), 0)
 
@@ -72,6 +76,7 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError,
       enrollmentId: '',
       amount: 0,
       type: 'tuition',
+      discount: 0,
       description: ''
     }])
   }
@@ -107,41 +112,42 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError,
   }
 
   const handlePreviewRisk = async () => {
-    const validItems = lineItems
-      .filter(item => item.selectedStudent && item.amount > 0)
-      .map(item => ({
-        enrollment_id: item.enrollmentId || item.selectedStudent!.id,
+    const validItems = lineItems.filter(item => item.selectedStudent && item.amount > 0)
+
+    if (validItems.length === 0) {
+      setLocalOverpaymentRisk(null)
+      clearOverpaymentRisk()
+      return
+    }
+
+    // Build request for new API
+    const request: CreateReceiptRequest = {
+      payer_name: payerName,
+      payment_method: paymentMethod,
+      notes,
+      items: validItems.map(item => ({
+        enrollment_id: item.enrollmentId ? Number(item.enrollmentId) : undefined,
         amount: item.amount,
         type: item.type,
         description: item.description
       }))
-
-    if (validItems.length === 0) {
-      setOverpaymentRisk(null)
-      return
     }
 
     try {
-      const risk = await previewOverpaymentRisk({
-        payment_method: paymentMethod,
-        notes,
-        items: validItems
-      })
-      setOverpaymentRisk(risk)
+      if (useMockData) {
+        // Mock risk assessment
+        setLocalOverpaymentRisk({ has_risk: false })
+      } else {
+        const risk = await previewRisk(request)
+        setLocalOverpaymentRisk(risk)
+      }
     } catch {
-      setOverpaymentRisk(null)
+      setLocalOverpaymentRisk(null)
     }
   }
 
   const handleCreateReceipt = async () => {
-    const validItems = lineItems
-      .filter(item => item.selectedStudent && item.amount > 0)
-      .map(item => ({
-        enrollment_id: item.enrollmentId || item.selectedStudent!.id,
-        amount: item.amount,
-        type: item.type,
-        description: item.description
-      }))
+    const validItems = lineItems.filter(item => item.selectedStudent && item.amount > 0)
 
     if (validItems.length === 0) {
       onError('Please add at least one valid line item with a student and amount')
@@ -153,20 +159,26 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError,
       return
     }
 
-    setIsLoading(true)
     onError('')
     try {
       if (useMockData) {
         await new Promise(r => setTimeout(r, 500))
-        const mockId = `mock-receipt-${Date.now()}`
-        onSuccess('Receipt created successfully: R-2026-MOCK', Number(mockId))
+        const mockId = Date.now()
+        onSuccess('Receipt created successfully: R-2026-MOCK', mockId)
       } else {
-        const result = await createReceipt({
+        // Build request for new API - map to new shape
+        const request: CreateReceiptRequest = {
           payer_name: payerName,
           payment_method: paymentMethod,
           notes,
-          items: validItems
-        })
+          items: validItems.map(item => ({
+            enrollment_id: item.enrollmentId ? Number(item.enrollmentId) : undefined,
+            amount: item.amount,
+            type: item.type,
+            description: item.description
+          }))
+        }
+        const result = await create(request)
         onSuccess(`Receipt created successfully: ${result.receipt_number}`, result.id)
       }
       // Reset form
@@ -180,13 +192,13 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError,
         enrollmentId: '',
         amount: 0,
         type: 'tuition',
+        discount: 0,
         description: ''
       }])
-      setOverpaymentRisk(null)
+      setLocalOverpaymentRisk(null)
+      clearOverpaymentRisk()
     } catch {
-      onError('Failed to create receipt')
-    } finally {
-      setIsLoading(false)
+      onError(createError?.message || 'Failed to create receipt')
     }
   }
 
@@ -210,7 +222,7 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError,
           <label className="block text-sm font-medium text-on-surface mb-2">Payment Method</label>
           <select
             value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value as Receipt['payment_method'])}
+            onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'card' | 'transfer' | 'other')}
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
           >
             {PAYMENT_METHODS.map(method => (
@@ -303,7 +315,7 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError,
                   <label className="block text-xs font-medium text-slate-600 mb-1">Type</label>
                   <select
                     value={item.type}
-                    onChange={(e) => handleUpdateLineItem(item.id, { type: e.target.value as ReceiptItem['type'] })}
+                    onChange={(e) => handleUpdateLineItem(item.id, { type: e.target.value as ReceiptLineItem['type'] })}
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
                   >
                     {ITEM_TYPES.map(type => (
@@ -330,11 +342,11 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError,
       </div>
 
       {/* Overpayment Warning */}
-      {overpaymentRisk?.has_risk && (
+      {(overpaymentRisk?.has_risk || localOverpaymentRisk?.has_risk) && (
         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-sm text-yellow-800 flex items-center gap-2">
             <span className="material-symbols-outlined">warning</span>
-            {overpaymentRisk.message || 'This payment may exceed the amount due'}
+            {overpaymentRisk?.message || localOverpaymentRisk?.message || 'This payment may exceed the amount due'}
           </p>
         </div>
       )}
@@ -354,10 +366,10 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError,
           </button>
           <button
             onClick={handleCreateReceipt}
-            disabled={isLoading || totalAmount === 0}
+            disabled={isLoading || isCreating || totalAmount === 0}
             className="px-6 py-2 bg-secondary text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/90 transition-colors flex items-center gap-2"
           >
-            {isLoading ? <LoadingSpinner size="sm" /> : null}
+            {(isLoading || isCreating) ? <LoadingSpinner size="sm" /> : null}
             <span className="material-symbols-outlined">receipt</span>
             Create Receipt
           </button>

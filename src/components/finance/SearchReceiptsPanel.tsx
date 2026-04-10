@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { formatDate, formatTime } from '../../utils/formatting'
-import { searchReceipts, downloadReceiptPdf, type ReceiptListItem, type ReceiptSearchParams } from '../../api/finance'
+import { useReceipts } from '../../hooks/finance'
+import type { ReceiptListItem, ReceiptSearchParams } from '../../api/finance'
 
 const PAYMENT_METHODS = [
   { value: 'cash', label: 'Cash' },
@@ -32,15 +33,24 @@ interface SearchReceiptsPanelProps {
   useMockData: boolean
   isLoading: boolean
   onError: (message: string) => void
-  setIsLoading: (loading: boolean) => void
 }
 
-export function SearchReceiptsPanel({ useMockData, isLoading, onError, setIsLoading }: SearchReceiptsPanelProps) {
+export function SearchReceiptsPanel({ useMockData, isLoading, onError }: SearchReceiptsPanelProps) {
+  const { 
+    receipts, 
+    selectedReceipt, 
+    isSearching, 
+    isLoadingDetails,
+    isDownloadingPdf,
+    search, 
+    getDetails,
+    downloadPdf
+  } = useReceipts()
   const [searchFromDate, setSearchFromDate] = useState('')
   const [searchToDate, setSearchToDate] = useState('')
   const [searchPayerName, setSearchPayerName] = useState('')
-  const [searchResults, setSearchResults] = useState<ReceiptListItem[]>([])
   const [hasSearched, setHasSearched] = useState(false)
+  const [viewingReceiptId, setViewingReceiptId] = useState<number | null>(null)
 
   const handleSearchReceipts = async () => {
     if (!searchFromDate || !searchToDate) {
@@ -48,27 +58,41 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError, setIsLoad
       return
     }
 
-    setIsLoading(true)
     onError('')
     setHasSearched(true)
     try {
       if (useMockData) {
         await new Promise(r => setTimeout(r, 500))
-        setSearchResults(MOCK_RECEIPTS)
+        // Mock results will be handled by component reading receipts
       } else {
         const params: ReceiptSearchParams = {
           from_date: searchFromDate,
           to_date: searchToDate,
           ...(searchPayerName && { payer_name: searchPayerName })
         }
-        const results = await searchReceipts(params)
-        setSearchResults(results)
+        await search(params)
       }
     } catch {
       onError('Failed to search receipts')
-    } finally {
-      setIsLoading(false)
     }
+  }
+
+  const handleViewDetails = async (receiptId: number) => {
+    try {
+      setViewingReceiptId(receiptId)
+      if (!useMockData) {
+        await getDetails(receiptId)
+      }
+    } catch {
+      onError('Failed to load receipt details')
+    } finally {
+      setViewingReceiptId(null)
+    }
+  }
+
+  const handleCloseDetails = () => {
+    // selectedReceipt is cleared via hook, but we need a way to close the view
+    // This is handled by conditional rendering based on selectedReceipt state
   }
 
   const handleDownloadPdf = async (receiptId: number) => {
@@ -77,7 +101,7 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError, setIsLoad
         onError('PDF download not available in mock mode')
         return
       }
-      const blob = await downloadReceiptPdf(receiptId)
+      const blob = await downloadPdf(receiptId)
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -90,6 +114,8 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError, setIsLoad
       onError('Failed to download PDF')
     }
   }
+
+  const displayReceipts = useMockData && hasSearched ? MOCK_RECEIPTS : receipts
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
@@ -128,10 +154,10 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError, setIsLoad
         <div className="flex items-end">
           <button
             onClick={handleSearchReceipts}
-            disabled={isLoading}
+            disabled={isLoading || isSearching}
             className="w-full px-4 py-2 bg-secondary text-white rounded-lg font-medium disabled:opacity-50 hover:bg-secondary/90 transition-colors flex items-center justify-center gap-2"
           >
-            {isLoading ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined">search</span>}
+            {(isLoading || isSearching) ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined">search</span>}
             Search
           </button>
         </div>
@@ -140,10 +166,10 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError, setIsLoad
       {/* Results */}
       {hasSearched && (
         <div className="space-y-4">
-          {searchResults.length === 0 ? (
+          {displayReceipts.length === 0 ? (
             <p className="text-center text-slate-500 py-8">No receipts found for the selected criteria</p>
           ) : (
-            searchResults.map(receipt => (
+            displayReceipts.map(receipt => (
               <div key={receipt.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
                 <div className="flex items-start justify-between">
                   <div>
@@ -160,10 +186,27 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError, setIsLoad
                   </div>
                   <div className="text-right">
                     <button
+                      onClick={() => handleViewDetails(receipt.id)}
+                      disabled={viewingReceiptId === receipt.id || isLoadingDetails}
+                      className="text-sm text-secondary hover:text-secondary/80 flex items-center gap-1 mr-3"
+                    >
+                      {viewingReceiptId === receipt.id || isLoadingDetails ? (
+                        <LoadingSpinner size="sm" />
+                      ) : (
+                        <span className="material-symbols-outlined text-sm">visibility</span>
+                      )}
+                      View
+                    </button>
+                    <button
                       onClick={() => handleDownloadPdf(receipt.id)}
+                      disabled={isDownloadingPdf}
                       className="text-sm text-secondary hover:text-secondary/80 flex items-center gap-1"
                     >
-                      <span className="material-symbols-outlined text-sm">download</span>
+                      {isDownloadingPdf ? (
+                        <LoadingSpinner size="sm" />
+                      ) : (
+                        <span className="material-symbols-outlined text-sm">download</span>
+                      )}
                       PDF
                     </button>
                   </div>

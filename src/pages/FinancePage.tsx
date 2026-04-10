@@ -2,30 +2,50 @@ import { useState, useEffect } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { CreateReceiptPanel } from '../components/finance/CreateReceiptPanel'
 import { SearchReceiptsPanel } from '../components/finance/SearchReceiptsPanel'
-import { searchReceipts, downloadReceiptPdf } from '../api/finance'
+import { useReceipts } from '../hooks/finance'
 
 type PanelType = 'create' | 'search'
 
 export function FinancePage() {
   const [activePanel, setActivePanel] = useState<PanelType>('create')
-  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [createdReceiptId, setCreatedReceiptId] = useState<number | null>(null)
+  const { search, isSearching, downloadPdf } = useReceipts()
   const [useMockData, setUseMockData] = useState(false)
+
+  const handleDownloadPdf = async (receiptId: number) => {
+    try {
+      if (useMockData) {
+        handleError('PDF download not available in mock mode')
+        return
+      }
+      const blob = await downloadPdf(receiptId)
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `receipt-${receiptId}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch {
+      handleError('Failed to download PDF')
+    }
+  }
 
   // Detect API availability
   useEffect(() => {
     async function checkApi() {
       try {
         const today = new Date().toISOString().split('T')[0]
-        await searchReceipts({ from_date: today, to_date: today })
+        await search({ from_date: today, to_date: today })
       } catch {
         setUseMockData(true)
       }
     }
     checkApi()
-  }, [])
+  }, [search])
 
   const handleSuccess = (message: string, receiptId?: number) => {
     setSuccess(message)
@@ -44,26 +64,6 @@ export function FinancePage() {
     setError(null)
     setSuccess(null)
     setCreatedReceiptId(null)
-  }
-
-  const handleDownloadPdf = async (receiptId: number) => {
-    try {
-      if (useMockData) {
-        handleError('PDF download not available in mock mode')
-        return
-      }
-      const blob = await downloadReceiptPdf(receiptId)
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `receipt-${receiptId}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-    } catch {
-      handleError('Failed to download PDF')
-    }
   }
 
   return (
@@ -135,18 +135,16 @@ export function FinancePage() {
         {activePanel === 'create' && (
           <CreateReceiptPanel
             useMockData={useMockData}
-            isLoading={isLoading}
+            isLoading={isSearching}
             onSuccess={handleSuccess}
             onError={handleError}
-            setIsLoading={setIsLoading}
           />
         )}
         {activePanel === 'search' && (
           <SearchReceiptsPanel
             useMockData={useMockData}
-            isLoading={isLoading}
+            isLoading={isSearching}
             onError={handleError}
-            setIsLoading={setIsLoading}
           />
         )}
       </section>
