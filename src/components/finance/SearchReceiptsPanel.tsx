@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { formatDate, formatTime } from '../../utils/formatting'
-import { searchReceipts, downloadReceiptPdf, type Receipt, type ReceiptSearchParams } from '../../api/finance'
+import { searchReceipts, downloadReceiptPdf, type ReceiptListItem, type ReceiptSearchParams } from '../../api/finance'
 
 const PAYMENT_METHODS = [
   { value: 'cash', label: 'Cash' },
@@ -10,38 +10,21 @@ const PAYMENT_METHODS = [
   { value: 'other', label: 'Other' }
 ] as const
 
-const ITEM_TYPES = [
-  { value: 'tuition', label: 'Tuition' },
-  { value: 'materials', label: 'Materials' },
-  { value: 'registration', label: 'Registration' },
-  { value: 'other', label: 'Other' }
-] as const
-
 // Mock data
-const MOCK_RECEIPTS: Receipt[] = [
+const MOCK_RECEIPTS: ReceiptListItem[] = [
   {
     id: 1,
     receipt_number: 'R-2026-0001',
     payer_name: 'Ahmed Mohamed',
-    total_amount: 450,
     payment_method: 'cash',
-    created_at: '2026-04-01T10:30:00',
-    items: [
-      { enrollment_id: 1, amount: 150, type: 'tuition', description: 'Robotics A - March' },
-      { enrollment_id: 2, amount: 200, type: 'tuition', description: 'Coding B - March' },
-      { enrollment_id: 3, amount: 100, type: 'materials', description: 'Kit purchase' }
-    ]
+    paid_at: '2026-04-01T10:30:00'
   },
   {
     id: 2,
     receipt_number: 'R-2026-0002',
     payer_name: 'Sara Khaled',
-    total_amount: 175,
     payment_method: 'card',
-    created_at: '2026-04-02T14:15:00',
-    items: [
-      { enrollment_id: 4, amount: 175, type: 'tuition', description: 'Electronics C - April' }
-    ]
+    paid_at: '2026-04-02T14:15:00'
   }
 ]
 
@@ -56,7 +39,7 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError, setIsLoad
   const [searchFromDate, setSearchFromDate] = useState('')
   const [searchToDate, setSearchToDate] = useState('')
   const [searchPayerName, setSearchPayerName] = useState('')
-  const [searchResults, setSearchResults] = useState<Receipt[]>([])
+  const [searchResults, setSearchResults] = useState<ReceiptListItem[]>([])
   const [hasSearched, setHasSearched] = useState(false)
 
   const handleSearchReceipts = async () => {
@@ -172,52 +155,20 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError, setIsLoad
                     </div>
                     <p className="text-sm text-slate-600 mb-1">Payer: {receipt.payer_name}</p>
                     <p className="text-sm text-slate-500">
-                      {formatDate(receipt.created_at)} at {formatTime(receipt.created_at)}
+                      {formatDate(receipt.paid_at)} at {formatTime(receipt.paid_at)}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xl font-bold text-on-surface">{receipt.total_amount.toFixed(2)} EGP</p>
-                    {!useMockData && (
-                      <button
-                        onClick={() => handleDownloadPdf(receipt.id)}
-                        className="text-sm text-secondary hover:text-secondary/80 mt-2 flex items-center gap-1"
-                      >
-                        <span className="material-symbols-outlined text-sm">download</span>
-                        PDF
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleDownloadPdf(receipt.id)}
+                      className="text-sm text-secondary hover:text-secondary/80 flex items-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-sm">download</span>
+                      PDF
+                    </button>
                   </div>
                 </div>
 
-                {/* Items */}
-                <div className="mt-4 pt-4 border-t border-slate-200">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-slate-500 text-left">
-                        <th className="pb-2">Type</th>
-                        <th className="pb-2">Description</th>
-                        <th className="pb-2 text-right">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {receipt.items.map((item, idx) => (
-                        <tr key={idx} className="border-t border-slate-100">
-                          <td className="py-2">
-                            <span className="px-2 py-1 bg-slate-200 rounded text-xs">
-                              {ITEM_TYPES.find(t => t.value === item.type)?.label || item.type}
-                            </span>
-                          </td>
-                          <td className="py-2 text-slate-600">{item.description || '-'}</td>
-                          <td className="py-2 text-right font-medium">{item.amount.toFixed(2)} EGP</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {receipt.notes && (
-                  <p className="mt-3 text-sm text-slate-500 italic">Note: {receipt.notes}</p>
-                )}
               </div>
             ))
           )}

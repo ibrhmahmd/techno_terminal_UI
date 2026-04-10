@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getRevenueMetrics, type RevenueMetrics } from '../../../api/reports'
+import { getRevenueMetrics, type RevenueMetricsDTO } from '../../../api/analytics'
 
 interface UseRevenueDataResult {
-  metrics: RevenueMetrics | null
+  metrics: RevenueMetricsDTO | null
   isLoading: boolean
   error: Error | null
   refetch: (months?: number) => void
   isUsingMockData: boolean
 }
 
-const MOCK_REVENUE: RevenueMetrics = {
+const MOCK_REVENUE: RevenueMetricsDTO = {
   monthly_revenue: [
     { month: 'Jan', amount: 20000 },
     { month: 'Feb', amount: 22000 },

@@ -18,6 +18,8 @@ import type {
   EnrollmentHistoryDTO,
   InstructorAssignmentDTO,
   CreateNewLevelInput,
+  ScheduleGroupLevelInput,
+  ScheduleGroupLevelResponse,
 } from "../types/groups";
 
 // generate level sessions manually
@@ -60,6 +62,18 @@ export async function createNewLevel(
 ): Promise<GroupLevelHistoryDTO> {
   const response = await client.post<ApiResponse<GroupLevelHistoryDTO>>(
     `/academics/groups/${groupId}/levels`,
+    data,
+  );
+  return response.data.data;
+}
+
+// schedule a new group level (auto-generates 5 sessions)
+export async function scheduleGroupLevel(
+  groupId: number,
+  data: ScheduleGroupLevelInput,
+): Promise<ScheduleGroupLevelResponse> {
+  const response = await client.post<ApiResponse<ScheduleGroupLevelResponse>>(
+    `/academics/groups/${groupId}/schedule-level`,
     data,
   );
   return response.data.data;

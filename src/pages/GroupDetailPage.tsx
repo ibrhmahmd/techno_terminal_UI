@@ -120,15 +120,32 @@ export function GroupDetailPage() {
       return
     }
     try {
-      console.log('[DEBUG] Calling createNewLevel with:', {
-        level_number: currentLevel.level_number + 1,
-        pricing_snapshot: currentLevel.pricing_snapshot,
+      // Calculate next level number
+      const nextLevelNumber = currentLevel.level_number + 1
+      
+      // Default to current instructor if available
+      const instructorId = group?.instructor_id || 1
+      
+      // Calculate start date (next week from today)
+      const startDate = new Date()
+      startDate.setDate(startDate.getDate() + 7)
+      const startDateStr = startDate.toISOString().split('T')[0]
+      
+      console.log('[DEBUG] Calling scheduleGroupLevel with:', {
+        level_number: nextLevelNumber,
+        instructor_id: instructorId,
+        start_date: startDateStr,
+        price_override: currentLevel.price_override,
       })
+      
       await createNewLevel({
-        level_number: currentLevel.level_number + 1,
-        pricing_snapshot: currentLevel.pricing_snapshot,
+        level_number: nextLevelNumber,
+        instructor_id: instructorId,
+        start_date: startDateStr,
+        price_override: currentLevel.price_override,
       })
-      showToast('New level created successfully', 'success')
+      
+      showToast('New level scheduled successfully with 5 auto-generated sessions', 'success')
       await refresh()
     } catch (err: any) {
       console.error('[DEBUG] createNewLevel failed:', err)

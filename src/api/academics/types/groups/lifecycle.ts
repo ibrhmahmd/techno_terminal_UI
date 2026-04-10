@@ -9,6 +9,7 @@
  * Represents a level progression snapshot
  */
 export interface GroupLevelHistoryDTO {
+  price_override: number | null | undefined;
   id: number;
   level_number: number;
   level_name: string;
@@ -82,6 +83,33 @@ export interface CreateNewLevelInput {
     currency: string;
   };
   notes?: string;
+}
+
+/**
+ * Input for scheduling a new group level (auto-generates sessions)
+ * Aligned with API: POST /academics/groups/{group_id}/schedule-level
+ */
+export interface ScheduleGroupLevelInput {
+  level_number: number;
+  instructor_id: number;
+  price_override?: number | null;
+  start_date: string;
+}
+
+/**
+ * Response from scheduling a new group level
+ * Contains the created level and generated sessions
+ */
+export interface ScheduleGroupLevelResponse {
+  level_id: number;
+  level_number: number;
+  group_id: number;
+  sessions_created: number;
+  sessions: Array<{
+    id: number;
+    session_number: number;
+    date: string;
+  }>;
 }
 
 /**

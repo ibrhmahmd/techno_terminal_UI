@@ -1,3 +1,9 @@
+/**
+ * Analytics API Types - Academic Module
+ * DTOs for academic metrics: enrollments, sessions, attendance, progress
+ * @see docs/api/analytics/academic.md
+ */
+
 export interface DashboardSummaryPublic {
   active_enrollments: number
   today_sessions_count: number
@@ -41,14 +47,23 @@ export interface AttendanceHeatmapRowDTO {
   status: string
 }
 
-// BI DTOs
-export interface EnrollmentTrendDTO {
-  day: string
-  new_enrollments: number
+export interface StudentProgressDTO {
+  student_id: number
+  student_name: string
+  course_name: string
+  current_level: number
+  total_levels: number
+  completion_pct: number
+  sessions_attended: number
+  sessions_total: number
 }
 
-export interface InstructorPerformanceDTO {
-  instructor_name: string
-  active_groups: number
-  active_students: number
+export interface CourseCompletionDTO {
+  course_id: number
+  course_name: string
+  total_enrolled: number
+  completed_count: number
+  dropped_count: number
+  in_progress_count: number
+  completion_rate: number
 }

@@ -4,11 +4,11 @@ import {
   deleteGroup,
   archiveGroup,
   levelUpGroup,
-  createNewLevel,
+  scheduleGroupLevel,
   type Group,
   type UpdateGroupDTO,
-  type CreateNewLevelInput,
-  type GroupLevelHistoryDTO,
+  type ScheduleGroupLevelInput,
+  type ScheduleGroupLevelResponse,
 } from '../api/academics'
 
 type MutationStatus = 'idle' | 'loading' | 'success' | 'error'
@@ -18,7 +18,7 @@ interface UseGroupMutationsReturn {
   deleteGroup: () => Promise<void>
   archiveGroup: () => Promise<Group>
   levelUp: () => Promise<Group>
-  createNewLevel: (data: CreateNewLevelInput) => Promise<GroupLevelHistoryDTO>
+  createNewLevel: (data: ScheduleGroupLevelInput) => Promise<ScheduleGroupLevelResponse>
   status: MutationStatus
   error: string | null
   clearError: () => void
@@ -95,15 +95,15 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     }
   }, [groupId])
 
-  const handleCreateNewLevel = useCallback(async (data: CreateNewLevelInput): Promise<GroupLevelHistoryDTO> => {
+  const handleCreateNewLevel = useCallback(async (data: ScheduleGroupLevelInput): Promise<ScheduleGroupLevelResponse> => {
     setStatus('loading')
     setError(null)
     try {
-      const result = await createNewLevel(groupId, data)
+      const result = await scheduleGroupLevel(groupId, data)
       setStatus('success')
       return result
     } catch (err: any) {
-      const message = err.message || 'Failed to create new level'
+      const message = err.message || 'Failed to schedule new level'
       setError(message)
       setStatus('error')
       throw err

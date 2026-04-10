@@ -37,6 +37,8 @@ export type {
   InstructorAssignmentDTO,
   StudentAttendance,
   CreateNewLevelInput,
+  ScheduleGroupLevelInput,
+  ScheduleGroupLevelResponse,
 } from './lifecycle';
 
 // Competition types

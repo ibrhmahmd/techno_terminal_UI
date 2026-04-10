@@ -34,6 +34,7 @@ export {
   getGroupEnrollmentHistory,
   getGroupInstructorHistory,
   createNewLevel,
+  scheduleGroupLevel,
 } from './lifecycle';
 
 // Competitions router functions
