@@ -58,31 +58,31 @@ export {
 } from './utils'
 
 // Types
-export type {
+export {
   // Models
-  Student,
-  StudentStatus,
-  StudentWithDetails,
-  Parent,
-  EnrollmentInfo,
-  StudentBalanceSummary,
-  SiblingInfo,
-  StudentStatusSummary,
+  type Student,
+  type StudentStatus,
+  type StudentWithDetails,
+  type Parent,
+  type EnrollmentInfo,
+  type StudentBalanceSummary,
+  type SiblingInfo,
+  type StudentStatusSummary,
   // Inputs
-  CreateStudentDTO,
-  UpdateStudentDTO,
-  UpdateStudentStatusDTO,
-  SetWaitingPriorityDTO,
-  LinkSiblingDTO,
-  BalanceAdjustmentDTO,
+  type CreateStudentDTO,
+  type UpdateStudentDTO,
+  type UpdateStudentStatusDTO,
+  type SetWaitingPriorityDTO,
+  type LinkSiblingDTO,
+  type BalanceAdjustmentDTO,
   // Finance
-  StudentBalance,
-  EnrollmentBalance,
-  BalanceAdjustmentResult,
-  UnpaidEnrollment,
+  type StudentBalance,
+  type EnrollmentBalance,
+  type BalanceAdjustmentResult,
+  type UnpaidEnrollment,
   // History
-  StatusHistoryRecord,
-  AttendanceHistoryRecord,
+  type StatusHistoryRecord,
+  type AttendanceHistoryRecord,
 } from './types'
 
 // Additional type exports from search
