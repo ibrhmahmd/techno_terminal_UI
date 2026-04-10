@@ -64,22 +64,22 @@ export function RevenueTab({ revenue, isLoading, error, onRetry }: RevenueTabPro
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <MetricCard
             title="Total Collected"
-            value={`${revenue.total_collected.toLocaleString()} EGP`}
+            value={`${(revenue.total_collected || 0).toLocaleString()} EGP`}
             color="green"
           />
           <MetricCard
             title="Outstanding"
-            value={`${revenue.total_outstanding.toLocaleString()} EGP`}
+            value={`${(revenue.total_outstanding || 0).toLocaleString()} EGP`}
             color="red"
           />
           <MetricCard
             title="Collection Rate"
-            value={`${revenue.collection_rate.toFixed(1)}%`}
+            value={`${(revenue.collection_rate || 0).toFixed(1)}%`}
             color="blue"
           />
           <MetricCard
             title="Avg Monthly"
-            value={`${revenue.average_monthly.toLocaleString()} EGP`}
+            value={`${(revenue.average_monthly || 0).toLocaleString()} EGP`}
             color="amber"
           />
         </div>

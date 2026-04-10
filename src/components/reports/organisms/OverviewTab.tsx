@@ -70,7 +70,7 @@ export function OverviewTab({
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <h3 className="font-headline font-semibold text-on-surface mb-4">Revenue</h3>
-          <RevenueChart data={revenue?.monthly_revenue.slice(-4) || []} />
+          <RevenueChart data={revenue?.monthly_revenue?.slice(-4) || []} />
         </div>
       </div>
     </div>
