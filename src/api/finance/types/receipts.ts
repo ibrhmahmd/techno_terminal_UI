@@ -48,9 +48,9 @@ export interface BatchGenerateRequest {
 
 // Legacy types (maintaining backward compatibility)
 export interface ReceiptItem {
-  enrollment_id: number
+  enrollment_id?: number
   amount: number
-  type: 'tuition' | 'materials' | 'registration' | 'other'
+  type: 'tuition' | 'materials' | 'registration' | 'other' | 'competition'
   description?: string
 }
 
