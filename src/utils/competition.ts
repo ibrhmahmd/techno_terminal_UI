@@ -8,6 +8,7 @@ import type { Competition } from '../api/competitions'
  */
 export function isRegistrationOpen(competition: Competition): boolean {
   const now = new Date()
+  if (!competition.registration_deadline) return false
   const deadline = new Date(competition.registration_deadline)
   return now <= deadline && 
     (competition.status === 'upcoming' || competition.status === 'active')
@@ -18,15 +19,16 @@ export function isRegistrationOpen(competition: Competition): boolean {
  * Returns null if there's no maximum limit
  */
 export function getAvailableSlots(competition: Competition): number | null {
-  if (!competition.max_teams) return null
-  return competition.max_teams - competition.registered_teams
+  // max_teams is not part of Competition interface, so we return null
+  // This function may need to be updated if the API adds this field
+  return null
 }
 
 /**
  * Calculate total revenue from all participants
  */
 export function calculateTotalRevenue(competition: Competition): number {
-  return competition.total_participants * competition.fee_per_participant
+  return (competition.total_participants || 0) * (competition.fee_per_participant || 0)
 }
 
 /**

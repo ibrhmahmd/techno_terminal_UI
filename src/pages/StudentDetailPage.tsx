@@ -57,7 +57,7 @@ export function StudentDetailPage() {
     await refresh()
   }
 
-  const handleUpdateStudent = async (data: Partial<Omit<Student, 'id'>>) => {
+  const handleUpdateStudent = async (data: Partial<Omit<Student, 'id'>>, _selectedParent?: Parent | null) => {
     setIsProcessing(true)
     try {
       await updateStudent(studentId, data)
@@ -149,7 +149,7 @@ export function StudentDetailPage() {
         return (
           <EnrollmentsTab 
             enrollments={details?.enrollments || []}
-            currentGroupName={details?.enrollments?.find(e => e.status === 'active')?.group_name}
+            currentGroupName={details?.enrollments?.find((e: { status: string; group_name?: string }) => e.status === 'active')?.group_name}
             onEnroll={() => setIsEnrollDialogOpen(true)}
           />
         )
