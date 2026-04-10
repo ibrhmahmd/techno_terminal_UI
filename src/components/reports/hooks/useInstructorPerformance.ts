@@ -1,55 +1,39 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getInstructorPerformance, type InstructorPerformanceReport } from '../../../api/reports'
+import { getInstructorPerformance, type InstructorPerformanceDTO } from '../../../api/analytics'
 
 interface UseInstructorPerformanceResult {
-  instructors: InstructorPerformanceReport[]
+  instructors: InstructorPerformanceDTO[]
   isLoading: boolean
   error: Error | null
   refetch: () => void
   isUsingMockData: boolean
 }
 
-const MOCK_INSTRUCTOR_PERFORMANCE: InstructorPerformanceReport[] = [
+const MOCK_INSTRUCTOR_PERFORMANCE: InstructorPerformanceDTO[] = [
   { 
-    instructor_id: '1',
     instructor_name: 'Ali Mahmoud', 
-    groups_count: 3, 
-    total_students: 35,
-    attendance_rate: 0.92,
-    sessions_conducted: 45,
-    sessions_cancelled: 2
+    active_groups: 3, 
+    active_students: 35
   },
   { 
-    instructor_id: '2',
     instructor_name: 'Sarah Ahmed', 
-    groups_count: 2, 
-    total_students: 28,
-    attendance_rate: 0.88,
-    sessions_conducted: 38,
-    sessions_cancelled: 1
+    active_groups: 2, 
+    active_students: 28
   },
   { 
-    instructor_id: '3',
     instructor_name: 'Omar Hassan', 
-    groups_count: 4, 
-    total_students: 42,
-    attendance_rate: 0.95,
-    sessions_conducted: 52,
-    sessions_cancelled: 0
+    active_groups: 4, 
+    active_students: 42
   },
   { 
-    instructor_id: '4',
     instructor_name: 'Fatima Ali', 
-    groups_count: 2, 
-    total_students: 24,
-    attendance_rate: 0.90,
-    sessions_conducted: 36,
-    sessions_cancelled: 3
+    active_groups: 2, 
+    active_students: 24
   },
 ]
 
 export function useInstructorPerformance(fallbackToMock = true): UseInstructorPerformanceResult {
-  const [instructors, setInstructors] = useState<InstructorPerformanceReport[]>([])
+  const [instructors, setInstructors] = useState<InstructorPerformanceDTO[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
   const [isUsingMockData, setIsUsingMockData] = useState(false)

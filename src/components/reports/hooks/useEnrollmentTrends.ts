@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getEnrollmentTrends, type EnrollmentTrend } from '../../../api/reports'
+import { getEnrollmentTrends, type EnrollmentTrendDTO } from '../../../api/analytics'
 
 interface UseEnrollmentTrendsResult {
-  trends: EnrollmentTrend[]
+  trends: EnrollmentTrendDTO[]
   isLoading: boolean
   error: Error | null
   refetch: (months?: number) => void
   isUsingMockData: boolean
 }
 
-const MOCK_TRENDS: EnrollmentTrend[] = [
+const MOCK_TRENDS: EnrollmentTrendDTO[] = [
   { month: 'Jan', new_enrollments: 12, transfers: 3, drops: 2, net_change: 13 },
   { month: 'Feb', new_enrollments: 15, transfers: 2, drops: 1, net_change: 16 },
   { month: 'Mar', new_enrollments: 18, transfers: 4, drops: 3, net_change: 19 },
@@ -19,7 +19,7 @@ const MOCK_TRENDS: EnrollmentTrend[] = [
 ]
 
 export function useEnrollmentTrends(months = 6, fallbackToMock = true): UseEnrollmentTrendsResult {
-  const [trends, setTrends] = useState<EnrollmentTrend[]>([])
+  const [trends, setTrends] = useState<EnrollmentTrendDTO[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
   const [isUsingMockData, setIsUsingMockData] = useState(false)
@@ -31,7 +31,12 @@ export function useEnrollmentTrends(months = 6, fallbackToMock = true): UseEnrol
     setIsUsingMockData(false)
 
     try {
-      const data = await getEnrollmentTrends(fetchMonths)
+      // Transform months to cutoff date (new API uses date string instead of months)
+      const cutoffDate = new Date()
+      cutoffDate.setMonth(cutoffDate.getMonth() - fetchMonths)
+      const cutoff = cutoffDate.toISOString().split('T')[0]
+      
+      const data = await getEnrollmentTrends(cutoff)
       setTrends(data)
     } catch (err) {
       const errorObj = err instanceof Error ? err : new Error('Failed to fetch enrollment trends')

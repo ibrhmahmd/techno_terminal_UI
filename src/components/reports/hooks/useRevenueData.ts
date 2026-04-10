@@ -25,19 +25,20 @@ const MOCK_REVENUE: RevenueMetricsDTO = {
 }
 
 export function useRevenueData(months = 6, fallbackToMock = true): UseRevenueDataResult {
-  const [metrics, setMetrics] = useState<RevenueMetrics | null>(null)
+  const [metrics, setMetrics] = useState<RevenueMetricsDTO | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
   const [isUsingMockData, setIsUsingMockData] = useState(false)
   const [currentMonths, setCurrentMonths] = useState(months)
 
-  const fetchData = useCallback(async (fetchMonths = currentMonths) => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     setIsUsingMockData(false)
 
     try {
-      const data = await getRevenueMetrics(fetchMonths)
+      // New analytics API doesn't take months parameter
+      const data = await getRevenueMetrics()
       setMetrics(data)
     } catch (err) {
       const errorObj = err instanceof Error ? err : new Error('Failed to fetch revenue metrics')
@@ -50,7 +51,7 @@ export function useRevenueData(months = 6, fallbackToMock = true): UseRevenueDat
     } finally {
       setIsLoading(false)
     }
-  }, [currentMonths, fallbackToMock])
+  }, [fallbackToMock])
 
   useEffect(() => {
     fetchData(currentMonths)
