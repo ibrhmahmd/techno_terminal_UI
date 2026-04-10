@@ -5,6 +5,9 @@ export type StudentStatus = 'active' | 'waiting' | 'inactive'
 export interface Student {
   id: number
   full_name: string
+  phone?: string
+  email?: string
+  gender?: 'male' | 'female' | 'other'
   date_of_birth: string
   age?: number
   school?: string
@@ -29,9 +32,12 @@ export interface Parent {
   id: number
   full_name: string
   phone?: string
+  phone_primary?: string
+  phone_secondary?: string
   email?: string
   whatsapp?: string
   address?: string
+  relation?: string
 }
 
 export interface EnrollmentInfo {
