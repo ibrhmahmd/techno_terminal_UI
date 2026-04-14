@@ -6,29 +6,17 @@ interface UseEnrollmentTrendsResult {
   isLoading: boolean
   error: Error | null
   refetch: (months?: number) => void
-  isUsingMockData: boolean
 }
 
-const MOCK_TRENDS: EnrollmentTrendDTO[] = [
-  { month: 'Jan', new_enrollments: 12, transfers: 3, drops: 2, net_change: 13 },
-  { month: 'Feb', new_enrollments: 15, transfers: 2, drops: 1, net_change: 16 },
-  { month: 'Mar', new_enrollments: 18, transfers: 4, drops: 3, net_change: 19 },
-  { month: 'Apr', new_enrollments: 14, transfers: 1, drops: 2, net_change: 13 },
-  { month: 'May', new_enrollments: 20, transfers: 3, drops: 1, net_change: 22 },
-  { month: 'Jun', new_enrollments: 16, transfers: 2, drops: 4, net_change: 14 },
-]
-
-export function useEnrollmentTrends(months = 6, fallbackToMock = true): UseEnrollmentTrendsResult {
+export function useEnrollmentTrends(months = 6): UseEnrollmentTrendsResult {
   const [trends, setTrends] = useState<EnrollmentTrendDTO[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  const [isUsingMockData, setIsUsingMockData] = useState(false)
   const [currentMonths, setCurrentMonths] = useState(months)
 
   const fetchData = useCallback(async (fetchMonths = currentMonths) => {
     setIsLoading(true)
     setError(null)
-    setIsUsingMockData(false)
 
     try {
       // Transform months to cutoff date (new API uses date string instead of months)
@@ -41,15 +29,10 @@ export function useEnrollmentTrends(months = 6, fallbackToMock = true): UseEnrol
     } catch (err) {
       const errorObj = err instanceof Error ? err : new Error('Failed to fetch enrollment trends')
       setError(errorObj)
-      
-      if (fallbackToMock) {
-        setTrends(MOCK_TRENDS)
-        setIsUsingMockData(true)
-      }
     } finally {
       setIsLoading(false)
     }
-  }, [currentMonths, fallbackToMock])
+  }, [currentMonths])
 
   useEffect(() => {
     fetchData(currentMonths)
@@ -67,7 +50,6 @@ export function useEnrollmentTrends(months = 6, fallbackToMock = true): UseEnrol
     trends,
     isLoading,
     error,
-    refetch,
-    isUsingMockData
+    refetch
   }
 }

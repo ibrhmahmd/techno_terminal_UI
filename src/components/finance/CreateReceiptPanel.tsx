@@ -22,12 +22,6 @@ const ITEM_TYPES = [
   { value: 'other', label: 'Other' }
 ] as const
 
-const MOCK_STUDENTS: Student[] = [
-  { id: 1, full_name: 'Omar Khaled', phone: '0123456789', is_active: true, gender: 'male' },
-  { id: 2, full_name: 'Sara Ahmed', phone: '0198765432', is_active: true, gender: 'female' },
-  { id: 3, full_name: 'Ali Hassan', phone: '0155112233', is_active: true, gender: 'male' }
-]
-
 // Enrollment Selection Sub-component
 interface EnrollmentSelectionProps {
   studentId: number
@@ -143,13 +137,12 @@ interface ReceiptLineItem {
 }
 
 interface CreateReceiptPanelProps {
-  useMockData: boolean
   isLoading: boolean
   onSuccess: (message: string, receiptId?: number) => void
   onError: (message: string) => void
 }
 
-export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError }: CreateReceiptPanelProps) {
+export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateReceiptPanelProps) {
   const { create, previewRisk, isCreating, createError, overpaymentRisk, clearOverpaymentRisk } = useReceipts()
   const [payerName, setPayerName] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer' | 'other'>('cash')
@@ -208,10 +201,8 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError 
       const data = await searchStudents(search)
       handleUpdateLineItem(itemId, { students: data || [] })
     } catch {
-      const filtered = MOCK_STUDENTS.filter(s => 
-        s.full_name.toLowerCase().includes(search.toLowerCase())
-      )
-      handleUpdateLineItem(itemId, { students: filtered })
+      // Empty array on error - user will see empty search results
+      handleUpdateLineItem(itemId, { students: [] })
     }
   }
 
@@ -250,13 +241,8 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError 
     }
 
     try {
-      if (useMockData) {
-        // Mock risk assessment
-        setLocalOverpaymentRisk({ has_risk: false })
-      } else {
-        const risk = await previewRisk(request)
-        setLocalOverpaymentRisk(risk)
-      }
+      const risk = await previewRisk(request)
+      setLocalOverpaymentRisk(risk)
     } catch {
       setLocalOverpaymentRisk(null)
     }
@@ -284,32 +270,26 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError 
 
     onError('')
     try {
-      if (useMockData) {
-        await new Promise(r => setTimeout(r, 500))
-        const mockId = Date.now()
-        onSuccess('Receipt created successfully: R-2026-MOCK', mockId)
-      } else {
-        // Build request aligned with API documentation
-        const request: CreateReceiptRequest = {
-          payer_name: payerName,
-          method: paymentMethod,  // Changed from payment_method to method
-          notes,
-          lines: validItems.map((item, index) => ({
-            id: index + 1,  // REQUIRED: Sequential line identifier
-            student_id: item.selectedStudent!.id,  // REQUIRED: Student ID per line
-            enrollment_id: item.selectedEnrollment!.enrollment_id,  // REQUIRED: Enrollment ID
-            amount: item.amount,
-            transaction_type: item.type === 'tuition' ? 'charge' : 'charge',  // REQUIRED: Transaction classification
-            payment_type: item.type === 'tuition' ? 'course_level' : item.type,  // Map 'tuition' to 'course_level'
-            discount: item.discount || 0,
-            notes: item.description
-          })),
-          allow_credit: true  // Allow credit/overpayment by default
-        }
-        
-        const result = await create(request)
-        onSuccess(`Receipt created successfully: ${result.receipt_number}`, result.receipt_id)
+      // Build request aligned with API documentation
+      const request: CreateReceiptRequest = {
+        payer_name: payerName,
+        method: paymentMethod,
+        notes,
+        lines: validItems.map((item, index) => ({
+          id: index + 1,
+          student_id: item.selectedStudent!.id,
+          enrollment_id: item.selectedEnrollment!.enrollment_id,
+          amount: item.amount,
+          transaction_type: item.type === 'tuition' ? 'charge' : 'charge',
+          payment_type: item.type === 'tuition' ? 'course_level' : item.type,
+          discount: item.discount || 0,
+          notes: item.description
+        })),
+        allow_credit: true
       }
+      
+      const result = await create(request)
+      onSuccess(`Receipt created successfully: ${result.receipt_number}`, result.receipt_id)
       // Reset form
       setPayerName('')
       setNotes('')

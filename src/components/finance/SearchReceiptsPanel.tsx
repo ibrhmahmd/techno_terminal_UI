@@ -11,31 +11,12 @@ const PAYMENT_METHODS = [
   { value: 'other', label: 'Other' }
 ] as const
 
-// Mock data
-const MOCK_RECEIPTS: ReceiptListItem[] = [
-  {
-    id: 1,
-    receipt_number: 'R-2026-0001',
-    payer_name: 'Ahmed Mohamed',
-    payment_method: 'cash',
-    paid_at: '2026-04-01T10:30:00'
-  },
-  {
-    id: 2,
-    receipt_number: 'R-2026-0002',
-    payer_name: 'Sara Khaled',
-    payment_method: 'card',
-    paid_at: '2026-04-02T14:15:00'
-  }
-]
-
 interface SearchReceiptsPanelProps {
-  useMockData: boolean
   isLoading: boolean
   onError: (message: string) => void
 }
 
-export function SearchReceiptsPanel({ useMockData, isLoading, onError }: SearchReceiptsPanelProps) {
+export function SearchReceiptsPanel({ isLoading, onError }: SearchReceiptsPanelProps) {
   const { 
     receipts, 
     selectedReceipt, 
@@ -61,17 +42,12 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError }: SearchR
     onError('')
     setHasSearched(true)
     try {
-      if (useMockData) {
-        await new Promise(r => setTimeout(r, 500))
-        // Mock results will be handled by component reading receipts
-      } else {
-        const params: ReceiptSearchParams = {
-          from_date: searchFromDate,
-          to_date: searchToDate,
-          ...(searchPayerName && { payer_name: searchPayerName })
-        }
-        await search(params)
+      const params: ReceiptSearchParams = {
+        from_date: searchFromDate,
+        to_date: searchToDate,
+        ...(searchPayerName && { payer_name: searchPayerName })
       }
+      await search(params)
     } catch {
       onError('Failed to search receipts')
     }
@@ -80,9 +56,7 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError }: SearchR
   const handleViewDetails = async (receiptId: number) => {
     try {
       setViewingReceiptId(receiptId)
-      if (!useMockData) {
-        await getDetails(receiptId)
-      }
+      await getDetails(receiptId)
     } catch {
       onError('Failed to load receipt details')
     } finally {
@@ -97,25 +71,13 @@ export function SearchReceiptsPanel({ useMockData, isLoading, onError }: SearchR
 
   const handleDownloadPdf = async (receiptId: number) => {
     try {
-      if (useMockData) {
-        onError('PDF download not available in mock mode')
-        return
-      }
-      const blob = await downloadPdf(receiptId)
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `receipt-${receiptId}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      await downloadPdf(receiptId)
     } catch {
       onError('Failed to download PDF')
     }
   }
 
-  const displayReceipts = useMockData && hasSearched ? MOCK_RECEIPTS : receipts
+  const displayReceipts = receipts
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">

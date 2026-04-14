@@ -6,35 +6,16 @@ interface UseRevenueDataResult {
   isLoading: boolean
   error: Error | null
   refetch: (months?: number) => void
-  isUsingMockData: boolean
 }
 
-const MOCK_REVENUE: RevenueMetricsDTO = {
-  monthly_revenue: [
-    { month: 'Jan', amount: 20000 },
-    { month: 'Feb', amount: 22000 },
-    { month: 'Mar', amount: 21000 },
-    { month: 'Apr', amount: 25000 },
-    { month: 'May', amount: 24000 },
-    { month: 'Jun', amount: 28000 },
-  ],
-  total_collected: 140000,
-  total_outstanding: 8000,
-  collection_rate: 94.6,
-  average_monthly: 23333,
-}
-
-export function useRevenueData(months = 6, fallbackToMock = true): UseRevenueDataResult {
+export function useRevenueData(): UseRevenueDataResult {
   const [metrics, setMetrics] = useState<RevenueMetricsDTO | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  const [isUsingMockData, setIsUsingMockData] = useState(false)
-  const [currentMonths, setCurrentMonths] = useState(months)
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
     setError(null)
-    setIsUsingMockData(false)
 
     try {
       // New analytics API doesn't take months parameter
@@ -43,33 +24,23 @@ export function useRevenueData(months = 6, fallbackToMock = true): UseRevenueDat
     } catch (err) {
       const errorObj = err instanceof Error ? err : new Error('Failed to fetch revenue metrics')
       setError(errorObj)
-      
-      if (fallbackToMock) {
-        setMetrics(MOCK_REVENUE)
-        setIsUsingMockData(true)
-      }
     } finally {
       setIsLoading(false)
     }
-  }, [fallbackToMock])
+  }, [])
 
   useEffect(() => {
-    fetchData(currentMonths)
-  }, [fetchData, currentMonths])
+    fetchData()
+  }, [fetchData])
 
-  const refetch = useCallback((newMonths?: number) => {
-    if (newMonths !== undefined && newMonths !== currentMonths) {
-      setCurrentMonths(newMonths)
-    } else {
-      fetchData(currentMonths)
-    }
-  }, [currentMonths, fetchData])
+  const refetch = useCallback(() => {
+    fetchData()
+  }, [fetchData])
 
   return {
     metrics,
     isLoading,
     error,
-    refetch,
-    isUsingMockData
+    refetch
   }
 }

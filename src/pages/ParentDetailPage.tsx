@@ -6,29 +6,12 @@ import { Modal } from '../components/common/Modal'
 import { ParentForm } from '../components/crm/ParentForm'
 import { getParent, updateParent, deleteParent, type Parent } from '../api/crm'
 
-// Mock data
-const MOCK_PARENT: Parent & { students: { id: number; full_name: string; is_active: boolean }[] } = {
-  id: 1,
-  full_name: 'Mohamed Hassan',
-  phone_primary: '+20 111 222 3333',
-  phone_secondary: null,
-  email: 'mohamed@example.com',
-  relation: 'Father',
-  notes: null,
-  address: 'Cairo, Egypt',
-  is_active: true,
-  students: [
-    { id: 1, full_name: 'Ahmed Mohamed', is_active: true },
-    { id: 2, full_name: 'Fatima Mohamed', is_active: true },
-  ],
-}
-
 export function ParentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const parentId = Number(id) || 1
 
-  const [parent, setParent] = useState<typeof MOCK_PARENT | null>(null)
+  const [parent, setParent] = useState<Parent | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
@@ -43,11 +26,11 @@ export function ParentDetailPage() {
       setError(null)
       try {
         const data = await getParent(parentId)
-        setParent({ ...data, students: MOCK_PARENT.students }) // Mock students for now
+        setParent(data)
       } catch (err) {
         console.error('API Error:', err)
-        setError('API not available. Showing mock data.')
-        setParent(MOCK_PARENT)
+        setError('Failed to load parent. Please try again.')
+        setParent(null)
       } finally {
         setIsLoading(false)
       }

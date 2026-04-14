@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { CreateReceiptPanel } from '../components/finance/CreateReceiptPanel'
 import { SearchReceiptsPanel } from '../components/finance/SearchReceiptsPanel'
@@ -11,15 +11,10 @@ export function FinancePage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [createdReceiptId, setCreatedReceiptId] = useState<number | null>(null)
-  const { search, isSearching, downloadPdf } = useReceipts()
-  const [useMockData, setUseMockData] = useState(false)
+  const { isSearching, downloadPdf } = useReceipts()
 
   const handleDownloadPdf = async (receiptId: number) => {
     try {
-      if (useMockData) {
-        handleError('PDF download not available in mock mode')
-        return
-      }
       const blob = await downloadPdf(receiptId)
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -33,19 +28,6 @@ export function FinancePage() {
       handleError('Failed to download PDF')
     }
   }
-
-  // Detect API availability
-  useEffect(() => {
-    async function checkApi() {
-      try {
-        const today = new Date().toISOString().split('T')[0]
-        await search({ from_date: today, to_date: today })
-      } catch {
-        setUseMockData(true)
-      }
-    }
-    checkApi()
-  }, [search])
 
   const handleSuccess = (message: string, receiptId?: number) => {
     setSuccess(message)
@@ -115,7 +97,7 @@ export function FinancePage() {
         {success && (
           <div className="mb-4 p-4 bg-green-50 border border-green-100 rounded-lg text-green-700 text-sm flex items-center justify-between">
             <span>{success}</span>
-            {createdReceiptId && !useMockData && (
+            {createdReceiptId && (
               <button
                 onClick={() => handleDownloadPdf(createdReceiptId!)}
                 className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
@@ -125,16 +107,9 @@ export function FinancePage() {
             )}
           </div>
         )}
-        {useMockData && (
-          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm">
-            API unavailable. Using mock data for testing.
-          </div>
-        )}
-
         {/* Panel Content */}
         {activePanel === 'create' && (
           <CreateReceiptPanel
-            useMockData={useMockData}
             isLoading={isSearching}
             onSuccess={handleSuccess}
             onError={handleError}
@@ -142,7 +117,6 @@ export function FinancePage() {
         )}
         {activePanel === 'search' && (
           <SearchReceiptsPanel
-            useMockData={useMockData}
             isLoading={isSearching}
             onError={handleError}
           />
