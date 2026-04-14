@@ -1,100 +1,63 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useGroupsFlat, useGroupsGrouped } from './useGroupQueries'
 import {
-  getEnrichedGroups,
-  getGroupsGrouped,
-  getGroupsWithCompetitions,
   type EnrichedGroupPublic,
   type GroupByField,
-  type GroupGroup,
-  type EnrichedGroupPublicWithCompetition,
 } from '../api/academics'
 
 export type SortField = 'name' | 'course_name' | 'instructor_name' | 'current_student_count'
 export type SortDirection = 'asc' | 'desc'
 
+const STORAGE_KEY = 'tt:groups:groupBy'
+
 /**
  * Custom hook for groups logic to reduce component complexity.
- * Currently implements local pagination/sorting/filtering.
+ * Implements local pagination/sorting/filtering, localStorage persistence,
+ * and global module-level caching cache invalidation support.
  */
 export function useGroups() {
-  const [groups, setGroups] = useState<EnrichedGroupPublic[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
   const [sortField, setSortField] = useState<SortField>('name')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
-  const [groupBy, setGroupBy] = useState<GroupByField>(null)
-  const [groupedData, setGroupedData] = useState<GroupGroup[]>([])
-  const [isGroupedView, setIsGroupedView] = useState(false)
 
-  const loadGroups = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const result = await getEnrichedGroups()
-      console.log('[DEBUG] Groups loaded from API:', result)
-      console.log('[DEBUG] First group sample:', result?.[0] ? { 
-        id: result[0].id, 
-        group_name: result[0].group_name 
-      } : 'No groups')
-      setGroups(result || [])
-    } catch (err: any) {
-      console.error('[useGroups] loadGroups failed:', err)
-      setError('Failed to load groups. Please check your connection.')
-    } finally {
-      setIsLoading(false)
+  // Read last choice from localStorage on first mount
+  const [groupBy, setGroupBy] = useState<GroupByField | undefined>(() => {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored === null) return undefined // Key doesn't exist, user never made a choice
+    
+    if (stored === 'null') return null // User specifically chose 'All'
+    
+    const valid: Array<GroupByField> = ['day', 'course', 'instructor', 'status', 'competition', null]
+    if (valid.includes(stored as GroupByField)) {
+        return stored as GroupByField
     }
-  }, [])
+    return undefined
+  })
+  
+  // React Query hooks handle fetching, caching, and loading states automatically
+  const isAllView = groupBy === null
+  const isGroupedView = groupBy !== undefined && groupBy !== null
 
-  const loadGroupsGrouped = useCallback(async () => {
-    if (!groupBy) return
-    setIsLoading(true)
-    setError(null)
-    try {
-      if (groupBy === 'competition') {
-        // Special handling: fetch competition data client-side
-        const groupsWithComp = await getGroupsWithCompetitions()
-        const grouped = groupByCompetition(groupsWithComp)
-        setGroupedData(grouped)
-      } else {
-        const result = await getGroupsGrouped(groupBy, { skip: 0, limit: 50 })
-        setGroupedData(result.groups)
-      }
-      setIsGroupedView(true)
-    } catch (err: any) {
-      console.error('[useGroups] loadGroupsGrouped failed:', err)
-      setError('Failed to load grouped groups. Please check your connection.')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [groupBy])
+  // Flat query runs if we chose "All"
+  const flatQuery = useGroupsFlat(groupBy !== undefined && isAllView)
+  
+  // Grouped query runs if we chose a grouping option
+  const groupedQuery = useGroupsGrouped(
+    groupBy as Exclude<GroupByField, null>, 
+    groupBy !== undefined && isGroupedView
+  )
 
-  // Group by competition helper
-  const groupByCompetition = (groups: EnrichedGroupPublicWithCompetition[]): GroupGroup[] => {
-    const inComp = groups.filter((g) => g.is_in_competition)
-    const notInComp = groups.filter((g) => !g.is_in_competition)
-    return [
-      { key: 'in_competition', label: 'In Competition', count: inComp.length, groups: inComp },
-      { key: 'not_in_competition', label: 'Not in Competition', count: notInComp.length, groups: notInComp },
-    ]
+  const groups = flatQuery.data ?? []
+  const groupedData = groupedQuery.data ?? []
+  const isLoading = flatQuery.isLoading || groupedQuery.isLoading
+  const error = flatQuery.error?.message || groupedQuery.error?.message || null
+
+  const refresh = () => {
+    if (isAllView) flatQuery.refetch()
+    else if (isGroupedView) groupedQuery.refetch()
   }
-
-  // Effect to load groups on initial mount
-  useEffect(() => {
-    loadGroups()
-  }, [loadGroups])
-
-  // Effect to load grouped data when groupBy changes
-  useEffect(() => {
-    if (groupBy) {
-      loadGroupsGrouped()
-    } else {
-      setIsGroupedView(false)
-      setGroupedData([])
-    }
-  }, [groupBy, loadGroupsGrouped])
 
   const processedGroups = useMemo(() => {
     const filtered = groups.filter((group) =>
@@ -142,7 +105,7 @@ export function useGroups() {
 
   return {
     groups,
-    setGroups,
+    setGroups: () => {}, // Deprecated, kept for API compatibility if needed
     totalGroups: groups.length,
     isLoading,
     error,
@@ -162,6 +125,6 @@ export function useGroups() {
     setGroupBy,
     groupedData,
     isGroupedView,
-    refresh: loadGroups,
+    refresh,
   }
 }

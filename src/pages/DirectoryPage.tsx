@@ -6,15 +6,21 @@ import { StudentForm } from '../components/crm/StudentForm'
 import { ParentForm } from '../components/crm/ParentForm'
 import { useSearch } from '../hooks/useSearch'
 import { 
-  getStudentsPaginated, 
-  searchStudents, 
-  getParentsPaginated, 
   searchParents, 
-  createStudent,
-  updateStudent,
-  deleteStudent,
-  createParent,
   linkParentToStudent,
+  type Student, 
+  type Parent 
+} from '../api/crm'
+import {
+  useStudentsList,
+  useStudentsSearch,
+  useParentsList,
+  useParentsSearch,
+  useCreateStudent,
+  useUpdateStudent,
+  useDeleteStudent,
+  useCreateParent
+} from '../hooks/useDirectory'
   type Student, 
   type Parent 
 } from '../api/crm'
@@ -26,16 +32,9 @@ import { DirectoryTabs } from '../components/directory/DirectoryTabs'
 export function DirectoryPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<'students' | 'parents' | 'waiting'>('students')
-  const [students, setStudents] = useState<Student[]>([])
-  const [parents, setParents] = useState<Parent[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(15)
-  const [totalStudents, setTotalStudents] = useState(0)
-  const [totalParents, setTotalParents] = useState(0)
   
   // Modal states
   const [isCreateStudentModalOpen, setIsCreateStudentModalOpen] = useState(false)
@@ -49,101 +48,43 @@ export function DirectoryPage() {
     minLength: 2
   })
 
-  // Load data on mount
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const [studentsResult, parentsResult] = await Promise.all([
-          getStudentsPaginated({ skip: 0, limit: pageSize }),
-          getParentsPaginated({ skip: 0, limit: pageSize }),
-        ])
-        setStudents(studentsResult.items || [])
-        setTotalStudents(studentsResult.total || 0)
-        setParents(parentsResult.items || [])
-        setTotalParents(parentsResult.total || 0)
-      } catch (err) {
-        console.error('API Error:', err)
-        setError('Failed to load data. Please try again.')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    loadData()
-  }, [pageSize])
+  // React Query driving data fetching
+  const isSearching = debouncedSearch.length >= 2
 
-  // Handle search and pagination changes
-  useEffect(() => {
-    async function reloadOrSearch() {
-      setIsLoading(true)
-      try {
-        if (debouncedSearch.length < 2) {
-          // Reload initial paginated data
-          if (activeTab === 'students') {
-            const result = await getStudentsPaginated({ skip: (currentPage - 1) * pageSize, limit: pageSize })
-            setStudents(result.items || [])
-            setTotalStudents(result.total || 0)
-          } else {
-            const result = await getParentsPaginated({ skip: (currentPage - 1) * pageSize, limit: pageSize })
-            setParents(result.items || [])
-            setTotalParents(result.total || 0)
-          }
-        } else {
-          // API search
-          if (activeTab === 'students') {
-            const data = await searchStudents(debouncedSearch)
-            setStudents(data || [])
-          } else {
-            const data = await searchParents(debouncedSearch)
-            setParents(data || [])
-          }
-        }
-      } catch (err) {
-        console.error('Search/Reload error:', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    
-    reloadOrSearch()
-  }, [debouncedSearch, activeTab, currentPage, pageSize])
+  const studentsListQuery = useStudentsList(currentPage, pageSize, (activeTab === 'students' || activeTab === 'waiting') && !isSearching)
+  const studentsSearchQuery = useStudentsSearch(debouncedSearch)
+  
+  const parentsListQuery = useParentsList(currentPage, pageSize, activeTab === 'parents' && !isSearching)
+  const parentsSearchQuery = useParentsSearch(debouncedSearch)
+
+  const isLoading = studentsListQuery.isLoading || studentsSearchQuery.isLoading || parentsListQuery.isLoading || parentsSearchQuery.isLoading
+
+  const students = isSearching ? (studentsSearchQuery.data ?? []) : (studentsListQuery.data?.items ?? [])
+  const totalStudents = isSearching ? students.length : (studentsListQuery.data?.total ?? 0)
+
+  const parents = isSearching ? (parentsSearchQuery.data ?? []) : (parentsListQuery.data?.items ?? [])
+  const totalParents = isSearching ? parents.length : (parentsListQuery.data?.total ?? 0)
 
   // Reset search and reload data when tab changes
   const handleTabChange = useCallback((tab: 'students' | 'parents' | 'waiting') => {
     setActiveTab(tab)
     clearSearch()
     setCurrentPage(1)
-    setIsLoading(true)
-    async function reloadData() {
-      try {
-        if (tab === 'students') {
-          const result = await getStudentsPaginated({ skip: 0, limit: pageSize })
-          setStudents(result.items || [])
-          setTotalStudents(result.total || 0)
-        } else {
-          const result = await getParentsPaginated({ skip: 0, limit: pageSize })
-          setParents(result.items || [])
-          setTotalParents(result.total || 0)
-        }
-      } catch (err) {
-        console.error('Tab switch reload error:', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    reloadData()
-  }, [clearSearch, pageSize])
+  }, [clearSearch])
 
   // BUG-23: Use API results directly - no double filtering
   const displayStudents = students.filter(s => s.status !== 'waiting')
   const displayParents = parents
   const waitingStudents = useMemo(() => students.filter(s => s.status === 'waiting'), [students])
 
+  const createStudentMutation = useCreateStudent()
+  const updateStudentMutation = useUpdateStudent()
+  const deleteStudentMutation = useDeleteStudent()
+  const createParentMutation = useCreateParent()
+
   const handleCreateStudent = async (data: Omit<Student, 'id'>, selectedParent: Parent | null) => {
     try {
-      const newStudent = await createStudent(data)
-      setStudents(prev => [newStudent, ...prev])
+      const newStudent = await createStudentMutation.mutateAsync(data)
       
       // If a parent was selected, link them to the student
       if (selectedParent) {
@@ -166,8 +107,7 @@ export function DirectoryPage() {
   const handleEditStudent = async (data: Omit<Student, 'id'>) => {
     if (!editingStudent) return
     try {
-      const updatedStudent = await updateStudent(editingStudent.id, data)
-      setStudents(prev => prev.map(s => s.id === updatedStudent.id ? updatedStudent : s))
+      await updateStudentMutation.mutateAsync({ id: editingStudent.id, data })
       setIsEditStudentModalOpen(false)
       setEditingStudent(null)
       setError(null)
@@ -179,8 +119,7 @@ export function DirectoryPage() {
   const handleDeleteStudent = async (student: Student) => {
     if (!confirm(`Are you sure you want to delete "${student.full_name}"?`)) return
     try {
-      await deleteStudent(student.id)
-      setStudents(prev => prev.filter(s => s.id !== student.id))
+      await deleteStudentMutation.mutateAsync(student.id)
       setError(null)
     } catch {
       setError('Failed to delete student')
@@ -189,8 +128,7 @@ export function DirectoryPage() {
 
   const handleCreateParent = async (data: Omit<Parent, 'id'>) => {
     try {
-      const newParent = await createParent(data)
-      setParents(prev => [newParent, ...prev])
+      await createParentMutation.mutateAsync(data)
       setIsCreateParentModalOpen(false)
       setError(null)
     } catch {

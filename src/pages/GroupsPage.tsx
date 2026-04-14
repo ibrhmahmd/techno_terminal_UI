@@ -5,18 +5,14 @@ import { DataTable, PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialo
 import { useToast } from '../components/common/Toast'
 import { GroupForm } from '../components/groups/GroupForm'
 import { 
-  createGroup, 
-  updateGroup,
-  deleteGroup,
   type EnrichedGroupPublic, 
   type ScheduleGroupInput 
 } from '../api/academics'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { GroupsHeader } from '../components/groups/GroupsHeader'
 import { GroupBySelector } from '../components/groups/GroupBySelector'
-import { invalidatePattern, CacheKeys } from '../cache'
-
 import { useGroups } from '../hooks/useGroups'
+import { useCreateGroup, useUpdateGroup, useDeleteGroup } from '../hooks/useGroupQueries'
 
 import { groupColumns } from '../components/groups/GroupColumns'
 
@@ -58,6 +54,10 @@ export function GroupsPage() {
     navigate(`/groups/${id}`)
   }
 
+  const createGroupMutation = useCreateGroup()
+  const updateGroupMutation = useUpdateGroup()
+  const deleteGroupMutation = useDeleteGroup()
+
   const handleEdit = (group: EnrichedGroupPublic) => {
     setSelectedGroup(group)
     setIsEditModalOpen(true)
@@ -73,8 +73,7 @@ export function GroupsPage() {
     
     setMutationError(null)
     try {
-      await deleteGroup(deletingGroupId)
-      invalidatePattern(CacheKeys.groups.prefix)
+      await deleteGroupMutation.mutateAsync(deletingGroupId)
       await refresh()
       showToast('Group deleted successfully', 'success')
     } catch (err: any) {
@@ -95,9 +94,8 @@ export function GroupsPage() {
   const handleCreateGroup = async (data: ScheduleGroupInput) => {
     setMutationError(null)
     try {
-      await createGroup(data)
+      await createGroupMutation.mutateAsync(data)
       setIsCreateModalOpen(false)
-      invalidatePattern(CacheKeys.groups.prefix)
       await refresh()
     } catch (err: any) {
       console.error('[GroupsPage] createGroup failed:', err)
@@ -119,10 +117,9 @@ export function GroupsPage() {
     if (!selectedGroup) return
     setMutationError(null)
     try {
-      await updateGroup(selectedGroup.id, data)
+      await updateGroupMutation.mutateAsync({ id: selectedGroup.id, data })
       setIsEditModalOpen(false)
       setSelectedGroup(null)
-      invalidatePattern(CacheKeys.groups.prefix)
       await refresh()
     } catch (err: any) {
       setMutationError(err.message || 'Failed to update group')
