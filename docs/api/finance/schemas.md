@@ -80,7 +80,7 @@ Detailed balance for a single enrollment.
 
 ---
 
-### UnpaidEnrollmentResponse
+### UnpaidEnrollmentItem
 
 **File:** `app/api/schemas/finance/balance.py`
 
@@ -119,7 +119,7 @@ Request to adjust student balance.
 
 ---
 
-### BalanceAdjustmentResponseDTO
+### BalanceAdjustmentResponse
 
 **File:** `app/api/schemas/finance/balance.py`
 
@@ -140,6 +140,97 @@ Response after balance adjustment.
 
 ## Receipt Schemas
 
+### ReceiptFinalizedDTO
+
+**File:** `app/api/schemas/finance/receipt.py`
+
+Response after creating a receipt with charge lines. Replaces raw dict return (Issue C1 fix).
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `receipt_id` | integer | Yes | Receipt ID |
+| `receipt_number` | string | Yes | Generated receipt number |
+| `payment_method` | string | Yes | Payment method used |
+| `paid_at` | datetime | Yes | Payment timestamp |
+| `lines` | integer | Yes | Count of charge lines |
+| `total` | float | Yes | Total amount |
+| `payment_ids` | List[int] | Yes | IDs of created payment records |
+
+**Example:**
+```json
+{
+  "receipt_id": 123,
+  "receipt_number": "RCP-2026-00123",
+  "payment_method": "cash",
+  "paid_at": "2026-04-13T08:30:00Z",
+  "lines": 1,
+  "total": 250.00,
+  "payment_ids": [45]
+}
+```
+
+---
+
+### ReceiptGenerationResponse
+
+**File:** `app/api/schemas/finance/receipt.py`
+
+Structured response for receipt generation. Default format for `GET /receipts/{id}/generate` (Issue M2 fix).
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `receipt_id` | integer | Yes | Receipt ID |
+| `content` | string | Yes | Formatted receipt text |
+| `template_name` | string | Yes | Template used ("standard", "detailed") |
+| `include_balance` | boolean | Yes | Balance info included |
+| `generated_at` | datetime | Yes | Generation timestamp |
+| `content_type` | string | Yes | Always "text/plain" |
+
+**Example:**
+```json
+{
+  "receipt_id": 123,
+  "content": "RECEIPT #RCP-2026-00123\n...",
+  "template_name": "standard",
+  "include_balance": true,
+  "generated_at": "2026-04-13T08:35:00Z",
+  "content_type": "text/plain"
+}
+```
+
+**Usage:**
+- Default: Returns JSON with `ReceiptGenerationResponse`
+- Legacy: Use `?as_text=true` for plain text response
+
+---
+
+### BatchReceiptItem
+
+**File:** `app/api/schemas/finance/receipt.py`
+
+Individual result item for batch receipt generation. Part of structured batch response (Issue H2 fix).
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `receipt_id` | integer | Yes | Receipt ID |
+| `success` | boolean | Yes | Generation successful |
+| `content` | string \| null | Yes | Receipt content (null if error) |
+| `error_message` | string \| null | Yes | Error description (null if success) |
+| `error_code` | string \| null | Yes | Error code: `not_found`, `invalid`, `server_error` |
+
+**Example:**
+```json
+{
+  "receipt_id": 124,
+  "success": false,
+  "content": null,
+  "error_message": "Receipt 124 not found",
+  "error_code": "not_found"
+}
+```
+
+---
+
 ### CreateReceiptRequest
 
 **File:** `app/api/schemas/finance/receipt.py`
@@ -152,11 +243,11 @@ Request to create a receipt.
 | `method` | string | No | "cash" | Payment method |
 | `notes` | string | No | null | Notes |
 | `allow_credit` | boolean | No | false | Allow credit |
-| `lines` | ReceiptLinePublic[] | Yes | - | Line items |
+| `lines` | ReceiptLineResponse[] | Yes | - | Line items |
 
 ---
 
-### ReceiptLinePublic
+### ReceiptLineResponse
 
 **File:** `app/api/schemas/finance/receipt.py`
 
@@ -172,7 +263,7 @@ Receipt line item.
 
 ---
 
-### ReceiptCreatedPublic
+### ReceiptCreationResponse
 
 **File:** `app/api/schemas/finance/receipt.py`
 
@@ -190,7 +281,7 @@ Created receipt response.
 
 ---
 
-### ReceiptDetailPublic
+### ReceiptDetailResponse
 
 **File:** `app/api/schemas/finance/receipt.py`
 
@@ -198,13 +289,13 @@ Detailed receipt information.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `header` | ReceiptHeaderPublic | Yes | Header info |
-| `lines` | ReceiptLinePublic[] | Yes | Line items |
+| `header` | ReceiptHeaderResponse | Yes | Header info |
+| `lines` | ReceiptLineResponse[] | Yes | Line items |
 | `total` | float | Yes | Total amount |
 
 ---
 
-### ReceiptHeaderPublic
+### ReceiptHeaderResponse
 
 **File:** `app/api/schemas/finance/receipt.py`
 
@@ -277,7 +368,7 @@ Batch generation response item.
 
 ## Credit Schemas
 
-### CreditApplicationItemDTO
+### CreditApplicationItem
 
 **File:** `app/api/schemas/finance/credit.py`
 
@@ -291,7 +382,7 @@ Individual credit application record.
 
 ---
 
-### ApplyCreditRequestDTO
+### ApplyCreditRequest
 
 **File:** `app/api/schemas/finance/credit.py`
 
@@ -305,7 +396,7 @@ Request to apply credit.
 
 ---
 
-### ApplyCreditResponseDTO
+### ApplyCreditResponse
 
 **File:** `app/api/schemas/finance/credit.py`
 
@@ -321,7 +412,7 @@ Response after applying credit.
 
 ---
 
-### CreditBalanceResponseDTO
+### CreditBalanceResponse
 
 **File:** `app/api/schemas/finance/credit.py`
 
@@ -334,7 +425,7 @@ Credit balance response.
 
 ---
 
-### StudentCreditInfoDTO
+### StudentCreditInfo
 
 **File:** `app/api/schemas/finance/credit.py`
 
@@ -353,7 +444,7 @@ Detailed credit information.
 
 ## Allocation Schemas
 
-### AllocationReversalResponseDTO
+### AllocationReversalResponse
 
 **File:** `app/api/schemas/finance/allocations.py`
 
@@ -370,7 +461,7 @@ Allocation reversal response.
 
 ---
 
-### PaymentAllocationItemDTO
+### PaymentAllocationItem
 
 **File:** `app/api/schemas/finance/allocations.py`
 
@@ -387,7 +478,7 @@ Payment allocation item.
 
 ---
 
-### PaymentAllocationsResponseDTO
+### PaymentAllocationsResponse
 
 **File:** `app/api/schemas/finance/allocations.py`
 
@@ -396,13 +487,13 @@ All allocations for a payment.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `payment_id` | integer | Yes | Payment ID |
-| `allocations` | PaymentAllocationItemDTO[] | Yes | Allocations |
+| `allocations` | PaymentAllocationItem[] | Yes | Allocations |
 
 ---
 
 ## Risk Assessment Schemas
 
-### PreviewRiskRequest
+### PreviewOverpaymentRequest
 
 **File:** `app/api/schemas/finance/risk.py`
 
@@ -414,7 +505,7 @@ Overpayment risk preview request.
 
 ---
 
-### OverpaymentRiskItem
+### OverpaymentRiskResponse
 
 **File:** `app/api/schemas/finance/risk.py`
 
@@ -433,7 +524,7 @@ Risk item for overpayment preview.
 
 ## Common Schemas
 
-### FinancialSummaryPublic
+### StudentBalanceResponse
 
 **File:** `app/api/schemas/finance/balance.py`
 
@@ -461,11 +552,11 @@ Refund request.
 | `reason` | string | Yes | - | Reason |
 | `method` | string | Yes | "cash" | Method |
 
-### RefundResultPublic
+### RefundResponse
 
 **File:** `app/api/schemas/finance/receipt.py`
 
-Refund result.
+Refund result. Replaces raw dict return from `issue_refund()` (Issue C1 fix).
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -477,7 +568,20 @@ Refund result.
 | `new_balance` | float | Yes | New balance |
 | `processed_at` | datetime | Yes | Timestamp |
 
-### StudentBalanceSummaryDTO
+**Example:**
+```json
+{
+  "refund_id": 67,
+  "payment_id": 45,
+  "amount": 50.00,
+  "method": "transfer",
+  "reason": "Student withdrawal",
+  "new_balance": 100.00,
+  "processed_at": "2026-04-09T14:30:00Z"
+}
+```
+
+### BalanceSummaryResponse
 
 **File:** `app/api/schemas/finance/balance.py`
 

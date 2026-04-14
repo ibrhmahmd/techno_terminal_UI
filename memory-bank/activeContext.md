@@ -1,10 +1,97 @@
 # Active Context - TechnoTerminal CRM
 
 ## Current Focus
-**Status**: 🔄 Phase 2 Backend Integration - API Contract Alignment & Debugging
-**Last Updated**: April 8, 2026  
+**Status**: 🔄 Phase 2 Backend Integration - Student Module Complete, Vercel Deployment
+**Last Updated**: April 12, 2026  
 
 ## Recent Changes
+
+### Completed (April 12, 2026) - Student API Modularization & Integration
+
+#### 1. 🎓 Student API Refactoring (Major Architecture Change)
+**Scope**: Refactored monolithic `api/crm/students.ts` into modular domain structure
+
+**New Modular Structure** (`src/api/crm/students/`):
+- `core.ts` - Student CRUD (getStudentById, createStudent, updateStudent, deleteStudent)
+- `finance.ts` - Balance queries (getStudentBalance, getEnrollmentBalance, getUnpaidEnrollments)
+- `status.ts` - Status management (updateStudentStatus, setWaitingPriority, getStatusSummary)
+- `history.ts` - History records (getStatusHistory, getAttendanceHistory)
+- `siblings.ts` - Sibling relationships (getStudentSiblings, linkSibling, unlinkSibling)
+- `search.ts` - Search operations (searchStudents, searchStudentsAdvanced)
+- `utils.ts` - Helper functions (getStatusColorClass, getStatusLabel, calculateAge)
+- `types/` - Organized type definitions
+  - `models.ts` - Student, Parent, StudentWithDetails
+  - `finance.ts` - StudentBalance, EnrollmentBalance
+  - `history.ts` - StatusHistoryRecord, AttendanceHistoryRecord
+  - `inputs.ts` - CreateStudentDTO, UpdateStudentDTO
+  - `index.ts` - Type exports
+
+**Pattern Applied**: Modular API architecture following groups API pattern
+
+#### 2. 🪝 Student Hooks Creation
+**Created** (`src/hooks/students/`):
+- `useStudentDetail.ts` - Fetches student + balance + siblings + credit info
+  - Granular loading states: `loadingStudent`, `loadingBalance`, `loadingSiblings`
+  - Individual refresh functions per data type
+  - Error isolation per query
+- `useStudentHistory.ts` - Status and attendance history
+  - Pagination support with `loadMore` functions
+- `index.ts` - Barrel exports
+
+#### 3. 🧩 Student Components Integration
+**Updated Components**:
+- `components/student/OverviewTab.tsx`
+  - New props: separate `student`, `balance`, `siblings`, `parents` (not nested)
+  - Uses `getStatusColorClass` and `getStatusLabel` from API utils
+  - Added null safety with optional chaining
+- `components/student/PaymentsTab.tsx`
+  - Updated to use new `StudentBalance` type with enrollment breakdown
+  - Added null checks for `balance.enrollments`
+- `components/student/EnrollmentsTab.tsx` - Integration with new API
+- `pages/StudentDetailPage.tsx`
+  - Integrated `useStudentDetail` hook
+  - Fixed type errors (enrollment find parameter, handleUpdateStudent signature)
+  - Updated to use hosted backend
+
+#### 4. 🔧 Type System Fixes
+**Type Export Pattern Fix**:
+- **Issue**: `export type { X }` syntax causing import resolution errors
+- **Fix**: Changed to `export { type X }` in:
+  - `api/crm/students/index.ts`
+  - `api/crm/students/types/index.ts`
+- **Result**: Clean imports without type resolution issues
+
+**Model Extensions**:
+- Added to `Student` interface: `phone`, `email`, `gender`
+- Added to `Parent` interface: `phone_primary`, `phone_secondary`, `relation`
+
+#### 5. 🐛 Bug Fixes & Runtime Error Prevention
+**Reports Module**:
+- `components/reports/organisms/OverviewTab.tsx` - Fixed `revenue?.monthly_revenue?.slice(-4) || []`
+- `components/reports/organisms/RevenueTab.tsx` - Fixed null coalescing for all metrics: `(revenue.total_collected || 0).toLocaleString()`
+
+**Competition Utilities** (`utils/competition.ts`):
+- Added null check for `registration_deadline` before `new Date()`
+- Removed reference to non-existent `max_teams` property
+- Added null coalescing: `(competition.total_participants || 0) * (competition.fee_per_participant || 0)`
+
+**Type Errors Fixed**:
+- `StudentDetailPage.tsx:152` - Added explicit type to enrollment find parameter
+- `StudentDetailPage.tsx:270` - Fixed handleUpdateStudent signature to match StudentForm props
+
+#### 6. 🚀 Deployment Configuration
+**Vite Configuration**:
+- Updated proxy target to hosted backend: `https://techno-terminal-ibrhmahmd2165-00zb1kxm.leapcell.dev`
+- `secure: true` for HTTPS
+
+**Vercel Configuration**:
+- Created `vercel.json` with build settings
+- Root directory corrected (removed erroneous "app" setting)
+
+**Build Status**:
+- ✅ TypeScript compilation successful
+- ✅ Local build passes
+- ✅ Vercel deployment configured
 
 ### Completed (April 8, 2026) - Backend Integration & Debugging
 
@@ -250,18 +337,33 @@ TechnoTerminal (Brand)
 [Back to Hub]
 ```
 
-## Files Modified
-- `build/dashboard.html`
-- `build/groups.html`
-- `build/directory.html`
-- `build/enrollments.html`
-- `build/finance.html`
-- `build/reports.html`
-- `build/staff.html`
-- `build/attendance.html`
-- `build/competitions.html`
-- `build/students.html`
-- `build/shared/sidebar-component.html` (created)
+## Files Modified (Recent - April 12, 2026)
+
+### Student API Modularization
+- `src/api/crm/students/core.ts` (created)
+- `src/api/crm/students/finance.ts` (created)
+- `src/api/crm/students/status.ts` (created)
+- `src/api/crm/students/history.ts` (created)
+- `src/api/crm/students/siblings.ts` (created)
+- `src/api/crm/students/search.ts` (created)
+- `src/api/crm/students/utils.ts` (created)
+- `src/api/crm/students/types/` (created)
+- `src/api/crm/students/index.ts` (created)
+- `src/hooks/students/useStudentDetail.ts` (created)
+- `src/hooks/students/useStudentHistory.ts` (created)
+- `src/hooks/students/index.ts` (created)
+
+### Component Updates
+- `src/pages/StudentDetailPage.tsx` (updated)
+- `src/components/student/OverviewTab.tsx` (updated)
+- `src/components/student/PaymentsTab.tsx` (updated)
+- `src/components/reports/organisms/OverviewTab.tsx` (fixed)
+- `src/components/reports/organisms/RevenueTab.tsx` (fixed)
+- `src/utils/competition.ts` (fixed)
+
+### Configuration
+- `vite.config.ts` (updated proxy)
+- `vercel.json` (created)
 
 ## Design System Applied
 - **Background**: `bg-white`
@@ -285,10 +387,10 @@ TechnoTerminal (Brand)
 - **State Management**: Zustand for auth, React hooks for server state
 - **Styling**: Tailwind CSS utility classes
 - **Material Icons**: Consistent iconography throughout
-- **File Structure**: React app in `app/src/`, feature-based organization
+- **File Structure**: React app in `src/`, feature-based organization
 
 ### Navigation Pattern
-- **Entry Point**: `index.html` (hub) with module cards
+- **Entry Point**: `App.tsx` with React Router, Sidebar navigation on all pages
 - **Sidebar Navigation**: Consistent 256px left sidebar on all pages
 - **Active States**: Teal highlight with right border indicator
 - **Cross-Module Access**: 6 primary links on every page
@@ -296,11 +398,12 @@ TechnoTerminal (Brand)
 ## Next Steps
 
 ### Phase 2: Backend Integration (In Progress)
-- ✅ JWT authentication working with real backend
+- ✅ JWT authentication working with hosted backend
 - ✅ API connectivity for Groups module
 - ✅ API connectivity for Competitions module
+- ✅ API connectivity for Students module (modular architecture)
+- ✅ API connectivity for Reports module
 - 🔄 API connectivity for remaining modules (Directory, Enrollments, Finance)
-- 🔄 Handle additional API contract mismatches as discovered
 - ⏳ Create database schema documentation
 
 ### Phase 3: Enhanced Features (Planned)
@@ -322,18 +425,28 @@ TechnoTerminal (Brand)
 3. **Error Handling**: Standardize error response format across all endpoints?
 4. **Data Types**: Confirm all ID fields will be integers vs UUIDs?
 
+## Resolved Questions (April 12, 2026)
+- ✅ **Modular API Pattern**: Adopted modular structure for complex domains (students, groups)
+- ✅ **Type Export Syntax**: Confirmed `export { type X }` pattern works correctly
+- ✅ **Hosted Backend**: Successfully connected to Leapcell hosted backend
+- ✅ **Vercel Deployment**: Build configuration resolved
+
 ## Current Blockers
 **None** - Backend integration proceeding smoothly with iterative fixes.
 
 ## Immediate Action Items
 
 ### For Deployment
-- [ ] Copy `/build/` folder to web server
+- [x] Configure Vercel build settings
+- [x] Update Vite proxy to hosted backend
+- [x] Verify TypeScript compilation
+- [x] Test local build passes
+- [ ] Force fresh Vercel deployment with latest commit
 - [ ] Verify all navigation links work in production
-- [ ] Test on target browsers
 
-### For Phase 2 Planning
-- [ ] Define API requirements
-- [ ] Choose backend framework
-- [ ] Design database schema
-- [ ] Plan authentication flow
+### For Phase 2 Completion
+- [ ] Integrate Directory module with real API
+- [ ] Integrate Enrollments module with real API
+- [ ] Integrate Finance module with real API
+- [ ] Document remaining API contract requirements
+- [ ] Add error boundary components for graceful failures

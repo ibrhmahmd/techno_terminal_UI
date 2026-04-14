@@ -27,9 +27,10 @@
 - **Inter** (Google Fonts) - Body/Labels
 
 ### Backend Integration
-- REST API at `http://localhost:8000`
+- **Hosted Backend**: `https://techno-terminal-ibrhmahmd2165-00zb1kxm.leapcell.dev/`
+- **Local Backend** (optional): `http://localhost:8000`
 - JWT Bearer token authentication
-- API proxy via Vite dev server (`/api` → `http://localhost:8000`)
+- API proxy via Vite dev server (`/api` → configured backend URL)
 
 ## Development Setup
 
@@ -40,47 +41,61 @@
 
 ### File Structure
 ```
-app/src/
-├── api/                    # API clients per domain
-│   ├── client.ts          # Axios instance with JWT interceptor
-│   ├── auth.ts            # Authentication endpoints
-│   ├── academics/         # Groups, sessions, schedule
-│   │   ├── index.ts
-│   │   ├── groups.ts
-│   │   ├── lifecycle.ts   # Group levels API
-│   │   └── types.ts
-│   ├── competitions/      # Competitions API
-│   │   ├── index.ts
-│   │   ├── competitions.ts
-│   │   └── types.ts
-│   ├── crm.ts             # Students, parents
-│   ├── enrollments.ts     # Enrollment management
-│   ├── finance.ts         # Receipts, payments
-│   ├── attendance.ts      # Attendance marking
-│   └── analytics.ts       # Reports & dashboards
-├── components/            # React components
-│   ├── common/           # Shared: LoadingSpinner, Modal, SearchBar
-│   ├── layout/           # AppLayout, Sidebar, TopNavbar
-│   ├── dashboard/        # DaySelectorBar, GroupSessionCard
-│   ├── groups/           # GroupHeader, TabNavigation, AttendanceGrid
-│   ├── crm/              # StudentList, ParentList
-│   ├── competitions/     # CompetitionCard, CompetitionForm, CategoryList
-│   ├── enrollments/      # EnrollPanel, TransferPanel, DropPanel
-│   ├── finance/          # CreateReceiptPanel, SearchReceiptsPanel
-│   └── attendance/       # AttendanceGrid, EditSessionPopup
-├── hooks/                # Custom React hooks
-│   ├── competitions/   # Competition data fetching hooks
-│   │   ├── useCompetitions.ts
-│   │   ├── useCompetition.ts
-│   │   ├── useCompetitionCategories.ts
-│   │   ├── useCompetitionTeams.ts
-│   │   └── index.ts
-│   ├── useGroups.ts
-│   ├── useGroupDetail.ts
-│   └── ...
-├── pages/                # Route pages
+src/
+├── api/                          # Domain-based API modules
+│   ├── client.ts                # Axios instance with JWT interceptor
+│   ├── auth.ts                  # Authentication endpoints
+│   ├── academics/               # Courses, groups, sessions, schedule (29 files)
+│   ├── analytics/               # BI data, metrics (10 files)
+│   ├── attendance/              # Attendance tracking (3 files)
+│   ├── auth/                    # Authentication (2 files)
+│   ├── competitions/            # Competition management (3 files)
+│   ├── crm/                     # CRM - modular students, parents
+│   │   ├── students/            # Modular student API
+│   │   │   ├── index.ts         # Public exports
+│   │   │   ├── core.ts          # CRUD operations
+│   │   │   ├── finance.ts       # Balance queries
+│   │   │   ├── status.ts        # Status management
+│   │   │   ├── history.ts       # History records
+│   │   │   ├── siblings.ts      # Sibling relationships
+│   │   │   ├── search.ts        # Search operations
+│   │   │   ├── utils.ts         # Helper functions
+│   │   │   └── types/           # Type definitions
+│   │   └── parents.ts           # Parent API
+│   ├── enrollments/             # Enrollment operations (3 files)
+│   ├── finance/                 # Receipts, refunds, balance (10 files)
+│   ├── hr/                      # Staff management (5 files)
+│   └── reports/                 # Report generation (3 files)
+├── components/                  # React components (117+ items)
+│   ├── attendance/              # 9 items - grids, editing
+│   ├── common/                  # 22 items - LoadingSpinner, Modal, SearchBar, DataTable
+│   ├── competitions/            # 4 items - cards, forms, categories
+│   ├── courses/                 # 3 items
+│   ├── crm/                     # 6 items - StudentList, ParentList, StudentForm
+│   ├── dashboard/               # 7 items - DaySelectorBar, GroupSessionCard
+│   ├── enrollments/             # 3 items - EnrollPanel, TransferPanel, DropPanel
+│   ├── finance/                 # 2 items - CreateReceiptPanel, SearchReceiptsPanel
+│   ├── groups/                  # 31 items - GroupHeader, TabNavigation, AttendanceGrid
+│   ├── layout/                  # 2 items - AppLayout, Sidebar
+│   ├── reports/                 # 19 items - charts, tables, hooks
+│   └── student/                 # 7 items - OverviewTab, PaymentsTab, EnrollmentsTab, StudentTabs
+├── hooks/                       # Custom React hooks (22 items)
+│   ├── competitions/            # 5 items - useCompetitions, useCompetition, etc.
+│   ├── finance/                   # 5 items - Finance operation hooks
+│   ├── students/                  # 3 items - useStudentDetail, useStudentHistory, index
+│   ├── useCourses.ts             # Course management
+│   ├── useGroups.ts              # Group listing with pagination
+│   ├── useGroupDetail.ts         # Group detail fetching
+│   ├── useGroupHistory.ts        # Group history
+│   ├── useGroupMutations.ts      # Group CRUD operations
+│   ├── useGroupStudents.ts       # Group student management
+│   ├── usePagination.ts          # Pagination utilities
+│   └── useSearch.ts              # Search functionality
+├── pages/                       # Route pages (15 components)
 │   ├── LoginPage.tsx
 │   ├── DashboardPage.tsx
+│   ├── CoursesPage.tsx           # NEW
+│   ├── CourseDetailPage.tsx      # NEW
 │   ├── GroupsPage.tsx
 │   ├── GroupDetailPage.tsx
 │   ├── DirectoryPage.tsx
@@ -90,34 +105,36 @@ app/src/
 │   ├── FinancePage.tsx
 │   ├── ReportsPage.tsx
 │   ├── CompetitionsPage.tsx
-│   └── CompetitionDetailPage.tsx
-├── utils/               # Utility functions
-│   ├── formatting.ts   # Date/formatting utilities
-│   ├── colors.ts       # Color constants
-│   └── competition.ts  # Competition-specific utilities
-├── store/              # Zustand stores
-│   └── authStore.ts   # JWT + user state
-├── App.tsx            # Router + routes
-├── main.tsx           # React entry
-└── index.css          # Tailwind imports
+│   ├── CompetitionDetailPage.tsx
+│   └── StaffPage.tsx
+├── utils/                       # Utility functions
+│   ├── colors.ts                 # Color constants
+│   ├── competition.ts            # Competition-specific utilities
+│   └── formatting.ts             # Date/formatting utilities
+├── store/                       # Zustand stores
+│   └── authStore.ts             # JWT + user state
+├── types/                       # Shared TypeScript types
+│   ├── api.ts                   # ApiResponse, PaginatedApiResponse
+│   └── pagination.ts            # Pagination types
+├── App.tsx                      # Router + routes
+├── main.tsx                     # React entry
+└── index.css                    # Tailwind imports
 ```
 
 ### Development Server (Vite)
 ```bash
-cd app/frontend
 npm install
 npm run dev
 ```
 
-Vite dev server runs on `http://localhost:5173` with API proxy to `http://localhost:8000`.
+Vite dev server runs on `http://localhost:5173` with API proxy to configured backend.
 
 ### Build for Production
 ```bash
-cd app/frontend
 npm run build
 ```
 
-Output goes to `app/frontend/dist/` for deployment.
+Output goes to `dist/` for deployment.
 
 ## Dependencies
 
@@ -173,21 +190,21 @@ npm run build
 5. **AWS S3**: Static website hosting
 
 ### Deployment Checklist
-- [ ] All 13 HTML files in place
-- [ ] `/docs/` subdirectory exists
-- [ ] `/shared/` subdirectory exists
+- [ ] All source files in `/src/`
+- [ ] Build succeeds (`npm run build`)
+- [ ] `dist/` folder generated
 - [ ] Navigation links tested
+- [ ] API proxy configured (Vite) or environment variables set
 - [ ] Fonts loading correctly
 - [ ] Icons displaying properly
 
 ## Technical Constraints
 
 ### Current Limitations
-1. **No Persistence**: Data resets on page reload
-2. **No Authentication**: All data visible to everyone
-3. **No Backend**: Cannot process payments or send notifications
-4. **Desktop Only**: Not optimized for mobile
-5. **Single User**: No multi-user support
+1. **Partial Backend**: Groups, Competitions, Auth, Students, Reports use real API; others use mock data
+2. **Desktop Only**: Not optimized for mobile
+3. **No Real-time**: No WebSocket updates for live data
+4. **Single User Role**: No role-based access control yet
 
 ### Browser Requirements
 - Chrome 80+
@@ -199,9 +216,9 @@ npm run build
 ## Performance Considerations
 
 ### Current Optimizations
-- Static files = fast load times
-- CDN resources = cached assets
-- No JavaScript frameworks = minimal overhead
+- Vite bundler = fast HMR and optimized builds
+- Modular code splitting by domain
+- CDN resources = cached assets (fonts, icons)
 
 ### Future Optimizations
 - Lazy loading for data-heavy modules
@@ -211,11 +228,11 @@ npm run build
 
 ## Security (Current)
 
-### Static Site Security
-- No server-side vulnerabilities
-- No database to protect
-- No authentication to bypass
-- XSS protection: sanitize any user input (when added)
+### Authentication Security
+- JWT tokens stored in memory (Zustand)
+- HTTPS enforced in production
+- Token refresh mechanism ready for implementation
+- XSS protection: sanitize user inputs
 
 ### Future Security Needs
 - HTTPS enforcement
@@ -229,7 +246,7 @@ npm run build
 API clients are organized by domain/feature for maintainability:
 - `academics/` - Groups, sessions, progress levels
 - `competitions/` - Competitions, categories, teams
-- `crm.ts` - Students, parents
+- `crm/` - Modular students, parents (following modular pattern)
 - `enrollments.ts` - Enrollment operations
 - `finance.ts` - Receipts, balance
 
@@ -295,9 +312,14 @@ try {
 - `POST /api/v1/attendance/session/{id}/mark` - Mark attendance
 
 ### CRM
-- `GET /api/v1/crm/students` - List/search students
+- `GET /api/v1/crm/students` - List/search students (paginated)
 - `GET /api/v1/crm/students/{id}` - Student details
 - `POST /api/v1/crm/students` - Create student
+- `PATCH /api/v1/crm/students/{id}` - Update student
+- `GET /api/v1/crm/students/{id}/balance` - Student balance
+- `GET /api/v1/crm/students/{id}/siblings` - Student siblings
+- `GET /api/v1/crm/students/{id}/status-history` - Status history
+- `PATCH /api/v1/crm/students/{id}/status` - Update status
 - `GET /api/v1/crm/parents` - List/search parents
 - `GET /api/v1/crm/parents/{id}` - Parent details
 - `POST /api/v1/crm/parents` - Create parent

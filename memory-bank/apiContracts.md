@@ -132,6 +132,46 @@ const response = await client.get<{ data: GroupLevel[] }>(`/academics/groups/${g
 return response.data.data || []
 ```
 
+### Student API Modularization (Implemented April 12, 2026)
+
+**Architecture Change**: Refactored monolithic `crm.ts` into modular `crm/students/` structure following groups pattern.
+
+**Module Organization**:
+```
+api/crm/students/
+├── core.ts          # CRUD: getStudentById, createStudent, updateStudent, deleteStudent
+├── finance.ts       # Balance: getStudentBalance, getEnrollmentBalance, getUnpaidEnrollments
+├── status.ts        # Status: updateStudentStatus, setWaitingPriority, getStatusSummary
+├── history.ts       # History: getStatusHistory, getAttendanceHistory
+├── siblings.ts      # Siblings: getStudentSiblings, linkSibling, unlinkSibling
+├── search.ts        # Search: searchStudents, searchStudentsAdvanced
+├── utils.ts         # Helpers: getStatusColorClass, getStatusLabel, calculateAge
+└── types/           # Organized type definitions
+    ├── models.ts    # Student, Parent, StudentWithDetails, EnrollmentInfo
+    ├── finance.ts   # StudentBalance, EnrollmentBalance
+    ├── history.ts   # StatusHistoryRecord, AttendanceHistoryRecord
+    ├── inputs.ts    # CreateStudentDTO, UpdateStudentDTO
+    └── index.ts     # Type exports
+```
+
+**Type Export Pattern** (Critical Fix):
+```typescript
+// CORRECT - prevents import resolution issues
+export { type Student, type StudentBalance } from './types'
+
+// INCORRECT - causes TypeScript errors
+export type { Student, StudentBalance } from './types'
+```
+
+**New Hooks** (`src/hooks/students/`):
+- `useStudentDetail.ts` - Granular loading states per data type (student, balance, siblings)
+- `useStudentHistory.ts` - Status and attendance history with pagination
+
+**Integration Points**:
+- `StudentDetailPage.tsx` - Uses `useStudentDetail` hook
+- `OverviewTab.tsx` - Receives separate props (student, balance, siblings, parents)
+- `PaymentsTab.tsx` - Uses new `StudentBalance` type with enrollment breakdown
+
 ---
 
 ## ID Type Conventions
@@ -145,7 +185,7 @@ All entity IDs are **integers** (not UUIDs):
 ### Affected Modules
 - ✅ **Competitions**: Fixed - now uses `number` IDs
 - ✅ **Groups**: Uses number IDs
-- 🔄 **Students**: Pending verification
+- ✅ **Students**: Uses `number` IDs (verified April 12, 2026)
 - 🔄 **Parents**: Pending verification
 - 🔄 **Enrollments**: Pending verification
 
@@ -195,8 +235,22 @@ All entity IDs are **integers** (not UUIDs):
 
 ## Related Files
 
-- `app/src/api/competitions/types.ts` - Competition interfaces
-- `app/src/api/academics/groups/lifecycle.ts` - Group levels API
-- `app/src/api/client.ts` - Axios instance with interceptors
-- `app/src/hooks/competitions/*.ts` - Competition hooks
-- `app/src/hooks/useGroups.ts` - Groups hook
+### Competition API
+- `src/api/competitions/types.ts` - Competition interfaces
+- `src/hooks/competitions/*.ts` - Competition hooks
+
+### Group API
+- `src/api/academics/groups/lifecycle.ts` - Group levels API
+- `src/hooks/useGroups.ts` - Groups hook
+
+### Student API (Modular - April 12, 2026)
+- `src/api/crm/students/core.ts` - Student CRUD operations
+- `src/api/crm/students/finance.ts` - Balance queries
+- `src/api/crm/students/types/models.ts` - Student interfaces
+- `src/hooks/students/useStudentDetail.ts` - Student detail hook
+- `src/hooks/students/useStudentHistory.ts` - Student history hook
+
+### Shared
+- `src/api/client.ts` - Axios instance with interceptors
+- `src/types/api.ts` - ApiResponse, PaginatedApiResponse interfaces
+- `src/types/pagination.ts` - Pagination types

@@ -329,6 +329,96 @@ export async function getCompetitions(
 }
 ```
 
+### Modular API Architecture Pattern (April 12, 2026)
+**Pattern**: Domain-based modules with sub-structure for complex entities
+
+**Structure:**
+```
+api/{domain}/
+├── index.ts          # Re-exports all public APIs and types
+├── core.ts           # CRUD operations
+├── {feature}.ts      # Feature-specific operations (finance, status, history)
+└── types/
+    ├── index.ts      # Type re-exports
+    ├── models.ts     # Core data interfaces
+    ├── inputs.ts     # DTOs for create/update
+    └── {feature}.ts  # Feature-specific types
+```
+
+**Example: Student API Module**
+```typescript
+// api/crm/students/index.ts - Public API
+export { getStudentById, createStudent } from './core'
+export { getStudentBalance } from './finance'
+export { updateStudentStatus } from './status'
+export { type Student, type StudentBalance } from './types'
+
+// api/crm/students/core.ts - Implementation
+export async function getStudentById(id: number): Promise<Student> {
+  const response = await client.get<ApiResponse<Student>>(`/crm/students/${id}`)
+  return response.data.data
+}
+```
+
+**Benefits:**
+- Clear separation of concerns by feature
+- Type-safe organization
+- Easier testing and maintenance
+- Prevents API file bloat
+
+### Granular Loading States Pattern
+**Pattern**: Separate loading states per data type in complex hooks
+
+**When to use:** When a hook fetches multiple independent data sources
+
+```typescript
+// useStudentDetail.ts
+interface UseStudentDetailReturn {
+  // Data
+  student: Student | null
+  balance: StudentBalance | null
+  siblings: SiblingInfo[]
+
+  // Granular loading states
+  loadingStudent: boolean
+  loadingBalance: boolean
+  loadingSiblings: boolean
+
+  // Combined loading state for UI
+  isLoading: boolean  // loadingStudent || loadingBalance || loadingSiblings
+
+  // Individual refresh functions
+  refreshStudent: () => Promise<void>
+  refreshBalance: () => Promise<void>
+}
+```
+
+**Benefits:**
+- Independent retry per data type
+- UI can show partial data while other sections load
+- Better error isolation
+
+### Type Export Pattern (Correct Syntax)
+**Pattern**: Use `export { type X }` not `export type { X }`
+
+```typescript
+// CORRECT - resolves import issues
+export { type Student, type StudentBalance } from './types'
+
+// INCORRECT - causes TypeScript resolution problems
+export type { Student, StudentBalance } from './types'
+```
+
+### Null Safety Pattern for API Data
+**Pattern**: Defensive programming with optional chaining and null coalescing
+
+```typescript
+// Required for optional API fields
+const hasEnrollments = balance?.enrollments?.length > 0
+const chartData = revenue?.monthly_revenue?.slice(-4) || []
+const total = (student.total_participants || 0) * (student.fee_per_participant || 0)
+```
+
 ### Responsive Strategy
 - Desktop-first design (current)
 - `ml-64` offset for sidebar on all pages
@@ -359,12 +449,26 @@ export async function getCompetitions(
 
 ## Extension Points
 
-### Adding New Modules
-1. Create `{module}.html` in `app/`
-2. Copy sidebar from existing module in `app/`
-3. Add card to `app/index.html` hub
-4. Update navigation in all existing pages
-5. Document in `docs/project/PROJECT-INDEX.md`
+### Adding New Page Modules
+1. Create page component in `src/pages/{Module}Page.tsx`
+2. Add route in `src/App.tsx` with appropriate guards
+3. Create feature components in `src/components/{feature}/`
+4. Create API module in `src/api/{domain}/` following modular pattern
+5. Create hooks in `src/hooks/use{Feature}.ts` or `src/hooks/{domain}/`
+6. Add sidebar link in `src/components/layout/Sidebar.tsx`
+
+### Adding New API Domain
+1. Create folder `src/api/{domain}/`
+2. Create `types/models.ts` with core interfaces
+3. Create `core.ts` with CRUD operations
+4. Create `index.ts` with re-exports
+5. Follow modular pattern for complex domains
+
+### Adding New React Hooks
+1. Create in `src/hooks/{domain}/use{Feature}.ts`
+2. Define return interface with loading/error states
+3. Export from `src/hooks/{domain}/index.ts`
+4. Document in codebase-context-management guide
 
 ### Future Patterns to Implement
 - Authentication gates (role-based access control)
