@@ -20,95 +20,8 @@ import {
 } from '../api/crm'
 
 
-
-// Column configuration for Students DataTable
-const studentColumns: DataTableColumn<Student>[] = [
-  {
-    key: 'full_name',
-    header: 'Name',
-    cell: (student) => <span className="font-semibold text-slate-900">{student.full_name}</span>
-  },
-  {
-    key: 'phone',
-    header: 'Phone',
-    cell: (student) => <span className="text-slate-600">{student.phone || '-'}</span>
-  },
-  {
-    key: 'current_group',
-    header: 'Current Group',
-    cell: (student) => (
-      student.current_group_name ? (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-medium">
-          <span className="material-symbols-outlined text-sm">group</span>
-          {student.current_group_name}
-        </span>
-      ) : (
-        <span className="text-slate-400 text-xs">Not enrolled</span>
-      )
-    )
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    cell: (student) => (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        student.is_active
-          ? 'bg-green-100 text-green-700'
-          : 'bg-slate-100 text-slate-600'
-      }`}>
-        <span className="material-symbols-outlined text-sm">
-          {student.is_active ? 'check_circle' : 'cancel'}
-        </span>
-        {student.is_active ? 'Active' : 'Inactive'}
-      </span>
-    )
-  },
-  {
-    key: 'notes',
-    header: 'Notes',
-    cell: (student) => <span className="text-slate-600 max-w-xs truncate">{student.notes || '-'}</span>
-  }
-]
-
-// Column configuration for Parents DataTable
-const parentColumns: DataTableColumn<Parent>[] = [
-  {
-    key: 'full_name',
-    header: 'Name',
-    cell: (parent) => <span className="font-semibold text-slate-900">{parent.full_name}</span>
-  },
-  {
-    key: 'phone',
-    header: 'Phone',
-    cell: (parent) => <span className="text-slate-600">{parent.phone_primary || '-'}</span>
-  },
-  {
-    key: 'email',
-    header: 'Email',
-    cell: (parent) => <span className="text-slate-600">{parent.email || '-'}</span>
-  },
-  {
-    key: 'relation',
-    header: 'Relation',
-    cell: (parent) => <span className="text-slate-600">{parent.relation || '-'}</span>
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    cell: (parent) => (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        parent.is_active
-          ? 'bg-green-100 text-green-700'
-          : 'bg-slate-100 text-slate-600'
-      }`}>
-        <span className="material-symbols-outlined text-sm">
-          {parent.is_active ? 'check_circle' : 'cancel'}
-        </span>
-        {parent.is_active ? 'Active' : 'Inactive'}
-      </span>
-    )
-  }
-]
+import { studentColumns, parentColumns } from '../components/directory/DirectoryColumns'
+import { DirectoryTabs } from '../components/directory/DirectoryTabs'
 
 export function DirectoryPage() {
   const navigate = useNavigate()
@@ -318,54 +231,11 @@ export function DirectoryPage() {
       />
 
       {/* Tab Navigation */}
-      <div className="px-8 pt-4 border-b border-slate-200">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="flex space-x-1">
-            <button
-              onClick={() => handleTabChange('students')}
-              className={`px-6 py-3 text-sm font-medium transition-colors relative ${
-                activeTab === 'students'
-                  ? 'text-on-surface'
-                  : 'text-slate-400 hover:text-on-surface'
-              }`}
-            >
-              <span className="material-symbols-outlined inline-block mr-2 align-text-bottom">school</span>
-              Students
-              {activeTab === 'students' && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-t"></span>
-              )}
-            </button>
-            <button
-              onClick={() => handleTabChange('parents')}
-              className={`px-6 py-3 text-sm font-medium transition-colors relative ${
-                activeTab === 'parents'
-                  ? 'text-on-surface'
-                  : 'text-slate-400 hover:text-on-surface'
-              }`}
-            >
-              <span className="material-symbols-outlined inline-block mr-2 align-text-bottom">family_restroom</span>
-              Parents
-              {activeTab === 'parents' && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-t"></span>
-              )}
-            </button>
-            <button
-              onClick={() => handleTabChange('waiting')}
-              className={`px-6 py-3 text-sm font-medium transition-colors relative ${
-                activeTab === 'waiting'
-                  ? 'text-on-surface'
-                  : 'text-slate-400 hover:text-on-surface'
-              }`}
-            >
-              <span className="material-symbols-outlined inline-block mr-2 align-text-bottom">schedule</span>
-              Waiting ({waitingStudents.length})
-              {activeTab === 'waiting' && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-t"></span>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
+      <DirectoryTabs
+        activeTab={activeTab}
+        waitingCount={waitingStudents.length}
+        onTabChange={handleTabChange}
+      />
 
         {/* Content */}
         <PageSection>

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { LevelSelector } from './detail/LevelSelector'
-import { DataTable } from '../common/DataTable'
+import { DataTable } from '../common/datatable'
 import { useGroupStudents } from '../../hooks/useGroupStudents'
 import type { GroupLevelHistoryDTO } from '../../api/academics'
 import type { StudentEnrollmentSummary } from '../../api/enrollments'

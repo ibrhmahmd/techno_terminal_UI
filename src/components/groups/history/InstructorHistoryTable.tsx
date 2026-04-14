@@ -1,5 +1,5 @@
 import { User, Calendar } from 'lucide-react'
-import { DataTable } from '../../common/DataTable'
+import { DataTable } from '../../common/datatable'
 import { LoadingState } from '../../common/LoadingState'
 import { EmptyState } from '../../common/EmptyState'
 import type { InstructorAssignmentDTO } from '../../../api/academics'

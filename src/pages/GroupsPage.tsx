@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
-import { DataTable, type DataTableColumn, PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialog } from '../components/common'
+import { DataTable, PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialog } from '../components/common'
 import { useToast } from '../components/common/Toast'
 import { GroupForm } from '../components/groups/GroupForm'
 import { 
@@ -13,81 +13,12 @@ import {
 } from '../api/academics'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { GroupsHeader } from '../components/groups/GroupsHeader'
-import { GroupsControls } from '../components/groups/GroupsControls'
+import { GroupBySelector } from '../components/groups/GroupBySelector'
+import { invalidatePattern, CacheKeys } from '../cache'
 
 import { useGroups } from '../hooks/useGroups'
 
-// Column configuration for Groups DataTable
-const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
-  {
-    key: 'name',
-    header: 'Group Name',
-    sortable: true,
-    cell: (group) => <span className="font-semibold text-slate-900">{group.group_name}</span>
-  },
-  {
-    key: 'course_name',
-    header: 'Course',
-    sortable: true,
-    cell: (group) => (
-      <span className="text-sm text-slate-600 bg-slate-100/50 px-2.5 py-1 rounded-md border border-slate-200">
-        {group.course_name}
-      </span>
-    )
-  },
-  {
-    key: 'instructor_name',
-    header: 'Instructor',
-    sortable: true,
-    cell: (group) => (
-      <span className="text-sm text-slate-600 font-medium">
-        {group.instructor_name || <span className="text-slate-400 italic">Unassigned</span>}
-      </span>
-    )
-  },
-  {
-    key: 'schedule',
-    header: 'Schedule',
-    cell: (group) => (
-      <div className="flex flex-col gap-0.5">
-        <span className="text-xs font-semibold text-slate-900">{group.default_day}</span>
-        <span className="text-[10px] text-slate-500">
-          {group.default_time_start?.slice(0, 5) ?? ''} - {group.default_time_end?.slice(0, 5) ?? ''}
-        </span>
-      </div>
-    )
-  },
-  {
-    key: 'max_capacity',
-    header: 'Capacity',
-    sortable: true,
-    align: 'center',
-    cell: (group) => (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700">
-        <span className="material-symbols-outlined text-xs">group</span>
-        {group.max_capacity}
-      </span>
-    )
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    cell: (group) => {
-      const statusConfig = {
-        active: { label: 'Active', className: 'bg-green-100 text-green-700' },
-        inactive: { label: 'Inactive', className: 'bg-slate-100 text-slate-600' },
-        archived: { label: 'Archived', className: 'bg-amber-100 text-amber-700' },
-      }
-      const config = statusConfig[group.status] || statusConfig.inactive
-      return (
-        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${config.className}`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-          {config.label}
-        </span>
-      )
-    }
-  }
-]
+import { groupColumns } from '../components/groups/GroupColumns'
 
 export function GroupsPage() {
   const navigate = useNavigate()
@@ -143,6 +74,7 @@ export function GroupsPage() {
     setMutationError(null)
     try {
       await deleteGroup(deletingGroupId)
+      invalidatePattern(CacheKeys.groups.prefix)
       await refresh()
       showToast('Group deleted successfully', 'success')
     } catch (err: any) {
@@ -165,6 +97,7 @@ export function GroupsPage() {
     try {
       await createGroup(data)
       setIsCreateModalOpen(false)
+      invalidatePattern(CacheKeys.groups.prefix)
       await refresh()
     } catch (err: any) {
       console.error('[GroupsPage] createGroup failed:', err)
@@ -189,6 +122,7 @@ export function GroupsPage() {
       await updateGroup(selectedGroup.id, data)
       setIsEditModalOpen(false)
       setSelectedGroup(null)
+      invalidatePattern(CacheKeys.groups.prefix)
       await refresh()
     } catch (err: any) {
       setMutationError(err.message || 'Failed to update group')
@@ -208,22 +142,33 @@ export function GroupsPage() {
       />
 
       <PageSection>
-        <GroupsControls 
-          pageSize={pageSize}
-          onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1) }}
-          totalGroups={totalGroups}
-          currentPage={currentPage}
-          processedCount={isGroupedView ? groupedData.reduce((sum, g) => sum + g.count, 0) : processedGroups.length}
-          groupBy={groupBy}
-          onGroupByChange={setGroupBy}
+        <GroupBySelector
+          value={groupBy}
+          onChange={(field) => {
+            setGroupBy(field)
+            setCurrentPage(1)
+          }}
         />
 
         <ErrorBoundary>
-          {isLoading ? (
+          {isLoading && (
             <div className="flex items-center justify-center py-20"><LoadingSpinner /></div>
-          ) : error ? (
+          )}
+          
+          {!isLoading && groupBy === undefined && (
+            <div className="flex flex-col items-center justify-center py-28 gap-3 text-center">
+              <span className="material-symbols-outlined text-6xl text-slate-200">grid_view</span>
+              <p className="text-slate-400 text-sm font-medium">
+                Select a view above to load groups
+              </p>
+            </div>
+          )}
+
+          {!isLoading && error && (
             <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-center">{error}</div>
-          ) : (
+          )}
+
+          {!isLoading && !error && groupBy !== undefined && (
             <>
               {mutationError && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 flex items-center gap-2">
@@ -231,32 +176,57 @@ export function GroupsPage() {
                   {mutationError}
                 </div>
               )}
-              <DataTable
-                data={isGroupedView ? [] : paginatedGroups}
-                groupedData={isGroupedView ? groupedData.map(g => ({ ...g, items: g.groups })) : undefined}
-                columns={groupColumns}
-                keyExtractor={(g) => g.id.toString()}
-                sortField={sortField}
-                sortDirection={sortDirection}
-                onSort={handleSort}
-                onRowClick={(g) => handleView(g.id)}
-                actions={{
-                  view: (g) => handleView(g.id),
-                  edit: handleEdit,
-                  delete: (g) => handleDeleteClick(g.id)
-                }}
-                emptyMessage="No groups matched your selection"
-                emptyIcon="none"
-                expandableGroups={true}
-                defaultExpandedGroups={isGroupedView ? groupedData.map(g => g.key) : []}
-              />
+              {isGroupedView ? (
+                <DataTable
+                  groupedData={groupedData.map(g => ({ ...g, items: g.groups }))}
+                  columns={groupColumns}
+                  keyExtractor={(g) => g.id.toString()}
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                  onRowClick={(g) => handleView(g.id)}
+                  actions={{
+                    view: (g) => handleView(g.id),
+                    edit: handleEdit,
+                    delete: (g) => handleDeleteClick(g.id)
+                  }}
+                  emptyMessage="No groups matched your selection"
+                  emptyIcon="none"
+                  defaultActiveGroup={groupedData[0]?.key}
+                />
+              ) : (
+                <DataTable
+                  data={paginatedGroups}
+                  columns={groupColumns}
+                  keyExtractor={(g) => g.id.toString()}
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                  onRowClick={(g) => handleView(g.id)}
+                  actions={{
+                    view: (g) => handleView(g.id),
+                    edit: handleEdit,
+                    delete: (g) => handleDeleteClick(g.id)
+                  }}
+                  emptyMessage="No groups matched your selection"
+                  emptyIcon="none"
+                />
+              )}
 
-              {!isGroupedView && totalPages > 1 && (
-                <div className="mt-6 flex justify-center">
+              {!isGroupedView && totalPages > 0 && (
+                <div className="mt-6 pt-4 border-t border-slate-200">
                   <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
+                    pageSize={pageSize}
+                    onPageSizeChange={(newSize) => {
+                      setPageSize(newSize)
+                      setCurrentPage(1)
+                    }}
                     onPageChange={setCurrentPage}
+                    pageSizeOptions={[10, 20, 50, 100]}
+                    showTotalInfo={true}
+                    loading={isLoading}
                   />
                 </div>
               )}

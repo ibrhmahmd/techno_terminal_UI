@@ -2,7 +2,7 @@
 
 export { ActionButton } from './ActionButton'
 export { ConfirmDialog } from './ConfirmDialog'
-export { DataTable, type DataTableColumn, type DataTableActions, type DataTableProps } from './DataTable'
+export { DataTable, type DataTableColumn, type DataTableActions, type DataTableProps } from './datatable'
 export { DataTableContainer } from './DataTableContainer'
 export { EmptyState } from './EmptyState'
 export { ErrorMessage } from './ErrorMessage'
