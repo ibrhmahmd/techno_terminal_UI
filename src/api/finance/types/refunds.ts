@@ -21,7 +21,7 @@ export interface RefundResult {
   processed_at: string
 }
 
-export interface RiskAssessment {
+export interface RiskAssessmentPublic {
   has_risk: boolean
   message?: string
   would_overpay: number
@@ -29,9 +29,6 @@ export interface RiskAssessment {
   projected_balance: number
 }
 
-// Legacy type (maintaining backward compatibility)
-export interface OverpaymentRisk {
-  has_risk: boolean
-  message?: string
-  would_overpay: number
-}
+// Backward compatibility alias
+export type RiskAssessment = RiskAssessmentPublic
+export type OverpaymentRisk = RiskAssessmentPublic

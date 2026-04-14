@@ -14,13 +14,14 @@ import {
   type CreateReceiptRequest,
   type BatchGenerateRequest,
   type OverpaymentRisk,
+  type ReceiptCreatedPublic,
 } from '../../api/finance'
 
 export interface UseReceiptsResult {
   // Data
   receipts: ReceiptListItem[]
   selectedReceipt: ReceiptDetail | null
-  createdReceipt: { id: number; receipt_number: string } | null
+  createdReceipt: ReceiptCreatedPublic | null
   overpaymentRisk: OverpaymentRisk | null
   generatedText: string | null
   pdfBlob: Blob | null
@@ -48,7 +49,7 @@ export interface UseReceiptsResult {
   // Actions
   search: (params: ReceiptSearchParams) => Promise<ReceiptListItem[]>
   getDetails: (receiptId: number) => Promise<ReceiptDetail>
-  create: (request: CreateReceiptRequest) => Promise<{ id: number; receipt_number: string }>
+  create: (request: CreateReceiptRequest) => Promise<ReceiptCreatedPublic>
   batchGenerate: (params: BatchGenerateRequest) => Promise<ReceiptListItem[]>
   markAsSent: (receiptId: number) => Promise<void>
   generateText: (receiptId: number) => Promise<string>
@@ -66,7 +67,7 @@ export function useReceipts(): UseReceiptsResult {
   // Data states
   const [receipts, setReceipts] = useState<ReceiptListItem[]>([])
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptDetail | null>(null)
-  const [createdReceipt, setCreatedReceipt] = useState<{ id: number; receipt_number: string } | null>(null)
+  const [createdReceipt, setCreatedReceipt] = useState<ReceiptCreatedPublic | null>(null)
   const [overpaymentRisk, setOverpaymentRisk] = useState<OverpaymentRisk | null>(null)
   const [generatedText, setGeneratedText] = useState<string | null>(null)
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null)

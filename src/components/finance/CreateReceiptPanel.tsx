@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { searchStudents } from '../../api/crm'
 import { useReceipts } from '../../hooks/finance'
+import { useStudentEnrollments } from '../../hooks/finance/useStudentEnrollments'
 import type { Student } from '../../api/crm'
 import type { CreateReceiptRequest } from '../../api/finance'
+import type { StudentEnrollmentInfo } from '../../hooks/finance/useStudentEnrollments'
 
 const PAYMENT_METHODS = [
   { value: 'cash', label: 'Cash' },
@@ -26,12 +28,114 @@ const MOCK_STUDENTS: Student[] = [
   { id: 3, full_name: 'Ali Hassan', phone: '0155112233', is_active: true, gender: 'male' }
 ]
 
+// Enrollment Selection Sub-component
+interface EnrollmentSelectionProps {
+  studentId: number
+  selectedEnrollment: StudentEnrollmentInfo | null
+  onSelect: (enrollment: StudentEnrollmentInfo | null) => void
+}
+
+function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }: EnrollmentSelectionProps) {
+  const { enrollments, loading, error } = useStudentEnrollments(studentId)
+
+  // Auto-select if only one enrollment
+  if (enrollments.length === 1 && !selectedEnrollment) {
+    onSelect(enrollments[0])
+    return (
+      <div className="lg:col-span-2">
+        <label className="block text-xs font-medium text-slate-600 mb-1">Enrollment</label>
+        <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded">
+          <span className="text-sm text-green-800">
+            {enrollments[0].group_name} (Level {enrollments[0].level_number})
+          </span>
+          <span className="text-xs text-green-600">
+            Balance: {enrollments[0].remaining_balance.toFixed(2)} EGP
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="lg:col-span-2">
+        <label className="block text-xs font-medium text-slate-600 mb-1">Enrollment</label>
+        <div className="p-2 bg-slate-50 border border-slate-200 rounded text-sm text-slate-500">
+          Loading enrollments...
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="lg:col-span-2">
+        <label className="block text-xs font-medium text-slate-600 mb-1">Enrollment</label>
+        <div className="p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+          {error}
+        </div>
+      </div>
+    )
+  }
+
+  if (enrollments.length === 0) {
+    return (
+      <div className="lg:col-span-2">
+        <label className="block text-xs font-medium text-slate-600 mb-1">Enrollment</label>
+        <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-700">
+          No active enrollments found for this student
+        </div>
+      </div>
+    )
+  }
+
+  // Multiple enrollments - show dropdown
+  return (
+    <div className="lg:col-span-2">
+      <label className="block text-xs font-medium text-slate-600 mb-1">Enrollment *</label>
+      {selectedEnrollment ? (
+        <div className="flex items-center justify-between p-2 bg-white rounded border">
+          <span className="text-sm">
+            {selectedEnrollment.group_name} (Level {selectedEnrollment.level_number})
+            <span className="text-slate-500 ml-2">
+              Balance: {selectedEnrollment.remaining_balance.toFixed(2)} EGP
+            </span>
+          </span>
+          <button
+            onClick={() => onSelect(null)}
+            className="text-red-500 hover:text-red-700 text-xs"
+          >
+            Change
+          </button>
+        </div>
+      ) : (
+        <select
+          value=""
+          onChange={(e) => {
+            const enrollmentId = parseInt(e.target.value)
+            const enrollment = enrollments.find(en => en.enrollment_id === enrollmentId)
+            if (enrollment) onSelect(enrollment)
+          }}
+          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+        >
+          <option value="">Select enrollment...</option>
+          {enrollments.map(enrollment => (
+            <option key={enrollment.enrollment_id} value={enrollment.enrollment_id}>
+              {enrollment.group_name} (Level {enrollment.level_number}) - Balance: {enrollment.remaining_balance.toFixed(2)} EGP
+            </option>
+          ))}
+        </select>
+      )}
+    </div>
+  )
+}
+
 interface ReceiptLineItem {
   id: string
   studentSearch: string
   selectedStudent: Student | null
   students: Student[]
-  enrollmentId: number | ''
+  selectedEnrollment: StudentEnrollmentInfo | null  // NEW: Selected enrollment for payment
   amount: number
   type: 'tuition' | 'materials' | 'registration' | 'other' | 'competition'
   discount: number
@@ -56,7 +160,7 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError 
       studentSearch: '',
       selectedStudent: null,
       students: [],
-      enrollmentId: '',
+      selectedEnrollment: null,  // NEW: Start with no enrollment selected
       amount: 0,
       type: 'tuition',
       discount: 0,
@@ -73,7 +177,7 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError 
       studentSearch: '',
       selectedStudent: null,
       students: [],
-      enrollmentId: '',
+      selectedEnrollment: null,  // Use selectedEnrollment instead of enrollmentId
       amount: 0,
       type: 'tuition',
       discount: 0,
@@ -120,17 +224,29 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError 
       return
     }
 
-    // Build request for new API
+    // Validate that each item has an enrollment selected
+    const itemsWithoutEnrollment = validItems.filter(item => !item.selectedEnrollment)
+    if (itemsWithoutEnrollment.length > 0) {
+      onError('Please select an enrollment for each line item')
+      return
+    }
+
+    // Build request aligned with API documentation
     const request: CreateReceiptRequest = {
       payer_name: payerName,
-      payment_method: paymentMethod,
+      method: paymentMethod,  // Changed from payment_method to method
       notes,
-      items: validItems.map(item => ({
-        enrollment_id: item.enrollmentId ? Number(item.enrollmentId) : undefined,
+      lines: validItems.map((item, index) => ({
+        id: index + 1,  // REQUIRED: Sequential line identifier
+        student_id: item.selectedStudent!.id,  // REQUIRED: Student ID per line
+        enrollment_id: item.selectedEnrollment!.enrollment_id,  // REQUIRED: Now properly selected!
         amount: item.amount,
-        type: item.type,
-        description: item.description
-      }))
+        transaction_type: item.type === 'tuition' ? 'charge' : 'charge',  // REQUIRED: Transaction classification
+        payment_type: item.type === 'tuition' ? 'course_level' : item.type,  // Map 'tuition' to 'course_level'
+        discount: item.discount || 0,
+        notes: item.description
+      })),
+      allow_credit: true  // Allow credit/overpayment by default
     }
 
     try {
@@ -154,6 +270,13 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError 
       return
     }
 
+    // Validate each line item has an enrollment selected
+    const itemsWithoutEnrollment = validItems.filter(item => !item.selectedEnrollment)
+    if (itemsWithoutEnrollment.length > 0) {
+      onError('Please select an enrollment for each line item (click on student first)')
+      return
+    }
+
     if (!payerName.trim()) {
       onError('Please enter payer name')
       return
@@ -166,20 +289,26 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError 
         const mockId = Date.now()
         onSuccess('Receipt created successfully: R-2026-MOCK', mockId)
       } else {
-        // Build request for new API - map to new shape
+        // Build request aligned with API documentation
         const request: CreateReceiptRequest = {
           payer_name: payerName,
-          payment_method: paymentMethod,
+          method: paymentMethod,  // Changed from payment_method to method
           notes,
-          items: validItems.map(item => ({
-            enrollment_id: item.enrollmentId ? Number(item.enrollmentId) : undefined,
+          lines: validItems.map((item, index) => ({
+            id: index + 1,  // REQUIRED: Sequential line identifier
+            student_id: item.selectedStudent!.id,  // REQUIRED: Student ID per line
+            enrollment_id: item.selectedEnrollment!.enrollment_id,  // REQUIRED: Enrollment ID
             amount: item.amount,
-            type: item.type,
-            description: item.description
-          }))
+            transaction_type: item.type === 'tuition' ? 'charge' : 'charge',  // REQUIRED: Transaction classification
+            payment_type: item.type === 'tuition' ? 'course_level' : item.type,  // Map 'tuition' to 'course_level'
+            discount: item.discount || 0,
+            notes: item.description
+          })),
+          allow_credit: true  // Allow credit/overpayment by default
         }
+        
         const result = await create(request)
-        onSuccess(`Receipt created successfully: ${result.receipt_number}`, result.id)
+        onSuccess(`Receipt created successfully: ${result.receipt_number}`, result.receipt_id)
       }
       // Reset form
       setPayerName('')
@@ -189,7 +318,7 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError 
         studentSearch: '',
         selectedStudent: null,
         students: [],
-        enrollmentId: '',
+        selectedEnrollment: null,
         amount: 0,
         type: 'tuition',
         discount: 0,
@@ -266,7 +395,7 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError 
                     <div className="flex items-center justify-between p-2 bg-white rounded border">
                       <span className="text-sm">{item.selectedStudent.full_name}</span>
                       <button
-                        onClick={() => handleUpdateLineItem(item.id, { selectedStudent: null, studentSearch: '' })}
+                        onClick={() => handleUpdateLineItem(item.id, { selectedStudent: null, studentSearch: '', selectedEnrollment: null })}
                         className="text-red-500 hover:text-red-700 text-xs"
                       >
                         Change
@@ -297,6 +426,15 @@ export function CreateReceiptPanel({ useMockData, isLoading, onSuccess, onError 
                     </>
                   )}
                 </div>
+
+                {/* Enrollment Selection - Shows when student is selected */}
+                {item.selectedStudent && (
+                  <EnrollmentSelection
+                    studentId={item.selectedStudent.id}
+                    selectedEnrollment={item.selectedEnrollment}
+                    onSelect={(enrollment) => handleUpdateLineItem(item.id, { selectedEnrollment: enrollment })}
+                  />
+                )}
 
                 {/* Amount */}
                 <div>

@@ -14,6 +14,7 @@ import type {
   CreateReceiptRequest,
   ReceiptSearchParams,
   BatchGenerateRequest,
+  ReceiptCreatedPublic,
 } from './types'
 
 /**
@@ -23,8 +24,8 @@ import type {
  */
 export async function createReceipt(
   request: CreateReceiptRequest
-): Promise<{ id: number; receipt_number: string }> {
-  const response = await client.post<ApiResponse<{ id: number; receipt_number: string }>>(
+): Promise<ReceiptCreatedPublic> {
+  const response = await client.post<ApiResponse<ReceiptCreatedPublic>>(
     '/finance/receipts',
     request
   )
