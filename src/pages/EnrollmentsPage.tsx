@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
+import { EnrollmentQuickActions } from '../components/enrollments/EnrollmentQuickActions'
 import { EnrollPanel } from '../components/enrollments/EnrollPanel'
 import { TransferPanel } from '../components/enrollments/TransferPanel'
 import { DropPanel } from '../components/enrollments/DropPanel'
@@ -40,6 +41,15 @@ export function EnrollmentsPage() {
         <div className="max-w-[1400px] mx-auto">
           <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">Enrollments</h1>
           <p className="text-sm text-on-surface-variant mt-2">Enroll, transfer, or drop students from groups</p>
+          
+          {/* Quick Actions */}
+          <div className="mt-4">
+            <EnrollmentQuickActions 
+              onEnrollClick={() => setActivePanel('enroll')}
+              onTransferClick={() => setActivePanel('transfer')}
+              onDropClick={() => setActivePanel('drop')}
+            />
+          </div>
         </div>
       </header>
 
