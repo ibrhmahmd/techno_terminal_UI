@@ -1,0 +1,430 @@
+openapi: 3.0.0
+info:
+  title: Student Detail API Endpoints
+  version: 1.0.0
+  description: |
+    Required endpoints for Student Detail Page functionality.
+    These endpoints are currently returning 404 and need to be implemented.
+
+paths:
+  /api/v1/crm/students/{id}/details:
+    get:
+      summary: Get Student with Full Details
+      description: |
+        Returns complete student profile including all relationships
+        (parent, enrollments, balance summary) in a single request.
+      tags:
+        - Students
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Student ID
+      responses:
+        '200':
+          description: Student details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDetailsResponse'
+              example:
+                success: true
+                data:
+                  id: 15
+                  full_name: "Ahmed Mohammed"
+                  phone: "+201234567890"
+                  email: "ahmed@example.com"
+                  gender: "male"
+                  date_of_birth: "2010-05-15"
+                  age: 15
+                  school: "International School"
+                  grade: "10th"
+                  status: "active"
+                  notes: "Allergic to peanuts"
+                  parent_id: 42
+                  parent_name: "Mohammed Ali"
+                  created_at: "2023-01-15T10:30:00Z"
+                  updated_at: "2026-04-10T14:20:00Z"
+                  parent:
+                    id: 42
+                    full_name: "Mohammed Ali"
+                    phone: "+201234567891"
+                    phone_primary: "+201234567891"
+                    email: "mohammed@example.com"
+                    whatsapp: "+201234567891"
+                    address: "123 Main St, Cairo"
+                    relation: "father"
+                  enrollments:
+                    - id: 101
+                      group_id: 5
+                      group_name: "Robotics Level 3 - Group A"
+                      course_name: "Advanced Robotics"
+                      level_number: 3
+                      status: "active"
+                      enrolled_at: "2025-09-01T09:00:00Z"
+                  balance:
+                    total_amount_due: 5000.00
+                    total_discounts: 500.00
+                    total_paid: 3000.00
+                    net_balance: -2500.00
+        '404':
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Student not found"
+                detail: "No student found with ID 15"
+
+  /api/v1/students/{id}/siblings:
+    get:
+      summary: Get Student Siblings
+      description: |
+        Returns list of students who share the same parent.
+        Excludes the requesting student from results.
+      tags:
+        - Students
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Student ID
+      responses:
+        '200':
+          description: Siblings list retrieved (may be empty)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiblingsResponse'
+              examples:
+                withSiblings:
+                  summary: Student has siblings
+                  value:
+                    success: true
+                    data:
+                      - student_id: 16
+                        full_name: "Sara Mohammed"
+                        age: 13
+                        parent_id: 42
+                        parent_name: "Mohammed Ali"
+                        status: "active"
+                      - student_id: 17
+                        full_name: "Omar Mohammed"
+                        age: 10
+                        parent_id: 42
+                        parent_name: "Mohammed Ali"
+                        status: "waiting"
+                noSiblings:
+                  summary: No siblings found
+                  value:
+                    success: true
+                    data: []
+                noParent:
+                  summary: Student has no parent assigned
+                  value:
+                    success: true
+                    data: []
+        '404':
+          description: Base student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    StudentDetailsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/StudentWithDetails'
+
+    StudentWithDetails:
+      allOf:
+        - $ref: '#/components/schemas/Student'
+        - type: object
+          properties:
+            parent:
+              $ref: '#/components/schemas/Parent'
+            enrollments:
+              type: array
+              items:
+                $ref: '#/components/schemas/EnrollmentInfo'
+            balance:
+              $ref: '#/components/schemas/StudentBalanceSummary'
+            courses:
+              type: array
+              items:
+                $ref: '#/components/schemas/CourseInfo'
+            competitions:
+              type: array
+              items:
+                $ref: '#/components/schemas/CompetitionInfo'
+            teams:
+              type: array
+              items:
+                $ref: '#/components/schemas/TeamInfo'
+
+    Student:
+      type: object
+      required:
+        - id
+        - full_name
+        - date_of_birth
+        - status
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          example: 15
+        full_name:
+          type: string
+          example: "Ahmed Mohammed"
+        phone:
+          type: string
+          nullable: true
+          example: "+201234567890"
+        email:
+          type: string
+          nullable: true
+          example: "ahmed@example.com"
+        gender:
+          type: string
+          enum: [male, female, other]
+          nullable: true
+        date_of_birth:
+          type: string
+          format: date
+          example: "2010-05-15"
+        age:
+          type: integer
+          nullable: true
+          example: 15
+        school:
+          type: string
+          nullable: true
+        grade:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [active, waiting, inactive]
+        priority:
+          type: integer
+          nullable: true
+          description: Waiting list priority order
+        notes:
+          type: string
+          nullable: true
+        parent_id:
+          type: integer
+          nullable: true
+        parent_name:
+          type: string
+          nullable: true
+          description: Denormalized parent name for quick display
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Parent:
+      type: object
+      required:
+        - id
+        - full_name
+      properties:
+        id:
+          type: integer
+        full_name:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        phone_primary:
+          type: string
+          nullable: true
+        phone_secondary:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        whatsapp:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        relation:
+          type: string
+          nullable: true
+          description: 'father, mother, guardian, etc.'
+
+    EnrollmentInfo:
+      type: object
+      required:
+        - id
+        - group_id
+        - group_name
+        - course_name
+        - level_number
+        - status
+        - enrolled_at
+      properties:
+        id:
+          type: integer
+          description: Enrollment ID
+        group_id:
+          type: integer
+        group_name:
+          type: string
+          example: "Robotics Level 3 - Group A"
+        course_name:
+          type: string
+          example: "Advanced Robotics"
+        level_number:
+          type: integer
+          example: 3
+        status:
+          type: string
+          enum: [active, dropped, transferred, completed]
+        enrolled_at:
+          type: string
+          format: date-time
+
+    StudentBalanceSummary:
+      type: object
+      required:
+        - total_amount_due
+        - total_discounts
+        - total_paid
+        - net_balance
+      properties:
+        total_amount_due:
+          type: number
+          format: decimal
+          example: 5000.00
+        total_discounts:
+          type: number
+          format: decimal
+          example: 500.00
+        total_paid:
+          type: number
+          format: decimal
+          example: 3000.00
+        net_balance:
+          type: number
+          format: decimal
+          example: -2500.00
+          description: Positive = credit, Negative = owes
+
+    SiblingsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SiblingInfo'
+
+    SiblingInfo:
+      type: object
+      required:
+        - student_id
+        - full_name
+        - age
+        - parent_id
+        - parent_name
+      properties:
+        student_id:
+          type: integer
+          description: Sibling's student ID
+        full_name:
+          type: string
+        age:
+          type: integer
+        parent_id:
+          type: integer
+          description: Shared parent ID
+        parent_name:
+          type: string
+        status:
+          type: string
+          enum: [active, waiting, inactive]
+          nullable: true
+        enrollments_count:
+          type: integer
+          nullable: true
+          description: Number of active enrollments
+
+    CourseInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+
+    CompetitionInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+        registration_date:
+          type: string
+          format: date-time
+
+    TeamInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        competition_name:
+          type: string
+        role:
+          type: string
+          example: "member"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        detail:
+          type: string
