@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import { StudentCombobox } from './StudentCombobox'
-import { GroupCombobox } from './GroupCombobox'
+import { StudentCombobox, GroupCombobox } from '../common/combobox'
 import { transferEnrollment, deleteEnrollment } from '../../api/enrollments'
 import { useStudentEnrollments } from '../../hooks/finance/useStudentEnrollments'
 import { useStudentsSearch } from '../../hooks/useDirectory'
