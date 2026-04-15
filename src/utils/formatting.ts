@@ -4,9 +4,16 @@
  */
 export function formatTime(timeStr: string): string {
   if (!timeStr) return ''
-  // If time is already in simple HH:MM format, return as-is
+  // If time is in simple HH:MM format, parse and convert to 12h
   if (/^\d{1,2}:\d{2}$/.test(timeStr)) {
-    return timeStr
+    const [hours, minutes] = timeStr.split(':').map(Number)
+    const date = new Date()
+    date.setHours(hours, minutes)
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    })
   }
   // If it's a full datetime string, extract just the time
   try {
@@ -15,7 +22,7 @@ export function formatTime(timeStr: string): string {
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false,
+      hour12: true,
     })
   } catch {
     return timeStr

@@ -54,20 +54,20 @@ export function GroupSessionCard({
             </button>
           </div>
           <div className="ml-2 border-l border-slate-100 pl-4">
-            <p className="text-[11px] font-medium text-slate-500 flex items-center gap-1">
-              <span className="material-symbols-outlined text-[14px]">schedule</span>
+            <p className="text-[11px] font-bold text-slate-800 flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px] text-slate-700">schedule</span>
               {sessionTime}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-              Instructor 
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+              Instructor
             </p>
-            <p className="font-medium text-sm text-on-surface">{currentInstructorName}</p>
+            <p className="font-bold text-sm text-slate-900">{currentInstructorName}</p>
           </div>
-          <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500 border border-slate-200">
+          <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 border border-slate-300">
             {instructorInitials}
           </div>
         </div>

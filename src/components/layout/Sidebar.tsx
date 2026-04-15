@@ -50,7 +50,6 @@ export function Sidebar() {
           className="text-left hover:opacity-80 transition-opacity"
         >
           <h1 className="text-xl font-bold font-headline text-white tracking-tight">TechnoTerminal</h1>
-          <p className="text-[10px] text-slate-400 uppercase tracking-[0.15em] mt-0.5">Control Center</p>
         </button>
       </div>
 

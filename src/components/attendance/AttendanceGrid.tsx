@@ -328,7 +328,7 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[1000px]">
+        <table className="w-full text-left border-collapse min-w-[1000px] border-2 border-slate-400">
           <AttendanceHeader sessions={sessions} groupInstructorName={groupInstructorName} />
           
           {/* Session Actions Row */}

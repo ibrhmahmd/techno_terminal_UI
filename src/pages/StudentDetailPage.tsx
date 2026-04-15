@@ -16,30 +16,43 @@ import {
   updateStudent,
   deleteStudent,
   type Student,
+  type Parent,
   getStatusColorClass,
   getStatusLabel
 } from '../api/crm/students/'
-import { useStudentDetail } from '../hooks/students'
-import { getGroups, enrollStudent } from '../api/academics'
+import { useStudentCore, useStudentBalance, useStudentSiblings } from '../hooks/students'
+import { enrollStudent } from '../api/academics'
+import { useGroupsFlat } from '../hooks/useGroupQueries'
 
 
 export function StudentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const studentId = Number(id) || 1
+  const [activeTab, setActiveTab] = useState<TabId>('overview')
 
-  // Use new hook for student data
+  // OPTIMIZED: Core data loads immediately (2 API calls instead of 6)
   const { 
     student, 
-    balance, 
-    siblings, 
     details,
-    isLoading, 
-    error,
-    refresh 
-  } = useStudentDetail(studentId)
+    loading: loadingCore, 
+    error: errorCore,
+    refresh: refreshCore 
+  } = useStudentCore(studentId)
   
-  const [activeTab, setActiveTab] = useState<TabId>('overview')
+  // LAZY: Balance only loads when Payments tab is active
+  const {
+    balance,
+    loading: loadingBalance,
+    error: errorBalance,
+    refresh: refreshBalance
+  } = useStudentBalance(studentId, activeTab === 'payments')
+  
+  // LAZY: Siblings load when needed (could expand Overview to lazy-load these)
+  const {
+    siblings,
+    refresh: refreshSiblings
+  } = useStudentSiblings(studentId, activeTab === 'overview')
   
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -49,12 +62,32 @@ export function StudentDetailPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   
   // Available groups for enrollment
-  const [availableGroups, setAvailableGroups] = useState<{ id: number; group_name: string; course_name: string; level: number }[]>([])
-  const [isLoadingGroups, setIsLoadingGroups] = useState(false)
+  const { data: groups, isLoading: isLoadingGroups } = useGroupsFlat()
+
+  // Filter out groups the student is already enrolled in
+  const enrolledGroupIds = student?.enrollments
+    ?.filter(e => e.status === 'active')
+    .map(e => e.group_id) || []
+    
+  const availableGroups = (groups || [])
+    .filter(g => !enrolledGroupIds.includes(g.id))
+    .map(g => ({
+      id: g.id,
+      group_name: g.group_name || 'Unknown Group',
+      course_name: g.course_name || 'Unknown Course',
+      level: g.level || 1,
+    }))
 
   // Refresh data after successful operations
   const handleRefresh = async () => {
-    await refresh()
+    await refreshCore()
+    // Also refresh lazy-loaded data if already loaded
+    if (activeTab === 'payments') {
+      await refreshBalance()
+    }
+    if (activeTab === 'overview') {
+      await refreshSiblings()
+    }
   }
 
   const handleUpdateStudent = async (data: Partial<Omit<Student, 'id'>>, _selectedParent?: Parent | null) => {
@@ -65,6 +98,8 @@ export function StudentDetailPage() {
       setIsEditModalOpen(false)
     } catch (err) {
       console.error('Failed to update student:', err)
+      // TODO: Show error toast to user
+      alert('Failed to update student. Please try again.')
     } finally {
       setIsProcessing(false)
     }
@@ -77,6 +112,7 @@ export function StudentDetailPage() {
       navigate('/directory')
     } catch (err: any) {
       console.error('Failed to delete student:', err)
+      alert('Failed to delete student: ' + (err.message || 'Unknown error'))
       setIsDeleteModalOpen(false)
     } finally {
       setIsProcessing(false)
@@ -85,44 +121,21 @@ export function StudentDetailPage() {
 
   const handleParentLinked = () => {
     // Refresh student data to get updated parents list
-    window.location.reload()
+    refreshCore()
   }
 
-  // Load available groups when enrollment dialog is opened
-  useEffect(() => {
-    if (isEnrollDialogOpen) {
-      setIsLoadingGroups(true)
-      getGroups()
-        .then(groups => {
-          // Filter out groups the student is already enrolled in
-          const enrolledGroupIds = student?.enrollments
-            ?.filter(e => e.status === 'active')
-            .map(e => e.group_id) || []
-          const available = groups
-            .filter(g => !enrolledGroupIds.includes(g.id))
-            .map(g => ({
-              id: g.id,
-              group_name: (g as any).group_name || 'Unknown Group',
-              course_name: (g as any).course?.name || 'Unknown Course',
-              level: (g as any).level || 1,
-            }))
-          setAvailableGroups(available)
-        })
-        .catch(err => {
-          console.error('Failed to load groups:', err)
-        })
-        .finally(() => {
-          setIsLoadingGroups(false)
-        })
-    }
-  }, [isEnrollDialogOpen, student?.enrollments])
+  interface EnrollInput {
+    student_id: number
+    group_id: number
+  }
 
   const handleEnroll = async (groupId: number) => {
     try {
-      await enrollStudent({
+      const enrollData: EnrollInput = {
         student_id: studentId,
         group_id: groupId,
-      } as any)
+      }
+      await enrollStudent(enrollData)
       // Refresh student data to get updated enrollments
       await handleRefresh()
     } catch (err) {
@@ -163,6 +176,8 @@ export function StudentDetailPage() {
         return (
           <PaymentsTab 
             balance={balance}
+            loading={loadingBalance}
+            error={errorBalance}
           />
         )
       default:
@@ -170,7 +185,8 @@ export function StudentDetailPage() {
     }
   }
 
-  if (isLoading) {
+  // Show loading state only for core data (2 API calls)
+  if (loadingCore) {
     return (
       <div className="min-h-screen bg-surface">
         <TopNavbar activePage="Directory" />
@@ -251,9 +267,10 @@ export function StudentDetailPage() {
 
       {/* Tab Content */}
       <PageSection>
-        {error && (
+        {/* Core data errors */}
+        {errorCore && (
           <div className="mb-4 p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm">
-            {error}
+            {errorCore}
           </div>
         )}
         {renderTabContent()}

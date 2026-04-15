@@ -21,10 +21,6 @@ import {
   useDeleteStudent,
   useCreateParent
 } from '../hooks/useDirectory'
-  type Student, 
-  type Parent 
-} from '../api/crm'
-
 
 import { studentColumns, parentColumns } from '../components/directory/DirectoryColumns'
 import { DirectoryTabs } from '../components/directory/DirectoryTabs'

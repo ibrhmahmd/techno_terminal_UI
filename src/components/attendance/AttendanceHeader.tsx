@@ -30,7 +30,7 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
     <thead>
       <tr className="bg-surface-container-lowest">
         <th
-          className="px-6 py-5 text-[10px] font-bold text-outline-variant uppercase tracking-[0.2em] border-b border-outline-variant/10"
+          className="px-6 py-5 text-[10px] font-extrabold text-slate-700 uppercase tracking-[0.2em] border-b-2 border-slate-400 bg-slate-100"
           style={{ width: 280 }}
         >
           Student
@@ -41,23 +41,23 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
           return (
             <th
               key={`session-header-${session.id}-${sessionIdx}`}
-              className={`px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] border-b border-outline-variant/10 text-center border-l border-outline-variant/5 text-outline-variant ${
+              className={`px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] border-b-2 border-slate-400 text-center border-l-2 border-slate-300 bg-slate-100 ${
                 cancelled ? 'opacity-50 blur-[1px] bg-gray-100' : ''
               }`}
             >
               <div className="flex flex-col items-center gap-1">
-                <span className={cancelled ? 'line-through' : ''}>
+                <span className={cancelled ? 'line-through text-slate-600' : 'font-bold text-slate-800'}>
                   Session {sessionIdx + 1}
                 </span>
-                <span className="block text-[8px] font-normal tracking-normal opacity-60">
+                <span className="block text-[9px] font-semibold tracking-normal text-slate-800">
                   {session.start_time ? formatTime(session.start_time) : ''}
                 </span>
                 {/* Instructor name */}
-                <span className="block text-[9px] font-normal text-slate-500 mt-0.5">
-                  Instructor: {getInstructorName(session)}
+                <span className="block text-[9px] font-semibold text-slate-900 mt-0.5">
+                  Inst: {getInstructorName(session)}
                 </span>
                 {cancelled && (
-                  <span className={`mt-1 px-2 py-0.5 rounded-full text-[8px] font-medium ${sessionStatusColors.cancelled}`}>
+                  <span className={`mt-1 px-2 py-0.5 rounded-full text-[8px] font-bold ${sessionStatusColors.cancelled}`}>
                     CANCELLED
                   </span>
                 )}

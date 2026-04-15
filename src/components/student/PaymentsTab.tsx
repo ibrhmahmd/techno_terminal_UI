@@ -1,12 +1,32 @@
 import { CreditCard, CheckCircle2, XCircle, ArrowRightLeft, ArrowUpRight, GraduationCap } from 'lucide-react'
 import type { StudentBalance, EnrollmentBalance } from '../../api/crm/students/types/finance'
-import { EmptyState } from '../common/EmptyState'
+import { EmptyState, LoadingSpinner } from '../common'
 
 interface PaymentsTabProps {
   balance: StudentBalance | null
+  loading?: boolean
+  error?: string | null
 }
 
-export function PaymentsTab({ balance }: PaymentsTabProps) {
+export function PaymentsTab({ balance, loading, error }: PaymentsTabProps) {
+  // Show loading state while balance is being fetched
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <LoadingSpinner size="lg" />
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm">
+        <p className="font-medium">Failed to load payment data</p>
+        <p className="mt-1">{error}</p>
+      </div>
+    )
+  }
   // Calculate summary stats from enrollment balance data
   const totalPaid = balance?.enrollments?.reduce((sum: number, e: EnrollmentBalance) => sum + e.total_paid, 0) || 0
   const totalAmountDue = balance?.total_amount_due || 0
