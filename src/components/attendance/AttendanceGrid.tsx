@@ -51,12 +51,7 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   // Debounced attendance state
-  const [pendingAttendance, setPendingAttendance] = useState<{
-    studentId: string
-    sessionId: number
-    status: AttendanceStatus
-  } | null>(null)
-  const attendanceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const attendanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const displaySessions = useMemo(() => sessions.slice(0, 5), [sessions])
   const fetchCycleRef = useRef(0)
@@ -196,13 +191,6 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
       clearTimeout(attendanceTimeoutRef.current)
     }
 
-    // Set pending attendance
-    setPendingAttendance({
-      studentId,
-      sessionId,
-      status: nextStatus
-    })
-
     // Debounce for 5 seconds
     attendanceTimeoutRef.current = setTimeout(async () => {
       if (nextStatus !== null) {
@@ -217,7 +205,6 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
           showToast('Failed to save attendance', 'error')
         }
       }
-      setPendingAttendance(null)
     }, 5000)
   }, [students, showToast])
 
@@ -232,9 +219,6 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
       clearTimeout(attendanceTimeoutRef.current)
       attendanceTimeoutRef.current = null
     }
-    // If there's pending attendance, include it in the batch save
-    setPendingAttendance(null)
-
     if (displaySessions.length === 0) {
       console.log('[Save] No sessions to save, returning early')
       return

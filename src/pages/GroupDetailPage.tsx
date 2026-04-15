@@ -113,10 +113,7 @@ export function GroupDetailPage() {
   }
 
   const handleCreateNewLevel = async () => {
-    console.log('[DEBUG] handleCreateNewLevel called')
-    console.log('[DEBUG] currentLevel:', currentLevel)
     if (!currentLevel) {
-      console.error('[DEBUG] No current level, cannot create new level')
       return
     }
     try {
@@ -223,7 +220,6 @@ export function GroupDetailPage() {
           <GroupInfoCard
             group={group}
             currentLevel={currentLevel}
-            currentLevelEnrollmentCount={currentLevelEnrollmentCount}
             onEdit={() => setIsEditDialogOpen(true)}
             onDelete={() => setIsDeleteDialogOpen(true)}
             onArchive={() => setIsArchiveDialogOpen(true)}
@@ -247,8 +243,6 @@ export function GroupDetailPage() {
               sessions={sessions}
               activeLevelId={activeLevelId}
               currentLevelNumber={group.level_number}
-              pricingHistory={buildPricingHistory()}
-              currency={currentLevel?.pricing_snapshot?.currency || 'EGP'}
               instructorName={group.instructor_name}
               onLevelChange={setActiveLevel}
             />

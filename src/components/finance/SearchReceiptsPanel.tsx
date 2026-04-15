@@ -19,7 +19,6 @@ interface SearchReceiptsPanelProps {
 export function SearchReceiptsPanel({ isLoading, onError }: SearchReceiptsPanelProps) {
   const { 
     receipts, 
-    selectedReceipt, 
     isSearching, 
     isLoadingDetails,
     isDownloadingPdf,
@@ -62,11 +61,6 @@ export function SearchReceiptsPanel({ isLoading, onError }: SearchReceiptsPanelP
     } finally {
       setViewingReceiptId(null)
     }
-  }
-
-  const handleCloseDetails = () => {
-    // selectedReceipt is cleared via hook, but we need a way to close the view
-    // This is handled by conditional rendering based on selectedReceipt state
   }
 
   const handleDownloadPdf = async (receiptId: number) => {

@@ -7,7 +7,6 @@ import { GroupStatusBadge } from '../shared/GroupStatusBadge'
 interface GroupInfoCardProps {
   group: EnrichedGroupPublic
   currentLevel: GroupLevelHistoryDTO | null
-  currentLevelEnrollmentCount: number
   onEdit: () => void
   onDelete: () => void
   onArchive: () => void
@@ -21,7 +20,6 @@ interface GroupInfoCardProps {
 export function GroupInfoCard({
   group,
   currentLevel,
-  currentLevelEnrollmentCount,
   onEdit,
   onDelete,
   onArchive,

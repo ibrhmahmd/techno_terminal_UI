@@ -2,7 +2,6 @@
 // Endpoints: GET /crm/students, POST /crm/students, PATCH /crm/students/{id}, DELETE /crm/students/{id}
 
 import client from '../../client'
-import type { AxiosError } from 'axios'
 import type { PaginationParams, PaginationResult } from '../../../types/pagination'
 import type { PaginatedApiResponse, ApiResponse } from '../../../types/api'
 import type { Student, StudentWithDetails, Parent } from './types/models'

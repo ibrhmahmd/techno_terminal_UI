@@ -1,16 +1,7 @@
 import { useState, useMemo } from 'react'
 import { AttendanceGrid } from '../attendance/AttendanceGrid'
 import { LevelSelector } from './detail/LevelSelector'
-import { GroupPricingCard } from './detail/GroupPricingCard'
 import type { GroupLevelHistoryDTO, Session } from '../../api/academics'
-
-interface PricingHistoryItem {
-  levelNumber: number
-  dateRange: { start: string; end?: string }
-  monthlyFee: number
-  sessionFee: number
-  isActive: boolean
-}
 
 interface AttendanceTabProps {
   groupId: number
@@ -18,8 +9,6 @@ interface AttendanceTabProps {
   sessions: Session[]
   activeLevelId: number | null
   currentLevelNumber: number
-  pricingHistory: PricingHistoryItem[]
-  currency: string
   instructorName?: string
   onLevelChange: (levelId: number) => void
 }
@@ -30,8 +19,6 @@ export function AttendanceTab({
   sessions,
   activeLevelId,
   currentLevelNumber,
-  pricingHistory,
-  currency,
   instructorName,
   onLevelChange,
 }: AttendanceTabProps) {
