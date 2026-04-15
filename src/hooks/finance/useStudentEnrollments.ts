@@ -55,7 +55,20 @@ export function useStudentEnrollments(studentId: number | null): UseStudentEnrol
     setError(null)
 
     try {
-      const enrollmentsData = await getStudentEnrollments(studentId)
+      const data = await getStudentEnrollments(studentId)
+      const enrollmentsData: Enrollment[] = data.data || []
+
+      // Debug: Verify API response structure
+      console.log('[useStudentEnrollments] API response:', {
+        count: enrollmentsData.length,
+        sample: enrollmentsData[0] ? {
+          id: enrollmentsData[0].id,
+          group_id: enrollmentsData[0].group_id,
+          group_name: enrollmentsData[0].group_name,
+          level_number: enrollmentsData[0].level_number,
+          amount_due: enrollmentsData[0].amount_due,
+        } : null
+      })
 
       // Map Enrollment to our simplified format
       // Note: The enrollment endpoint doesn't include payment data,
@@ -63,7 +76,7 @@ export function useStudentEnrollments(studentId: number | null): UseStudentEnrol
       const enrollmentList = enrollmentsData.map((e: Enrollment) => ({
         enrollment_id: e.id,
         group_id: e.group_id,
-        group_name: e.group_name || `Group ${e.group_id}`,
+        group_name: e.group_name || `Group #${e.group_id}`,
         level_number: e.level_number,
         amount_due: e.amount_due,
         discount_applied: e.discount_applied,

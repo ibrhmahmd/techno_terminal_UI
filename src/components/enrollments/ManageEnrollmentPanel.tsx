@@ -163,55 +163,73 @@ export function ManageEnrollmentPanel({ isLoading, onSuccess, onError, setIsLoad
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-on-surface">2. Choose Enrollment</h3>
 
-            {/* FINANCIAL ALERT — beside enrollments */}
-            {hasDebt && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-                <span className="material-symbols-outlined text-red-500 text-[20px] shrink-0">warning</span>
-                <div>
-                  <p className="text-sm font-semibold text-red-800">Unpaid Balance</p>
-                  <p className="text-xs text-red-700 mt-0.5">
-                    This enrollment has an outstanding <strong>{selectedEnrollment!.remaining_balance.toFixed(2)} EGP</strong>. Financial reconciliation may be required.
+            <div className="flex flex-row gap-4 items-start">
+              {/* Enrollment Cards */}
+              <div className="flex-1 min-w-0">
+                {selectedStudent ? (
+                  enrollmentsLoading ? (
+                    <div className="flex justify-center py-8"><LoadingSpinner size="md" /></div>
+                  ) : enrollments.length === 0 ? (
+                    <div className="p-6 bg-surface-container-low border border-slate-200 rounded-xl text-center text-sm text-on-surface-variant">
+                      This student has no active enrollments to manage.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {enrollments.map(e => (
+                        <button
+                          key={e.enrollment_id}
+                          onClick={() => { setSelectedEnrollment(e); setMode(null) }}
+                          className={`p-4 text-left border-2 rounded-xl transition-all ${
+                            selectedEnrollment?.enrollment_id === e.enrollment_id
+                              ? 'border-secondary bg-secondary-container/20'
+                              : 'border-slate-200 hover:border-slate-300 bg-white'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm text-on-surface truncate" title={e.group_name}>
+                                📚 {e.group_name}
+                              </p>
+                              <p className="text-xs text-on-surface-variant mt-0.5">
+                                Level {e.level_number}
+                              </p>
+                            </div>
+                            {e.remaining_balance > 0 && (
+                              <span className="shrink-0 px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-semibold rounded-full">
+                                ⚠️ {e.remaining_balance.toFixed(0)} EGP
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-3 pt-2 border-t border-slate-200 flex justify-between items-center">
+                            <span className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Balance</span>
+                            <span className={`text-sm font-bold ${e.remaining_balance > 0 ? 'text-error' : 'text-secondary'}`}>
+                              {e.remaining_balance.toFixed(2)} EGP
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  <div className="p-8 bg-surface-container-low border border-dashed border-slate-200 rounded-xl text-center text-sm text-on-surface-variant">
+                    Select a student on the left to view their active courses.
+                  </div>
+                )}
+              </div>
+
+              {/* FINANCIAL ALERT — beside enrollments */}
+              {hasDebt && (
+                <div className="w-64 shrink-0 p-4 bg-red-50 border border-red-200 rounded-xl flex flex-col gap-2">
+                  <div className="flex items-center gap-2 text-red-800">
+                    <span className="material-symbols-outlined text-[20px]">warning</span>
+                    <p className="text-sm font-semibold">Unpaid Balance</p>
+                  </div>
+                  <p className="text-xs text-red-700 leading-relaxed">
+                    This enrollment has an outstanding <strong>{selectedEnrollment!.remaining_balance.toFixed(2)} EGP</strong>. Financial reconciliation may be required before passing to target.
                   </p>
                 </div>
-              </div>
-            )}
-
-            {selectedStudent ? (
-              enrollmentsLoading ? (
-                <div className="flex justify-center py-8"><LoadingSpinner size="md" /></div>
-              ) : enrollments.length === 0 ? (
-                <div className="p-6 bg-surface-container-low border border-slate-200 rounded-xl text-center text-sm text-on-surface-variant">
-                  This student has no active enrollments to manage.
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {enrollments.map(e => (
-                    <button
-                      key={e.enrollment_id}
-                      onClick={() => { setSelectedEnrollment(e); setMode(null) }}
-                      className={`p-4 text-left border-2 rounded-xl transition-all ${
-                        selectedEnrollment?.enrollment_id === e.enrollment_id
-                          ? 'border-secondary bg-secondary-container/20'
-                          : 'border-slate-200 hover:border-slate-300 bg-white'
-                      }`}
-                    >
-                      <p className="font-semibold text-sm text-on-surface">{e.group_name}</p>
-                      <p className="text-xs text-on-surface-variant mt-0.5">Level {e.level_number}</p>
-                      <div className="mt-3 pt-2 border-t border-slate-200 flex justify-between items-center">
-                        <span className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Balance</span>
-                        <span className={`text-sm font-bold ${e.remaining_balance > 0 ? 'text-error' : 'text-secondary'}`}>
-                          {e.remaining_balance.toFixed(2)} EGP
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )
-            ) : (
-              <div className="p-8 bg-surface-container-low border border-dashed border-slate-200 rounded-xl text-center text-sm text-on-surface-variant">
-                Select a student on the left to view their active courses.
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* STEP 3: ACTION HUB */}
