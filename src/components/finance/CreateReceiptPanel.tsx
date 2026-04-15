@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import { searchStudents } from '../../api/crm'
+import { useStudentsSearch } from '../../hooks/useDirectory'
 import { useReceipts } from '../../hooks/finance'
 import type { CreateReceiptRequest } from '../../api/finance'
 import { ReceiptLineItemRow } from './CreateReceipt/ReceiptLineItemRow'
@@ -38,8 +38,24 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateRece
     }
   ])
   const [localOverpaymentRisk, setLocalOverpaymentRisk] = useState<{ has_risk: boolean; message?: string } | null>(null)
+  
+  // Track which item is currently searching for debounced/cached student search
+  const [activeSearchItemId, setActiveSearchItemId] = useState<string | null>(null)
+  const [activeSearchQuery, setActiveSearchQuery] = useState('')
+  const { data: searchResults, isLoading: isSearchingStudents } = useStudentsSearch(activeSearchQuery)
 
   const totalAmount = lineItems.reduce((sum, item) => sum + (item.amount || 0), 0)
+
+  // Sync search results to the active line item
+  useEffect(() => {
+    if (activeSearchItemId && searchResults) {
+      setLineItems(prev => prev.map(item =>
+        item.id === activeSearchItemId
+          ? { ...item, students: searchResults }
+          : item
+      ))
+    }
+  }, [activeSearchItemId, searchResults])
 
   const handleAddLineItem = () => {
     setLineItems(prev => [...prev, {
@@ -64,22 +80,19 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateRece
   }
 
   const handleUpdateLineItem = (id: string, updates: Partial<ReceiptLineItem>) => {
-    setLineItems(prev => prev.map(item => 
-      item.id === id ? { ...item, ...updates } : item
-    ))
-  }
-
-  const handleStudentSearch = async (itemId: string, search: string) => {
-    handleUpdateLineItem(itemId, { studentSearch: search, students: [] })
-    
-    if (search.length < 2) return
-    
-    try {
-      const data = await searchStudents(search)
-      handleUpdateLineItem(itemId, { students: data || [] })
-    } catch {
-      handleUpdateLineItem(itemId, { students: [] })
-    }
+    setLineItems(prev => prev.map(item => {
+      if (item.id !== id) return item
+      
+      // Track search changes to enable caching
+      if (updates.studentSearch !== undefined && updates.studentSearch !== item.studentSearch) {
+        setActiveSearchItemId(id)
+        setActiveSearchQuery(updates.studentSearch)
+        // Clear students array when search changes (new results will come from useEffect)
+        return { ...item, ...updates, students: [] }
+      }
+      
+      return { ...item, ...updates }
+    }))
   }
 
   const handlePreviewRisk = async () => {
@@ -235,7 +248,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateRece
               index={index}
               onUpdate={(updates) => handleUpdateLineItem(item.id, updates)}
               onRemove={() => handleRemoveLineItem(item.id)}
-              onSearchStudents={(search) => handleStudentSearch(item.id, search)}
+              isSearchingStudents={activeSearchItemId === item.id && isSearchingStudents}
             />
           ))}
         </div>

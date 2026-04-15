@@ -1,6 +1,7 @@
 import type { Student } from '../../../api/crm'
 import type { StudentEnrollmentInfo } from '../../../hooks/finance/useStudentEnrollments'
 import { EnrollmentSelection } from './EnrollmentSelection'
+import { StudentCombobox } from '../../common/combobox'
 
 export interface ReceiptLineItem {
   id: string
@@ -27,15 +28,15 @@ interface ReceiptLineItemRowProps {
   index: number
   onUpdate: (updates: Partial<ReceiptLineItem>) => void
   onRemove: () => void
-  onSearchStudents: (search: string) => void
+  isSearchingStudents?: boolean
 }
 
 export function ReceiptLineItemRow({ 
   item, 
   index, 
   onUpdate, 
-  onRemove, 
-  onSearchStudents 
+  onRemove,
+  isSearchingStudents = false
 }: ReceiptLineItemRowProps) {
   return (
     <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
@@ -53,42 +54,19 @@ export function ReceiptLineItemRow({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Student Selection */}
         <div className="lg:col-span-2">
-          <label className="block text-xs font-medium text-slate-600 mb-1">Student</label>
-          {item.selectedStudent ? (
-            <div className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
-              <span className="text-sm font-medium">{item.selectedStudent.full_name}</span>
-              <button
-                onClick={() => onUpdate({ selectedStudent: null, studentSearch: '', selectedEnrollment: null, students: [] })}
-                className="text-red-500 hover:text-red-700 text-xs font-medium"
-              >
-                Change
-              </button>
-            </div>
-          ) : (
-            <div className="relative">
-              <input
-                type="text"
-                value={item.studentSearch}
-                onChange={(e) => onSearchStudents(e.target.value)}
-                placeholder="Search student (min 2 chars)..."
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
-              />
-              {item.students.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto">
-                  {item.students.map(s => (
-                    <button
-                      key={s.id}
-                      onClick={() => onUpdate({ selectedStudent: s, studentSearch: s.full_name, students: [] })}
-                      className="w-full px-3 py-2 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0 text-sm transition-colors"
-                    >
-                      <div className="font-medium">{s.full_name}</div>
-                      {s.phone && <div className="text-[10px] text-slate-400">{s.phone}</div>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          <StudentCombobox
+            value={item.selectedStudent}
+            onChange={(student) => onUpdate({ 
+              selectedStudent: student, 
+              studentSearch: student?.full_name || '', 
+              students: [],
+              selectedEnrollment: null  // Reset enrollment when student changes
+            })}
+            search={item.studentSearch}
+            setSearch={(search) => onUpdate({ studentSearch: search })}
+            students={item.students}
+            isLoading={isSearchingStudents}
+          />
         </div>
 
         {/* Enrollment Selection - Shows when student is selected */}
