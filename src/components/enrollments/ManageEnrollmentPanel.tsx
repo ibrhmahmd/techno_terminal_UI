@@ -288,7 +288,7 @@ export function ManageEnrollmentPanel({ isLoading, onSuccess, onError, setIsLoad
                   <label className="block text-sm font-medium text-on-surface">Notes</label>
                   <textarea
                     value={dropNotes}
-                    onChange={(e) => setDropNotes(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDropNotes(e.target.value)}
                     placeholder="Optional notes about this withdrawal..."
                     rows={3}
                     className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all resize-none"

@@ -208,7 +208,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateRece
           <input
             type="text"
             value={payerName}
-            onChange={(e) => setPayerName(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPayerName(e.target.value)}
             placeholder="Enter payer name..."
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm transition-shadow focus:ring-2 focus:ring-secondary/20 focus:outline-none"
           />
@@ -217,7 +217,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateRece
           <label className="block text-sm font-medium text-on-surface mb-2">Payment Method</label>
           <select
             value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'card' | 'transfer' | 'other')}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPaymentMethod(e.target.value as 'cash' | 'card' | 'transfer' | 'other')}
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white transition-shadow focus:ring-2 focus:ring-secondary/20 focus:outline-none"
           >
             {PAYMENT_METHODS.map(method => (
