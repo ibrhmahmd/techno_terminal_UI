@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { markAttendance, cancelSession, registerExtraSession } from '../../api/academics'
+import { cancelSession, addExtraSession } from '../../api/academics'
+import { markAttendance } from '../../api/attendance'
 import { dashboardKeys } from './useDashboard'
-import type { AttendanceEntry } from '../../api/academics'
+import type { AttendanceEntry } from '../../api/attendance'
 
 export function useMarkAttendance(sessionId: number, groupId: number) {
   const qc = useQueryClient()
@@ -25,10 +26,10 @@ export function useCancelSession(date: string, groupId: number) {
   })
 }
 
-export function useRegisterExtraSession(groupId: number) {
+export function useAddExtraSession(groupId: number) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: registerExtraSession,
+    mutationFn: addExtraSession,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: dashboardKeys.sessions(groupId) })
     },

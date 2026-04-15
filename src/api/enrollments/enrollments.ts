@@ -55,3 +55,9 @@ export async function getStudentEnrollmentsSummary(
   )
   return response.data.data || []
 }
+
+// get student enrollments by student id (for payment/receipt creation)
+export async function getStudentEnrollments(studentId: number): Promise<Enrollment[]> {
+  const response = await client.get<ApiResponse<Enrollment[]>>(`/enrollments/student/${studentId}`)
+  return response.data.data || []
+}

@@ -34,6 +34,7 @@ export interface EnrichedGroupPublic extends Group {
   course_name: string;
   group_name: string;
   instructor_name: string; 
+  default_day: string;
   schedule_time?: string;
   notes?: string | null;  // Added for editable group notes
   status: 'active' | 'inactive' | 'archived';  

@@ -1,2 +1,2 @@
 export { useDashboard, dashboardKeys } from './useDashboard'
-export { useMarkAttendance, useCancelSession, useRegisterExtraSession } from './useAttendance'
+export { useMarkAttendance, useCancelSession, useAddExtraSession } from './useAttendance'

@@ -12,6 +12,7 @@ export interface Enrollment {
   status: 'active' | 'completed' | 'dropped'
   amount_due: number
   discount_applied: number
+  payment_status?: 'paid' | 'due' | 'partial' | null
   notes?: string | null
   enrolled_at: string
   // Enriched fields (optional, populated by some endpoints)

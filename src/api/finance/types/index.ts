@@ -12,6 +12,10 @@ export type {
 
 // Receipt types
 export type {
+  // API-aligned types (new)
+  ReceiptLineInput,
+  ReceiptCreatedPublic,
+  // Legacy/existing types
   ReceiptLineItem,
   ReceiptHeader,
   ReceiptDetail,

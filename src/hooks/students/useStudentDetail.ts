@@ -3,7 +3,9 @@ import { getStudentById, getStudentWithDetails } from '../../api/crm/students/co
 import { getStudentBalance } from '../../api/crm/students/finance'
 import { getStudentSiblings } from '../../api/crm/students/siblings'
 import { getStudentCreditInfo, getUnpaidCompetitionFees } from '../../api/finance'
-import type { Student, StudentBalance, SiblingInfo, StudentWithDetails } from '../../api/crm/students'
+import type { Student, StudentWithDetails } from '../../api/crm/students/types/models'
+import type { StudentBalance } from '../../api/crm/students/types/finance'
+import type { SiblingInfo } from '../../api/crm/students/types/models'
 import type { CreditInfo, UnpaidCompFeeItem } from '../../api/finance'
 import { AxiosError } from 'axios'
 
