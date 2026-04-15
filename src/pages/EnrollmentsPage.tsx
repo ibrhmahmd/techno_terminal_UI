@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { EnrollmentQuickActions } from '../components/enrollments/EnrollmentQuickActions'
+import { ManageEnrollmentPanel } from '../components/enrollments/ManageEnrollmentPanel'
 import { EnrollPanel } from '../components/enrollments/EnrollPanel'
-import { TransferPanel } from '../components/enrollments/TransferPanel'
-import { DropPanel } from '../components/enrollments/DropPanel'
 
-type PanelType = 'enroll' | 'transfer' | 'drop'
+type PanelType = 'enroll' | 'manage'
 
 
 export function EnrollmentsPage() {
@@ -46,8 +45,7 @@ export function EnrollmentsPage() {
           <div className="mt-4">
             <EnrollmentQuickActions 
               onEnrollClick={() => setActivePanel('enroll')}
-              onTransferClick={() => setActivePanel('transfer')}
-              onDropClick={() => setActivePanel('drop')}
+              onManageClick={() => setActivePanel('manage')}
             />
           </div>
         </div>
@@ -57,22 +55,22 @@ export function EnrollmentsPage() {
       <div className="px-8 pt-4 border-b border-slate-200">
         <div className="max-w-[1400px] mx-auto">
           <div className="flex space-x-1">
-            {(['enroll', 'transfer', 'drop'] as PanelType[]).map((panel) => (
+            {(['enroll', 'manage'] as PanelType[]).map((panel) => (
               <button
                 key={panel}
                 onClick={() => handleTabChange(panel)}
-                className={`px-6 py-3 text-sm font-medium transition-colors relative capitalize ${
+                className={`px-6 py-3 text-sm font-bold transition-all relative capitalize ${
                   activePanel === panel
                     ? 'text-on-surface'
                     : 'text-slate-400 hover:text-on-surface'
                 }`}
               >
                 <span className="material-symbols-outlined inline-block mr-2 align-text-bottom">
-                  {panel === 'enroll' ? 'person_add' : panel === 'transfer' ? 'swap_horiz' : 'person_remove'}
+                  {panel === 'enroll' ? 'person_add' : 'settings_suggest'}
                 </span>
-                {panel}
+                {panel === 'manage' ? 'Transfer & Drop' : panel}
                 {activePanel === panel && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-t"></span>
+                  <span className="absolute bottom-0 left-0 right-0 h-1 bg-secondary rounded-t-full shadow-[0_-2px_8px_rgba(var(--color-secondary),0.3)]"></span>
                 )}
               </button>
             ))}
@@ -83,13 +81,15 @@ export function EnrollmentsPage() {
       {/* Alerts */}
       <section className="p-8 max-w-[1400px] mx-auto">
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm">
-            {error}
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm flex items-center gap-3">
+            <span className="material-symbols-outlined text-red-500">error</span>
+            <span className="font-medium">{error}</span>
           </div>
         )}
         {success && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-100 rounded-lg text-green-700 text-sm">
-            {success}
+          <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-xl text-green-700 text-sm flex items-center gap-3">
+            <span className="material-symbols-outlined text-green-500">check_circle</span>
+            <span className="font-medium">{success}</span>
           </div>
         )}
 
@@ -103,16 +103,8 @@ export function EnrollmentsPage() {
             useMockData={false}
           />
         )}
-        {activePanel === 'transfer' && (
-          <TransferPanel
-            isLoading={isLoading}
-            onSuccess={handleSuccess}
-            onError={handleError}
-            setIsLoading={setIsLoading}
-          />
-        )}
-        {activePanel === 'drop' && (
-          <DropPanel
+        {activePanel === 'manage' && (
+          <ManageEnrollmentPanel
             isLoading={isLoading}
             onSuccess={handleSuccess}
             onError={handleError}

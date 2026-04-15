@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import { searchStudents } from '../../api/crm'
-import { getEnrichedGroups } from '../../api/academics'
+import { useStudentsSearch } from '../../hooks/useDirectory'
+import { useGroupsFlat } from '../../hooks/useGroupQueries'
+import { useRecentGroups } from '../../hooks/useRecentGroups'
 import { createEnrollment } from '../../api/enrollments'
+import { StudentCombobox } from './StudentCombobox'
+import { GroupCombobox } from './GroupCombobox'
 import type { Student } from '../../api/crm'
 import type { EnrichedGroupPublic } from '../../api/academics'
 
@@ -19,13 +22,8 @@ const DAYS = ['All', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
 export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsLoading }: EnrollPanelProps) {
   const [studentSearch, setStudentSearch] = useState('')
   const [groupSearch, setGroupSearch] = useState('')
-  const [students, setStudents] = useState<Student[]>([])
-  const [groups, setGroups] = useState<EnrichedGroupPublic[]>([])
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
-  const [selectedDay, setSelectedDay] = useState<string>('All')
-  const [isSearchingStudents, setIsSearchingStudents] = useState(false)
-  const [isLoadingGroups, setIsLoadingGroups] = useState(false)
   const [amount, setAmount] = useState(150)
   const [discount, setDiscount] = useState(0)
   const [notes, setNotes] = useState('')
@@ -48,97 +46,22 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
     }
   }, [selectedGroup])
 
-  // Search students with loading state
+  // Debounce the student search for React Query
+  const [debouncedStudentSearch, setDebouncedStudentSearch] = useState('')
   useEffect(() => {
-    async function search() {
-      if (studentSearch.trim().length < 2) {
-        setStudents([])
-        return
-      }
-      setIsSearchingStudents(true)
-      try {
-        const data = await searchStudents(studentSearch.trim())
-        setStudents(data || [])
-      } catch (err) {
-        console.error('Student search failed:', err)
-        setStudents([])
-      } finally {
-        setIsSearchingStudents(false)
-      }
-    }
-    const timeout = setTimeout(search, 300)
-    return () => clearTimeout(timeout)
+    const timer = setTimeout(() => {
+      setDebouncedStudentSearch(studentSearch)
+    }, 300)
+    return () => clearTimeout(timer)
   }, [studentSearch])
 
-  // Load groups with day filter
-  useEffect(() => {
-    async function load() {
-      console.log('🔍 [Groups] Loading triggered. selectedDay:', selectedDay, 'groupSearch:', groupSearch)
-      
-      // Only load groups when a specific day is selected (not 'All')
-      if (selectedDay === 'All' && !groupSearch.trim()) {
-        console.log('⚠️ [Groups] Blocked: selectedDay is All and no search term')
-        setGroups([])
-        return
-      }
-      
-      setIsLoadingGroups(true)
-      try {
-        console.log('📡 [Groups] Calling getEnrichedGroups()...')
-        const result = await getEnrichedGroups()
-        console.log('✅ [Groups] API returned', result?.length || 0, 'groups:', result)
-        
-        let filtered = result || []
-        console.log('🔧 [Groups] Starting with', filtered.length, 'groups')
-        
-        // Filter by day if specific day selected
-        if (selectedDay !== 'All') {
-          console.log('📅 [Groups] Filtering by day:', selectedDay)
-          // Map abbreviated day to full day name (API returns full names like "Monday")
-          const dayMap: Record<string, string> = {
-            'Mon': 'Monday',
-            'Tue': 'Tuesday',
-            'Wed': 'Wednesday',
-            'Thu': 'Thursday',
-            'Fri': 'Friday',
-            'Sat': 'Saturday',
-            'Sun': 'Sunday'
-          }
-          const fullDayName = dayMap[selectedDay] || selectedDay
-          const beforeCount = filtered.length
-          filtered = filtered.filter(g => {
-            const groupDay = g.default_day || g.schedule_day
-            const match = groupDay?.toLowerCase() === fullDayName.toLowerCase()
-            console.log(`  Group "${g.group_name}" default_day: "${groupDay}" vs "${fullDayName}" = ${match}`)
-            return match
-          })
-          console.log(`📅 [Groups] Day filter: ${beforeCount} → ${filtered.length} groups`)
-        }
-        
-        // Filter by search term
-        if (groupSearch.trim()) {
-          const searchLower = groupSearch.toLowerCase()
-          console.log('🔎 [Groups] Filtering by search:', searchLower)
-          const beforeCount = filtered.length
-          filtered = filtered.filter(g => 
-            g.group_name?.toLowerCase().includes(searchLower) ||
-            g.course_name?.toLowerCase().includes(searchLower) ||
-            g.instructor_name?.toLowerCase().includes(searchLower)
-          )
-          console.log(`🔎 [Groups] Search filter: ${beforeCount} → ${filtered.length} groups`)
-        }
-        
-        console.log('🎯 [Groups] Final result:', filtered.length, 'groups to display')
-        setGroups(filtered)
-      } catch (err) {
-        console.error('❌ [Groups] Load failed:', err)
-        setGroups([])
-      } finally {
-        setIsLoadingGroups(false)
-      }
-    }
-    load()
-  }, [selectedDay, groupSearch])
+  // Hook into caches
+  const { data: studentsData, isLoading: isSearchingStudents } = useStudentsSearch(debouncedStudentSearch)
+  const { data: groupsData, isLoading: isLoadingGroups } = useGroupsFlat()
+  const { recentGroupIds, addRecentGroup } = useRecentGroups()
+
+  const students = studentsData || []
+  const groups = groupsData || []
 
   const handleEnroll = async () => {
     if (!selectedStudent || !selectedGroup) {
@@ -161,13 +84,14 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
           notes
         })
         onSuccess(`Successfully enrolled ${selectedStudent.full_name}`)
+        // Cache the group selection for quick reuse
+        addRecentGroup(selectedGroup.id)
       }
       // Reset
       setSelectedStudent(null)
       setSelectedGroup(null)
       setStudentSearch('')
       setGroupSearch('')
-      setSelectedDay('All')
       setAmount(150)
       setDiscount(0)
       setNotes('')
@@ -186,151 +110,28 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
         {/* Student Selection - 1/3 width */}
         <div className="lg:col-span-1">
           <h3 className="text-lg font-semibold text-on-surface mb-4">1. Select Student</h3>
-          {selectedStudent ? (
-            <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-              <span className="font-medium">{selectedStudent.full_name}</span>
-              <button 
-                onClick={() => { setSelectedStudent(null); setStudentSearch('') }}
-                className="text-sm text-red-600 hover:text-red-700"
-              >
-                Change
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-lg border border-slate-200 mb-2">
-                <span className="material-symbols-outlined text-slate-500">search</span>
-                <input
-                  type="text"
-                  placeholder="Search student (min 2 chars)..."
-                  value={studentSearch}
-                  onChange={(e) => setStudentSearch(e.target.value)}
-                  className="bg-transparent border-none outline-none text-sm text-on-surface flex-1"
-                />
-                {isSearchingStudents && <LoadingSpinner size="sm" />}
-              </div>
-              {studentSearch.trim().length > 0 && studentSearch.trim().length < 2 && (
-                <p className="text-xs text-slate-400 mt-1">Type at least 2 characters to search</p>
-              )}
-              {students.length > 0 && (
-                <div className="border border-slate-200 rounded-lg overflow-hidden max-h-48 overflow-y-auto">
-                  {students.map(s => (
-                    <button
-                      key={s.id}
-                      onClick={() => setSelectedStudent(s)}
-                      className="w-full px-4 py-2 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0"
-                    >
-                      <p className="font-medium text-sm">{s.full_name}</p>
-                      <p className="text-xs text-slate-500">{s.phone || 'No phone'}</p>
-                    </button>
-                  ))}
-                </div>
-              )}
-              {studentSearch.trim().length >= 2 && !isSearchingStudents && students.length === 0 && (
-                <p className="text-sm text-slate-400 mt-2">No students found</p>
-              )}
-            </>
-          )}
+          <StudentCombobox
+            value={selectedStudent}
+            onChange={setSelectedStudent}
+            search={studentSearch}
+            setSearch={setStudentSearch}
+            students={students}
+            isLoading={isSearchingStudents}
+          />
         </div>
 
         {/* Group Selection - 2/3 width */}
         <div className="lg:col-span-2">
           <h3 className="text-lg font-semibold text-on-surface mb-4">2. Select Group</h3>
-          {selectedGroup ? (
-            <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-              <div>
-                <span className="font-medium">{selectedGroup.group_name}</span>
-                <p className="text-xs text-slate-500">{selectedGroup.course_name} • {selectedGroup.schedule_time}</p>
-              </div>
-              <button 
-                onClick={() => { setSelectedGroup(null); setGroupSearch(''); setSelectedDay('All') }}
-                className="text-sm text-red-600 hover:text-red-700"
-              >
-                Change
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* Day Selector */}
-              <div className="mb-3">
-                <p className="text-xs text-slate-500 mb-1">Filter by day</p>
-                <div className="flex items-center gap-1 overflow-x-auto pb-1">
-                  {DAYS.map(day => (
-                    <button
-                      key={day}
-                      onClick={() => {
-                        console.log('👆 [DaySelector] Clicked day:', day, 'Previous day:', selectedDay)
-                        setSelectedDay(day)
-                      }}
-                      className={`px-2 py-1 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
-                        selectedDay === day
-                          ? 'bg-secondary text-white'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      {day}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Group Search */}
-              <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-lg border border-slate-200 mb-2">
-                <span className="material-symbols-outlined text-slate-500">search</span>
-                <input
-                  type="text"
-                  placeholder="Search groups by name, course, or instructor..."
-                  value={groupSearch}
-                  onChange={(e) => setGroupSearch(e.target.value)}
-                  className="bg-transparent border-none outline-none text-sm text-on-surface flex-1"
-                />
-                {isLoadingGroups && <LoadingSpinner size="sm" />}
-              </div>
-              
-              {/* Groups List */}
-              <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-lg">
-                {groups.length > 0 ? (
-                  groups.map(g => (
-                    <button
-                      key={g.id}
-                      onClick={() => setSelectedGroup(g)}
-                      className="w-full px-4 py-3 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium text-sm text-on-surface">{g.group_name}</p>
-                          <p className="text-xs text-slate-500">{g.course_name}</p>
-                        </div>
-                        <span className="text-xs px-2 py-0.5 bg-slate-100 rounded text-slate-600">
-                          {g.default_day}
-                        </span>
-                      </div>
-                      <div className="mt-1 flex items-center gap-3 text-xs text-slate-500">
-                        <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[14px]">schedule</span>
-                          {g.schedule_time}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[14px]">person</span>
-                          {g.instructor_name}
-                        </span>
-                      </div>
-                    </button>
-                  ))
-                ) : (
-                  <div className="p-4 text-center text-sm text-slate-400">
-                    {isLoadingGroups ? (
-                      <span>Loading groups...</span>
-                    ) : selectedDay === 'All' && !groupSearch.trim() ? (
-                      <span>Select a day or search to find groups</span>
-                    ) : (
-                      <span>No groups found. Try different filters.</span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+          <GroupCombobox
+            value={selectedGroup}
+            onChange={setSelectedGroup}
+            search={groupSearch}
+            setSearch={setGroupSearch}
+            groups={groups}
+            isLoading={isLoadingGroups}
+            recentGroupIds={recentGroupIds}
+          />
         </div>
       </div>
 

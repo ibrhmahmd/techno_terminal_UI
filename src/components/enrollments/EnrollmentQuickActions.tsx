@@ -2,38 +2,29 @@ import { QuickActionWidget } from '../dashboard/QuickActionWidget'
 
 interface EnrollmentQuickActionsProps {
   onEnrollClick?: () => void
-  onTransferClick?: () => void
-  onDropClick?: () => void
+  onManageClick?: () => void
 }
 
 export function EnrollmentQuickActions({
   onEnrollClick,
-  onTransferClick,
-  onDropClick
+  onManageClick
 }: EnrollmentQuickActionsProps) {
   return (
     <section className="w-full">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <QuickActionWidget
           icon="person_add"
-          title="Enroll Student"
-          subtitle="Add new enrollment"
+          title="New Enrollment"
+          subtitle="Add student to a group"
           variant="primary"
           onClick={onEnrollClick || (() => {})}
         />
         <QuickActionWidget
-          icon="swap_horiz"
-          title="Transfer Student"
-          subtitle="Move between groups"
+          icon="settings_suggest"
+          title="Manage Enrollment"
+          subtitle="Transfer or drop students"
           variant="secondary"
-          onClick={onTransferClick || (() => {})}
-        />
-        <QuickActionWidget
-          icon="person_remove"
-          title="Drop Student"
-          subtitle="Remove from group"
-          variant="accent"
-          onClick={onDropClick || (() => {})}
+          onClick={onManageClick || (() => {})}
         />
       </div>
     </section>
