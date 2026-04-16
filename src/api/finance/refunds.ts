@@ -32,7 +32,7 @@ export async function issueRefund(request: RefundRequest): Promise<RefundResult>
  * @see docs/api/finance/refunds.md#preview-overpayment-risk
  */
 export async function previewOverpaymentRisk(request: CreateReceiptRequest): Promise<OverpaymentRisk> {
-  const response = await client.post<ApiResponse<OverpaymentRisk>>('/finance/receipts/preview-risk', request)
+  const response = await client.post<ApiResponse<OverpaymentRisk>>('/finance/risk/overpayment', request)
   return response.data.data
 }
 

@@ -17,7 +17,8 @@ import type { UnpaidCompFeeItem } from './types'
  */
 export async function getUnpaidCompetitionFees(studentId: number): Promise<UnpaidCompFeeItem[]> {
   const response = await client.get<ApiResponse<UnpaidCompFeeItem[]>>(
-    `/finance/competition-fees/student/${studentId}`
+    '/finance/competition-fees',
+    { params: { student_id: studentId } }
   )
   return response.data.data || []
 }

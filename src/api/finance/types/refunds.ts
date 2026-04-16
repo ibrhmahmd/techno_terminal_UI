@@ -12,13 +12,9 @@ export interface RefundRequest {
 }
 
 export interface RefundResult {
-  refund_id: number
-  payment_id: number
-  amount: number
-  method: string
-  reason: string
-  new_balance: number
-  processed_at: string
+  receipt_number: string | null
+  refunded_amount: number
+  new_balance: number | null
 }
 
 export interface RiskAssessmentPublic {

@@ -11,8 +11,6 @@ export {
   getEnrollmentBalance,
   getUnpaidEnrollments,
   adjustStudentBalance,
-  getStudentCreditInfo,
-  getBalanceSummary,
 } from './balance'
 
 // Receipt Management

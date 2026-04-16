@@ -32,9 +32,9 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateRece
       students: [],
       selectedEnrollment: null,
       amount: 0,
-      type: 'tuition',
+      payment_type: 'course_level',
       discount: 0,
-      description: ''
+      notes: ''
     }
   ])
   const [localOverpaymentRisk, setLocalOverpaymentRisk] = useState<{ has_risk: boolean; message?: string } | null>(null)
@@ -65,9 +65,9 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateRece
       students: [],
       selectedEnrollment: null,
       amount: 0,
-      type: 'tuition',
+      payment_type: 'course_level',
       discount: 0,
-      description: ''
+      notes: ''
     }])
   }
 
@@ -111,20 +111,20 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateRece
     }
 
     const request: CreateReceiptRequest = {
-      payer_name: payerName,
+      payer_name: payerName || null,
       method: paymentMethod,
-      notes,
+      notes: notes || null,
+      allow_credit: true,
       lines: validItems.map((item, index) => ({
         id: index + 1,
         student_id: item.selectedStudent!.id,
-        enrollment_id: item.selectedEnrollment!.enrollment_id,
+        enrollment_id: item.selectedEnrollment?.enrollment_id,
         amount: item.amount,
-        transaction_type: item.type === 'tuition' ? 'charge' : 'charge',
-        payment_type: item.type === 'tuition' ? 'course_level' : item.type,
+        transaction_type: 'charge',
+        payment_type: item.payment_type,
         discount: item.discount || 0,
-        notes: item.description
-      })),
-      allow_credit: true
+        notes: item.notes || undefined
+      }))
     }
 
     try {
@@ -149,28 +149,23 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateRece
       return
     }
 
-    if (!payerName.trim()) {
-      onError('Please enter payer name')
-      return
-    }
-
     onError('')
     try {
       const request: CreateReceiptRequest = {
-        payer_name: payerName,
+        payer_name: payerName || null,
         method: paymentMethod,
-        notes,
+        notes: notes || null,
+        allow_credit: true,
         lines: validItems.map((item, index) => ({
           id: index + 1,
           student_id: item.selectedStudent!.id,
-          enrollment_id: item.selectedEnrollment!.enrollment_id,
+          enrollment_id: item.selectedEnrollment?.enrollment_id,
           amount: item.amount,
-          transaction_type: item.type === 'tuition' ? 'charge' : 'charge',
-          payment_type: item.type === 'tuition' ? 'course_level' : item.type,
+          transaction_type: 'charge',
+          payment_type: item.payment_type,
           discount: item.discount || 0,
-          notes: item.description
-        })),
-        allow_credit: true
+          notes: item.notes || undefined
+        }))
       }
       
       const result = await create(request)
@@ -186,9 +181,9 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateRece
         students: [],
         selectedEnrollment: null,
         amount: 0,
-        type: 'tuition',
+        payment_type: 'course_level',
         discount: 0,
-        description: ''
+        notes: ''
       }])
       setLocalOverpaymentRisk(null)
       clearOverpaymentRisk()

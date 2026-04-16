@@ -4,10 +4,6 @@ import {
   getEnrollmentBalance,
   getUnpaidEnrollments,
   adjustStudentBalance,
-  getStudentCreditInfo,
-  getBalanceSummary,
-  type CreditInfo,
-  type BalanceSummary,
 } from '../../api/finance'
 import type {
   StudentBalance,
@@ -24,32 +20,24 @@ export interface UseBalanceResult {
   enrollmentBalance: EnrollmentBalance | null
   unpaidEnrollments: PaginationResult<UnpaidEnrollment> | null
   adjustmentResult: BalanceAdjustmentResult | null
-  creditInfo: CreditInfo | null
-  balanceSummary: BalanceSummary | null
 
   // Loading states
   isLoadingBalance: boolean
   isLoadingEnrollmentBalance: boolean
   isLoadingUnpaidEnrollments: boolean
   isAdjusting: boolean
-  isLoadingCreditInfo: boolean
-  isLoadingSummary: boolean
 
   // Errors
   balanceError: Error | null
   enrollmentBalanceError: Error | null
   unpaidEnrollmentsError: Error | null
   adjustError: Error | null
-  creditInfoError: Error | null
-  summaryError: Error | null
 
   // Actions
   fetchBalance: (studentId: number, useMaterialized?: boolean) => Promise<StudentBalance>
   fetchEnrollmentBalance: (studentId: number, enrollmentId: number) => Promise<EnrollmentBalance>
   fetchUnpaidEnrollments: (params?: PaginationParams & { group_id?: number }) => Promise<PaginationResult<UnpaidEnrollment>>
   adjustBalance: (studentId: number, data: BalanceAdjustmentDTO) => Promise<BalanceAdjustmentResult>
-  fetchCreditInfo: (studentId: number) => Promise<CreditInfo>
-  fetchBalanceSummary: () => Promise<BalanceSummary>
 
   // Utils
   clearErrors: () => void
@@ -62,24 +50,18 @@ export function useBalance(): UseBalanceResult {
   const [enrollmentBalance, setEnrollmentBalance] = useState<EnrollmentBalance | null>(null)
   const [unpaidEnrollments, setUnpaidEnrollments] = useState<PaginationResult<UnpaidEnrollment> | null>(null)
   const [adjustmentResult, setAdjustmentResult] = useState<BalanceAdjustmentResult | null>(null)
-  const [creditInfo, setCreditInfo] = useState<CreditInfo | null>(null)
-  const [balanceSummary, setBalanceSummary] = useState<BalanceSummary | null>(null)
 
   // Loading states
   const [isLoadingBalance, setIsLoadingBalance] = useState(false)
   const [isLoadingEnrollmentBalance, setIsLoadingEnrollmentBalance] = useState(false)
   const [isLoadingUnpaidEnrollments, setIsLoadingUnpaidEnrollments] = useState(false)
   const [isAdjusting, setIsAdjusting] = useState(false)
-  const [isLoadingCreditInfo, setIsLoadingCreditInfo] = useState(false)
-  const [isLoadingSummary, setIsLoadingSummary] = useState(false)
 
   // Error states
   const [balanceError, setBalanceError] = useState<Error | null>(null)
   const [enrollmentBalanceError, setEnrollmentBalanceError] = useState<Error | null>(null)
   const [unpaidEnrollmentsError, setUnpaidEnrollmentsError] = useState<Error | null>(null)
   const [adjustError, setAdjustError] = useState<Error | null>(null)
-  const [creditInfoError, setCreditInfoError] = useState<Error | null>(null)
-  const [summaryError, setSummaryError] = useState<Error | null>(null)
 
   const fetchBalance = useCallback(async (studentId: number, useMaterialized: boolean = true) => {
     setIsLoadingBalance(true)
@@ -145,45 +127,11 @@ export function useBalance(): UseBalanceResult {
     }
   }, [])
 
-  const fetchCreditInfo = useCallback(async (studentId: number) => {
-    setIsLoadingCreditInfo(true)
-    setCreditInfoError(null)
-    try {
-      const data = await getStudentCreditInfo(studentId)
-      setCreditInfo(data)
-      return data
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch credit info')
-      setCreditInfoError(error)
-      throw error
-    } finally {
-      setIsLoadingCreditInfo(false)
-    }
-  }, [])
-
-  const fetchBalanceSummary = useCallback(async () => {
-    setIsLoadingSummary(true)
-    setSummaryError(null)
-    try {
-      const data = await getBalanceSummary()
-      setBalanceSummary(data)
-      return data
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch balance summary')
-      setSummaryError(error)
-      throw error
-    } finally {
-      setIsLoadingSummary(false)
-    }
-  }, [])
-
   const clearErrors = useCallback(() => {
     setBalanceError(null)
     setEnrollmentBalanceError(null)
     setUnpaidEnrollmentsError(null)
     setAdjustError(null)
-    setCreditInfoError(null)
-    setSummaryError(null)
   }, [])
 
   const clearAdjustmentResult = useCallback(() => {
@@ -196,32 +144,24 @@ export function useBalance(): UseBalanceResult {
     enrollmentBalance,
     unpaidEnrollments,
     adjustmentResult,
-    creditInfo,
-    balanceSummary,
 
     // Loading states
     isLoadingBalance,
     isLoadingEnrollmentBalance,
     isLoadingUnpaidEnrollments,
     isAdjusting,
-    isLoadingCreditInfo,
-    isLoadingSummary,
 
     // Errors
     balanceError,
     enrollmentBalanceError,
     unpaidEnrollmentsError,
     adjustError,
-    creditInfoError,
-    summaryError,
 
     // Actions
     fetchBalance,
     fetchEnrollmentBalance,
     fetchUnpaidEnrollments,
     adjustBalance,
-    fetchCreditInfo,
-    fetchBalanceSummary,
 
     // Utils
     clearErrors,

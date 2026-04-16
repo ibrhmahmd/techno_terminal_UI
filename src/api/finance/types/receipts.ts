@@ -26,7 +26,7 @@ export interface ReceiptHeader {
 }
 
 export interface ReceiptDetail {
-  header: ReceiptHeader
+  receipt: ReceiptHeader
   lines: ReceiptLineItem[]
   total: number
 }
@@ -40,10 +40,8 @@ export interface ReceiptListItem {
 }
 
 export interface BatchGenerateRequest {
-  student_ids?: number[]
-  date_from?: string
-  date_to?: string
-  payment_method?: string
+  receipt_ids: number[]
+  template_name?: 'standard' | 'detailed'
 }
 
 // API-Aligned Types (matches finance-API-doc.md)
@@ -62,11 +60,11 @@ export interface ReceiptLinePublic {
 export type ReceiptLineInput = ReceiptLinePublic
 
 export interface CreateReceiptRequest {
-  payer_name: string           // REQUIRED: Who is paying
-  method: 'cash' | 'card' | 'transfer' | 'other'  // Payment method
-  notes?: string               // General receipt notes
-  lines: ReceiptLinePublic[]   // Payment line items (REQUIRED, min 1)
-  allow_credit?: boolean       // Allow overpayment/credit (default: true)
+  payer_name?: string | null   // Optional, default null
+  method?: 'cash' | 'card' | 'transfer' | 'other'  // Optional, default "cash"
+  notes?: string | null        // General receipt notes
+  allow_credit?: boolean      // Optional, default true
+  lines: ReceiptLinePublic[]   // REQUIRED: Payment line items (min 1)
 }
 
 // Response DTOs from API

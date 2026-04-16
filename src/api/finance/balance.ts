@@ -8,7 +8,6 @@
 
 import client from '../client'
 import type { ApiResponse } from '../../types/api'
-import type { CreditInfo, BalanceSummary } from './types'
 import type { StudentBalance, EnrollmentBalance, BalanceAdjustmentResult, UnpaidEnrollment } from '../crm/students/types/finance'
 import type { BalanceAdjustmentDTO } from '../crm/students/types/inputs'
 import type { PaginationParams, PaginationResult } from '../../types/pagination'
@@ -88,25 +87,3 @@ export async function adjustStudentBalance(
   return response.data.data
 }
 
-/**
- * Get student credit information
- * @param studentId - Student ID
- * @see docs/api/finance/balance.md#get-student-credit-info
- */
-export async function getStudentCreditInfo(studentId: number): Promise<CreditInfo> {
-  const response = await client.get<ApiResponse<CreditInfo>>(
-    `/finance/credit/student/${studentId}`
-  )
-  return response.data.data
-}
-
-/**
- * Get balance summary across all students
- * @see docs/api/finance/balance.md#get-balance-summary
- */
-export async function getBalanceSummary(): Promise<BalanceSummary> {
-  const response = await client.get<ApiResponse<BalanceSummary>>(
-    '/finance/balance-summary'
-  )
-  return response.data.data
-}

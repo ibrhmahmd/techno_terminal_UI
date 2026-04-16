@@ -80,7 +80,7 @@ export async function generateReceiptText(receiptId: number): Promise<string> {
  * @see docs/api/finance/receipts.md#mark-receipt-as-sent
  */
 export async function markReceiptAsSent(receiptId: number): Promise<void> {
-  await client.patch<ApiResponse<void>>(`/finance/receipts/${receiptId}/mark-sent`)
+  await client.post<ApiResponse<void>>(`/finance/receipts/${receiptId}/mark-sent`)
 }
 
 /**
