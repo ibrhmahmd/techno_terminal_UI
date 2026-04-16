@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuthStore } from '../../store/authStore'
 
 const navSections = [
   {
@@ -27,13 +28,22 @@ const navSections = [
   },
   {
     title: 'Resources',
-    items: [{ path: '/staff', label: 'Staff', icon: 'people' }],
+    items: [
+      { path: '/staff', label: 'Staff', icon: 'people' },
+      { path: '/settings', label: 'Settings', icon: 'settings' },
+    ],
   },
 ]
 
 export function Sidebar() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { user, logout } = useAuthStore()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/login')
+  }
 
   const isActive = (path: string) => {
     if (path === '/dashboard' && (location.pathname === '/' || location.pathname === '/dashboard')) return true
@@ -83,14 +93,28 @@ export function Sidebar() {
         </div>
       </nav>
 
-      {/* Footer - Back to Hub */}
-      <div className="p-4 border-t border-slate-800">
+      {/* Footer - User Info & Logout */}
+      <div className="p-4 border-t border-slate-800 space-y-3">
+        {/* User Info Card */}
+        {user && (
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/50">
+            <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-sm text-teal-400">person</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-200 truncate">{user.username}</p>
+              <p className="text-xs text-slate-500 capitalize">{user.role.replace('_', ' ')}</p>
+            </div>
+          </div>
+        )}
+        
+        {/* Logout Button */}
         <button
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-2 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
         >
-          <span className="material-symbols-outlined text-base">home</span>
-          <span>Back to Hub</span>
+          <span className="material-symbols-outlined text-base">logout</span>
+          <span>Sign Out</span>
         </button>
       </div>
     </aside>

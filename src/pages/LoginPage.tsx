@@ -25,7 +25,11 @@ export function LoginPage() {
     try {
       const response = await login({ email, password })
       if (response.success) {
-        storeLogin(response.data.access_token, response.data.user as any)
+        storeLogin(
+          response.data.access_token,
+          response.data.refresh_token,
+          response.data.user
+        )
         navigate('/dashboard')
       } else {
         setError('Login failed. Please check your credentials.')

@@ -16,6 +16,7 @@ import { CoursesPage } from './pages/CoursesPage'
 import { CourseDetailPage } from './pages/CourseDetailPage'
 import { ReportsPage } from './pages/ReportsPage'
 import { StaffPage } from './pages/StaffPage'
+import { SettingsPage } from './pages/SettingsPage'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useAuthStore()
@@ -49,11 +50,12 @@ function App() {
             <Route path="/parents/:id" element={<ParentDetailPage />} />
             <Route path="/enrollments" element={<EnrollmentsPage />} />
             <Route path="/finance" element={<FinancePage />} />
-            <Route path="/attendance" element={<div>Attendance (Phase 3)</div>} />
+            <Route path="/attendance" element={<div>Attendance</div>} />
             <Route path="/competitions" element={<CompetitionsPage />} />
             <Route path="/competitions/:id" element={<CompetitionDetailPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/staff" element={<StaffPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
 

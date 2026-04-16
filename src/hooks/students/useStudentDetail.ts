@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { getStudentById, getStudentWithDetails } from '../../api/crm/students/core'
 import { getStudentBalance } from '../../api/crm/students/finance'
 import { getStudentSiblings } from '../../api/crm/students/siblings'
-import { getStudentCreditInfo, getUnpaidCompetitionFees } from '../../api/finance'
+import { getUnpaidCompetitionFees } from '../../api/finance'
 import type { Student, StudentWithDetails } from '../../api/crm/students/types/models'
 import type { StudentBalance } from '../../api/crm/students/types/finance'
 import type { SiblingInfo } from '../../api/crm/students/types/models'
-import type { CreditInfo, UnpaidCompFeeItem } from '../../api/finance'
+import type { UnpaidCompFeeItem } from '../../api/finance'
 import { AxiosError } from 'axios'
 
 interface UseStudentDetailReturn {
@@ -15,7 +15,6 @@ interface UseStudentDetailReturn {
   details: StudentWithDetails | null
   balance: StudentBalance | null
   siblings: SiblingInfo[]
-  creditInfo: CreditInfo | null
   unpaidCompetitionFees: UnpaidCompFeeItem[]
 
   // Loading states (granular)
@@ -23,7 +22,6 @@ interface UseStudentDetailReturn {
   loadingBalance: boolean
   loadingSiblings: boolean
   loadingDetails: boolean
-  loadingCreditInfo: boolean
   loadingCompetitionFees: boolean
 
   // Combined loading state
@@ -35,7 +33,6 @@ interface UseStudentDetailReturn {
   balanceError: string | null
   siblingsError: string | null
   detailsError: string | null
-  creditInfoError: string | null
   competitionFeesError: string | null
 
   // Actions
@@ -44,7 +41,6 @@ interface UseStudentDetailReturn {
   refreshBalance: () => Promise<void>
   refreshSiblings: () => Promise<void>
   refreshDetails: () => Promise<void>
-  refreshCreditInfo: () => Promise<void>
   refreshCompetitionFees: () => Promise<void>
 }
 
@@ -54,7 +50,6 @@ export function useStudentDetail(studentId: number | null): UseStudentDetailRetu
   const [details, setDetails] = useState<StudentWithDetails | null>(null)
   const [balance, setBalance] = useState<StudentBalance | null>(null)
   const [siblings, setSiblings] = useState<SiblingInfo[]>([])
-  const [creditInfo, setCreditInfo] = useState<CreditInfo | null>(null)
   const [unpaidCompetitionFees, setUnpaidCompetitionFees] = useState<UnpaidCompFeeItem[]>([])
 
   // Loading states
@@ -62,7 +57,6 @@ export function useStudentDetail(studentId: number | null): UseStudentDetailRetu
   const [loadingBalance, setLoadingBalance] = useState(false)
   const [loadingSiblings, setLoadingSiblings] = useState(false)
   const [loadingDetails, setLoadingDetails] = useState(false)
-  const [loadingCreditInfo, setLoadingCreditInfo] = useState(false)
   const [loadingCompetitionFees, setLoadingCompetitionFees] = useState(false)
 
   // Error states
@@ -70,7 +64,6 @@ export function useStudentDetail(studentId: number | null): UseStudentDetailRetu
   const [balanceError, setBalanceError] = useState<string | null>(null)
   const [siblingsError, setSiblingsError] = useState<string | null>(null)
   const [detailsError, setDetailsError] = useState<string | null>(null)
-  const [creditInfoError, setCreditInfoError] = useState<string | null>(null)
   const [competitionFeesError, setCompetitionFeesError] = useState<string | null>(null)
 
   // Fetch student basic info
@@ -137,22 +130,6 @@ export function useStudentDetail(studentId: number | null): UseStudentDetailRetu
     }
   }, [studentId])
 
-  // Fetch credit info from finance API
-  const refreshCreditInfo = useCallback(async () => {
-    if (!studentId) return
-    setLoadingCreditInfo(true)
-    setCreditInfoError(null)
-    try {
-      const data = await getStudentCreditInfo(studentId)
-      setCreditInfo(data)
-    } catch (err) {
-      const axiosErr = err as AxiosError<{ detail?: string }>
-      setCreditInfoError(axiosErr.response?.data?.detail || 'Failed to load credit info')
-    } finally {
-      setLoadingCreditInfo(false)
-    }
-  }, [studentId])
-
   // Fetch unpaid competition fees from finance API
   const refreshCompetitionFees = useCallback(async () => {
     if (!studentId) return
@@ -176,10 +153,9 @@ export function useStudentDetail(studentId: number | null): UseStudentDetailRetu
       refreshDetails(),
       refreshBalance(),
       refreshSiblings(),
-      refreshCreditInfo(),
       refreshCompetitionFees()
     ])
-  }, [refreshStudent, refreshDetails, refreshBalance, refreshSiblings, refreshCreditInfo, refreshCompetitionFees])
+  }, [refreshStudent, refreshDetails, refreshBalance, refreshSiblings, refreshCompetitionFees])
 
   // Initial load
   useEffect(() => {
@@ -189,23 +165,21 @@ export function useStudentDetail(studentId: number | null): UseStudentDetailRetu
   }, [studentId, refresh])
 
   // Combined loading state
-  const isLoading = loadingStudent || loadingBalance || loadingSiblings || loadingDetails || loadingCreditInfo || loadingCompetitionFees
+  const isLoading = loadingStudent || loadingBalance || loadingSiblings || loadingDetails || loadingCompetitionFees
 
   // Combined error
-  const error = studentError || balanceError || siblingsError || detailsError || creditInfoError || competitionFeesError
+  const error = studentError || balanceError || siblingsError || detailsError || competitionFeesError
 
   return {
     student,
     details,
     balance,
     siblings,
-    creditInfo,
     unpaidCompetitionFees,
     loadingStudent,
     loadingBalance,
     loadingSiblings,
     loadingDetails,
-    loadingCreditInfo,
     loadingCompetitionFees,
     isLoading,
     error,
@@ -213,14 +187,12 @@ export function useStudentDetail(studentId: number | null): UseStudentDetailRetu
     balanceError,
     siblingsError,
     detailsError,
-    creditInfoError,
     competitionFeesError,
     refresh,
     refreshStudent,
     refreshBalance,
     refreshSiblings,
     refreshDetails,
-    refreshCreditInfo,
     refreshCompetitionFees
   }
 }
