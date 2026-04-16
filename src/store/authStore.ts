@@ -8,7 +8,7 @@ export interface User {
   employee_id: number
   username: string
   email: string
-  role: 'admin' | 'system_admin'
+  role: string
   is_active: boolean
   last_login: string
   created_at: string | null
@@ -26,7 +26,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       token: null,
       refreshToken: null,
       user: null,
