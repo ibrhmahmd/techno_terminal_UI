@@ -1,5 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { getCoursesPaginated, type Course } from '../api/academics'
+import { queryKeys } from './queryKeys'
 
 export type SortField = 'name' | 'category' | 'price_per_level' | 'sessions_per_level'
 export type SortDirection = 'asc' | 'desc'
@@ -9,33 +11,27 @@ export type SortDirection = 'asc' | 'desc'
  * Currently implements local pagination/sorting/filtering.
  */
 export function useCourses() {
-  const [courses, setCourses] = useState<Course[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [sortField, setSortField] = useState<SortField>('name')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
 
-  const loadCourses = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
+  const { 
+    data, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useQuery({
+    queryKey: queryKeys.courses,
+    queryFn: async () => {
       const result = await getCoursesPaginated({ skip: 0, limit: 50 })
-      console.log('[DEBUG] Courses loaded from API:', result)
-      setCourses(result.items || [])
-    } catch (err: any) {
-      console.error('[useCourses] loadCourses failed:', err)
-      setError('Failed to load courses. Please check your connection.')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      return result.items || []
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
 
-  useEffect(() => {
-    loadCourses()
-  }, [loadCourses])
+  const courses = data || []
 
   const processedCourses = useMemo(() => {
     const filtered = courses.filter((course) =>
@@ -87,10 +83,9 @@ export function useCourses() {
 
   return {
     courses,
-    setCourses,
     totalCourses: courses.length,
     isLoading,
-    error,
+    error: error instanceof Error ? error.message : null,
     searchTerm,
     setSearchTerm,
     currentPage,
@@ -103,6 +98,6 @@ export function useCourses() {
     processedCourses,
     paginatedCourses,
     totalPages,
-    refresh: loadCourses
+    refresh: async () => { await refetch() }
   }
 }

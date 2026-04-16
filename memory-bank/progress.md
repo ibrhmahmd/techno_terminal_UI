@@ -114,8 +114,12 @@
   - ✅ Added type annotations to event handlers (React.ChangeEvent)
   - ✅ Created archive structure for completed plan files
   - ✅ Created generic usePaginatedList hook for pattern consolidation
-  - ⏳ Remaining: Reports/Analytics DTO type mismatches
-  - ⏳ Remaining: React Query migration for useCourses, useCompetitions, useGroupMutations
+  - ✅ Created centralized queryKeys.ts for React Query cache management
+  - ✅ Migrated useCompetitions.ts to React Query (useQuery with staleTime)
+  - ✅ Migrated useStudentCore.ts to React Query (useQueries for parallel fetching)
+  - ✅ Migrated useCourses.ts to React Query (useQuery with client-side filtering)
+  - ✅ Migrated useGroupMutations.ts to React Query (useMutation with cache invalidation)
+  - ⏳ Remaining: Reports/Analytics DTO type mismatches (~20 build errors)
 
 ---
 

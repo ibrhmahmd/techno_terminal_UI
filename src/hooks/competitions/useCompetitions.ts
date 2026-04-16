@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { 
   getCompetitions, 
   type Competition, 
   type CompetitionStatus,
   type GetCompetitionsParams 
 } from '../../api/competitions'
+import { queryKeys } from '../queryKeys'
 
 interface UseCompetitionsReturn {
   competitions: Competition[]
@@ -24,33 +26,27 @@ interface UseCompetitionsReturn {
 const PAGE_SIZE = 20
 
 export function useCompetitions(): UseCompetitionsReturn {
-  const [competitions, setCompetitions] = useState<Competition[]>([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState<GetCompetitionsParams>({
     skip: 0,
     limit: PAGE_SIZE,
   })
 
-  const fetchCompetitions = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
+  const { 
+    data, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useQuery({
+    queryKey: [...queryKeys.competitions, filters],
+    queryFn: async () => {
       const response = await getCompetitions(filters)
-      setCompetitions(response.data)
-      setTotalCount(response.total)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load competitions')
-      setCompetitions([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [filters])
+      return response
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
 
-  useEffect(() => {
-    fetchCompetitions()
-  }, [fetchCompetitions])
+  const competitions = data?.data || []
+  const totalCount = data?.total || 0
 
   const setStatusFilter = useCallback((status: CompetitionStatus | undefined) => {
     setFilters(prev => ({ ...prev, status, skip: 0 }))
@@ -78,7 +74,7 @@ export function useCompetitions(): UseCompetitionsReturn {
     competitions,
     totalCount,
     isLoading,
-    error,
+    error: error instanceof Error ? error.message : null,
     filters,
     currentPage,
     totalPages,
@@ -86,6 +82,6 @@ export function useCompetitions(): UseCompetitionsReturn {
     setStatusFilter,
     setSearchTerm,
     setPage,
-    refresh: fetchCompetitions,
+    refresh: async () => { await refetch() },
   }
 }

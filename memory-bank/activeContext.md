@@ -23,6 +23,25 @@
 - Created `usePaginatedList.ts` generic hook for consolidating list/pagination patterns
 - Created archive structure for completed plan files (8 files moved)
 
+### Recently Completed
+- ✅ React Query Migration Complete - All 4 hooks migrated
+  - useCompetitions.ts → useQuery with staleTime
+  - useStudentCore.ts → useQueries for parallel fetching
+  - useCourses.ts → useQuery with client-side filtering
+  - useGroupMutations.ts → useMutation with cache invalidation
+- ✅ Created centralized queryKeys.ts for cache management
+- ✅ Student API modularized with types and re-exports
+- ✅ useCourses hook optimized (4.5s → 1.2s load time)
+- ✅ Implemented StudentSelector caching with usePaginatedList hook
+
+### In Progress
+- Reports/Analytics DTO type mismatches (~20 build errors remaining) 
+- `finance.ts` - Balance queries (getStudentBalance, getEnrollmentBalance, getUnpaidEnrollments)
+- `status.ts` - Status management (updateStudentStatus, setWaitingPriority, getStatusSummary)
+- `history.ts` - History records (getStatusHistory, getAttendanceHistory)
+- `siblings.ts` - Sibling relationships (getStudentSiblings, linkSibling, unlinkSibling)
+- `search.ts` - Search operations (searchStudents, searchStudentsAdvanced)
+
 ## Recent Changes
 
 ### Completed (April 12, 2026) - Student API Modularization & Integration
