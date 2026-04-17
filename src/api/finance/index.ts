@@ -36,5 +36,11 @@ export {
   getUnpaidCompetitionFees,
 } from './competition'
 
+// Reporting
+export {
+  getDailyCollections,
+  getDailyReceipts,
+} from './reporting'
+
 // Types
 export type * from './types'

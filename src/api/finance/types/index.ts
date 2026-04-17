@@ -5,7 +5,6 @@
 
 // Balance types
 export type {
-  CreditInfo,
   BalanceSummary,
   BalanceAdjustmentRequest,
 } from './balance'
@@ -42,3 +41,9 @@ export type {
 export type {
   UnpaidCompFeeItem,
 } from './competition'
+
+// Reporting types
+export type {
+  DailyCollectionItem,
+  DailyReceiptItem,
+} from './reporting'
