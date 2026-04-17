@@ -1,6 +1,5 @@
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
-import { refreshToken } from "./auth";
 
 // Flag to prevent multiple concurrent refresh attempts
 let isRefreshing = false;
@@ -25,10 +24,11 @@ export const createApiClient = () => {
     },
   });
 
-  // Request interceptor - add auth token
+  // Request interceptor - add auth token (skip for auth endpoints)
   client.interceptors.request.use((config) => {
     const token = useAuthStore.getState().token;
-    if (token) {
+    const isAuthEndpoint = config.url?.startsWith('/auth');
+    if (token && !isAuthEndpoint) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -70,6 +70,8 @@ export const createApiClient = () => {
       originalRequest._retry = true;
 
       try {
+        // Dynamic import to break circular dependency
+        const { refreshToken } = await import('./auth');
         const response = await refreshToken({ refresh_token: currentRefreshToken });
         const { access_token, refresh_token } = response.data;
         
