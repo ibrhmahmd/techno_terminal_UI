@@ -6,6 +6,7 @@ interface UseInstructorPerformanceResult {
   isLoading: boolean
   error: Error | null
   refetch: () => void
+  isUsingMockData: boolean
 }
 
 export function useInstructorPerformance(): UseInstructorPerformanceResult {
@@ -36,6 +37,7 @@ export function useInstructorPerformance(): UseInstructorPerformanceResult {
     instructors,
     isLoading,
     error,
-    refetch: fetchData
+    refetch: fetchData,
+    isUsingMockData: false
   }
 }

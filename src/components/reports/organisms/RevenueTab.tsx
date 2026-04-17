@@ -1,10 +1,10 @@
 import { RevenueChart } from '../../reports/RevenueChart'
 import { MetricCard } from '../atoms/MetricCard'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
-import type { RevenueMetrics } from '../../../api/reports'
+import type { RevenueMetricsDTO } from '../../../api/analytics'
 
 interface RevenueTabProps {
-  revenue: RevenueMetrics | null
+  revenue: RevenueMetricsDTO | null
   isLoading: boolean
   error?: string
   onRetry?: () => void
@@ -57,29 +57,29 @@ export function RevenueTab({ revenue, isLoading, error, onRetry }: RevenueTabPro
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <h2 className="font-headline text-xl font-semibold text-on-surface mb-2">Revenue Analysis</h2>
         <p className="text-sm text-slate-500 mb-6">Monthly revenue trends and collection metrics</p>
-        <RevenueChart data={revenue?.monthly_revenue || []} />
+        <RevenueChart data={revenue?.monthly_breakdown || []} />
       </div>
 
       {revenue && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <MetricCard
-            title="Total Collected"
-            value={`${(revenue.total_collected || 0).toLocaleString()} EGP`}
+            title="Total Revenue"
+            value={`${(revenue.total_revenue || 0).toLocaleString()} EGP`}
             color="green"
           />
           <MetricCard
-            title="Outstanding"
-            value={`${(revenue.total_outstanding || 0).toLocaleString()} EGP`}
-            color="red"
-          />
-          <MetricCard
-            title="Collection Rate"
-            value={`${(revenue.collection_rate || 0).toFixed(1)}%`}
+            title="Total Receipts"
+            value={revenue.total_receipts?.toString() || '0'}
             color="blue"
           />
           <MetricCard
-            title="Avg Monthly"
-            value={`${(revenue.average_monthly || 0).toLocaleString()} EGP`}
+            title="Change %"
+            value={`${(revenue.revenue_change_pct || 0).toFixed(1)}%`}
+            color={revenue.trend_direction === 'up' ? 'green' : revenue.trend_direction === 'down' ? 'red' : 'blue'}
+          />
+          <MetricCard
+            title="Avg per Receipt"
+            value={`${(revenue.avg_revenue_per_receipt || 0).toLocaleString()} EGP`}
             color="amber"
           />
         </div>

@@ -7,10 +7,10 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-import type { RevenueMetrics } from '../../api/reports'
+import type { RevenueByDateDTO } from '../../api/analytics'
 
 interface RevenueChartProps {
-  data: RevenueMetrics['monthly_revenue']
+  data: RevenueByDateDTO[]
 }
 
 export function RevenueChart({ data }: RevenueChartProps) {
@@ -25,7 +25,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
 
   const formattedData = data.map(item => ({
     ...item,
-    formattedAmount: `${item.amount.toLocaleString()} EGP`
+    formattedAmount: `${item.net_revenue.toLocaleString()} EGP`
   }))
 
   return (
@@ -39,7 +39,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
         <XAxis 
-          dataKey="month" 
+          dataKey="day" 
           tick={{ fill: '#64748b', fontSize: 12 }}
           tickLine={false}
         />
@@ -67,7 +67,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
         />
         <Area 
           type="monotone" 
-          dataKey="amount" 
+          dataKey="net_revenue" 
           name="Revenue"
           stroke="#f59e0b" 
           strokeWidth={2}

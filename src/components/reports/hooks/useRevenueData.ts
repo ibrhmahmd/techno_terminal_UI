@@ -6,6 +6,7 @@ interface UseRevenueDataResult {
   isLoading: boolean
   error: Error | null
   refetch: (months?: number) => void
+  isUsingMockData: boolean
 }
 
 export function useRevenueData(): UseRevenueDataResult {
@@ -41,6 +42,7 @@ export function useRevenueData(): UseRevenueDataResult {
     metrics,
     isLoading,
     error,
-    refetch
+    refetch,
+    isUsingMockData: false
   }
 }

@@ -8,10 +8,10 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts'
-import type { InstructorPerformanceReport } from '../../api/reports'
+import type { InstructorPerformanceDTO } from '../../api/analytics'
 
 interface InstructorPerformanceChartProps {
-  data: InstructorPerformanceReport[]
+  data: InstructorPerformanceDTO[]
 }
 
 export function InstructorPerformanceChart({ data }: InstructorPerformanceChartProps) {
@@ -26,9 +26,8 @@ export function InstructorPerformanceChart({ data }: InstructorPerformanceChartP
 
   const chartData = data.map(instructor => ({
     name: instructor.instructor_name,
-    attendanceRate: Math.round(instructor.attendance_rate * 100),
-    sessionsConducted: instructor.sessions_conducted,
-    totalStudents: instructor.total_students,
+    totalStudents: instructor.active_students,
+    activeGroups: instructor.active_groups
   }))
 
   const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4']
@@ -50,8 +49,6 @@ export function InstructorPerformanceChart({ data }: InstructorPerformanceChartP
           tick={{ fill: '#64748b', fontSize: 12 }}
           tickLine={false}
           axisLine={false}
-          domain={[0, 100]}
-          tickFormatter={(value) => `${value}%`}
         />
         <Tooltip 
           contentStyle={{ 
@@ -62,7 +59,7 @@ export function InstructorPerformanceChart({ data }: InstructorPerformanceChartP
           }}
           formatter={(value) => [`${value}%`, 'Attendance Rate']}
         />
-        <Bar dataKey="attendanceRate" name="Attendance Rate" radius={[4, 4, 0, 0]}>
+        <Bar dataKey="totalStudents" name="Active Students" radius={[4, 4, 0, 0]}>
           {chartData.map((_entry, index) => (
             <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
           ))}

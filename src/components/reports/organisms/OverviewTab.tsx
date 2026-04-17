@@ -1,12 +1,11 @@
-import type { DashboardSummaryPublic } from '../../../api/analytics'
-import type { RevenueMetrics } from '../../../api/reports'
+import type { DashboardSummaryPublic, RevenueMetricsDTO } from '../../../api/analytics'
 import { SummaryCards } from '../molecules/SummaryCards'
 import { RevenueChart } from '../../reports/RevenueChart'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
 
 interface OverviewTabProps {
   summary: DashboardSummaryPublic | null
-  revenue: RevenueMetrics | null
+  revenue: RevenueMetricsDTO | null
   isLoading: boolean
   error?: string
   onRetry?: () => void
@@ -70,7 +69,7 @@ export function OverviewTab({
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <h3 className="font-headline font-semibold text-on-surface mb-4">Revenue</h3>
-          <RevenueChart data={revenue?.monthly_revenue?.slice(-4) || []} />
+          <RevenueChart data={revenue?.monthly_breakdown?.slice(-4) || []} />
         </div>
       </div>
     </div>

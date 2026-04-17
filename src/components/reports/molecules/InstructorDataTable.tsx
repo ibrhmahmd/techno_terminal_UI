@@ -1,7 +1,7 @@
-import type { InstructorPerformanceReport } from '../../../api/reports'
+import type { InstructorPerformanceDTO } from '../../../api/analytics'
 
 interface InstructorDataTableProps {
-  instructors: InstructorPerformanceReport[]
+  instructors: InstructorPerformanceDTO[]
   isLoading?: boolean
   error?: string
 }
@@ -14,9 +14,8 @@ export function InstructorDataTable({ instructors, isLoading, error }: Instructo
           <thead>
             <tr className="border-b border-slate-200">
               <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Instructor</th>
-              <th className="text-center py-3 px-4 text-sm font-medium text-slate-500">Active Groups</th>
-              <th className="text-center py-3 px-4 text-sm font-medium text-slate-500">Active Students</th>
-              <th className="text-center py-3 px-4 text-sm font-medium text-slate-500">Attendance Rate</th>
+              <th className="text-center py-3 px-4 text-sm font-medium text-slate-500">Groups</th>
+              <th className="text-center py-3 px-4 text-sm font-medium text-slate-500">Students</th>
             </tr>
           </thead>
           <tbody>
@@ -25,7 +24,6 @@ export function InstructorDataTable({ instructors, isLoading, error }: Instructo
                 <td className="py-3 px-4"><div className="h-4 bg-slate-200 rounded w-32 animate-pulse"></div></td>
                 <td className="py-3 px-4 text-center"><div className="h-4 bg-slate-200 rounded w-8 mx-auto animate-pulse"></div></td>
                 <td className="py-3 px-4 text-center"><div className="h-4 bg-slate-200 rounded w-8 mx-auto animate-pulse"></div></td>
-                <td className="py-3 px-4 text-center"><div className="h-4 bg-slate-200 rounded w-12 mx-auto animate-pulse"></div></td>
               </tr>
             ))}
           </tbody>
@@ -59,27 +57,14 @@ export function InstructorDataTable({ instructors, isLoading, error }: Instructo
             <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Instructor</th>
             <th className="text-center py-3 px-4 text-sm font-medium text-slate-500">Groups</th>
             <th className="text-center py-3 px-4 text-sm font-medium text-slate-500">Students</th>
-            <th className="text-center py-3 px-4 text-sm font-medium text-slate-500">Attendance Rate</th>
-            <th className="text-center py-3 px-4 text-sm font-medium text-slate-500">Sessions</th>
           </tr>
         </thead>
         <tbody>
           {instructors.map((instructor) => (
-            <tr key={instructor.instructor_id} className="border-b border-slate-100 hover:bg-slate-50">
+            <tr key={instructor.instructor_name} className="border-b border-slate-100 hover:bg-slate-50">
               <td className="py-3 px-4 font-medium text-on-surface">{instructor.instructor_name}</td>
-              <td className="py-3 px-4 text-center text-slate-600">{instructor.groups_count}</td>
-              <td className="py-3 px-4 text-center text-slate-600">{instructor.total_students}</td>
-              <td className="py-3 px-4 text-center text-slate-600">
-                {(instructor.attendance_rate * 100).toFixed(1)}%
-              </td>
-              <td className="py-3 px-4 text-center text-slate-600">
-                {instructor.sessions_conducted}
-                {instructor.sessions_cancelled > 0 && (
-                  <span className="text-red-500 text-xs ml-1">
-                    ({instructor.sessions_cancelled} cancelled)
-                  </span>
-                )}
-              </td>
+              <td className="py-3 px-4 text-center text-slate-600">{instructor.active_groups}</td>
+              <td className="py-3 px-4 text-center text-slate-600">{instructor.active_students}</td>
             </tr>
           ))}
         </tbody>

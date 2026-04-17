@@ -8,10 +8,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
-import type { EnrollmentTrend } from '../../api/reports'
+import type { EnrollmentTrendDTO } from '../../api/analytics'
 
 interface EnrollmentTrendsChartProps {
-  data: EnrollmentTrend[]
+  data: EnrollmentTrendDTO[]
 }
 
 export function EnrollmentTrendsChart({ data }: EnrollmentTrendsChartProps) {
@@ -50,8 +50,6 @@ export function EnrollmentTrendsChart({ data }: EnrollmentTrendsChartProps) {
           wrapperStyle={{ paddingTop: '20px' }}
         />
         <Bar dataKey="new_enrollments" name="New Enrollments" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="transfers" name="Transfers" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="drops" name="Drops" fill="#ef4444" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   )

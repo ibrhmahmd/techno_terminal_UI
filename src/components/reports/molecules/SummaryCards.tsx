@@ -1,10 +1,9 @@
-import type { DashboardSummaryPublic } from '../../../api/analytics'
-import type { RevenueMetrics } from '../../../api/reports'
+import type { DashboardSummaryPublic, RevenueMetricsDTO } from '../../../api/analytics'
 import { ReportCard } from '../atoms/ReportCard'
 
 interface SummaryCardsProps {
   summary: DashboardSummaryPublic | null
-  revenue: RevenueMetrics | null
+  revenue: RevenueMetricsDTO | null
   isLoading: boolean
   error?: string
 }
@@ -30,7 +29,7 @@ export function SummaryCards({ summary, revenue, isLoading, error }: SummaryCard
       />
       <ReportCard
         title="Total Collected"
-        value={revenue?.total_collected?.toLocaleString() ?? '0'}
+        value={revenue?.total_revenue?.toLocaleString() ?? '0'}
         subtitle="EGP"
         icon="payments"
         color="green"
@@ -38,11 +37,11 @@ export function SummaryCards({ summary, revenue, isLoading, error }: SummaryCard
         error={error}
       />
       <ReportCard
-        title="Outstanding"
-        value={revenue?.total_outstanding?.toLocaleString() ?? '0'}
-        subtitle="EGP"
-        icon="money_off"
-        color="red"
+        title="Receipts Count"
+        value={revenue?.total_receipts?.toLocaleString() ?? '0'}
+        subtitle="receipts"
+        icon="receipt"
+        color="blue"
         isLoading={isLoading}
         error={error}
       />

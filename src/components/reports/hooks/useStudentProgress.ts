@@ -6,6 +6,7 @@ interface UseStudentProgressResult {
   isLoading: boolean
   error: Error | null
   refetch: () => void
+  isUsingMockData: boolean
 }
 
 export function useStudentProgress(): UseStudentProgressResult {
@@ -36,6 +37,7 @@ export function useStudentProgress(): UseStudentProgressResult {
     progress,
     isLoading,
     error,
-    refetch: fetchData
+    refetch: fetchData,
+    isUsingMockData: false
   }
 }

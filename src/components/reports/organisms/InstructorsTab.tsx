@@ -1,52 +1,29 @@
 import { DataTable, type DataTableColumn } from '../../common'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
-import type { InstructorPerformanceReport } from '../../../api/reports'
+import type { InstructorPerformanceDTO } from '../../../api/analytics'
 
-const instructorColumns: DataTableColumn<InstructorPerformanceReport>[] = [
+const instructorColumns: DataTableColumn<InstructorPerformanceDTO>[] = [
   {
     key: 'instructor_name',
     header: 'Instructor',
     cell: (instructor) => <span className="font-semibold text-slate-900">{instructor.instructor_name}</span>
   },
   {
-    key: 'groups_count',
+    key: 'active_groups',
     header: 'Groups',
     align: 'center',
-    cell: (instructor) => <span className="text-slate-600">{instructor.groups_count}</span>
+    cell: (instructor) => <span className="text-slate-600">{instructor.active_groups}</span>
   },
   {
-    key: 'total_students',
+    key: 'active_students',
     header: 'Students',
     align: 'center',
-    cell: (instructor) => <span className="text-slate-600">{instructor.total_students}</span>
-  },
-  {
-    key: 'attendance_rate',
-    header: 'Attendance Rate',
-    align: 'center',
-    cell: (instructor) => (
-      <span className="text-slate-600">{(instructor.attendance_rate * 100).toFixed(1)}%</span>
-    )
-  },
-  {
-    key: 'sessions',
-    header: 'Sessions',
-    align: 'center',
-    cell: (instructor) => (
-      <span className="text-slate-600">
-        {instructor.sessions_conducted}
-        {instructor.sessions_cancelled > 0 && (
-          <span className="text-red-500 text-xs ml-1">
-            ({instructor.sessions_cancelled} cancelled)
-          </span>
-        )}
-      </span>
-    )
+    cell: (instructor) => <span className="text-slate-600">{instructor.active_students}</span>
   }
 ]
 
 interface InstructorsTabProps {
-  instructors: InstructorPerformanceReport[]
+  instructors: InstructorPerformanceDTO[]
   isLoading: boolean
   error?: string
   onRetry?: () => void
@@ -92,7 +69,7 @@ export function InstructorsTab({ instructors, isLoading, error, onRetry }: Instr
       <DataTable
         data={instructors}
         columns={instructorColumns}
-        keyExtractor={(i) => i.instructor_id.toString()}
+        keyExtractor={(i) => i.instructor_name}
         isLoading={isLoading}
         emptyMessage="No instructor data available"
         emptyIcon="none"

@@ -1,9 +1,9 @@
 import { EnrollmentTrendsChart } from '../../reports/EnrollmentTrendsChart'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
-import type { EnrollmentTrend } from '../../../api/reports'
+import type { EnrollmentTrendDTO } from '../../../api/analytics'
 
 interface EnrollmentTabProps {
-  trends: EnrollmentTrend[]
+  trends: EnrollmentTrendDTO[]
   isLoading: boolean
   error?: string
   onRetry?: () => void

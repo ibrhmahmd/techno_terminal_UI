@@ -1,9 +1,9 @@
 import { StudentProgressChart } from '../../reports/StudentProgressChart'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
-import type { StudentProgressReport } from '../../../api/reports'
+import type { StudentProgressDTO } from '../../../api/analytics'
 
 interface ProgressTabProps {
-  progress: StudentProgressReport[]
+  progress: StudentProgressDTO[]
   isLoading: boolean
   error?: string
   onRetry?: () => void
@@ -17,12 +17,12 @@ export function ProgressTab({
   onRetry,
   topStudentCount = 5 
 }: ProgressTabProps) {
-  const completed = progress.filter(s => s.progress_percentage >= 80).length
-  const inProgress = progress.filter(s => s.progress_percentage > 0 && s.progress_percentage < 80).length
-  const notStarted = progress.filter(s => s.progress_percentage === 0).length
+  const completed = progress.filter(s => s.progress_status === 'on_track').length
+  const inProgress = progress.filter(s => s.progress_status === 'at_risk').length
+  const notStarted = progress.filter(s => s.progress_status === 'behind').length
 
   const topPerformers = [...progress]
-    .sort((a, b) => b.progress_percentage - a.progress_percentage)
+    .sort((a, b) => b.attendance_pct - a.attendance_pct)
     .slice(0, topStudentCount)
 
   if (isLoading) {
@@ -78,12 +78,12 @@ export function ProgressTab({
               </div>
               <div className="flex-1">
                 <p className="font-medium text-on-surface">{student.student_name}</p>
-                <p className="text-sm text-slate-500">Level {student.current_level} • Score: {student.average_score}%</p>
+                <p className="text-sm text-slate-500">{student.course_name} • Level {student.current_level}</p>
               </div>
               <div className="text-right">
-                <p className="font-semibold text-secondary">{student.progress_percentage}%</p>
+                <p className="font-semibold text-secondary">{student.attendance_pct}%</p>
                 <p className="text-xs text-slate-500">
-                  {student.modules_completed}/{student.total_modules} modules
+                  {student.sessions_attended}/{student.total_sessions} sessions
                 </p>
               </div>
             </div>

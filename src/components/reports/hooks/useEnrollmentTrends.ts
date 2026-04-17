@@ -6,6 +6,7 @@ interface UseEnrollmentTrendsResult {
   isLoading: boolean
   error: Error | null
   refetch: (months?: number) => void
+  isUsingMockData: boolean  // ADD
 }
 
 export function useEnrollmentTrends(months = 6): UseEnrollmentTrendsResult {
@@ -50,6 +51,7 @@ export function useEnrollmentTrends(months = 6): UseEnrollmentTrendsResult {
     trends,
     isLoading,
     error,
-    refetch
+    refetch,
+    isUsingMockData: false  // ADD
   }
 }
