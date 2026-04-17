@@ -12,11 +12,13 @@ import { CoursesTab } from '../components/student/CoursesTab'
 import { CompetitionsTab } from '../components/student/CompetitionsTab'
 import { TeamsTab } from '../components/student/TeamsTab'
 import { PaymentsTab } from '../components/student/PaymentsTab'
+import { ActivityHistoryTab } from '../components/student/ActivityHistoryTab'
 import { 
   updateStudent,
   deleteStudent,
   type Student,
   type Parent,
+  type UpdateStudentDTO,
   getStatusColorClass,
   getStatusLabel
 } from '../api/crm/students/'
@@ -90,7 +92,7 @@ export function StudentDetailPage() {
     }
   }
 
-  const handleUpdateStudent = async (data: Partial<Omit<Student, 'id'>>, _selectedParent?: Parent | null) => {
+  const handleUpdateStudent = async (data: UpdateStudentDTO, _selectedParent?: Parent | null) => {
     setIsProcessing(true)
     try {
       await updateStudent(studentId, data)
@@ -180,6 +182,8 @@ export function StudentDetailPage() {
             error={errorBalance}
           />
         )
+      case 'history':
+        return <ActivityHistoryTab studentId={studentId} />
       default:
         return null
     }

@@ -4,12 +4,15 @@ import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DataTable, type DataTableColumn, Pagination, PageHeader, PageSection, ActionButton, SearchBar, Modal } from '../components/common'
 import { StudentForm } from '../components/crm/StudentForm'
 import { ParentForm } from '../components/crm/ParentForm'
+import { WaitingListPanel } from '../components/crm/WaitingListPanel'
 import { useSearch } from '../hooks/useSearch'
 import { 
   searchParents, 
   linkParentToStudent,
-  type Student, 
-  type Parent 
+  type StudentListItem, 
+  type ParentListItem,
+  type CreateStudentDTO,
+  type ParentCreate
 } from '../api/crm'
 import {
   useStudentsList,
@@ -35,7 +38,7 @@ export function DirectoryPage() {
   // Modal states
   const [isCreateStudentModalOpen, setIsCreateStudentModalOpen] = useState(false)
   const [isEditStudentModalOpen, setIsEditStudentModalOpen] = useState(false)
-  const [editingStudent, setEditingStudent] = useState<Student | null>(null)
+  const [editingStudent, setEditingStudent] = useState<StudentListItem | null>(null)
   const [isCreateParentModalOpen, setIsCreateParentModalOpen] = useState(false)
 
   // Use shared search hook
@@ -78,7 +81,7 @@ export function DirectoryPage() {
   const deleteStudentMutation = useDeleteStudent()
   const createParentMutation = useCreateParent()
 
-  const handleCreateStudent = async (data: Omit<Student, 'id'>, selectedParent: Parent | null) => {
+  const handleCreateStudent = async (data: CreateStudentDTO, selectedParent: ParentListItem | null) => {
     try {
       const newStudent = await createStudentMutation.mutateAsync(data)
       
@@ -100,7 +103,7 @@ export function DirectoryPage() {
     }
   }
 
-  const handleEditStudent = async (data: Omit<Student, 'id'>) => {
+  const handleEditStudent = async (data: Partial<CreateStudentDTO>) => {
     if (!editingStudent) return
     try {
       await updateStudentMutation.mutateAsync({ id: editingStudent.id, data })
@@ -112,7 +115,7 @@ export function DirectoryPage() {
     }
   }
 
-  const handleDeleteStudent = async (student: Student) => {
+  const handleDeleteStudent = async (student: StudentListItem) => {
     if (!confirm(`Are you sure you want to delete "${student.full_name}"?`)) return
     try {
       await deleteStudentMutation.mutateAsync(student.id)
@@ -122,7 +125,7 @@ export function DirectoryPage() {
     }
   }
 
-  const handleCreateParent = async (data: Omit<Parent, 'id'>) => {
+  const handleCreateParent = async (data: ParentCreate) => {
     try {
       await createParentMutation.mutateAsync(data)
       setIsCreateParentModalOpen(false)
@@ -199,22 +202,8 @@ export function DirectoryPage() {
             />
           )}
           {activeTab === 'waiting' && (
-            <DataTable
-              data={waitingStudents}
-              columns={studentColumns}
-              keyExtractor={(s) => s.id.toString()}
-              isLoading={isLoading}
-              emptyMessage="No students on waiting list"
-              emptyIcon="schedule"
-              onRowClick={(student) => navigate(`/students/${student.id}`)}
-              actions={{
-                view: (student) => navigate(`/students/${student.id}`),
-                edit: (student) => {
-                  setEditingStudent(student)
-                  setIsEditStudentModalOpen(true)
-                },
-                delete: handleDeleteStudent
-              }}
+            <WaitingListPanel
+              onStudentClick={(student) => navigate(`/students/${student.id}`)}
             />
           )}
           {activeTab === 'parents' && (

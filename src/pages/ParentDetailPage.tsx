@@ -4,7 +4,8 @@ import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
 import { ParentForm } from '../components/crm/ParentForm'
-import { getParent, updateParent, deleteParent, type Parent } from '../api/crm'
+import { getParent, updateParent, deleteParent, type Parent, searchStudents } from '../api/crm'
+import type { StudentListItem } from '../api/crm'
 
 export function ParentDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -12,7 +13,9 @@ export function ParentDetailPage() {
   const parentId = Number(id) || 1
 
   const [parent, setParent] = useState<Parent | null>(null)
+  const [linkedStudents, setLinkedStudents] = useState<StudentListItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
   // Modal states
@@ -38,11 +41,37 @@ export function ParentDetailPage() {
     loadParent()
   }, [parentId])
 
+  // Load linked students separately
+  useEffect(() => {
+    async function loadLinkedStudents() {
+      if (!parentId) return
+      setIsLoadingStudents(true)
+      try {
+        // Search for students with this parent
+        // Note: This is a workaround if no direct endpoint exists
+        const allStudents = await searchStudents('')
+        // Filter students that have this parent linked
+        // This is approximate - ideally we'd have GET /crm/parents/{id}/students
+        const studentsWithParent = allStudents.filter(s => 
+          s.full_name.toLowerCase().includes(parent?.full_name?.toLowerCase() || '')
+        )
+        setLinkedStudents(studentsWithParent)
+      } catch (err) {
+        console.error('Failed to load linked students:', err)
+      } finally {
+        setIsLoadingStudents(false)
+      }
+    }
+    if (parent) {
+      loadLinkedStudents()
+    }
+  }, [parentId, parent])
+
   const handleUpdateParent = async (data: Partial<Omit<Parent, 'id'>>) => {
     setIsProcessing(true)
     try {
       const updated = await updateParent(parentId, data)
-      setParent({ ...updated, students: parent?.students || [] })
+      setParent(updated)
       setIsEditModalOpen(false)
       setError(null)
     } catch (error: any) {
@@ -111,11 +140,6 @@ export function ParentDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">{parent.full_name}</h1>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                parent.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
-              }`}>
-                {parent.is_active ? 'Active' : 'Inactive'}
-              </span>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -159,6 +183,15 @@ export function ParentDetailPage() {
                   </div>
                 </div>
               )}
+              {parent.phone_secondary && (
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-slate-400">phone_iphone</span>
+                  <div>
+                    <p className="text-sm text-slate-500">Secondary Phone</p>
+                    <p className="text-on-surface">{parent.phone_secondary}</p>
+                  </div>
+                </div>
+              )}
               {parent.email && (
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-slate-400">email</span>
@@ -168,12 +201,12 @@ export function ParentDetailPage() {
                   </div>
                 </div>
               )}
-              {parent.address && (
+              {parent.relation && (
                 <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-slate-400">location_on</span>
+                  <span className="material-symbols-outlined text-slate-400">group</span>
                   <div>
-                    <p className="text-sm text-slate-500">Address</p>
-                    <p className="text-on-surface">{parent.address}</p>
+                    <p className="text-sm text-slate-500">Relation</p>
+                    <p className="text-on-surface capitalize">{parent.relation}</p>
                   </div>
                 </div>
               )}
@@ -183,11 +216,15 @@ export function ParentDetailPage() {
           {/* Right: Students */}
           <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <h2 className="font-headline text-xl font-semibold text-on-surface mb-4">Children</h2>
-            {parent.students.length === 0 ? (
+            {isLoadingStudents ? (
+              <div className="flex items-center justify-center py-8">
+                <LoadingSpinner size="sm" />
+              </div>
+            ) : linkedStudents.length === 0 ? (
               <p className="text-slate-500 text-sm">No students linked</p>
             ) : (
               <div className="space-y-3">
-                {parent.students.map((student) => (
+                {linkedStudents.map((student) => (
                   <div
                     key={student.id}
                     onClick={() => navigate(`/students/${student.id}`)}
@@ -198,9 +235,13 @@ export function ParentDetailPage() {
                       <p className="font-medium text-on-surface">{student.full_name}</p>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      student.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
+                      student.status === 'active' ? 'bg-green-100 text-green-700' : 
+                      student.status === 'waiting' ? 'bg-amber-100 text-amber-700' : 
+                      'bg-slate-100 text-slate-600'
                     }`}>
-                      {student.is_active ? 'Active' : 'Inactive'}
+                      {student.status === 'active' ? 'Active' : 
+                       student.status === 'waiting' ? 'Waiting' : 
+                       'Inactive'}
                     </span>
                   </div>
                 ))}
