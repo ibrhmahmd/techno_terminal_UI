@@ -5,7 +5,7 @@ import { useGroupsFlat } from '../../hooks/useGroupQueries'
 import { useRecentGroups } from '../../hooks/useRecentGroups'
 import { createEnrollment } from '../../api/enrollments'
 import { StudentCombobox, GroupCombobox } from '../common/combobox'
-import type { Student } from '../../api/crm'
+import type { StudentListItem } from '../../api/crm'
 import type { EnrichedGroupPublic } from '../../api/academics'
 
 interface EnrollPanelProps {
@@ -16,12 +16,11 @@ interface EnrollPanelProps {
   setIsLoading: (loading: boolean) => void
 }
 
-const DAYS = ['All', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
 
 export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsLoading }: EnrollPanelProps) {
   const [studentSearch, setStudentSearch] = useState('')
   const [groupSearch, setGroupSearch] = useState('')
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(null)
   const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
   const [amount, setAmount] = useState(150)
   const [discount, setDiscount] = useState(0)
@@ -56,7 +55,7 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
 
   // Hook into caches
   const { data: studentsData, isLoading: isSearchingStudents } = useStudentsSearch(debouncedStudentSearch)
-  const { data: groupsData, isLoading: isLoadingGroups } = useGroupsFlat()
+  const { data: groupsData, isLoading: isLoadingGroups } = useGroupsFlat(true)
   const { recentGroupIds, addRecentGroup } = useRecentGroups()
 
   const students = studentsData || []

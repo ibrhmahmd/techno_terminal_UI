@@ -1,14 +1,14 @@
 import { useState, useMemo } from 'react'
-import type { Student } from '../../../api/crm'
+import type { StudentListItem } from '../../../api/crm'
 import { SpyCombobox } from '../SpyCombobox'
 import type { SpyCategory } from '../SpyCombobox'
 
 export interface StudentComboboxProps {
-  value: Student | null
-  onChange: (student: Student | null) => void
+  value: StudentListItem | null
+  onChange: (student: StudentListItem | null) => void
   search: string
   setSearch: (search: string) => void
-  students: Student[]
+  students: StudentListItem[]
   isLoading: boolean
 }
 
@@ -22,8 +22,8 @@ export function StudentCombobox({
 }: StudentComboboxProps) {
   const [groupByMode, setGroupByMode] = useState<'alphabetical' | 'status' | 'gender'>('alphabetical')
 
-  const categories = useMemo<SpyCategory<Student>[]>(() => {
-    const grouped: Record<string, Student[]> = {}
+  const categories = useMemo<SpyCategory<StudentListItem>[]>(() => {
+    const grouped: Record<string, StudentListItem[]> = {}
     if (!students) return []
     
     students.forEach(s => {
@@ -71,7 +71,7 @@ export function StudentCombobox({
   }
 
   return (
-    <SpyCombobox<Student>
+    <SpyCombobox<StudentListItem>
       search={search}
       onSearchChange={setSearch}
       placeholder="Search student (min 2 chars)..."
