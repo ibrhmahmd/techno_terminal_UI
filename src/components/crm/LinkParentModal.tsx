@@ -6,7 +6,8 @@ import {
   getStudentParents, 
   linkParentToStudent,
   unlinkParentFromStudent,
-  type Parent 
+  type Parent,
+  type ParentInfo 
 } from '../../api/crm'
 
 interface LinkParentModalProps {
@@ -19,7 +20,7 @@ interface LinkParentModalProps {
 export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkParentModalProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Parent[]>([])
-  const [linkedParents, setLinkedParents] = useState<Parent[]>([])
+  const [linkedParents, setLinkedParents] = useState<ParentInfo[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -179,8 +180,8 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
                   >
                     <div>
                       <p className="font-medium text-on-surface">{parent.full_name}</p>
-                      {parent.phone_primary && (
-                        <p className="text-sm text-slate-500">{parent.phone_primary}</p>
+                      {parent.phone && (
+                        <p className="text-sm text-slate-500">{parent.phone}</p>
                       )}
                     </div>
                     <button

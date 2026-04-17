@@ -1,16 +1,16 @@
 import { useNavigate } from 'react-router-dom'
 import { Eye, Edit2, Trash2 } from 'lucide-react'
-import type { Student } from '../../api/crm'
+import type { StudentListItem } from '../../api/crm'
 import { LoadingState } from '../common/LoadingState'
 import { EmptyState } from '../common/EmptyState'
 import { DataTableContainer } from '../common/DataTableContainer'
 
 interface StudentListProps {
-  students: Student[]
+  students: StudentListItem[]
   isLoading?: boolean
   emptyMessage?: string
-  onEdit?: (student: Student) => void
-  onDelete?: (student: Student) => void
+  onEdit?: (student: StudentListItem) => void
+  onDelete?: (student: StudentListItem) => void
 }
 
 export function StudentList({ 
@@ -43,9 +43,7 @@ export function StudentList({
           <tr>
             <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Name</th>
             <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Phone</th>
-            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Current Group</th>
             <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
-            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Notes</th>
             <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 w-32">Actions</th>
           </tr>
         </thead>
@@ -62,32 +60,20 @@ export function StudentList({
                 {student.full_name}
               </td>
               <td className="px-6 py-4 text-slate-500">{student.phone || '-'}</td>
-              <td className="px-6 py-4 text-slate-500">
-                {student.current_group_name ? (
-                  <span 
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-medium cursor-pointer hover:bg-blue-100 transition-colors"
-                    onClick={() => student.current_group_id && navigate(`/groups/${student.current_group_id}`)}
-                  >
-                    <span className="material-symbols-outlined text-sm">group</span>
-                    {student.current_group_name}
-                  </span>
-                ) : (
-                  <span className="text-slate-400 text-xs">Not enrolled</span>
-                )}
-              </td>
               <td className="px-6 py-4">
                 <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                  student.is_active
+                  student.status === 'active'
                     ? 'bg-green-100 text-green-700'
+                    : student.status === 'waiting'
+                    ? 'bg-amber-100 text-amber-700'
                     : 'bg-slate-100 text-slate-600'
                 }`}>
                   <span className="material-symbols-outlined text-sm">
-                    {student.is_active ? 'check_circle' : 'cancel'}
+                    {student.status === 'active' ? 'check_circle' : student.status === 'waiting' ? 'schedule' : 'cancel'}
                   </span>
-                  {student.is_active ? 'Active' : 'Inactive'}
+                  {student.status === 'active' ? 'Active' : student.status === 'waiting' ? 'Waiting' : 'Inactive'}
                 </span>
               </td>
-              <td className="px-6 py-4 text-slate-500 max-w-xs truncate">{student.notes || '-'}</td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-1">
                   <button

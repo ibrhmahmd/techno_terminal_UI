@@ -8,8 +8,9 @@ import {
   updateStudent,
   deleteStudent,
   createParent,
-  type Student,
-  type Parent,
+  type StudentListItem,
+  type ParentListItem,
+  type UpdateStudentDTO,
 } from '../api/crm'
 
 export const directoryKeys = {
@@ -37,11 +38,11 @@ export function useStudentsList(page: number, pageSize: number, enabled: boolean
 }
 
 export function useStudentsSearch(term: string) {
-  return useQuery({
+  return useQuery<StudentListItem[]>({
     queryKey: directoryKeys.students.search(term),
     queryFn: () => searchStudents(term),
     staleTime: 2 * 60 * 1000,
-    enabled: term.length >= 2,   // Only search when term is meaningful
+    enabled: term.length >= 2,
   })
 }
 
@@ -57,7 +58,7 @@ export function useParentsList(page: number, pageSize: number, enabled: boolean)
 }
 
 export function useParentsSearch(term: string) {
-  return useQuery({
+  return useQuery<ParentListItem[]>({
     queryKey: directoryKeys.parents.search(term),
     queryFn: () => searchParents(term),
     staleTime: 2 * 60 * 1000,
@@ -80,7 +81,7 @@ export function useCreateStudent() {
 export function useUpdateStudent() {
   const invalidate = useStudentInvalidator()
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Omit<Student, 'id'>> }) => updateStudent(id, data),
+    mutationFn: ({ id, data }: { id: number; data: UpdateStudentDTO }) => updateStudent(id, data),
     onSuccess: invalidate,
   })
 }

@@ -20,8 +20,6 @@ export function ParentForm({ initialData, onSubmit, onCancel, mode }: ParentForm
     email: initialData?.email || '',
     relation: initialData?.relation || '',
     notes: initialData?.notes || '',
-    address: initialData?.address || '',
-    is_active: initialData?.is_active ?? true,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -40,13 +38,11 @@ export function ParentForm({ initialData, onSubmit, onCancel, mode }: ParentForm
       // Build submission data with all required fields
       const submitData: CreateParentInput = {
         full_name: formData.full_name.trim(),
-        is_active: formData.is_active,
-        phone_primary: formData.phone_primary || null,
+        phone_primary: formData.phone_primary,
         phone_secondary: formData.phone_secondary || null,
         email: formData.email || null,
         relation: formData.relation || null,
         notes: formData.notes || null,
-        address: formData.address || null,
       }
 
       await onSubmit(submitData)
@@ -172,38 +168,6 @@ export function ParentForm({ initialData, onSubmit, onCancel, mode }: ParentForm
         />
       </div>
 
-      {/* Address */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="address" className="text-sm font-medium text-on-surface">
-          Address
-        </label>
-        <textarea
-          id="address"
-          value={formData.address}
-          onChange={(e) => handleChange('address', e.target.value)}
-          placeholder="Full address..."
-          rows={2}
-          disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed resize-none"
-        />
-      </div>
-
-      {/* Active Status (edit mode only) */}
-      {mode === 'edit' && (
-        <div className="flex items-center gap-2">
-          <input
-            id="is_active"
-            type="checkbox"
-            checked={formData.is_active}
-            onChange={(e) => handleChange('is_active', e.target.checked)}
-            disabled={isLoading}
-            className="w-4 h-4 rounded border-slate-300 text-secondary focus:ring-secondary"
-          />
-          <label htmlFor="is_active" className="text-sm font-medium text-on-surface">
-            Active Parent
-          </label>
-        </div>
-      )}
 
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">

@@ -43,9 +43,6 @@ export function ParentList({
           <tr>
             <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Name</th>
             <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Phone</th>
-            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Email</th>
-            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Relation</th>
-            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
             <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 w-32">Actions</th>
           </tr>
         </thead>
@@ -62,20 +59,6 @@ export function ParentList({
                 {parent.full_name}
               </td>
               <td className="px-6 py-4 text-slate-500">{parent.phone_primary || '-'}</td>
-              <td className="px-6 py-4 text-slate-500">{parent.email || '-'}</td>
-              <td className="px-6 py-4 text-slate-500">{parent.relation || '-'}</td>
-              <td className="px-6 py-4">
-                <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                  parent.is_active
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-slate-100 text-slate-600'
-                }`}>
-                  <span className="material-symbols-outlined text-sm">
-                    {parent.is_active ? 'check_circle' : 'cancel'}
-                  </span>
-                  {parent.is_active ? 'Active' : 'Inactive'}
-                </span>
-              </td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-1">
                   <button

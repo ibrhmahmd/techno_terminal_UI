@@ -1,4 +1,4 @@
-import { Search, Plus, Inbox, History } from 'lucide-react'
+import { Search, Plus, Inbox, History, Clock } from 'lucide-react'
 
 interface EmptyStateProps {
   title?: string
@@ -21,6 +21,7 @@ export function EmptyState({
     search: Search,
     inbox: Inbox,
     history: History,
+    schedule: Clock,
     none: () => null
   }[icon] || Inbox // fallback to Inbox for invalid values
 

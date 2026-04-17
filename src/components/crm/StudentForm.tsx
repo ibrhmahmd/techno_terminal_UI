@@ -1,13 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { ParentSearchDropdown } from './ParentSearchDropdown'
-import type { Student, Parent } from '../../api/crm'
+import type { CreateStudentDTO, Parent } from '../../api/crm'
 
-// Define proper input type for creating students
-type CreateStudentInput = Omit<Student, 'id'>
+type CreateStudentInput = CreateStudentDTO
 
 interface StudentFormProps {
-  initialData?: Partial<Student>
+  initialData?: Partial<CreateStudentDTO>
   onSubmit: (data: CreateStudentInput, selectedParent: Parent | null) => Promise<void>
   onCancel: () => void
   mode: 'create' | 'edit'
@@ -21,8 +20,6 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode, onSearchPar
     gender: initialData?.gender || '',
     phone: initialData?.phone || '',
     notes: initialData?.notes || '',
-    is_active: initialData?.is_active ?? true,
-    status: (initialData?.status as 'active' | 'waiting' | 'inactive') || 'active',
   })
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -40,12 +37,11 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode, onSearchPar
       }
 
       // Build submission data with all required fields
+      const genderValue = formData.gender as 'male' | 'female' | ''
       const submitData: CreateStudentInput = {
         full_name: formData.full_name.trim(),
-        is_active: formData.is_active,
-        status: formData.status,
         date_of_birth: formData.date_of_birth || null,
-        gender: formData.gender || null,
+        gender: genderValue || null,
         phone: formData.phone || null,
         notes: formData.notes || null,
       }
@@ -138,28 +134,6 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode, onSearchPar
         />
       </div>
 
-      {/* Status Toggle */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-on-surface">Status</label>
-        <div className="flex gap-2">
-          {(['active', 'waiting', 'inactive'] as const).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => handleChange('status', s)}
-              disabled={isLoading}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors disabled:opacity-50 ${
-                formData.status === s
-                  ? 'bg-secondary text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Notes */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="notes" className="text-sm font-medium text-on-surface">
@@ -176,22 +150,6 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode, onSearchPar
         />
       </div>
 
-      {/* Active Status (edit mode only) */}
-      {mode === 'edit' && (
-        <div className="flex items-center gap-2">
-          <input
-            id="is_active"
-            type="checkbox"
-            checked={formData.is_active}
-            onChange={(e) => handleChange('is_active', e.target.checked)}
-            disabled={isLoading}
-            className="w-4 h-4 rounded border-slate-300 text-secondary focus:ring-secondary"
-          />
-          <label htmlFor="is_active" className="text-sm font-medium text-on-surface">
-            Active Student
-          </label>
-        </div>
-      )}
 
       {/* Parent Selection - only for create mode */}
       {mode === 'create' && onSearchParents && (
