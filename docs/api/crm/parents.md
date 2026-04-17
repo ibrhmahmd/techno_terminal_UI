@@ -1,254 +1,293 @@
-# CRM API - Parents Router
+# CRM Parents API
 
-Router source: `app/api/routers/crm/parents.py`  
-Mounted prefix: `/api/v1`  
-Router prefix: `/crm`
+Parent management endpoints for the CRM module.
 
----
-
-## Authentication & Authorization
-
-All endpoints require:
-
-```http
-Authorization: Bearer <access_token>
-```
-
-Role guards used:
-- `require_any`: any authenticated active user
-- `require_admin`: admin/system_admin only
-
-Common auth errors:
-- `401 Unauthorized`
-- `403 Forbidden`
+**Base Path:** `/crm`  
+**Authentication:** JWT Bearer token required for all endpoints.
 
 ---
 
-## DTOs and Schemas
+## CRUD Endpoints
 
-### Request DTOs
+### GET /crm/parents
 
-#### RegisterParentInput
+List and search parents with pagination.
+
+**Authentication:** `require_any`
+
+**Query Parameters:**
+| Name | Type | Required | Default | Constraints | Description |
+|------|------|----------|---------|-------------|-------------|
+| q | string | No | - | min 1, max 100 chars | Search by name or phone |
+| skip | integer | No | 0 | ≥ 0 | Pagination offset |
+| limit | integer | No | 50 | 1-200 | Page size |
+
+**Response:** `PaginatedResponse<ParentListItem>`
+
 ```json
 {
-  "full_name": "Ahmed Mohamed",
-  "phone_primary": "01123456789",
-  "phone_secondary": "01234567890",
-  "email": "ahmed@example.com",
-  "relation": "Father",
-  "notes": "Primary contact for Omar"
+  "data": [
+    {
+      "id": 1,
+      "full_name": "Parent Name",
+      "phone_primary": "+1234567890"
+    }
+  ],
+  "total": 100,
+  "skip": 0,
+  "limit": 50
 }
 ```
 
-Validation:
-- `full_name` required
-- `phone_primary` required
-- `phone_primary` is normalized to digits and must contain at least 10 digits
+**Error Codes:**
+- 401: Unauthorized
 
-#### UpdateParentDTO
-```json
-{
-  "full_name": "Ahmed Mohamed Updated",
-  "phone_primary": "01123456789",
-  "phone_secondary": "01234567890",
-  "email": "ahmed.updated@example.com",
-  "relation": "Father",
-  "notes": "Updated notes"
-}
-```
+---
 
-Validation:
-- all fields optional
-- no custom validator is defined in this DTO
+### GET /crm/parents/{parent_id}
 
-#### FindOrCreateParentInput
-```json
-{
-  "full_name": "Ahmed Mohamed",
-  "phone_primary": "01123456789",
-  "phone_secondary": "01234567890",
-  "email": "ahmed@example.com",
-  "relation": "Father",
-  "notes": "Primary contact for Omar"
-}
-```
+Get parent by ID.
 
-Validation:
-- `full_name` required
-- `phone_primary` required, normalized, minimum 10 digits
+**Authentication:** `require_any`
 
-### Response DTOs
+**Path Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| parent_id | integer | Yes | Parent ID |
 
-#### ParentPublic
-```json
-{
-  "id": 1,
-  "full_name": "Ahmed Mohamed",
-  "phone_primary": "01123456789",
-  "phone_secondary": "01234567890",
-  "email": "ahmed@example.com",
-  "relation": "Father",
-  "notes": "Primary contact for Omar"
-}
-```
+**Response:** `ApiResponse<ParentPublic>`
 
-#### ParentListItem
-```json
-{
-  "id": 1,
-  "full_name": "Ahmed Mohamed",
-  "phone_primary": "01123456789"
-}
-```
-
-#### FindOrCreateParentResponse
 ```json
 {
   "data": {
     "id": 1,
-    "full_name": "Ahmed Mohamed",
-    "phone_primary": "01123456789",
-    "phone_secondary": "01234567890",
-    "email": "ahmed@example.com",
-    "relation": "Father",
-    "notes": "Primary contact for Omar"
-  },
-  "created": true,
-  "message": "Parent created successfully."
+    "full_name": "Parent Name",
+    "phone_primary": "+1234567890",
+    "phone_secondary": "+1987654321",
+    "email": "parent@example.com",
+    "relation": "father",
+    "notes": "Primary contact"
+  }
 }
 ```
 
-#### StudentPublic (used by parent-students endpoint)
+**Error Codes:**
+- 404: Parent not found
+
+---
+
+### POST /crm/parents
+
+Create a new parent.
+
+**Authentication:** `require_admin`
+
+**Request Body:** `ParentCreate`
+
 ```json
 {
-  "id": 10,
-  "full_name": "Omar Mohamed",
-  "date_of_birth": "2010-05-15",
-  "gender": "male",
-  "phone": "01123456789",
-  "is_active": true,
-  "notes": "Allergic to peanuts"
+  "full_name": "Parent Name",
+  "phone_primary": "+1234567890",
+  "phone_secondary": "+1987654321",
+  "email": "parent@example.com",
+  "relation": "mother",
+  "notes": "Primary contact for student"
+}
+```
+
+**Response:** `ApiResponse<ParentPublic>` (201 Created)
+
+```json
+{
+  "data": {
+    "id": 101,
+    "full_name": "Parent Name",
+    "phone_primary": "+1234567890",
+    "phone_secondary": "+1987654321",
+    "email": "parent@example.com",
+    "relation": "mother",
+    "notes": "Primary contact for student"
+  }
+}
+```
+
+**Error Codes:**
+- 400: Invalid input data
+- 401: Unauthorized
+
+---
+
+### PATCH /crm/parents/{parent_id}
+
+Update parent information.
+
+**Authentication:** `require_admin`
+
+**Path Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| parent_id | integer | Yes | Parent ID |
+
+**Request Body:** `ParentUpdate` (all fields optional)
+
+```json
+{
+  "full_name": "Updated Name",
+  "phone_primary": "+1234567890",
+  "email": "newemail@example.com"
+}
+```
+
+**Response:** `ApiResponse<ParentPublic>`
+
+```json
+{
+  "data": {
+    "id": 1,
+    "full_name": "Updated Name",
+    "phone_primary": "+1234567890",
+    "phone_secondary": null,
+    "email": "newemail@example.com",
+    "relation": "father",
+    "notes": "Primary contact"
+  }
+}
+```
+
+**Error Codes:**
+- 400: Invalid input
+- 404: Parent not found
+
+---
+
+### DELETE /crm/parents/{parent_id}
+
+Delete a parent by ID.
+
+**Authentication:** `require_admin`
+
+**Path Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| parent_id | integer | Yes | Parent ID |
+
+**Response:** `ApiResponse<ParentPublic>`
+
+```json
+{
+  "data": {
+    "id": 1,
+    "full_name": "Parent Name",
+    "phone_primary": "+1234567890"
+  }
+}
+```
+
+**Error Codes:**
+- 404: Parent not found
+
+---
+
+## Schema Definitions
+
+### ParentPublic
+
+Full parent profile returned by GET endpoints.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| id | integer | Yes | Parent ID |
+| full_name | string | Yes | Full name |
+| phone_primary | string | Yes | Primary phone number |
+| phone_secondary | string | No | Secondary phone number |
+| email | string | No | Email address |
+| relation | string | No | Relationship (father, mother, guardian, etc.) |
+| notes | string | No | Additional notes |
+
+---
+
+### ParentListItem
+
+Slim representation for list responses.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| id | integer | Yes | Parent ID |
+| full_name | string | Yes | Full name |
+| phone_primary | string | Yes | Primary phone number |
+
+---
+
+### ParentCreate
+
+Input for creating a new parent.
+
+| Field | Type | Required | Constraints | Description |
+|-------|------|----------|-------------|-------------|
+| full_name | string | Yes | - | Full name |
+| phone_primary | string | Yes | - | Primary phone number |
+| phone_secondary | string | No | - | Secondary phone |
+| email | string | No | valid email | Email address |
+| relation | string | No | - | Relationship to student |
+| notes | string | No | - | Additional notes |
+
+---
+
+### ParentUpdate
+
+Input for updating an existing parent. All fields optional.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| full_name | string | No | Full name |
+| phone_primary | string | No | Primary phone |
+| phone_secondary | string | No | Secondary phone |
+| email | string | No | Email address |
+| relation | string | No | Relationship |
+| notes | string | No | Notes |
+
+---
+
+## Common Response Wrappers
+
+### ApiResponse<T>
+
+```json
+{
+  "data": T,
+  "message": "Optional message",
+  "success": true
+}
+```
+
+### PaginatedResponse<T>
+
+```json
+{
+  "data": [T],
+  "total": 100,
+  "skip": 0,
+  "limit": 50
 }
 ```
 
 ---
 
-## Endpoints
+## Error Response Format
 
-### 1) List / search parents
-**GET** `/api/v1/crm/parents`  
-Auth: `require_any`
-
-Query:
-- `q` (optional string, default `""`; search applied only when trimmed length >= 2)
-- `skip` (optional, default `0`, `>= 0`)
-- `limit` (optional, default `50`, `>= 1`, `<= 200`)
-
-Response:
-- `200 OK` -> `PaginatedResponse<ParentListItem>`
-
-Errors:
-- `401`, `403`, `422`
-
-### 2) Get parent by ID
-**GET** `/api/v1/crm/parents/{parent_id}`  
-Auth: `require_any`
-
-Path params:
-- `parent_id` (integer, required)
-
-Response:
-- `200 OK` -> `ApiResponse<ParentPublic>`
-
-Errors:
-- `401`, `403`, `404`, `422`
-
-### 3) Register a new parent
-**POST** `/api/v1/crm/parents`  
-Auth: `require_admin`
-
-Request body:
-- `RegisterParentInput`
-
-Response:
-- `201 Created` -> `ApiResponse<ParentPublic>`
-
-Errors:
-- `401`, `403`, `409`, `422`
-
-`409` occurs when `phone_primary` already exists.
-
-### 4) Update parent profile
-**PATCH** `/api/v1/crm/parents/{parent_id}`  
-Auth: `require_admin`
-
-Path params:
-- `parent_id` (integer, required)
-
-Request body:
-- `UpdateParentDTO`
-
-Response:
-- `200 OK` -> `ApiResponse<ParentPublic>`
-
-Errors:
-- `401`, `403`, `404`, `422`
-
-### 5) Find existing parent by phone or create new
-**POST** `/api/v1/crm/parents/find-or-create`  
-Auth: `require_admin`
-
-Request body:
-- `FindOrCreateParentInput`
-
-Response:
-- `201 Created` -> `FindOrCreateParentResponse`
-
-Errors:
-- `401`, `403`, `422`
-
-Notes:
-- Returns `created: false` when a parent already exists by `phone_primary`
-- Returns `created: true` and creates a record otherwise
-
-### 6) Get all students linked to a parent
-**GET** `/api/v1/crm/parents/{parent_id}/students`  
-Auth: `require_any`
-
-Path params:
-- `parent_id` (integer, required)
-
-Response:
-- `200 OK` -> `ApiResponse<list<StudentPublic>>`
-
-Errors:
-- `401`, `403`, `404`, `422`
-
-### 7) Delete parent (soft delete)
-**DELETE** `/api/v1/crm/parents/{parent_id}`  
-Auth: `require_admin`
-
-Path params:
-- `parent_id` (integer, required)
-
-Response:
-- `200 OK` -> `ApiResponse<None>`
-
-Errors:
-- `401`, `403`, `404`, `422`
-
-Example success response:
 ```json
 {
-  "success": true,
-  "data": null,
-  "message": "Parent deleted successfully."
+  "detail": "Error message",
+  "status_code": 404
 }
 ```
 
 ---
 
-## Router Notes
+## Notes
 
-- This router exposes **7 endpoint signatures**.
-- Parent delete is soft-delete behavior in service (`is_active = false`).
+- **Phone format:** Any valid phone number format accepted
+- **Email validation:** Standard email format validation applied
+- **Relation field:** Free text - common values: `father`, `mother`, `guardian`, `grandparent`
+- **Search:** Parent search matches against both `full_name` and `phone_primary`
+- **Linked students:** To get students linked to a parent, use `GET /crm/students/{student_id}/parents` or check the parent's student list in the CRM interface

@@ -13,7 +13,7 @@ export async function getStatusHistory(
 ): Promise<PaginationResult<StatusHistoryRecord>> {
   const { skip = 0, limit = 20 } = params
   const response = await client.get<PaginatedApiResponse<StatusHistoryRecord>>(
-    `/students/${studentId}/status-history`,
+    `/crm/students/${studentId}/status-history`,
     { params: { skip, limit } }
   )
   
@@ -34,7 +34,7 @@ export async function getAttendanceHistory(
 ): Promise<PaginationResult<AttendanceHistoryRecord>> {
   const { skip = 0, limit = 50, group_id, from_date, to_date } = params
   const response = await client.get<PaginatedApiResponse<AttendanceHistoryRecord>>(
-    `/students/${studentId}/attendance-history`,
+    `/crm/students/${studentId}/attendance-history`,
     { params: { skip, limit, group_id, from_date, to_date } }
   )
   

@@ -4,7 +4,7 @@
 import client from '../../client'
 import type { PaginationParams, PaginationResult } from '../../../types/pagination'
 import type { PaginatedApiResponse, ApiResponse } from '../../../types/api'
-import type { Student, StudentWithDetails, Parent } from './types/models'
+import type { Student, StudentWithDetails, StudentListItem, Parent, ParentInfo } from './types/models'
 import type { CreateStudentDTO, UpdateStudentDTO } from './types/inputs'
 
 // Pagination Result Helpers
@@ -64,4 +64,12 @@ export async function deleteStudent(id: number): Promise<void> {
 export async function getParentById(id: number): Promise<Parent> {
   const response = await client.get<ApiResponse<Parent>>(`/crm/parents/${id}`)
   return response.data.data
+}
+
+// Get Student Parents
+export async function getStudentParents(studentId: number): Promise<ParentInfo[]> {
+  const response = await client.get<ApiResponse<ParentInfo[]>>(
+    `/crm/students/${studentId}/parents`
+  )
+  return response.data.data || []
 }

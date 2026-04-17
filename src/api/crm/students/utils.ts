@@ -18,8 +18,8 @@ export function calculateAge(dateOfBirth: string): number {
 
 // Format student name with age
 export function formatStudentDisplay(student: Student): string {
-  const age = student.age || calculateAge(student.date_of_birth)
-  return `${student.full_name} (${age})`
+  const age = student.date_of_birth ? calculateAge(student.date_of_birth) : undefined
+  return age ? `${student.full_name} (${age})` : student.full_name
 }
 
 // Check if student has outstanding balance

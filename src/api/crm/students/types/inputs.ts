@@ -2,19 +2,19 @@
 
 export interface CreateStudentDTO {
   full_name: string
-  date_of_birth: string
-  parent_id?: number
-  school?: string
-  grade?: string
-  notes?: string
+  date_of_birth?: string | null
+  gender?: 'male' | 'female' | null
+  phone?: string | null
+  parent_id?: number | null
+  notes?: string | null
 }
 
 export interface UpdateStudentDTO {
   full_name?: string
-  date_of_birth?: string
-  school?: string
-  grade?: string
-  notes?: string
+  date_of_birth?: string | null
+  gender?: 'male' | 'female' | null
+  phone?: string | null
+  notes?: string | null
 }
 
 export interface UpdateStudentStatusDTO {
@@ -37,6 +37,25 @@ export interface BalanceAdjustmentDTO {
   adjustment_amount: number
   reason: string
   adjustment_type: 'correction' | 'refund' | 'discount' | 'other'
+}
+
+// Parent DTOs
+export interface ParentCreate {
+  full_name: string
+  phone_primary: string
+  phone_secondary?: string | null
+  email?: string | null
+  relation?: string | null
+  notes?: string | null
+}
+
+export interface ParentUpdate {
+  full_name?: string
+  phone_primary?: string
+  phone_secondary?: string | null
+  email?: string | null
+  relation?: string | null
+  notes?: string | null
 }
 
 // Re-export status type for use in DTOs

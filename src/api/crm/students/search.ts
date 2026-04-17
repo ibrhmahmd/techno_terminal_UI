@@ -4,14 +4,32 @@
 import client from '../../client'
 import type { PaginationParams, PaginationResult } from '../../../types/pagination'
 import type { PaginatedApiResponse, ApiResponse } from '../../../types/api'
-import type { Student, StudentStatus } from './types/models'
+import type { Student, StudentListItem, StudentStatus } from './types/models'
 
 // Search Students by Name
-export async function searchStudents(name: string): Promise<Student[]> {
-  const response = await client.get<ApiResponse<Student[]>>('/crm/students', {
-    params: { name }
+export async function searchStudents(query: string): Promise<StudentListItem[]> {
+  const response = await client.get<PaginatedApiResponse<StudentListItem>>('/crm/students', {
+    params: { q: query, skip: 0, limit: 50 }
   })
   return response.data.data || []
+}
+
+// Grouped Students Result
+export interface StudentGroupedResultDTO {
+  groups: Record<string, number>
+  total: number
+}
+
+// Get Students Grouped
+export async function getStudentsGrouped(
+  groupBy: 'status' | 'gender' | 'age_bucket' = 'status',
+  includeInactive: boolean = false
+): Promise<StudentGroupedResultDTO> {
+  const response = await client.get<ApiResponse<StudentGroupedResultDTO>>(
+    '/crm/students/grouped',
+    { params: { group_by: groupBy, include_inactive: includeInactive } }
+  )
+  return response.data.data
 }
 
 // Advanced Student Search with Filters

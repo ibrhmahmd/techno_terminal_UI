@@ -10,6 +10,7 @@ export {
   updateStudent,
   deleteStudent,
   getParentById,
+  getStudentParents,
 } from './core'
 
 // Finance
@@ -34,6 +35,16 @@ export {
   getAttendanceHistory,
 } from './history'
 
+// Activity
+export {
+  getStudentActivityHistory,
+  getActivitySummary,
+  getEnrollmentHistory,
+  logActivity,
+  getRecentActivities,
+  searchActivities,
+} from './activity'
+
 // Siblings
 export {
   getStudentSiblings,
@@ -45,6 +56,8 @@ export {
 export {
   searchStudents,
   searchStudentsAdvanced,
+  getStudentsGrouped,
+  type StudentGroupedResultDTO,
 } from './search'
 
 // Utils
@@ -61,13 +74,18 @@ export {
 export {
   // Models
   type Student,
+  type StudentListItem,
   type StudentStatus,
   type StudentWithDetails,
   type Parent,
+  type ParentInfo,
+  type ParentListItem,
   type EnrollmentInfo,
+  type CurrentEnrollmentInfo,
   type StudentBalanceSummary,
   type SiblingInfo,
   type StudentStatusSummary,
+  type AttendanceStatsDTO,
   // Inputs
   type CreateStudentDTO,
   type UpdateStudentDTO,
@@ -75,6 +93,8 @@ export {
   type SetWaitingPriorityDTO,
   type LinkSiblingDTO,
   type BalanceAdjustmentDTO,
+  type ParentCreate,
+  type ParentUpdate,
   // Finance
   type StudentBalance,
   type EnrollmentBalance,
@@ -83,6 +103,17 @@ export {
   // History
   type StatusHistoryRecord,
   type AttendanceHistoryRecord,
+  // Activity
+  type ActivityType,
+  type ReferenceType,
+  type ActivityLogResponseDTO,
+  type ActivitySummaryItem,
+  type EnrollmentHistoryEntry,
+  type ActivityLogRequest,
+  type ManualActivityResponseDTO,
+  type RecentActivityItemDTO,
+  type ActivitySearchParams,
+  type ActivitySearchResultItemDTO,
 } from './types'
 
 // Additional type exports from search
