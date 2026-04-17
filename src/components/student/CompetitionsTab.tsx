@@ -1,5 +1,13 @@
 import { Trophy, Calendar, Medal, Award, Star } from 'lucide-react'
-import type { CompetitionRecord } from '../../api/crm/types'
+// Note: CompetitionRecord type should be defined in the competitions API module
+interface CompetitionRecord {
+  id: number
+  competition_name: string
+  date?: string | null
+  result?: string | null
+  achievement?: string | null
+  notes?: string | null
+}
 import { EmptyState } from '../common/EmptyState'
 
 interface CompetitionsTabProps {

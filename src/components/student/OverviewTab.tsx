@@ -194,9 +194,9 @@ export function OverviewTab({ student, balance, siblings, parents, onLinkParent 
             <div className="space-y-3">
               {siblings.map((sibling: SiblingInfo) => (
                 <div
-                  key={sibling.student_id}
+                  key={sibling.id}
                   className="p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
-                  onClick={() => navigate(`/students/${sibling.student_id}`)}
+                  onClick={() => navigate(`/students/${sibling.id}`)}
                 >
                   <p className="font-medium text-on-surface">{sibling.full_name}</p>
                   <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">

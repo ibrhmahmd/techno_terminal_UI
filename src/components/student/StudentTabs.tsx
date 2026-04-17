@@ -1,6 +1,6 @@
-import { User, Users, BookOpen, Trophy, UsersRound, CreditCard } from 'lucide-react'
+import { User, Users, BookOpen, Trophy, UsersRound, CreditCard, History } from 'lucide-react'
 
-type TabId = 'overview' | 'enrollments' | 'courses' | 'competitions' | 'teams' | 'payments'
+type TabId = 'overview' | 'enrollments' | 'courses' | 'competitions' | 'teams' | 'payments' | 'history'
 
 interface StudentTabsProps {
   activeTab: TabId
@@ -20,6 +20,7 @@ const tabs: Tab[] = [
   { id: 'competitions', label: 'Competitions', icon: <Trophy className="w-4 h-4" /> },
   { id: 'teams', label: 'Teams', icon: <UsersRound className="w-4 h-4" /> },
   { id: 'payments', label: 'Payments', icon: <CreditCard className="w-4 h-4" /> },
+  { id: 'history', label: 'History', icon: <History className="w-4 h-4" /> },
 ]
 
 export function StudentTabs({ activeTab, onTabChange }: StudentTabsProps) {

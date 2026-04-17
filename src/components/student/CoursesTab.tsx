@@ -1,6 +1,17 @@
 import { BookOpen, Calendar, Award, Clock, GraduationCap } from 'lucide-react'
-import type { CourseRecord } from '../../api/crm/types'
 import { EmptyState } from '../common/EmptyState'
+
+// Inline type definition (was in deleted legacy types)
+interface CourseRecord {
+  id: number
+  course_name: string
+  start_date?: string | null
+  end_date?: string | null
+  status: string
+  level?: number | null
+  final_grade?: string | null
+  instructor_name?: string | null
+}
 
 interface CoursesTabProps {
   courses: CourseRecord[]

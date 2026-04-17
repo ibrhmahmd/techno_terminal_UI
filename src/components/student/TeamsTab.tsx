@@ -1,6 +1,15 @@
 import { UsersRound, Calendar, UserCog, Shield } from 'lucide-react'
-import type { TeamRecord } from '../../api/crm/types'
 import { EmptyState } from '../common/EmptyState'
+
+// Inline type definition (was in deleted legacy types)
+interface TeamRecord {
+  id: number
+  team_name: string
+  role?: string | null
+  start_date?: string | null
+  end_date?: string | null
+  status: 'active' | 'former'
+}
 
 interface TeamsTabProps {
   teams: TeamRecord[]
