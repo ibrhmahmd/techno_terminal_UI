@@ -16,7 +16,6 @@ import type {
   InstructorValueMatrixDTO,
   ScheduleUtilizationDTO,
   FlightRiskStudentDTO,
-  UserEngagementDTO,
   RetentionAnalysisDTO,
 } from './types'
 
@@ -26,8 +25,13 @@ import type {
  * @see docs/api/analytics/bi.md#get-enrollment-trend
  */
 export async function getEnrollmentTrends(cutoff?: string): Promise<EnrollmentTrendDTO[]> {
-  const params = cutoff ? { params: { cutoff } } : {}
-  const response = await client.get<ApiResponse<EnrollmentTrendDTO[]>>('/analytics/bi/enrollment-trend', params)
+  const params: Record<string, string> = {}
+  if (cutoff) params.cutoff = cutoff
+
+  const response = await client.get<ApiResponse<EnrollmentTrendDTO[]>>(
+    '/analytics/bi/enrollment-trend',
+    { params: Object.keys(params).length > 0 ? params : undefined }
+  )
   return response.data.data || []
 }
 
@@ -86,21 +90,17 @@ export async function getFlightRiskStudents(): Promise<FlightRiskStudentDTO[]> {
 }
 
 /**
- * Get user engagement metrics
- * @param days - Number of days to analyze (1-90), defaults to 30
- * @see docs/api/analytics/bi.md#get-user-engagement
- */
-export async function getUserEngagement(days?: number): Promise<UserEngagementDTO[]> {
-  const params = days ? { params: { days } } : {}
-  const response = await client.get<ApiResponse<UserEngagementDTO[]>>('/analytics/bi/user-engagement', params)
-  return response.data.data || []
-}
-
-/**
  * Get retention analysis by cohort
+ * @param months - Number of months to analyze (1-12), defaults to 12
  * @see docs/api/analytics/bi.md#get-retention-analysis
  */
-export async function getRetentionAnalysis(): Promise<RetentionAnalysisDTO[]> {
-  const response = await client.get<ApiResponse<RetentionAnalysisDTO[]>>('/analytics/bi/retention-analysis')
+export async function getRetentionAnalysis(months?: number): Promise<RetentionAnalysisDTO[]> {
+  const params: Record<string, number> = {}
+  if (months) params.months = months
+
+  const response = await client.get<ApiResponse<RetentionAnalysisDTO[]>>(
+    '/analytics/bi/retention-analysis',
+    { params: Object.keys(params).length > 0 ? params : undefined }
+  )
   return response.data.data || []
 }

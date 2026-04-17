@@ -7,15 +7,24 @@
 export interface DashboardSummaryPublic {
   active_enrollments: number
   today_sessions_count: number
+  sessions: SessionInfo[]
 }
 
-export interface SessionSummaryPublic {
+export interface SessionInfo {
   session_id: number
-  group_id: number
   session_date: string
   start_time: string
   end_time: string
+  session_number: number
+  level_number: number
+  group_id: number
+  course_name: string
+  group_name: string
   instructor_name: string
+  present: number
+  absent: number
+  unmarked: number
+  total_enrolled: number
 }
 
 export interface UnpaidAttendeeDTO {
@@ -51,19 +60,25 @@ export interface StudentProgressDTO {
   student_id: number
   student_name: string
   course_name: string
+  group_name: string
   current_level: number
-  total_levels: number
-  completion_pct: number
+  total_sessions: number
   sessions_attended: number
-  sessions_total: number
+  sessions_missed: number
+  attendance_pct: number
+  progress_status: 'on_track' | 'at_risk' | 'behind'
+  estimated_completion_date: string
+  enrollment_date: string
+  last_attendance_date: string
 }
 
 export interface CourseCompletionDTO {
   course_id: number
   course_name: string
-  total_enrolled: number
+  started_count: number
   completed_count: number
   dropped_count: number
   in_progress_count: number
-  completion_rate: number
+  completion_pct: number
+  avg_days_to_complete: number
 }

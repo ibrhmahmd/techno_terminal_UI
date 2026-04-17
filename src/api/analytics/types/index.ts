@@ -6,7 +6,7 @@
 // Academic types
 export type {
   DashboardSummaryPublic,
-  SessionSummaryPublic,
+  SessionInfo,
   UnpaidAttendeeDTO,
   GroupRosterRowDTO,
   AttendanceHeatmapRowDTO,
@@ -23,7 +23,6 @@ export type {
   InstructorValueMatrixDTO,
   ScheduleUtilizationDTO,
   FlightRiskStudentDTO,
-  UserEngagementDTO,
   RetentionAnalysisDTO,
 } from './bi'
 

@@ -24,7 +24,6 @@ export {
   getInstructorValueMatrix,
   getScheduleUtilization,
   getFlightRiskStudents,
-  getUserEngagement,
   getRetentionAnalysis,
 } from './bi'
 

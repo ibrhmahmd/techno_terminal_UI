@@ -49,25 +49,13 @@ export interface FlightRiskStudentDTO {
   sessions_missed: number
 }
 
-export interface UserEngagementDTO {
-  date: string
-  daily_active_users: number
-  total_sessions: number
-  avg_session_duration_minutes: number
-  feature_usage: {
-    attendance_marking: number
-    student_search: number
-    receipt_creation: number
-  }
-}
+// UserEngagementDTO removed - endpoint not documented in API spec
 
 export interface RetentionAnalysisDTO {
   cohort_month: string
   initial_enrollments: number
-  retained_1m: number
-  retained_3m: number
-  retained_6m: number
-  retention_1m_pct: number
-  retention_3m_pct: number
-  retention_6m_pct: number
+  retention_by_month: Record<string, string>
+  retention_rates: {
+    overall_retention_pct: number
+  }
 }

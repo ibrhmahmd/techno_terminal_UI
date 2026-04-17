@@ -67,8 +67,14 @@ export async function getTopDebtors(limit?: number): Promise<TopDebtorDTO[]> {
  * Get revenue metrics summary
  * @see docs/api/analytics/financial.md#get-revenue-metrics
  */
-export async function getRevenueMetrics(): Promise<RevenueMetricsDTO> {
-  const response = await client.get<ApiResponse<RevenueMetricsDTO>>('/analytics/finance/revenue-metrics')
+export async function getRevenueMetrics(months?: number): Promise<RevenueMetricsDTO> {
+  const params: Record<string, number> = {}
+  if (months) params.months = months
+
+  const response = await client.get<ApiResponse<RevenueMetricsDTO>>(
+    '/analytics/finance/revenue-metrics',
+    { params: Object.keys(params).length > 0 ? params : undefined }
+  )
   return response.data.data
 }
 
@@ -77,8 +83,13 @@ export async function getRevenueMetrics(): Promise<RevenueMetricsDTO> {
  * @param periods - Number of periods to forecast
  * @see docs/api/analytics/financial.md#get-revenue-forecast
  */
-export async function getRevenueForecast(periods?: number): Promise<RevenueForecastDTO[]> {
-  const params = periods ? { params: { periods } } : {}
-  const response = await client.get<ApiResponse<RevenueForecastDTO[]>>('/analytics/finance/revenue-forecast', params)
+export async function getRevenueForecast(monthsAhead?: number): Promise<RevenueForecastDTO[]> {
+  const params: Record<string, number> = {}
+  if (monthsAhead) params.months_ahead = monthsAhead  // FIX: was 'periods'
+
+  const response = await client.get<ApiResponse<RevenueForecastDTO[]>>(
+    '/analytics/finance/revenue-forecast',
+    { params: Object.keys(params).length > 0 ? params : undefined }
+  )
   return response.data.data || []
 }

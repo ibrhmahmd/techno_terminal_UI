@@ -65,12 +65,23 @@ export async function getAttendanceHeatmap(groupId: number, levelNumber: number)
 
 /**
  * Get student progress across all courses
+ * 
  * @see docs/api/analytics/academic.md#get-student-progress
  */
-export async function getStudentProgress(): Promise<StudentProgressDTO[]> {
-  const response = await client.get<ApiResponse<StudentProgressDTO[]>>('/analytics/academics/student-progress')
+export async function getStudentProgress(
+  studentId?: number,  // ADD parameter
+  groupId?: number  // ADD parameter
+): Promise<StudentProgressDTO[]> {
+  const params: Record<string, number> = {}
+  if (studentId) params.student_id = studentId
+  if (groupId) params.group_id = groupId
+
+  const response = await client.get<ApiResponse<StudentProgressDTO[]>>(`/analytics/academics/student-progress`, {
+    params: Object.keys(params).length > 0 ? params : undefined
+  })
   return response.data.data || []
 }
+
 
 /**
  * Get course completion statistics

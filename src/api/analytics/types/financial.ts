@@ -18,8 +18,9 @@ export interface RevenueByMethodDTO {
 export interface OutstandingByGroupDTO {
   group_id: number
   group_name: string
+  course_name: string
+  students_with_balance: number
   total_outstanding: number
-  student_count: number
 }
 
 export interface TopDebtorDTO {
@@ -31,15 +32,19 @@ export interface TopDebtorDTO {
 }
 
 export interface RevenueMetricsDTO {
+  period_start: string
+  period_end: string
   total_revenue: number
-  total_collected: number
-  total_outstanding: number
-  collection_rate: number
-  avg_revenue_per_student: number
+  total_receipts: number
+  avg_revenue_per_receipt: number
+  previous_period_revenue: number
+  revenue_change_pct: number
+  trend_direction: 'up' | 'down' | 'flat'
+  monthly_breakdown: RevenueByDateDTO[]
 }
 
 export interface RevenueForecastDTO {
-  period: string
+  month: string
   predicted_revenue: number
   confidence_lower: number
   confidence_upper: number
