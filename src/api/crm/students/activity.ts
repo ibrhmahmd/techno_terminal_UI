@@ -1,0 +1,92 @@
+// Student Activity History Operations
+// Endpoints: activity tracking, history, search
+// @see docs/api/crm/student_history.md
+
+import client from '../../client'
+import type { ApiResponse } from '../../../types/api'
+import type {
+  ActivityLogResponseDTO,
+  ActivitySummaryItem,
+  EnrollmentHistoryEntry,
+  ActivityLogRequest,
+  ManualActivityResponseDTO,
+  RecentActivityItemDTO,
+  ActivitySearchParams,
+  ActivitySearchResultItemDTO,
+} from './types/activity'
+
+// Get student activity history
+export async function getStudentActivityHistory(
+  studentId: number,
+  params?: {
+    activity_types?: string
+    date_from?: string
+    date_to?: string
+    limit?: number
+  }
+): Promise<ActivityLogResponseDTO[]> {
+  const response = await client.get<ApiResponse<ActivityLogResponseDTO[]>>(
+    `/crm/students/${studentId}/history`,
+    { params }
+  )
+  return response.data.data || []
+}
+
+// Get activity summary
+export async function getActivitySummary(
+  studentId: number,
+  params?: { date_from?: string; date_to?: string }
+): Promise<ActivitySummaryItem[]> {
+  const response = await client.get<ApiResponse<ActivitySummaryItem[]>>(
+    `/crm/students/${studentId}/activity-summary`,
+    { params }
+  )
+  return response.data.data || []
+}
+
+// Get enrollment history
+export async function getEnrollmentHistory(
+  studentId: number,
+  limit: number = 20
+): Promise<EnrollmentHistoryEntry[]> {
+  const response = await client.get<ApiResponse<EnrollmentHistoryEntry[]>>(
+    `/crm/students/${studentId}/enrollment-history`,
+    { params: { limit } }
+  )
+  return response.data.data || []
+}
+
+// Log manual activity
+export async function logActivity(
+  studentId: number,
+  data: ActivityLogRequest
+): Promise<ManualActivityResponseDTO> {
+  const response = await client.post<ApiResponse<ManualActivityResponseDTO>>(
+    `/crm/students/${studentId}/log-activity`,
+    data
+  )
+  return response.data.data
+}
+
+// Get recent activities (global)
+export async function getRecentActivities(
+  limit: number = 20,
+  activity_types?: string
+): Promise<RecentActivityItemDTO[]> {
+  const response = await client.get<ApiResponse<RecentActivityItemDTO[]>>(
+    '/crm/history/recent',
+    { params: { limit, activity_types } }
+  )
+  return response.data.data || []
+}
+
+// Search activities
+export async function searchActivities(
+  params: ActivitySearchParams
+): Promise<ActivitySearchResultItemDTO[]> {
+  const response = await client.post<ApiResponse<ActivitySearchResultItemDTO[]>>(
+    '/crm/history/search',
+    params
+  )
+  return response.data.data || []
+}
