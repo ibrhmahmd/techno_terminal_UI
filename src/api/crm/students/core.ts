@@ -45,8 +45,24 @@ export async function getStudentWithDetails(id: number): Promise<StudentWithDeta
 
 // Create Student
 export async function createStudent(data: CreateStudentDTO): Promise<Student> {
-  const response = await client.post<ApiResponse<Student>>('/crm/students', data)
-  return response.data.data
+  console.log('[DEBUG] Creating student with data:', JSON.stringify(data, null, 2))
+  try {
+    // API expects data wrapped in student_data field
+    const requestBody = { student_data: data }
+    console.log('[DEBUG] Sending wrapped data:', JSON.stringify(requestBody, null, 2))
+    const response = await client.post<ApiResponse<Student>>('/crm/students', requestBody)
+    console.log('[DEBUG] Create student success:', response.data)
+    return response.data.data
+  } catch (error: any) {
+    console.error('[DEBUG] Create student failed:')
+    console.error('[DEBUG] Request URL:', '/crm/students')
+    console.error('[DEBUG] Request data:', JSON.stringify(data, null, 2))
+    console.error('[DEBUG] Error status:', error.response?.status)
+    console.error('[DEBUG] Error status text:', error.response?.statusText)
+    console.error('[DEBUG] Error response data:', JSON.stringify(error.response?.data, null, 2))
+    console.error('[DEBUG] Error message:', error.message)
+    throw error
+  }
 }
 
 // Update Student

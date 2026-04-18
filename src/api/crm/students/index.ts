@@ -52,12 +52,20 @@ export {
   unlinkSibling,
 } from './siblings'
 
+// Enrollments (Lazy-loaded per-enrollment data - TODO: Backend endpoints)
+export {
+  getStudentCourses,
+  getStudentCompetitions,
+  getStudentTeams,
+} from './enrollments'
+
 // Search
 export {
   searchStudents,
   searchStudentsAdvanced,
   getStudentsGrouped,
   type StudentGroupedResultDTO,
+  type StudentGroup,
 } from './search'
 
 // Utils
@@ -88,6 +96,9 @@ export {
   type AttendanceStatsDTO,
   type SessionAttendanceItem,
   type StudentEnrollmentAttendanceItem,
+  type CourseRecord,
+  type CompetitionRecord,
+  type TeamRecord,
   // Inputs
   type CreateStudentDTO,
   type UpdateStudentDTO,

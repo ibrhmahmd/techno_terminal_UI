@@ -14,21 +14,52 @@ export async function searchStudents(query: string): Promise<StudentListItem[]> 
   return response.data.data || []
 }
 
-// Grouped Students Result
-export interface StudentGroupedResultDTO {
-  groups: Record<string, number>
-  total: number
+// Group data structure with students
+export interface StudentGroup {
+  key: string // 'active', 'waiting', '4-7', 'competition-name', etc.
+  label: string // 'Active Students', 'Ages 4-6', 'Competition XYZ'
+  count: number // Total count in this group
+  students: StudentListItem[] // Paginated students
 }
 
-// Get Students Grouped
+// Grouped Students Result with pagination
+export interface StudentGroupedResultDTO {
+  groups: StudentGroup[]
+  total: number
+  groupBy: 'status' | 'age' | 'competition'
+  skip: number
+  limit: number
+}
+
+// Get Students Grouped with pagination and custom age buckets
 export async function getStudentsGrouped(
-  groupBy: 'status' | 'gender' | 'age_bucket' = 'status',
-  includeInactive: boolean = false
+  groupBy: 'status' | 'age' = 'status',
+  params: PaginationParams = {},
+  filters?: {
+    includeInactive?: boolean
+    statusFilter?: 'active' | 'waiting' | 'inactive' // For waiting tab
+    ageBuckets?: { min: number; max: number; label: string; key: string }[]
+  }
 ): Promise<StudentGroupedResultDTO> {
+  const { skip = 0, limit = 50 } = params
+
+  // Map frontend 'age' to backend 'age_bucket'
+  const backendGroupBy = groupBy === 'age' ? 'age_bucket' : groupBy
+
   const response = await client.get<ApiResponse<StudentGroupedResultDTO>>(
     '/crm/students/grouped',
-    { params: { group_by: groupBy, include_inactive: includeInactive } }
+    {
+      params: {
+        group_by: backendGroupBy,
+        skip,
+        limit,
+        include_inactive: filters?.includeInactive,
+        status_filter: filters?.statusFilter,
+        age_buckets: filters?.ageBuckets ? JSON.stringify(filters.ageBuckets) : undefined,
+      },
+    }
   )
+
   return response.data.data
 }
 

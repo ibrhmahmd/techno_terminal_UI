@@ -1,27 +1,29 @@
 import { useState, type FormEvent } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { ParentSearchDropdown } from './ParentSearchDropdown'
-import type { CreateStudentDTO, Parent } from '../../api/crm'
+import type { CreateStudentDTO, ParentListItem, StudentStatus } from '../../api/crm'
 
 type CreateStudentInput = CreateStudentDTO
 
 interface StudentFormProps {
   initialData?: Partial<CreateStudentDTO>
-  onSubmit: (data: CreateStudentInput, selectedParent: Parent | null) => Promise<void>
+  initialStatus?: StudentStatus
+  onSubmit: (data: CreateStudentInput, selectedParent: ParentListItem | null, status: StudentStatus) => Promise<void>
   onCancel: () => void
   mode: 'create' | 'edit'
-  onSearchParents?: (query: string) => Promise<Parent[]>
+  onSearchParents?: (query: string) => Promise<ParentListItem[]>
 }
 
-export function StudentForm({ initialData, onSubmit, onCancel, mode, onSearchParents }: StudentFormProps) {
+export function StudentForm({ initialData, initialStatus = 'active', onSubmit, onCancel, mode, onSearchParents }: StudentFormProps) {
   const [formData, setFormData] = useState({
     full_name: initialData?.full_name || '',
     date_of_birth: initialData?.date_of_birth || '',
     gender: initialData?.gender || '',
     phone: initialData?.phone || '',
     notes: initialData?.notes || '',
+    status: initialStatus,
   })
-  const [selectedParent, setSelectedParent] = useState<Parent | null>(null)
+  const [selectedParent, setSelectedParent] = useState<ParentListItem | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -38,6 +40,7 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode, onSearchPar
 
       // Build submission data with all required fields
       const genderValue = formData.gender as 'male' | 'female' | ''
+      const statusValue = formData.status as StudentStatus
       const submitData: CreateStudentInput = {
         full_name: formData.full_name.trim(),
         date_of_birth: formData.date_of_birth || null,
@@ -45,8 +48,8 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode, onSearchPar
         phone: formData.phone || null,
         notes: formData.notes || null,
       }
-
-      await onSubmit(submitData, mode === 'create' ? selectedParent : null)
+      
+      await onSubmit(submitData, mode === 'create' ? selectedParent : null, statusValue)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -150,6 +153,23 @@ export function StudentForm({ initialData, onSubmit, onCancel, mode, onSearchPar
         />
       </div>
 
+      {/* Status - shown in both create and edit modes */}
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="status" className="text-sm font-medium text-on-surface">
+          Status
+        </label>
+        <select
+          id="status"
+          value={formData.status}
+          onChange={(e) => handleChange('status', e.target.value)}
+          disabled={isLoading}
+          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
+        >
+          <option value="active">Active</option>
+          <option value="waiting">Waiting List</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
 
       {/* Parent Selection - only for create mode */}
       {mode === 'create' && onSearchParents && (

@@ -1,13 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import type { Parent } from '../../api/crm'
-
-// Define proper input type for creating parents
-type CreateParentInput = Omit<Parent, 'id'>
+import type { Parent, ParentCreate } from '../../api/crm'
 
 interface ParentFormProps {
   initialData?: Partial<Parent>
-  onSubmit: (data: CreateParentInput) => Promise<void>
+  onSubmit: (data: ParentCreate) => Promise<void>
   onCancel: () => void
   mode: 'create' | 'edit'
 }
@@ -36,7 +33,7 @@ export function ParentForm({ initialData, onSubmit, onCancel, mode }: ParentForm
       }
 
       // Build submission data with all required fields
-      const submitData: CreateParentInput = {
+      const submitData: ParentCreate = {
         full_name: formData.full_name.trim(),
         phone_primary: formData.phone_primary,
         phone_secondary: formData.phone_secondary || null,

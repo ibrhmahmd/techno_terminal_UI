@@ -6,14 +6,19 @@ import { StudentForm } from '../components/crm/StudentForm'
 import { ParentForm } from '../components/crm/ParentForm'
 import { WaitingListPanel } from '../components/crm/WaitingListPanel'
 import { useSearch } from '../hooks/useSearch'
-import { 
-  searchParents, 
+import { useStudentsGrouped } from '../hooks/useStudentsGrouped'
+import {
+  searchParents,
   linkParentToStudent,
-  type StudentListItem, 
+  updateStudentStatus,
+  type StudentListItem,
   type ParentListItem,
   type CreateStudentDTO,
-  type ParentCreate
+  type UpdateStudentDTO,
+  type ParentCreate,
+  type StudentStatus
 } from '../api/crm'
+import type { StudentGroup } from '../api/crm'
 import {
   useStudentsList,
   useStudentsSearch,
@@ -27,6 +32,8 @@ import {
 
 import { studentColumns, parentColumns } from '../components/directory/DirectoryColumns'
 import { DirectoryTabs } from '../components/directory/DirectoryTabs'
+import { StudentGroupBySelector } from '../components/directory/StudentGroupBySelector'
+import type { StudentGroupBy, WaitingGroupBy } from '../config/studentGrouping'
 
 export function DirectoryPage() {
   const navigate = useNavigate()
@@ -47,8 +54,32 @@ export function DirectoryPage() {
     minLength: 2
   })
 
+  // Grouping state for students and waiting tabs
+  const [studentGroupBy, setStudentGroupBy] = useState<StudentGroupBy>('none')
+  const [waitingGroupBy, setWaitingGroupBy] = useState<WaitingGroupBy>('none')
+  const [studentGroupedPage, setStudentGroupedPage] = useState(1)
+  const [waitingGroupedPage, setWaitingGroupedPage] = useState(1)
+  const groupedPageSize = 15
+
   // React Query driving data fetching
   const isSearching = debouncedSearch.length >= 2
+
+  // Grouped data fetching (lazy - only when grouping is active)
+  const { data: studentsGroupedResult, isLoading: isLoadingStudentsGrouped } =
+    useStudentsGrouped({
+      groupBy: studentGroupBy === 'none' ? 'status' : studentGroupBy,
+      pagination: { page: studentGroupedPage, pageSize: groupedPageSize },
+      tab: 'students',
+      enabled: activeTab === 'students' && studentGroupBy !== 'none' && !isSearching,
+    })
+
+  const { data: waitingGroupedResult, isLoading: isLoadingWaitingGrouped } =
+    useStudentsGrouped({
+      groupBy: waitingGroupBy === 'none' ? 'age' : waitingGroupBy,
+      pagination: { page: waitingGroupedPage, pageSize: groupedPageSize },
+      tab: 'waiting',
+      enabled: activeTab === 'waiting' && waitingGroupBy !== 'none' && !isSearching,
+    })
 
   const studentsListQuery = useStudentsList(currentPage, pageSize, (activeTab === 'students' || activeTab === 'waiting') && !isSearching)
   const studentsSearchQuery = useStudentsSearch(debouncedSearch)
@@ -64,11 +95,16 @@ export function DirectoryPage() {
   const parents = isSearching ? (parentsSearchQuery.data ?? []) : (parentsListQuery.data?.items ?? [])
   const totalParents = isSearching ? parents.length : (parentsListQuery.data?.total ?? 0)
 
-  // Reset search and reload data when tab changes
+  // Reset search, grouping, and reload data when tab changes
   const handleTabChange = useCallback((tab: 'students' | 'parents' | 'waiting') => {
     setActiveTab(tab)
     clearSearch()
     setCurrentPage(1)
+    // Reset grouping when switching tabs
+    setStudentGroupBy('none')
+    setWaitingGroupBy('none')
+    setStudentGroupedPage(1)
+    setWaitingGroupedPage(1)
   }, [clearSearch])
 
   // BUG-23: Use API results directly - no double filtering
@@ -76,14 +112,48 @@ export function DirectoryPage() {
   const displayParents = parents
   const waitingStudents = useMemo(() => students.filter(s => s.status === 'waiting'), [students])
 
+  // Transform grouped API response → GroupItem<StudentListItem>[] for DataTable
+  const studentsGroupedData = useMemo(() => {
+    if (!studentsGroupedResult || studentGroupBy === 'none') return undefined
+
+    return studentsGroupedResult.groups.map((group) => ({
+      key: group.key,
+      label: group.label,
+      count: group.count,
+      items: group.students,
+    }))
+  }, [studentsGroupedResult, studentGroupBy])
+
+  const waitingGroupedData = useMemo(() => {
+    if (!waitingGroupedResult || waitingGroupBy === 'none') return undefined
+
+    return waitingGroupedResult.groups.map((group) => ({
+      key: group.key,
+      label: group.label,
+      count: group.count,
+      items: group.students,
+    }))
+  }, [waitingGroupedResult, waitingGroupBy])
+
   const createStudentMutation = useCreateStudent()
   const updateStudentMutation = useUpdateStudent()
   const deleteStudentMutation = useDeleteStudent()
   const createParentMutation = useCreateParent()
 
-  const handleCreateStudent = async (data: CreateStudentDTO, selectedParent: ParentListItem | null) => {
+  const handleCreateStudent = async (data: CreateStudentDTO, selectedParent: ParentListItem | null, status: StudentStatus) => {
     try {
       const newStudent = await createStudentMutation.mutateAsync(data)
+      
+      // Set initial status if not 'active' (default)
+      if (status !== 'active') {
+        try {
+          await updateStudentStatus(newStudent.id, { status })
+        } catch (statusError) {
+          console.error('Failed to set student status:', statusError)
+          setError('Student created but failed to set status. You can update status from the student detail page.')
+          return
+        }
+      }
       
       // If a parent was selected, link them to the student
       if (selectedParent) {
@@ -103,10 +173,17 @@ export function DirectoryPage() {
     }
   }
 
-  const handleEditStudent = async (data: Partial<CreateStudentDTO>) => {
+  const handleEditStudent = async (data: UpdateStudentDTO, _selectedParent: ParentListItem | null, status: StudentStatus) => {
     if (!editingStudent) return
     try {
+      // Update student basic data
       await updateStudentMutation.mutateAsync({ id: editingStudent.id, data })
+      
+      // Update status if needed
+      if (status !== editingStudent.status) {
+        await updateStudentStatus(editingStudent.id, { status })
+      }
+      
       setIsEditStudentModalOpen(false)
       setEditingStudent(null)
       setError(null)
@@ -183,28 +260,103 @@ export function DirectoryPage() {
           )}
 
           {activeTab === 'students' && (
-            <DataTable
-              data={displayStudents}
-              columns={studentColumns}
-              keyExtractor={(s) => s.id.toString()}
-              isLoading={isLoading}
-              emptyMessage={searchTerm.length >= 2 ? 'No students match your search' : 'No students found'}
-              emptyIcon="search"
-              onRowClick={(student) => navigate(`/students/${student.id}`)}
-              actions={{
-                view: (student) => navigate(`/students/${student.id}`),
-                edit: (student) => {
-                  setEditingStudent(student)
-                  setIsEditStudentModalOpen(true)
-                },
-                delete: handleDeleteStudent
-              }}
-            />
+            <>
+              {/* Group by selector - disabled when searching */}
+              <div className="flex justify-end mb-4">
+                <StudentGroupBySelector
+                  value={studentGroupBy}
+                  onChange={(newGroupBy) => {
+                    setStudentGroupBy(newGroupBy as StudentGroupBy)
+                    setStudentGroupedPage(1)
+                  }}
+                  mode="students"
+                  disabled={isSearching}
+                />
+              </div>
+
+              {/* DataTable - flat or grouped */}
+              {studentGroupBy === 'none' ? (
+                <DataTable
+                  data={displayStudents}
+                  columns={studentColumns}
+                  keyExtractor={(s) => s.id.toString()}
+                  isLoading={isLoading}
+                  emptyMessage={searchTerm.length >= 2 ? 'No students match your search' : 'No students found'}
+                  emptyIcon="search"
+                  onRowClick={(student) => navigate(`/students/${student.id}`)}
+                  actions={{
+                    view: (student) => navigate(`/students/${student.id}`),
+                    edit: (student) => {
+                      setEditingStudent(student)
+                      setIsEditStudentModalOpen(true)
+                    },
+                    delete: handleDeleteStudent
+                  }}
+                />
+              ) : (
+                <DataTable
+                  groupedData={studentsGroupedData}
+                  columns={studentColumns}
+                  keyExtractor={(s) => s.id.toString()}
+                  isLoading={isLoadingStudentsGrouped}
+                  emptyMessage="No students found"
+                  emptyIcon="inbox"
+                  onRowClick={(student) => navigate(`/students/${student.id}`)}
+                  actions={{
+                    view: (student) => navigate(`/students/${student.id}`),
+                    edit: (student) => {
+                      setEditingStudent(student)
+                      setIsEditStudentModalOpen(true)
+                    },
+                    delete: handleDeleteStudent
+                  }}
+                />
+              )}
+            </>
           )}
           {activeTab === 'waiting' && (
-            <WaitingListPanel
-              onStudentClick={(student) => navigate(`/students/${student.id}`)}
-            />
+            <>
+              {/* Group by selector for waiting list */}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-on-surface">
+                  Waiting List ({waitingStudents.length} students)
+                </h2>
+                <StudentGroupBySelector
+                  value={waitingGroupBy}
+                  onChange={(newGroupBy) => {
+                    setWaitingGroupBy(newGroupBy as WaitingGroupBy)
+                    setWaitingGroupedPage(1)
+                  }}
+                  mode="waiting"
+                  disabled={isSearching}
+                />
+              </div>
+
+              {/* DataTable - flat or grouped */}
+              {waitingGroupBy === 'none' ? (
+                <WaitingListPanel
+                  onStudentClick={(student) => navigate(`/students/${student.id}`)}
+                />
+              ) : (
+                <DataTable
+                  groupedData={waitingGroupedData}
+                  columns={studentColumns}
+                  keyExtractor={(s) => s.id.toString()}
+                  isLoading={isLoadingWaitingGrouped}
+                  emptyMessage="No waiting students found"
+                  emptyIcon="inbox"
+                  onRowClick={(student) => navigate(`/students/${student.id}`)}
+                  actions={{
+                    view: (student) => navigate(`/students/${student.id}`),
+                    edit: (student) => {
+                      setEditingStudent(student)
+                      setIsEditStudentModalOpen(true)
+                    },
+                    delete: handleDeleteStudent
+                  }}
+                />
+              )}
+            </>
           )}
           {activeTab === 'parents' && (
             <DataTable
@@ -268,6 +420,7 @@ export function DirectoryPage() {
       >
         <StudentForm
           initialData={editingStudent || undefined}
+          initialStatus={editingStudent?.status || 'active'}
           onSubmit={handleEditStudent}
           onCancel={() => {
             setIsEditStudentModalOpen(false)

@@ -1,17 +1,17 @@
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Phone, Calendar, Users, Wallet, FileText, UsersRound } from 'lucide-react'
-import type { Student, StudentBalance, SiblingInfo, Parent } from '../../api/crm/students/'
+import type { Student, StudentBalance, SiblingInfo, ParentInfo } from '../../api/crm/students/'
 import { getStatusColorClass, getStatusLabel } from '../../api/crm/students/utils'
 
 interface OverviewTabProps {
   student: Student
   balance: StudentBalance | null
   siblings: SiblingInfo[]
-  parents: Parent[]
+  primaryParent?: ParentInfo | null
   onLinkParent?: () => void
 }
 
-export function OverviewTab({ student, balance, siblings, parents, onLinkParent }: OverviewTabProps) {
+export function OverviewTab({ student, balance, siblings, primaryParent, onLinkParent }: OverviewTabProps) {
   const navigate = useNavigate()
 
   return (
@@ -53,18 +53,6 @@ export function OverviewTab({ student, balance, siblings, parents, onLinkParent 
                 {getStatusLabel(student.status)}
               </span>
             </div>
-          </div>
-        </div>
-
-        {/* Current Enrollment */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <h3 className="font-semibold text-lg text-on-surface mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5 text-slate-500" />
-            Current Enrollment
-          </h3>
-          {/* Current enrollment info would come from enrollments tab or separate fetch */}
-          <div className="text-center py-6 bg-slate-50 rounded-lg">
-            <p className="text-slate-500">View enrollments in the Enrollments tab</p>
           </div>
         </div>
 
@@ -137,9 +125,9 @@ export function OverviewTab({ student, balance, siblings, parents, onLinkParent 
             )}
           </div>
           
-          {parents.length === 0 ? (
+          {!primaryParent ? (
             <div className="text-center py-4">
-              <p className="text-slate-500 text-sm">No parents linked</p>
+              <p className="text-slate-500 text-sm">No parent linked</p>
               {onLinkParent && (
                 <button
                   onClick={onLinkParent}
@@ -150,33 +138,21 @@ export function OverviewTab({ student, balance, siblings, parents, onLinkParent 
               )}
             </div>
           ) : (
-            <div className="space-y-3">
-              {parents.map((parent: Parent) => (
-                <div
-                  key={parent.id}
-                  className="p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
-                  onClick={() => navigate(`/parents/${parent.id}`)}
-                >
-                  <p className="font-medium text-on-surface">{parent.full_name}</p>
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                    {parent.phone_primary && (
-                      <span className="flex items-center gap-1">
-                        <Phone className="w-3 h-3" />
-                        {parent.phone_primary}
-                      </span>
-                    )}
-                    {parent.email && (
-                      <span className="flex items-center gap-1">
-                        <Mail className="w-3 h-3" />
-                        {parent.email}
-                      </span>
-                    )}
-                  </div>
-                  {parent.relation && (
-                    <p className="text-xs text-slate-400 mt-1">{parent.relation}</p>
-                  )}
+            <div className="p-3 bg-slate-50 rounded-lg">
+              <p className="font-medium text-on-surface">{primaryParent.full_name}</p>
+              <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
+                <Phone className="w-3.5 h-3.5" />
+                <span>{primaryParent.phone || 'No phone'}</span>
+              </div>
+              {primaryParent.email && (
+                <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>{primaryParent.email}</span>
                 </div>
-              ))}
+              )}
+              {primaryParent.relationship && (
+                <p className="mt-1 text-xs text-slate-400 capitalize">{primaryParent.relationship}</p>
+              )}
             </div>
           )}
         </div>

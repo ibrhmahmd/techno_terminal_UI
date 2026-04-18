@@ -23,6 +23,9 @@ import {
   getStatusLabel
 } from '../api/crm/students/'
 import { useStudentCore, useStudentBalance, useStudentSiblings } from '../hooks/students'
+import { useStudentCourses } from '../hooks/students/useStudentCourses'
+import { useStudentCompetitions } from '../hooks/students/useStudentCompetitions'
+import { useStudentTeams } from '../hooks/students/useStudentTeams'
 import { enrollStudent } from '../api/academics'
 import { useGroupsFlat } from '../hooks/useGroupQueries'
 
@@ -55,6 +58,11 @@ export function StudentDetailPage() {
     siblings,
     refresh: refreshSiblings
   } = useStudentSiblings(studentId, activeTab === 'overview')
+
+  // LAZY: Courses, Competitions, Teams load only when their tabs are active
+  const { data: courses, isLoading: isLoadingCourses } = useStudentCourses(studentId, activeTab === 'courses')
+  const { data: competitions, isLoading: isLoadingCompetitions } = useStudentCompetitions(studentId, activeTab === 'competitions')
+  const { data: teams, isLoading: isLoadingTeams } = useStudentTeams(studentId, activeTab === 'teams')
   
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -67,7 +75,7 @@ export function StudentDetailPage() {
   const { data: groups, isLoading: isLoadingGroups } = useGroupsFlat()
 
   // Filter out groups the student is already enrolled in
-  const enrolledGroupIds = student?.enrollments
+  const enrolledGroupIds = details?.enrollments
     ?.filter(e => e.status === 'active')
     .map(e => e.group_id) || []
     
@@ -77,7 +85,7 @@ export function StudentDetailPage() {
       id: g.id,
       group_name: g.group_name || 'Unknown Group',
       course_name: g.course_name || 'Unknown Course',
-      level: g.level || 1,
+      level: g.level_number || 1,
     }))
 
   // Refresh data after successful operations
@@ -156,7 +164,7 @@ export function StudentDetailPage() {
             student={student}
             balance={balance}
             siblings={siblings}
-            parents={details?.parents || []}
+            primaryParent={details?.primary_parent}
             onLinkParent={() => setIsLinkParentModalOpen(true)}
           />
         )
@@ -169,11 +177,11 @@ export function StudentDetailPage() {
           />
         )
       case 'courses':
-        return <CoursesTab courses={details?.courses || []} />
+        return <CoursesTab courses={courses || []} />
       case 'competitions':
-        return <CompetitionsTab competitions={details?.competitions || []} />
+        return <CompetitionsTab competitions={competitions || []} />
       case 'teams':
-        return <TeamsTab teams={details?.teams || []} />
+        return <TeamsTab teams={teams || []} />
       case 'payments':
         return (
           <PaymentsTab 

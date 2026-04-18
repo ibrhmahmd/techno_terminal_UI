@@ -17,6 +17,9 @@ export {
   type AttendanceStatsDTO,
   type SessionAttendanceItem,
   type StudentEnrollmentAttendanceItem,
+  type CourseRecord,
+  type CompetitionRecord,
+  type TeamRecord,
 } from './models'
 
 // Inputs/DTOs

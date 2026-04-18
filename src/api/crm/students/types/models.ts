@@ -118,6 +118,38 @@ export interface StudentEnrollmentAttendanceItem {
   sessions: SessionAttendanceItem[]  // Sorted by session_date (oldest first)
 }
 
+// Future API types - for GET /crm/students/{id}/courses endpoint (TODO: Backend)
+export interface CourseRecord {
+  id: number
+  course_name: string
+  start_date?: string | null
+  end_date?: string | null
+  status: 'in_progress' | 'completed' | 'dropped'
+  level?: number | null
+  final_grade?: string | null
+  instructor_name?: string | null
+}
+
+// Future API types - for GET /crm/students/{id}/competitions endpoint (TODO: Backend)
+export interface CompetitionRecord {
+  id: number
+  competition_name: string
+  date?: string | null
+  result?: string | null
+  achievement?: string | null
+  notes?: string | null
+}
+
+// Future API types - for GET /crm/students/{id}/teams endpoint (TODO: Backend)
+export interface TeamRecord {
+  id: number
+  team_name: string
+  role?: string | null
+  start_date?: string | null
+  end_date?: string | null
+  status: 'active' | 'former'
+}
+
 export interface SiblingInfo {
   id: number
   full_name: string
