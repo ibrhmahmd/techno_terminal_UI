@@ -15,6 +15,8 @@ export {
   type SiblingInfo,
   type StudentStatusSummary,
   type AttendanceStatsDTO,
+  type SessionAttendanceItem,
+  type StudentEnrollmentAttendanceItem,
 } from './models'
 
 // Inputs/DTOs

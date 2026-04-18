@@ -39,6 +39,7 @@ export interface StudentWithDetails extends Student {
   sessions_absent_count: number
   last_session_attended?: string | null
   attendance_stats: AttendanceStatsDTO
+  enrollment_attendance: StudentEnrollmentAttendanceItem[]  // Sorted by enrollment date (newest first)
 }
 
 export interface ParentInfo {
@@ -97,6 +98,24 @@ export interface AttendanceStatsDTO {
   attended: number
   absent: number
   late: number
+}
+
+// Individual session attendance record
+export interface SessionAttendanceItem {
+  session_date: string  // YYYY-MM-DD
+  status: 'present' | 'absent' | 'late' | 'cancelled' | null
+}
+
+// Per-enrollment attendance summary with session history
+export interface StudentEnrollmentAttendanceItem {
+  enrollment_id: number
+  group_id: number
+  group_name: string
+  course_name: string
+  level_number: number
+  present_count: number   // Includes both 'present' and 'late'
+  absent_count: number
+  sessions: SessionAttendanceItem[]  // Sorted by session_date (oldest first)
 }
 
 export interface SiblingInfo {
