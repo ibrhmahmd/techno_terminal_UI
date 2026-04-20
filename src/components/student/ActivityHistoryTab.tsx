@@ -1,12 +1,18 @@
 // Activity History Tab Component
 // Displays student activity timeline, enrollment history, and status changes
+// @see docs/api/crm/student_history.md
 
 import { useState } from 'react'
 import { Clock, Calendar, User, BookOpen, AlertCircle, CheckCircle, FileText } from 'lucide-react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { EmptyState } from '../common/EmptyState'
-import { useActivityHistory, useActivitySummary, useEnrollmentHistory } from '../../hooks/useStudentActivity'
-import type { ActivityLogResponseDTO, ActivitySummaryItem } from '../../api/crm'
+import {
+  useActivityHistory,
+  useActivitySummary,
+  useEnrollmentHistory,
+  useCompetitionHistory
+} from '../../hooks/useStudentActivity'
+import type { ActivityLogResponseDTO, ActivitySummaryItem, EnrollmentHistoryEntry } from '../../api/crm'
 
 type TabType = 'timeline' | 'enrollments' | 'summary'
 
@@ -31,11 +37,12 @@ export function ActivityHistoryTab({ studentId }: ActivityHistoryTabProps) {
     activeTab === 'summary'
   )
 
-  const { data: enrollments, isLoading: loadingEnrollments } = useEnrollmentHistory(
+  const { data: enrollmentData, isLoading: loadingEnrollments } = useEnrollmentHistory(
     studentId,
-    20,
+    { skip: 0, limit: 20 },
     activeTab === 'enrollments'
   )
+  const enrollments = enrollmentData?.data || []
 
   const isLoading = loadingHistory || loadingSummary || loadingEnrollments
 
@@ -181,7 +188,7 @@ function TimelineItem({ item }: { item: ActivityLogResponseDTO }) {
 }
 
 // Enrollments View Component
-function EnrollmentsView({ enrollments }: { enrollments: any[] }) {
+function EnrollmentsView({ enrollments }: { enrollments: EnrollmentHistoryEntry[] }) {
   if (enrollments.length === 0) {
     return (
       <EmptyState
@@ -201,22 +208,29 @@ function EnrollmentsView({ enrollments }: { enrollments: any[] }) {
               {enrollment.course_name || 'Unknown Course'}
             </p>
             <p className="text-sm text-slate-500">
-              {enrollment.group_name || 'Unknown Group'}
+              {enrollment.group_name || 'Unknown Group'} • Level {enrollment.level_number}
             </p>
+            {enrollment.previous_group_id && (
+              <p className="text-xs text-slate-400">
+                Transferred from group {enrollment.previous_group_id}
+              </p>
+            )}
           </div>
           <div className="text-right">
             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-              enrollment.status === 'active'
+              enrollment.action === 'enrolled'
                 ? 'bg-green-100 text-green-700'
-                : enrollment.status === 'completed'
+                : enrollment.action === 'transferred'
                 ? 'bg-blue-100 text-blue-700'
+                : enrollment.action === 'dropped'
+                ? 'bg-red-100 text-red-700'
                 : 'bg-slate-100 text-slate-600'
             }`}>
-              {enrollment.status}
+              {enrollment.action}
             </span>
             <p className="text-xs text-slate-400 mt-1">
-              {enrollment.enrolled_date
-                ? new Date(enrollment.enrolled_date).toLocaleDateString()
+              {enrollment.action_date
+                ? new Date(enrollment.action_date).toLocaleDateString()
                 : 'Date unknown'}
             </p>
           </div>
