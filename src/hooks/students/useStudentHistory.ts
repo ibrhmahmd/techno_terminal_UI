@@ -1,26 +1,26 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getStatusHistory, getAttendanceHistory } from '../../api/crm/students/history'
-import type { StatusHistoryRecord, AttendanceHistoryRecord } from '../../api/crm/students'
+import type { StatusHistoryEntry, StatusHistoryRecord, AttendanceHistoryRecord } from '../../api/crm/students'
 import type { PaginationResult } from '../../types/pagination'
 import { AxiosError } from 'axios'
 
 interface UseStudentHistoryReturn {
   // Data
-  statusHistory: StatusHistoryRecord[]
+  statusHistory: StatusHistoryEntry[]
   attendanceHistory: AttendanceHistoryRecord[]
-  statusPagination: PaginationResult<StatusHistoryRecord> | null
+  statusPagination: PaginationResult<StatusHistoryEntry> | null
   attendancePagination: PaginationResult<AttendanceHistoryRecord> | null
-  
+
   // Loading states
   loadingStatus: boolean
   loadingAttendance: boolean
   isLoading: boolean
-  
+
   // Error states
   error: string | null
   statusError: string | null
   attendanceError: string | null
-  
+
   // Actions
   refreshStatus: () => Promise<void>
   refreshAttendance: () => Promise<void>
@@ -28,6 +28,11 @@ interface UseStudentHistoryReturn {
   loadMoreStatus: () => Promise<void>
   loadMoreAttendance: () => Promise<void>
 }
+
+/**
+ * @deprecated Use StatusHistoryEntry instead. Will be removed in v2.0.
+ */
+export type { StatusHistoryRecord }
 
 interface UseStudentHistoryOptions {
   statusPageSize?: number
@@ -41,9 +46,9 @@ export function useStudentHistory(
   const { statusPageSize = 20, attendancePageSize = 50 } = options
   
   // Data
-  const [statusHistory, setStatusHistory] = useState<StatusHistoryRecord[]>([])
+  const [statusHistory, setStatusHistory] = useState<StatusHistoryEntry[]>([])
   const [attendanceHistory, setAttendanceHistory] = useState<AttendanceHistoryRecord[]>([])
-  const [statusPagination, setStatusPagination] = useState<PaginationResult<StatusHistoryRecord> | null>(null)
+  const [statusPagination, setStatusPagination] = useState<PaginationResult<StatusHistoryEntry> | null>(null)
   const [attendancePagination, setAttendancePagination] = useState<PaginationResult<AttendanceHistoryRecord> | null>(null)
   
   // Loading states

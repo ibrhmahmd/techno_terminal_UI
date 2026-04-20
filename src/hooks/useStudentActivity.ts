@@ -1,20 +1,25 @@
 // Student Activity History Hook
-// Provides access to activity logs, enrollment history, and activity summary
+// Provides access to activity logs, enrollment history, competition history, and activity summary
+// @see docs/api/crm/student_history.md
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getStudentActivityHistory,
   getActivitySummary,
   getEnrollmentHistory,
+  getCompetitionHistory,
   logActivity,
   type ActivityLogRequest,
+  type PaginatedEnrollmentHistory,
+  type PaginatedCompetitionHistory,
 } from '../api/crm'
 
 export const activityKeys = {
   all: ['student-activity'] as const,
   history: (studentId: number, filters?: object) => ['student-activity', 'history', studentId, filters] as const,
   summary: (studentId: number, params?: object) => ['student-activity', 'summary', studentId, params] as const,
-  enrollments: (studentId: number) => ['student-activity', 'enrollments', studentId] as const,
+  enrollments: (studentId: number, params?: object) => ['student-activity', 'enrollments', studentId, params] as const,
+  competitions: (studentId: number, params?: object) => ['student-activity', 'competitions', studentId, params] as const,
 }
 
 interface UseActivityHistoryOptions {
@@ -54,15 +59,29 @@ export function useActivitySummary(
   })
 }
 
-// Get enrollment history
+// Get enrollment history with pagination
 export function useEnrollmentHistory(
   studentId: number,
-  limit: number = 20,
+  params?: { skip?: number; limit?: number },
   enabled: boolean = true
 ) {
-  return useQuery({
-    queryKey: activityKeys.enrollments(studentId),
-    queryFn: () => getEnrollmentHistory(studentId, limit),
+  return useQuery<PaginatedEnrollmentHistory>({
+    queryKey: activityKeys.enrollments(studentId, params),
+    queryFn: () => getEnrollmentHistory(studentId, params),
+    staleTime: 3 * 60 * 1000,
+    enabled: enabled && studentId > 0,
+  })
+}
+
+// Get competition participation history with pagination
+export function useCompetitionHistory(
+  studentId: number,
+  params?: { skip?: number; limit?: number },
+  enabled: boolean = true
+) {
+  return useQuery<PaginatedCompetitionHistory>({
+    queryKey: activityKeys.competitions(studentId, params),
+    queryFn: () => getCompetitionHistory(studentId, params),
     staleTime: 3 * 60 * 1000,
     enabled: enabled && studentId > 0,
   })
