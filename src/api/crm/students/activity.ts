@@ -1,5 +1,5 @@
 // Student Activity History Operations
-// Endpoints: activity tracking, history, search
+// Endpoints: activity tracking, history, search, enrollment, competition
 // @see docs/api/crm/student_history.md
 
 import client from '../../client'
@@ -8,6 +8,7 @@ import type {
   ActivityLogResponseDTO,
   ActivitySummaryItem,
   EnrollmentHistoryEntry,
+  CompetitionHistoryEntry,
   ActivityLogRequest,
   ManualActivityResponseDTO,
   RecentActivityItemDTO,
@@ -44,16 +45,44 @@ export async function getActivitySummary(
   return response.data.data || []
 }
 
-// Get enrollment history
+// Get enrollment history with pagination
+export interface PaginatedEnrollmentHistory {
+  data: EnrollmentHistoryEntry[]
+  total: number
+  skip: number
+  limit: number
+}
+
 export async function getEnrollmentHistory(
   studentId: number,
-  limit: number = 20
-): Promise<EnrollmentHistoryEntry[]> {
-  const response = await client.get<ApiResponse<EnrollmentHistoryEntry[]>>(
+  params: { skip?: number; limit?: number } = {}
+): Promise<PaginatedEnrollmentHistory> {
+  const { skip = 0, limit = 50 } = params
+  const response = await client.get<PaginatedEnrollmentHistory>(
     `/crm/students/${studentId}/enrollment-history`,
-    { params: { limit } }
+    { params: { skip, limit } }
   )
-  return response.data.data || []
+  return response.data
+}
+
+// Get competition participation history with pagination
+export interface PaginatedCompetitionHistory {
+  data: CompetitionHistoryEntry[]
+  total: number
+  skip: number
+  limit: number
+}
+
+export async function getCompetitionHistory(
+  studentId: number,
+  params: { skip?: number; limit?: number } = {}
+): Promise<PaginatedCompetitionHistory> {
+  const { skip = 0, limit = 50 } = params
+  const response = await client.get<PaginatedCompetitionHistory>(
+    `/crm/students/${studentId}/competition-history`,
+    { params: { skip, limit } }
+  )
+  return response.data
 }
 
 // Log manual activity

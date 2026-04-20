@@ -40,9 +40,12 @@ export {
   getStudentActivityHistory,
   getActivitySummary,
   getEnrollmentHistory,
+  getCompetitionHistory,
   logActivity,
   getRecentActivities,
   searchActivities,
+  type PaginatedEnrollmentHistory,
+  type PaginatedCompetitionHistory,
 } from './activity'
 
 // Siblings
@@ -114,6 +117,7 @@ export {
   type BalanceAdjustmentResult,
   type UnpaidEnrollment,
   // History
+  type StatusHistoryEntry,
   type StatusHistoryRecord,
   type AttendanceHistoryRecord,
   // Activity
@@ -122,6 +126,7 @@ export {
   type ActivityLogResponseDTO,
   type ActivitySummaryItem,
   type EnrollmentHistoryEntry,
+  type CompetitionHistoryEntry,
   type ActivityLogRequest,
   type ManualActivityResponseDTO,
   type RecentActivityItemDTO,
