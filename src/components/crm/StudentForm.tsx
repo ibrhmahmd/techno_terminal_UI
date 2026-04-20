@@ -153,22 +153,33 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
         />
       </div>
 
-      {/* Status - shown in both create and edit modes */}
+      {/* Status Toggle - shown in both create and edit modes */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="status" className="text-sm font-medium text-on-surface">
+        <label className="text-sm font-medium text-on-surface">
           Status
         </label>
-        <select
-          id="status"
-          value={formData.status}
-          onChange={(e) => handleChange('status', e.target.value)}
-          disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
-        >
-          <option value="active">Active</option>
-          <option value="waiting">Waiting List</option>
-          <option value="inactive">Inactive</option>
-        </select>
+        <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
+          {[
+            { value: 'active', label: 'Active', dotColor: 'bg-green-500', ringColor: 'ring-green-500' },
+            { value: 'waiting', label: 'Waiting', dotColor: 'bg-amber-500', ringColor: 'ring-amber-500' },
+            { value: 'inactive', label: 'Inactive', dotColor: 'bg-slate-500', ringColor: 'ring-slate-500' },
+          ].map(({ value, label, dotColor, ringColor }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => handleChange('status', value)}
+              disabled={isLoading}
+              className={`flex-1 px-3 py-2 rounded-md font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                formData.status === value
+                  ? `bg-white shadow-sm text-on-surface ring-2 ring-offset-1 ${ringColor}`
+                  : 'text-slate-500 hover:text-on-surface hover:bg-white/50'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <span className={`inline-block w-2 h-2 rounded-full ${dotColor}`}></span>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Parent Selection - only for create mode */}

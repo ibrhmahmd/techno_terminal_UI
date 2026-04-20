@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Users, Plus, Calendar, CheckCircle2, XCircle, Clock } from 'lucide-react'
-import type { Enrollment } from '../../api/enrollments'
-import { EmptyState } from '../common/EmptyState'
-import { Modal } from '../common/Modal'
+import { Users, Plus, Calendar, CheckCircle2, XCircle, Clock, MapPin } from 'lucide-react'
+import type { EnrollmentInfo } from '../../api/crm/students'
+import type { EnrichedGroupPublic } from '../../api/academics'
+import { EmptyState, EntityDetailCard, Modal } from '../common'
+import { GroupCombobox } from '../common/combobox/GroupCombobox'
 
 interface EnrollmentsTabProps {
-  enrollments: Enrollment[]
+  enrollments: EnrollmentInfo[]
   currentGroupName?: string | null
   onEnroll?: () => void
 }
@@ -14,20 +15,23 @@ interface EnrollDialogProps {
   isOpen: boolean
   onClose: () => void
   onEnroll: (groupId: number) => Promise<void>
-  availableGroups: { id: number; group_name: string; course_name: string; level: number }[]
+  availableGroups: EnrichedGroupPublic[]
   isLoading?: boolean
+  recentGroupIds?: number[]
 }
 
-export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoading }: EnrollDialogProps) {
-  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null)
+export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoading, recentGroupIds = [] }: EnrollDialogProps) {
+  const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
+  const [search, setSearch] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleEnroll = async () => {
-    if (!selectedGroupId) return
+    if (!selectedGroup) return
     setIsSubmitting(true)
     try {
-      await onEnroll(selectedGroupId)
-      setSelectedGroupId(null)
+      await onEnroll(selectedGroup.id)
+      setSelectedGroup(null)
+      setSearch('')
       onClose()
     } finally {
       setIsSubmitting(false)
@@ -35,7 +39,8 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
   }
 
   const handleClose = () => {
-    setSelectedGroupId(null)
+    setSelectedGroup(null)
+    setSearch('')
     onClose()
   }
 
@@ -44,7 +49,7 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
       isOpen={isOpen}
       onClose={handleClose}
       title="Enroll Student in New Group"
-      size="md"
+      size="lg"
       footer={
         <div className="flex justify-end gap-3">
           <button
@@ -56,7 +61,7 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
           </button>
           <button
             onClick={handleEnroll}
-            disabled={!selectedGroupId || isSubmitting || isLoading}
+            disabled={!selectedGroup || isSubmitting || isLoading}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
           >
             {isSubmitting ? (
@@ -76,7 +81,7 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
     >
       <div className="space-y-4">
         <p className="text-sm text-slate-600">
-          Select a group to enroll this student in:
+          Search and select a group to enroll this student in:
         </p>
         
         {isLoading ? (
@@ -92,31 +97,15 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
             </p>
           </div>
         ) : (
-          <div className="space-y-2 max-h-60 overflow-y-auto">
-            {availableGroups.map((group) => (
-              <button
-                key={group.id}
-                onClick={() => setSelectedGroupId(group.id)}
-                className={`w-full p-4 text-left border rounded-lg transition-colors ${
-                  selectedGroupId === group.id
-                    ? 'border-secondary bg-secondary/5'
-                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-on-surface">{group.group_name}</p>
-                    <p className="text-sm text-slate-500">
-                      {group.course_name} • Level {group.level}
-                    </p>
-                  </div>
-                  {selectedGroupId === group.id && (
-                    <CheckCircle2 className="w-5 h-5 text-secondary" />
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
+          <GroupCombobox
+            value={selectedGroup}
+            onChange={setSelectedGroup}
+            search={search}
+            setSearch={setSearch}
+            groups={availableGroups}
+            isLoading={isLoading}
+            recentGroupIds={recentGroupIds}
+          />
         )}
       </div>
     </Modal>
@@ -124,8 +113,6 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
 }
 
 export function EnrollmentsTab({ enrollments, onEnroll }: EnrollmentsTabProps) {
-  const [, setIsDialogOpen] = useState(false)
-
   // Separate current and past enrollments
   const currentEnrollment = enrollments.find(e => e.status === 'active')
   const pastEnrollments = enrollments.filter(e => e.status !== 'active')
@@ -168,7 +155,7 @@ export function EnrollmentsTab({ enrollments, onEnroll }: EnrollmentsTabProps) {
         </div>
         {onEnroll && (
           <button
-            onClick={() => setIsDialogOpen(true)}
+            onClick={onEnroll}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -179,33 +166,18 @@ export function EnrollmentsTab({ enrollments, onEnroll }: EnrollmentsTabProps) {
 
       {/* Current Enrollment */}
       {currentEnrollment && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Users className="w-5 h-5 text-blue-600" />
-            <h3 className="font-semibold text-lg text-on-surface">Current Enrollment</h3>
-            <span className="ml-auto px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" />
-              Active
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm text-slate-500">Group</label>
-              <p className="font-medium text-on-surface">{currentEnrollment.group_name}</p>
-            </div>
-            <div>
-              <label className="text-sm text-slate-500">Course</label>
-              <p className="font-medium text-on-surface">{currentEnrollment.course_name}</p>
-            </div>
-            <div>
-              <label className="text-sm text-slate-500">Enrolled On</label>
-              <p className="font-medium text-on-surface flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-slate-400" />
-                {currentEnrollment.enrolled_at}
-              </p>
-            </div>
-          </div>
-        </div>
+        <EntityDetailCard
+          title="Current Enrollment"
+          subtitle={`Level ${currentEnrollment.level_number}`}
+          icon={<Users className="w-5 h-5" />}
+          variant="hero"
+          status="active"
+          details={[
+            { label: 'Group', value: currentEnrollment.group_name, icon: <Users className="w-3 h-3" />, link: `/groups/${currentEnrollment.group_id}` },
+            { label: 'Course', value: currentEnrollment.course_name, icon: <MapPin className="w-3 h-3" />, link: `/courses/${currentEnrollment.course_id}` },
+            { label: 'Enrolled On', value: currentEnrollment.enrolled_at, icon: <Calendar className="w-3 h-3" /> }
+          ]}
+        />
       )}
 
       {/* Past Enrollments */}
@@ -223,7 +195,7 @@ export function EnrollmentsTab({ enrollments, onEnroll }: EnrollmentsTabProps) {
         ) : (
           <div className="divide-y divide-slate-100">
             {pastEnrollments.map((enrollment) => (
-              <div key={enrollment.id} className="p-6 hover:bg-slate-50 transition-colors">
+              <div key={enrollment.enrollment_id} className="p-6 hover:bg-slate-50 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
@@ -243,10 +215,10 @@ export function EnrollmentsTab({ enrollments, onEnroll }: EnrollmentsTabProps) {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium text-on-surface">
-                      {enrollment.amount_due - enrollment.discount_applied} EGP
+                      Level {enrollment.level_number}
                     </p>
                     <p className="text-xs text-slate-500">
-                      after {enrollment.discount_applied} EGP discount
+                      {enrollment.status === 'active' ? 'Active Enrollment' : 'Past Enrollment'}
                     </p>
                   </div>
                 </div>

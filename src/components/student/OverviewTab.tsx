@@ -1,60 +1,36 @@
-import { useNavigate } from 'react-router-dom'
-import { User, Mail, Phone, Calendar, Users, Wallet, FileText, UsersRound } from 'lucide-react'
-import type { Student, StudentBalance, SiblingInfo, ParentInfo } from '../../api/crm/students/'
-import { getStatusColorClass, getStatusLabel } from '../../api/crm/students/utils'
+import { FileText, GraduationCap, Users, MapPin, User } from 'lucide-react'
+import type { Student, StudentBalance, SiblingInfo, ParentInfo, StudentWithDetails } from '../../api/crm/students/'
+import { EntityDetailCard, MetricSummaryCard, FamilyCard } from '../common'
 
 interface OverviewTabProps {
   student: Student
+  details?: StudentWithDetails | null
   balance: StudentBalance | null
   siblings: SiblingInfo[]
   primaryParent?: ParentInfo | null
   onLinkParent?: () => void
 }
 
-export function OverviewTab({ student, balance, siblings, primaryParent, onLinkParent }: OverviewTabProps) {
-  const navigate = useNavigate()
-
+export function OverviewTab({ student, details, balance, siblings, primaryParent, onLinkParent }: OverviewTabProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Left Column: Personal Info & Enrollments */}
+      {/* Left Column */}
       <div className="lg:col-span-2 space-y-6">
-        {/* Personal Information */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <h3 className="font-semibold text-lg text-on-surface mb-4 flex items-center gap-2">
-            <User className="w-5 h-5 text-slate-500" />
-            Personal Information
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm text-slate-500">Full Name</label>
-              <p className="font-medium text-on-surface">{student.full_name}</p>
-            </div>
-            <div>
-              <label className="text-sm text-slate-500">Phone</label>
-              <p className="font-medium text-on-surface flex items-center gap-2">
-                <Phone className="w-4 h-4 text-slate-400" />
-                {student.phone || '-'}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm text-slate-500">Date of Birth</label>
-              <p className="font-medium text-on-surface flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-slate-400" />
-                {student.date_of_birth || '-'}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm text-slate-500">Gender</label>
-              <p className="font-medium text-on-surface capitalize">{student.gender || '-'}</p>
-            </div>
-            <div>
-              <label className="text-sm text-slate-500">Status</label>
-              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColorClass(student.status)}`}>
-                {getStatusLabel(student.status)}
-              </span>
-            </div>
-          </div>
-        </div>
+        {/* Current Enrollment */}
+        {details?.current_enrollment && (
+          <EntityDetailCard
+            title="Current Enrollment"
+            subtitle={`Level ${details.current_enrollment.level_number}`}
+            icon={<GraduationCap className="w-5 h-5" />}
+            variant="hero"
+            status="active"
+            details={[
+              { label: 'Group', value: details.current_enrollment.group_name, icon: <Users className="w-3 h-3" />, link: `/groups/${details.current_enrollment.group_id}` },
+              { label: 'Course', value: details.current_enrollment.course_name, icon: <MapPin className="w-3 h-3" />, link: `/courses/${details.current_enrollment.course_id}` },
+              { label: 'Instructor', value: details.current_enrollment.instructor_name || '-', icon: <User className="w-3 h-3" /> }
+            ]}
+          />
+        )}
 
         {/* Notes */}
         {student.notes && (
@@ -68,123 +44,37 @@ export function OverviewTab({ student, balance, siblings, primaryParent, onLinkP
         )}
       </div>
 
-      {/* Right Column: Balance & Parents */}
-      <div className="space-y-6">
-        {/* Account Balance */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <h3 className="font-semibold text-lg text-on-surface mb-4 flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-slate-500" />
-            Account Balance
-          </h3>
-          <div className="text-center py-4">
-            {balance ? (
-              <>
-                <p className={`text-4xl font-bold ${balance.net_balance < 0 ? 'text-red-600' : balance.net_balance > 0 ? 'text-green-600' : 'text-slate-600'}`}>
-                  {Math.abs(balance.net_balance).toLocaleString()} EGP
-                </p>
-                <p className="text-sm text-slate-500 mt-2">
-                  {balance.net_balance < 0 ? 'Outstanding balance' : balance.net_balance > 0 ? 'Credit balance' : 'No balance due'}
-                </p>
-                {/* Enrollment breakdown summary */}
-                {balance.enrollments?.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    {balance.enrollments.filter(e => e.remaining_balance > 0).slice(0, 3).map(enrollment => (
-                      <div key={enrollment.enrollment_id} className="flex justify-between text-sm">
-                        <span className="text-slate-600">{enrollment.group_name}</span>
-                        <span className="text-red-600">{enrollment.remaining_balance.toLocaleString()} EGP</span>
-                      </div>
-                    ))}
-                    {balance.enrollments.filter(e => e.remaining_balance > 0).length > 3 && (
-                      <p className="text-xs text-slate-400">
-                        +{balance.enrollments.filter(e => e.remaining_balance > 0).length - 3} more
-                      </p>
-                    )}
-                  </div>
-                )}
-              </>
-            ) : (
-              <p className="text-slate-400">Loading balance...</p>
-            )}
-          </div>
-        </div>
+      {/* Right Column */}
+      <div className="space-y-4">
+        {/* Balance */}
+        <MetricSummaryCard
+          label="Balance"
+          value={balance?.net_balance || 0}
+          currency="EGP"
+          status={balance && balance.net_balance < 0 ? 'negative' : balance && balance.net_balance > 0 ? 'positive' : 'neutral'}
+          statusLabel={balance && balance.net_balance < 0 ? 'Due' : balance && balance.net_balance > 0 ? 'Credit' : undefined}
+          breakdown={balance ? [
+            { label: 'Paid', value: balance.total_paid.toLocaleString(), status: 'positive' },
+            { label: 'Due', value: balance.total_amount_due.toLocaleString(), status: 'neutral' }
+          ] : undefined}
+        />
 
-        {/* Parents */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-lg text-on-surface flex items-center gap-2">
-              <Users className="w-5 h-5 text-slate-500" />
-              Parents
-            </h3>
-            {onLinkParent && (
-              <button
-                onClick={onLinkParent}
-                className="text-sm text-secondary hover:text-secondary/80 font-medium"
-              >
-                + Link Parent
-              </button>
-            )}
-          </div>
-          
-          {!primaryParent ? (
-            <div className="text-center py-4">
-              <p className="text-slate-500 text-sm">No parent linked</p>
-              {onLinkParent && (
-                <button
-                  onClick={onLinkParent}
-                  className="mt-2 text-sm text-secondary hover:text-secondary/80"
-                >
-                  Link a parent
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <p className="font-medium text-on-surface">{primaryParent.full_name}</p>
-              <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
-                <Phone className="w-3.5 h-3.5" />
-                <span>{primaryParent.phone || 'No phone'}</span>
-              </div>
-              {primaryParent.email && (
-                <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
-                  <Mail className="w-3.5 h-3.5" />
-                  <span>{primaryParent.email}</span>
-                </div>
-              )}
-              {primaryParent.relationship && (
-                <p className="mt-1 text-xs text-slate-400 capitalize">{primaryParent.relationship}</p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Siblings Section */}
-        {siblings.length > 0 && (
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-lg text-on-surface flex items-center gap-2">
-                <UsersRound className="w-5 h-5 text-slate-500" />
-                Siblings
-              </h3>
-              <span className="text-sm text-slate-500">{siblings.length} sibling(s)</span>
-            </div>
-            <div className="space-y-3">
-              {siblings.map((sibling: SiblingInfo) => (
-                <div
-                  key={sibling.id}
-                  className="p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
-                  onClick={() => navigate(`/students/${sibling.id}`)}
-                >
-                  <p className="font-medium text-on-surface">{sibling.full_name}</p>
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                    <span>Age {sibling.age}</span>
-                    <span>•</span>
-                    <span>Same parent: {sibling.parent_name}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Family Card - Parent + Siblings */}
+        <FamilyCard
+          parent={primaryParent ? {
+            name: primaryParent.full_name,
+            phone: primaryParent.phone || undefined,
+            email: primaryParent.email || undefined,
+            relationship: primaryParent.relationship || undefined
+          } : null}
+          siblings={siblings.map(s => ({
+            id: s.id,
+            name: s.full_name,
+            age: s.age,
+            link: `/students/${s.id}`
+          }))}
+          onLinkParent={onLinkParent}
+        />
       </div>
     </div>
   )

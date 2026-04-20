@@ -55,11 +55,11 @@ export function useStudentEnrollments(studentId: number | null): UseStudentEnrol
     setError(null)
 
     try {
-      const data = await getStudentEnrollments(studentId)
-      const enrollmentsData: Enrollment[] = data.data || []
+      const enrollmentsData = await getStudentEnrollments(studentId)
 
       // Debug: Verify API response structure
       console.log('[useStudentEnrollments] API response:', {
+        studentId,
         count: enrollmentsData.length,
         sample: enrollmentsData[0] ? {
           id: enrollmentsData[0].id,
@@ -71,8 +71,7 @@ export function useStudentEnrollments(studentId: number | null): UseStudentEnrol
       })
 
       // Map Enrollment to our simplified format
-      // Note: The enrollment endpoint doesn't include payment data,
-      // so we calculate remaining_balance based on amount_due
+      // API now returns amount_remaining, use it if available
       const enrollmentList = enrollmentsData.map((e: Enrollment) => ({
         enrollment_id: e.id,
         group_id: e.group_id,
@@ -81,7 +80,10 @@ export function useStudentEnrollments(studentId: number | null): UseStudentEnrol
         amount_due: e.amount_due,
         discount_applied: e.discount_applied,
         amount_paid: 0, // Will be updated when we fetch balance separately if needed
-        remaining_balance: e.amount_due - e.discount_applied // Simplified calculation
+        // Use API's amount_remaining if available, otherwise calculate
+        remaining_balance: e.amount_remaining !== undefined
+          ? e.amount_remaining
+          : e.amount_due - e.discount_applied
       }))
 
       setEnrollments(enrollmentList)

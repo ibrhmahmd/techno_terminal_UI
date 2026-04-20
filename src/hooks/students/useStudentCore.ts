@@ -1,5 +1,5 @@
-import { useQueries } from '@tanstack/react-query'
-import { getStudentById, getStudentWithDetails } from '../../api/crm/students/core'
+import { useQuery } from '@tanstack/react-query'
+import { getStudentWithDetails } from '../../api/crm/students/core'
 import type { Student, StudentWithDetails } from '../../api/crm/students/types/models'
 import { queryKeys } from '../queryKeys'
 
@@ -21,55 +21,56 @@ interface UseStudentCoreReturn {
 /**
  * Hook for loading core student data (Overview tab)
  * Uses React Query for caching and automatic background updates
- * Fetches student basic info and details in parallel
+ * Fetches details endpoint only (which includes all Student fields + extended data)
+ * 
+ * OPTIMIZED: Removed redundant getStudentById call since StudentWithDetails extends Student
+ * Reduces API calls from 2 to 1 for initial load
  */
 export function useStudentCore(studentId: number | null): UseStudentCoreReturn {
-  const queries = useQueries({
-    queries: [
-      {
-        queryKey: studentId ? queryKeys.student(studentId) : ['student', 'null'],
-        queryFn: async () => {
-          if (!studentId) return null
-          return getStudentById(studentId)
-        },
-        enabled: !!studentId,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      },
-      {
-        queryKey: studentId ? queryKeys.studentDetails(studentId) : ['student', 'details', 'null'],
-        queryFn: async () => {
-          if (!studentId) return null
-          return getStudentWithDetails(studentId)
-        },
-        enabled: !!studentId,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      }
-    ]
+  const { 
+    data: details, 
+    isLoading, 
+    error: queryError,
+    refetch 
+  } = useQuery({
+    queryKey: studentId ? queryKeys.studentDetails(studentId) : ['student', 'details', 'null'],
+    queryFn: async () => {
+      if (!studentId) return null
+      return getStudentWithDetails(studentId)
+    },
+    enabled: !!studentId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
-  const [studentQuery, detailsQuery] = queries
+  // Extract student fields from details (StudentWithDetails extends Student)
+  const student: Student | null = details ? {
+    id: details.id,
+    full_name: details.full_name,
+    date_of_birth: details.date_of_birth,
+    gender: details.gender,
+    phone: details.phone,
+    status: details.status,
+    notes: details.notes,
+    is_active: details.is_active,
+    created_at: details.created_at,
+    updated_at: details.updated_at,
+  } : null
+
+  const loading = isLoading
   
-  const student = studentQuery.data || null
-  const details = detailsQuery.data || null
-  const loading = studentQuery.isLoading || detailsQuery.isLoading
-  
-  // Combine errors from both queries
-  const error = studentQuery.error || detailsQuery.error
-    ? (studentQuery.error instanceof Error ? studentQuery.error.message : 
-       detailsQuery.error instanceof Error ? detailsQuery.error.message : 
-       'Failed to load student data')
-    : null
+  const error = queryError instanceof Error 
+    ? queryError.message 
+    : queryError 
+      ? 'Failed to load student data'
+      : null
 
   const refresh = async () => {
-    await Promise.all([
-      studentQuery.refetch(),
-      detailsQuery.refetch()
-    ])
+    await refetch()
   }
 
   return {
     student,
-    details,
+    details: details ?? null,
     loading,
     error,
     refresh
