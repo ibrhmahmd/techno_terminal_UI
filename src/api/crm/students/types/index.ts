@@ -44,6 +44,7 @@ export {
 
 // History
 export {
+  type StatusHistoryEntry,
   type StatusHistoryRecord,
   type AttendanceHistoryRecord,
 } from './history'
@@ -55,6 +56,7 @@ export {
   type ActivityLogResponseDTO,
   type ActivitySummaryItem,
   type EnrollmentHistoryEntry,
+  type CompetitionHistoryEntry,
   type ActivityLogRequest,
   type ManualActivityResponseDTO,
   type RecentActivityItemDTO,

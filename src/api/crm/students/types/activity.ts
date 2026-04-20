@@ -38,13 +38,45 @@ export interface ActivitySummaryItem {
   count: number
 }
 
+/**
+ * Enrollment lifecycle history entry - aligned with API documentation
+ * @see docs/api/crm/student_history.md#EnrollmentHistoryEntry
+ */
 export interface EnrollmentHistoryEntry {
   enrollment_id: number
+  group_id: number
   group_name: string
+  course_id: number
   course_name: string
-  status: string
-  enrolled_at: string
-  dropped_at?: string | null
+  level_number: number
+  enrollment_status: string
+  action: 'enrolled' | 'transferred' | 'dropped'
+  action_date: string
+  previous_group_id?: number | null
+  previous_level_number?: number | null
+  amount_due?: number | null
+  discount_applied?: number | null
+  transfer_reason?: string | null
+  performed_by?: number | null
+  performed_by_name?: string | null
+  notes?: string | null
+}
+
+/**
+ * Competition participation history entry - aligned with API documentation
+ * @see docs/api/crm/student_history.md#CompetitionHistoryEntry
+ */
+export interface CompetitionHistoryEntry {
+  id: number
+  student_id: number
+  competition_id: number
+  competition_name?: string | null
+  team_id?: number | null
+  team_name?: string | null
+  participation_type: 'individual' | 'team'
+  registration_date?: string | null
+  subscription_amount?: number | null
+  subscription_paid?: boolean | null
 }
 
 export interface ActivityLogRequest {
