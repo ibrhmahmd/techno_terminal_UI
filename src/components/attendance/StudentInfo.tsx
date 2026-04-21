@@ -17,8 +17,8 @@ function BillingBadge({ status }: { status: 'paid' | 'due' }) {
 
 export function StudentInfo({ fullName, billingStatus }: StudentInfoProps) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm font-semibold text-on-surface">{fullName}</span>
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-sm font-bold text-slate-900">{fullName}</span>
       <BillingBadge status={billingStatus} />
     </div>
   )

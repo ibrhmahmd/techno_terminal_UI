@@ -78,7 +78,7 @@ export function DashboardPage() {
             <span>{error}</span>
           </div>
         ) : (
-          <div className="flex flex-col gap-6 pb-20">
+          <div className="flex flex-col gap-8 pb-20">
             {filteredScheduleItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-16 text-on-surface-variant bg-white rounded-lg border border-slate-200">
                 <span className="material-symbols-outlined text-5xl mb-4 opacity-50">event_busy</span>
@@ -87,16 +87,21 @@ export function DashboardPage() {
             ) : (
               filteredScheduleItems.map((item, index) => {
                 const enriched = getEnrichedData(item.group_id)
+                const isLast = index === filteredScheduleItems.length - 1
                 return (
-                  <GroupSessionCard
+                  <div
                     key={`group-${item.group_id}-${index}`}
-                    groupName={item.group_name}
-                    courseName={item.course_name}
-                    instructorName={enriched?.instructor_name || 'TBA'}
-                    sessions={getSessionsForGroup(item.group_id)}
-                    groupId={item.group_id}
-                    level={item.level_number}
-                  />
+                    className={`relative ${!isLast ? 'pb-8 border-b-2 border-slate-200' : ''}`}
+                  >
+                    <GroupSessionCard
+                      groupName={item.group_name}
+                      courseName={item.course_name}
+                      instructorName={enriched?.instructor_name || 'TBA'}
+                      sessions={getSessionsForGroup(item.group_id)}
+                      groupId={item.group_id}
+                      level={item.level_number}
+                    />
+                  </div>
                 )
               })
             )}

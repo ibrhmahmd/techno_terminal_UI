@@ -8,21 +8,21 @@ interface AttendanceCellProps {
 
 const ICONS = {
   present: (
-    <span className="material-symbols-outlined text-secondary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+    <span className="material-symbols-outlined text-green-600 text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
       check_circle
     </span>
   ),
   absent: (
-    <span className="material-symbols-outlined text-error text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+    <span className="material-symbols-outlined text-red-600 text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
       cancel
     </span>
   ),
   cancelled: (
-    <span className="material-symbols-outlined text-slate-400 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+    <span className="material-symbols-outlined text-slate-500 text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
       block
     </span>
   ),
-  empty: <div className="w-5 h-5 mx-auto border border-outline-variant/20 rounded-sm" />
+  empty: <div className="w-6 h-6 mx-auto border-2 border-slate-300 rounded-sm bg-white" />
 }
 
 export function AttendanceCell({ status, onToggle }: AttendanceCellProps) {
@@ -33,7 +33,7 @@ export function AttendanceCell({ status, onToggle }: AttendanceCellProps) {
   return (
     <button
       onClick={handleClick}
-      className="w-full h-full flex items-center justify-center hover:bg-surface-container-low/50 rounded transition-colors py-2"
+      className="w-full h-full flex items-center justify-center hover:bg-blue-100 rounded transition-colors py-3 focus:outline-none focus:ring-2 focus:ring-secondary/30"
       aria-label={`Toggle attendance: ${status || 'empty'}`}
     >
       {status === 'present' ? ICONS.present :

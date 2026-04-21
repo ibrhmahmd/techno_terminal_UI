@@ -38,16 +38,17 @@ export function DaySelectorBar({ selectedDate, onSelectDate }: DaySelectorBarPro
   const weekDates = getWeekDates()
 
   return (
-    <section className="w-full pb-6">
+    <section className="w-full pb-4">
+      
       <div className="overflow-x-auto">
-        <div className="flex min-w-[680px] items-center gap-1 rounded-lg bg-slate-100 p-1">
+        <div className="flex min-w-[680px] items-center gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1">
           {weekDates.map(({ dayName, date }) => (
             <button
               key={date}
               className={`flex-1 px-5 py-2 rounded-md font-headline text-sm font-medium transition-all ${
                 date === selectedDate
-                  ? 'bg-white text-secondary shadow-sm font-bold'
-                  : 'text-slate-500 hover:text-secondary hover:bg-white/50'
+                  ? 'bg-white text-secondary shadow-sm font-bold border border-blue-200'
+                  : 'text-slate-600 hover:text-secondary hover:bg-white/70'
               }`}
               onClick={() => onSelectDate(date)}
             >

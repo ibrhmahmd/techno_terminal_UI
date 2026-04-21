@@ -11,9 +11,9 @@ export function SessionNotesRow({ sessions, notes, onNoteChange, disabled }: Ses
   const isCancelled = (session: Session) => session.status === 'cancelled'
 
   return (
-    <tr className="bg-surface-container-lowest border-t-2 border-slate-400">
+    <tr className="bg-slate-100 border-y border-slate-200">
       {/* Empty student cell */}
-      <td className="px-6 py-3 border-b-2 border-slate-400 border-r-2 border-slate-300 bg-slate-50">
+      <td className="px-6 py-3 border-y border-slate-200 border-r border-slate-200">
         <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-[0.2em]">
           Session Notes
         </span>
@@ -25,7 +25,7 @@ export function SessionNotesRow({ sessions, notes, onNoteChange, disabled }: Ses
         return (
           <td
             key={`notes-${session.id}`}
-            className={`px-4 py-3 border-l-2 border-b-2 border-slate-300 ${
+            className={`px-4 py-3 border-l border-slate-200 ${
               cancelled ? 'opacity-50 blur-[1px] bg-gray-100' : ''
             }`}
           >

@@ -28,9 +28,9 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
 
   return (
     <thead>
-      <tr className="bg-surface-container-lowest">
+      <tr className="bg-slate-100">
         <th
-          className="px-6 py-5 text-[10px] font-extrabold text-slate-700 uppercase tracking-[0.2em] border-b-2 border-slate-400 bg-slate-100"
+          className="px-6 py-4 text-[10px] font-extrabold text-slate-800 uppercase tracking-[0.2em] border-b border-slate-300 border-r border-slate-200"
           style={{ width: 280 }}
         >
           Student
@@ -41,8 +41,8 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
           return (
             <th
               key={`session-header-${session.id}-${sessionIdx}`}
-              className={`px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] border-b-2 border-slate-400 text-center border-l-2 border-slate-300 bg-slate-100 ${
-                cancelled ? 'opacity-50 blur-[1px] bg-gray-100' : ''
+              className={`px-4 py-4 text-[10px] font-bold uppercase tracking-[0.2em] border-b border-slate-300 text-center border-l border-slate-200 bg-slate-100 ${
+                cancelled ? 'opacity-50 blur-[1px] bg-gray-200' : ''
               }`}
             >
               <div className="flex flex-col items-center gap-1">
@@ -54,7 +54,7 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
                 </span>
                 {/* Instructor name */}
                 <span className="block text-[9px] font-semibold text-slate-900 mt-0.5">
-                  Inst: {getInstructorName(session)}
+                  {getInstructorName(session)}
                 </span>
                 {cancelled && (
                   <span className={`mt-1 px-2 py-0.5 rounded-full text-[8px] font-bold ${sessionStatusColors.cancelled}`}>

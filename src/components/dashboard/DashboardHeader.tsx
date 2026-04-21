@@ -17,10 +17,10 @@ export function DashboardHeader({ title, subtitle, showTime = true }: DashboardH
   }
 
   return (
-    <div className="flex items-end justify-between px-8 py-10 pb-6 max-w-[1400px] mx-auto">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-headline text-2xl font-bold tracking-tight text-on-surface">{title}</h1>
-        <p className="font-body text-sm text-on-surface-variant">{subtitle}</p>
+    <div className="flex items-end justify-between px-8 py-4 pb-3 max-w-[1400px] mx-auto">
+      <div className="flex flex-col gap-0.5">
+        <h1 className="font-headline text-xl font-bold tracking-tight text-on-surface">{title}</h1>
+        <p className="font-body text-xs text-on-surface-variant">{subtitle}</p>
       </div>
       {showTime && (
         <div className="flex flex-col items-end gap-1">

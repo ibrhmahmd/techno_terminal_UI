@@ -21,15 +21,15 @@ export function InstructorSelectorBar({
   return (
     <section className="w-full pb-6">
       <div className="overflow-x-auto">
-        <div className="flex min-w-[300px] items-center gap-1 rounded-lg bg-slate-100 p-1">
+        <div className="flex min-w-[300px] items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-100 p-1">
           {/* All Instructors button */}
           <button
             key="all"
             disabled={disabled}
             className={`flex-1 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all whitespace-nowrap ${
               selectedInstructor === null
-                ? 'bg-white text-secondary shadow-sm font-bold'
-                : 'text-slate-500 hover:text-secondary hover:bg-white/50'
+                ? 'bg-white text-secondary shadow-sm font-bold border border-emerald-200'
+                : 'text-slate-600 hover:text-secondary hover:bg-white/70'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => onSelectInstructor(null)}
           >
@@ -43,8 +43,8 @@ export function InstructorSelectorBar({
               disabled={disabled}
               className={`flex-1 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all whitespace-nowrap ${
                 selectedInstructor === instructorName
-                  ? 'bg-white text-secondary shadow-sm font-bold'
-                  : 'text-slate-500 hover:text-secondary hover:bg-white/50'
+                  ? 'bg-white text-secondary shadow-sm font-bold border border-emerald-200'
+                  : 'text-slate-600 hover:text-secondary hover:bg-white/70'
               } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => onSelectInstructor(instructorName)}
             >

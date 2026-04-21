@@ -20,11 +20,16 @@ export function AttendanceTableBody({ students, sessions, onToggle }: Attendance
   const displaySessions = sessions.slice(0, 5)
 
   return (
-    <tbody className="divide-y divide-slate-300">
+    <tbody>
       {students.map((student, index) => (
-        <tr key={`${student.student_id}-${index}`} className="hover:bg-surface-container-low/20 transition-colors border-b border-slate-300">
+        <tr 
+          key={`${student.student_id}-${index}`} 
+          className={`transition-colors ${
+            index % 2 === 0 ? 'bg-white' : 'bg-slate-50'
+          } hover:bg-blue-50/50`}
+        >
           {/* Student Cell */}
-          <td className="px-6 py-4 border-b border-slate-300">
+          <td className="px-6 py-4 border-r border-slate-200">
             <StudentInfo
               fullName={student.full_name}
               billingStatus={student.billing_status}
@@ -38,7 +43,7 @@ export function AttendanceTableBody({ students, sessions, onToggle }: Attendance
             return (
               <td
                 key={`${student.student_id}-${session.id}-${sessionIdx}`}
-                className={`px-4 py-2 text-center border-l-2 border-slate-300 border-b border-slate-300 ${
+                className={`px-4 py-2 text-center border-l border-slate-200 ${
                   isCancelled ? 'opacity-50 blur-[1px] bg-gray-100' : ''
                 }`}
               >

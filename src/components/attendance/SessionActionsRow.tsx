@@ -36,9 +36,9 @@ export function SessionActionsRow({ sessions, onEdit, onCancel, disabled }: Sess
 
   return (
     <>
-      <tr className="bg-surface-container-lowest border-t-2 border-b-2 border-slate-400">
+      <tr className="bg-slate-100 border-y border-slate-200">
         {/* Empty student cell */}
-        <td className="px-6 py-3 border-b-2 border-slate-400 border-r-2 border-slate-300 bg-slate-50"></td>
+        <td className="px-6 py-3 border-y border-slate-200 border-r border-slate-200"></td>
 
         {sessions.map((session) => {
           const cancelled = isCancelled(session)
@@ -46,7 +46,7 @@ export function SessionActionsRow({ sessions, onEdit, onCancel, disabled }: Sess
           return (
             <td
               key={`actions-${session.id}`}
-              className={`px-4 py-3 border-l-2 border-b-2 border-slate-300 text-center ${
+              className={`px-4 py-3 border-l border-slate-200 text-center ${
                 cancelled ? 'opacity-50 blur-[1px] bg-gray-100' : ''
               }`}
             >

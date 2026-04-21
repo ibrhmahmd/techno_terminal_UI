@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { Session, UpdateSessionDTO } from '../../api/academics'
 import { cancelSession, updateSession } from '../../api/academics'
 import { getGroupRoster, type GroupRosterRowDTO } from '../../api/analytics'
 import { getSessionAttendance, markAttendance, type SessionAttendanceRowDTO, type AttendanceStatus } from '../../api/attendance'
+import { formatTime, getInitials } from '../../utils/formatting'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useToast } from '../common/Toast'
 import { AttendanceHeader } from './AttendanceHeader'
@@ -25,6 +27,8 @@ interface AttendanceGridProps {
   groupId: number
   level: number
   groupInstructorName?: string  // Fallback instructor name for consistency
+  groupName?: string            // Group name to display in header
+  courseName?: string           // Course name to display in header
 }
 
 interface StudentRow {
@@ -36,11 +40,15 @@ interface StudentRow {
   attendance: Map<number, AttendanceStatus>
 }
 
-export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }: AttendanceGridProps) {
+export function AttendanceGrid({ sessions, groupId, level, groupInstructorName, groupName, courseName }: AttendanceGridProps) {
+  const navigate = useNavigate()
   const [students, setStudents] = useState<StudentRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  // Track if any changes have been made (attendance, notes, edits, cancels)
+  const [hasChanges, setHasChanges] = useState(false)
   
   // Session notes state
   const [sessionNotes, setSessionNotes] = useState<Record<number, string>>({})
@@ -132,12 +140,14 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
   const handleNoteChange = useCallback((sessionId: number, value: string) => {
     setSessionNotes(prev => ({ ...prev, [sessionId]: value }))
     setDirtyNotes(prev => new Set(prev).add(sessionId))
+    setHasChanges(true)
   }, [])
 
   // Handle edit session
   const handleEditSession = useCallback((session: Session) => {
     setEditingSession(session)
     setIsEditModalOpen(true)
+    setHasChanges(true)
   }, [])
 
   // Handle cancel session
@@ -146,6 +156,7 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
     
     try {
       await cancelSession(sessionId)
+      setHasChanges(true)
       showToast('Session cancelled successfully', 'success')
       await refetchData()
     } catch (err) {
@@ -185,6 +196,9 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
         return { ...s, attendance: newAttendance }
       })
     })
+    
+    // Mark that changes have been made
+    setHasChanges(true)
 
     // Clear any existing timeout
     if (attendanceTimeoutRef.current) {
@@ -259,8 +273,9 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
       
       console.log('[Save] All saves completed successfully!')
       
-      // 3. Clear dirty state
+      // 3. Clear dirty state and changes flag
       setDirtyNotes(new Set())
+      setHasChanges(false)
       
       // 4. REFETCH data (soft refresh - no page reload)
       await refetchData()
@@ -275,6 +290,8 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
   }, [displaySessions, students, dirtyNotes, sessionNotes, refetchData, showToast])
 
   const handleCancel = useCallback(() => {
+    setHasChanges(false)
+    setDirtyNotes(new Set())
     refetchData()
   }, [refetchData])
 
@@ -296,15 +313,20 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
     )
   }
 
+  // Get time from first session
+  const sessionTime = sessions.length > 0
+    ? `${formatTime(sessions[0].start_time)} - ${formatTime(sessions[0].end_time) || 'Next Hour'}`
+    : ''
+
+  const currentInstructorName = groupInstructorName || 'TBA'
+  const instructorInitials = getInitials(currentInstructorName, '?')
+
+  const handleCardClick = () => {
+    navigate(`/groups/${groupId}`)
+  }
+
   return (
     <div className="bg-white border border-outline-variant/10 shadow-sm overflow-hidden">
-      {/* Header Instructions */}
-      <div className="px-4 py-2 bg-surface-container-low border-b border-outline-variant/10">
-        <p className="text-xs text-outline">
-          Click a cell to toggle: empty → present (✓) → absent (✗) → empty
-        </p>
-      </div>
-
       {error && (
         <div className="p-3 bg-red-50 border-b border-red-100 text-red-700 text-sm">
           {error}
@@ -313,10 +335,54 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
 
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[1000px] border-2 border-slate-400">
+          {/* Group Header Row */}
+          {groupName && (
+            <thead>
+              <tr className="bg-slate-50">
+                <th colSpan={6} className="p-0 border-b-2 border-slate-400">
+                  <div className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-1 h-8 bg-secondary rounded-full"></div>
+                      <div className="flex items-center gap-2">
+                        <div>
+                          <h3 className="font-headline text-lg font-bold text-slate-900 leading-tight">{groupName}</h3>
+                          <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">{courseName}</p>
+                        </div>
+                        <button
+                          onClick={handleCardClick}
+                          className="p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-secondary transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">info</span>
+                        </button>
+                      </div>
+                      <div className="ml-2 border-l border-slate-200 pl-4">
+                        <p className="text-[11px] font-bold text-slate-800 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px] text-slate-700">schedule</span>
+                          {sessionTime}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+                          Instructor
+                        </p>
+                        <p className="font-bold text-sm text-slate-900">{currentInstructorName}</p>
+                      </div>
+                      <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 border border-slate-300">
+                        {instructorInitials}
+                      </div>
+                    </div>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+          )}
+
           <AttendanceHeader sessions={sessions} groupInstructorName={groupInstructorName} />
           
           {/* Session Actions Row */}
-          <tbody>
+          <tbody className="border-b-2 border-slate-300">
             <SessionActionsRow 
               sessions={sessions} 
               onEdit={handleEditSession}
@@ -324,7 +390,7 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
               disabled={isSaving}
             />
           </tbody>
-          
+
           <AttendanceTableBody
             students={students}
             sessions={sessions}
@@ -332,7 +398,7 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
           />
           
           {/* Session Notes Row */}
-          <tbody>
+          <tbody className="border-t-2 border-slate-300">
             <SessionNotesRow 
               sessions={sessions}
               notes={sessionNotes}
@@ -342,12 +408,12 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName }
           </tbody>
         </table>
       </div>
-
       <AttendanceFooter
         isSaving={isSaving}
         onCancel={handleCancel}
         onSave={handleSaveAll}
         hasError={!!error}
+        hasChanges={hasChanges}
       />
       
       {/* Edit Session Modal */}
