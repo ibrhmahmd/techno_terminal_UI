@@ -2,11 +2,13 @@ export interface Competition {
   id: number
   name: string
   edition?: string | null
+  edition_year?: number | null
   competition_date?: string | null
   location: string
   notes?: string | null
   fee_per_student: number
   created_at: string
+  deleted_at?: string | null
   // Keeping optional fields for extended API responses
   description?: string
   start_date?: string
@@ -67,6 +69,7 @@ export interface CreateCompetitionInput {
 export interface UpdateCompetitionInput {
   name?: string
   edition?: string
+  edition_year?: number
   competition_date?: string
   location?: string
   notes?: string
@@ -110,6 +113,29 @@ export interface CompetitionStatsResponse {
   total_revenue: number
   paid_count: number
   pending_count: number
+}
+
+// Competition Summary Response
+export interface CategoryResponse {
+  category: string
+  subcategories?: string[]
+}
+
+export interface CompetitionSummaryCategory {
+  category: CompetitionCategory
+  teams: TeamRegistration[]
+}
+
+export interface CompetitionSummaryResponse {
+  competition: Competition
+  categories: CompetitionSummaryCategory[]
+  total_teams: number
+  total_participants: number
+}
+
+// Helper type for checking if competition is soft-deleted
+export function isCompetitionDeleted(competition: Competition): boolean {
+  return !!competition.deleted_at
 }
 
 // Re-export types for convenience

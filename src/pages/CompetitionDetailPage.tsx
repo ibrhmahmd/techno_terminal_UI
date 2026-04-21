@@ -6,8 +6,9 @@ import { Modal } from '../components/common/Modal'
 import { TeamRegistrationModal } from '../components/competitions/TeamRegistrationModal'
 import { CategoryList } from '../components/competitions/CategoryList'
 import { CategoryForm } from '../components/competitions/CategoryForm'
-import { useCompetition, useCompetitionCategories } from '../hooks/competitions'
-import { getCategoryTeams, registerTeam, type CreateCategoryInput, type RegisterTeamInput, type TeamRegistration } from '../api/competitions'
+import { useCompetition, useCompetitionCategories, useCompetitionSummary } from '../hooks/competitions'
+import { useTeams } from '../hooks/teams'
+import { getCategoryTeams, registerTeam, isCompetitionDeleted, type CreateCategoryInput, type RegisterTeamInput, type TeamRegistration } from '../api/competitions'
 import { paymentStatusColors } from '../utils/colors'
 
 export function CompetitionDetailPage() {
@@ -29,10 +30,20 @@ export function CompetitionDetailPage() {
     remove: deleteCategory,
   } = useCompetitionCategories(competitionId)
 
+  // Summary data
+  const { summary, isLoading: summaryLoading } = useCompetitionSummary(competitionId)
+
+  // Teams data
+  const { teams, isLoading: teamsLoading } = useTeams({ competition_id: parseInt(competitionId, 10) })
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'teams' | 'summary'>('overview')
+
   // Modal states
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false)
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false)
   const [isTeamsModalOpen, setIsTeamsModalOpen] = useState(false)
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(categories.find(c => c.id === '') || null)
   const [selectedCategoryName, setSelectedCategoryName] = useState('')
 
@@ -40,7 +51,9 @@ export function CompetitionDetailPage() {
   const [teams, setTeams] = useState<TeamRegistration[]>([])
   const [, setTeamsLoading] = useState(false)
 
-  const isLoading = competitionLoading || categoriesLoading
+  const isLoading = competitionLoading || categoriesLoading || summaryLoading
+
+  const isDeleted = competition ? isCompetitionDeleted(competition) : false
 
   const handleAddCategory = async (data: CreateCategoryInput) => {
     try {
@@ -143,8 +156,40 @@ export function CompetitionDetailPage() {
                   {competition.edition}
                 </span>
               )}
+              {isDeleted && (
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                  Deleted
+                </span>
+              )}
             </div>
-            {/* Registration status removed - not supported by current API */}
+            <div className="flex items-center gap-2">
+              {isDeleted ? (
+                <button
+                  onClick={() => setIsRestoreModalOpen(true)}
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-sm">restore</span>
+                  Restore
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => navigate(`/competitions/${competitionId}/edit`)}
+                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-sm">edit</span>
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => {}}
+                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-sm">delete</span>
+                    Delete
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -156,84 +201,277 @@ export function CompetitionDetailPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Competition Info */}
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">About This Competition</h2>
-              {competition.notes && <p className="text-slate-600 mb-4">{competition.notes}</p>}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <span className="material-symbols-outlined text-slate-400">location_on</span>
-                  <span>{competition.location}</span>
+        {isDeleted && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg">
+            <div className="flex items-start gap-3">
+              <span className="material-symbols-outlined text-red-600">warning</span>
+              <div>
+                <h3 className="font-medium text-red-900">This competition has been deleted</h3>
+                <p className="text-sm text-red-700 mt-1">
+                  Deleted on {competition.deleted_at ? formatDate(competition.deleted_at) : 'N/A'}
+                </p>
+                <p className="text-sm text-red-600 mt-2">
+                  You can restore this competition to make it active again, or it will be permanently removed after 30 days.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tabs Navigation */}
+        <div className="mb-6 border-b border-slate-200">
+          <nav className="flex gap-6">
+            {[
+              { id: 'overview', label: 'Overview', icon: 'info' },
+              { id: 'categories', label: 'Categories', icon: 'category' },
+              { id: 'teams', label: 'Teams', icon: 'groups' },
+              { id: 'summary', label: 'Summary', icon: 'dashboard' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-secondary text-secondary'
+                    : 'border-transparent text-slate-600 hover:text-on-surface'
+                }`}
+              >
+                <span className="material-symbols-outlined text-sm">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Competition Info */}
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">About This Competition</h2>
+                {competition.notes && <p className="text-slate-600 mb-4">{competition.notes}</p>}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="material-symbols-outlined text-slate-400">location_on</span>
+                    <span>{competition.location}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="material-symbols-outlined text-slate-400">payments</span>
+                    <span>{competition.fee_per_student} EGP per student</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="material-symbols-outlined text-slate-400">event</span>
+                    <span>{competition.competition_date ? formatDate(competition.competition_date) : 'Date TBD'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="material-symbols-outlined text-slate-400">schedule</span>
+                    <span>Created {formatDate(competition.created_at)}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <span className="material-symbols-outlined text-slate-400">payments</span>
-                  <span>{competition.fee_per_student} EGP per student</span>
+              </div>
+
+              {/* Stats Cards */}
+              {summary && (
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
+                      <span className="material-symbols-outlined">groups</span>
+                      Total Teams
+                    </div>
+                    <p className="text-2xl font-bold text-on-surface">{summary.total_teams}</p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
+                      <span className="material-symbols-outlined">person</span>
+                      Participants
+                    </div>
+                    <p className="text-2xl font-bold text-on-surface">{summary.total_students}</p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
+                      <span className="material-symbols-outlined">payments</span>
+                      Revenue
+                    </div>
+                    <p className="text-2xl font-bold text-on-surface">{summary.total_collected.toLocaleString()} EGP</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <span className="material-symbols-outlined text-slate-400">event</span>
-                  <span>{competition.competition_date ? formatDate(competition.competition_date) : 'Date TBD'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <span className="material-symbols-outlined text-slate-400">schedule</span>
-                  <span>Created {formatDate(competition.created_at)}</span>
+              )}
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 className="font-semibold text-on-surface mb-4">Competition Details</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-600">Location</span>
+                    <span className="font-semibold text-on-surface">{competition.location}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-600">Fee per Student</span>
+                    <span className="font-semibold text-on-surface">{competition.fee_per_student} EGP</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-600">Competition Date</span>
+                    <span className="font-semibold text-on-surface">
+                      {competition.competition_date ? formatDate(competition.competition_date) : 'TBD'}
+                    </span>
+                  </div>
+                  {competition.edition && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Edition</span>
+                      <span className="font-semibold text-on-surface">{competition.edition}</span>
+                    </div>
+                  )}
+                  {competition.edition_year && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Year</span>
+                      <span className="font-semibold text-on-surface">{competition.edition_year}</span>
+                    </div>
+                  )}
+                  <div className="pt-4 border-t border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Created</span>
+                      <span className="font-semibold text-slate-500">{formatDate(competition.created_at)}</span>
+                    </div>
+                  </div>
+                  {isDeleted && competition.deleted_at && (
+                    <div className="pt-4 border-t border-slate-100">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-600">Deleted</span>
+                        <span className="font-semibold text-red-600">{formatDate(competition.deleted_at)}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-
-            {/* Categories */}
-            <CategoryList
-              categories={categories}
-              competitionId={competitionId}
-              onAddCategory={() => setIsAddCategoryModalOpen(true)}
-              onDeleteCategory={handleDeleteCategory}
-              onRegisterTeam={(categoryId) => {
-                const category = categories.find(c => c.id === categoryId)
-                setSelectedCategory(category || null)
-                setIsRegistrationModalOpen(true)
-              }}
-              onViewTeams={handleViewTeams}
-              canManage={true}
-            />
           </div>
+        )}
 
-          {/* Sidebar - Basic Info */}
+        {activeTab === 'categories' && (
+          <CategoryList
+            categories={categories}
+            competitionId={competitionId}
+            onAddCategory={() => setIsAddCategoryModalOpen(true)}
+            onDeleteCategory={handleDeleteCategory}
+            onRegisterTeam={(categoryId) => {
+              const category = categories.find(c => c.id === categoryId)
+              setSelectedCategory(category || null)
+              setIsRegistrationModalOpen(true)
+            }}
+            onViewTeams={handleViewTeams}
+            canManage={!isDeleted}
+          />
+        )}
+
+        {activeTab === 'teams' && (
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-headline text-lg font-semibold text-on-surface">Registered Teams</h2>
+              <span className="text-sm text-slate-500">{teams.length} teams</span>
+            </div>
+
+            {teamsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <LoadingSpinner />
+              </div>
+            ) : teams.length === 0 ? (
+              <div className="text-center py-12">
+                <span className="material-symbols-outlined text-4xl text-slate-300 mb-4">groups</span>
+                <p className="text-slate-500">No teams registered yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {teams.map((team) => (
+                  <div
+                    key={team.id}
+                    onClick={() => navigate(`/teams/${team.id}`)}
+                    className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-secondary-container rounded-full flex items-center justify-center">
+                        <span className="material-symbols-outlined text-secondary">groups</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-on-surface">{team.team_name}</p>
+                        <p className="text-sm text-slate-500">
+                          {team.category}{team.subcategory ? ` - ${team.subcategory}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-on-surface">{team.fee} EGP</p>
+                        <p className="text-xs text-slate-500">Team fee</p>
+                      </div>
+                      <span className="material-symbols-outlined text-slate-400">chevron_right</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'summary' && summary && (
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h3 className="font-semibold text-on-surface mb-4">Competition Details</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Location</span>
-                  <span className="font-semibold text-on-surface">{competition.location}</span>
+              <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Competition Summary</h2>
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="text-center p-4 bg-slate-50 rounded-lg">
+                  <p className="text-3xl font-bold text-secondary">{summary.total_teams}</p>
+                  <p className="text-sm text-slate-600">Total Teams</p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Fee per Student</span>
-                  <span className="font-semibold text-on-surface">{competition.fee_per_student} EGP</span>
+                <div className="text-center p-4 bg-slate-50 rounded-lg">
+                  <p className="text-3xl font-bold text-secondary">{summary.total_students}</p>
+                  <p className="text-sm text-slate-600">Students</p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Competition Date</span>
-                  <span className="font-semibold text-on-surface">
-                    {competition.competition_date ? formatDate(competition.competition_date) : 'TBD'}
-                  </span>
+                <div className="text-center p-4 bg-slate-50 rounded-lg">
+                  <p className="text-3xl font-bold text-secondary">{summary.total_expected.toLocaleString()}</p>
+                  <p className="text-sm text-slate-600">Expected Revenue</p>
                 </div>
-                {competition.edition && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Edition</span>
-                    <span className="font-semibold text-on-surface">{competition.edition}</span>
-                  </div>
-                )}
-                <div className="pt-4 border-t border-slate-100">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Created</span>
-                    <span className="font-semibold text-slate-500">{formatDate(competition.created_at)}</span>
-                  </div>
+                <div className="text-center p-4 bg-slate-50 rounded-lg">
+                  <p className="text-3xl font-bold text-green-600">{summary.total_collected.toLocaleString()}</p>
+                  <p className="text-sm text-slate-600">Collected</p>
                 </div>
               </div>
             </div>
+
+            {/* Categories breakdown */}
+            <div className="space-y-4">
+              {summary.categories.map((cat) => (
+                <div key={cat.category_id} className="bg-white rounded-xl border border-slate-200 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-on-surface">{cat.category_name}</h3>
+                    <span className="px-3 py-1 bg-secondary-container text-secondary text-xs rounded-full font-medium">
+                      {cat.teams.length} Teams
+                    </span>
+                  </div>
+                  {cat.teams.length === 0 ? (
+                    <p className="text-sm text-slate-500">No teams registered yet</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {cat.teams.map((team) => (
+                        <div key={team.team_id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div>
+                            <p className="font-medium text-on-surface">{team.team_name}</p>
+                            <p className="text-xs text-slate-500">{team.members_count} members</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-on-surface">{team.collected.toLocaleString()} EGP</p>
+                            <p className="text-xs text-slate-500">of {team.expected.toLocaleString()} EGP</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* Add Category Modal */}
@@ -290,6 +528,37 @@ export function CompetitionDetailPage() {
             ))
           )}
         </div>
+      </Modal>
+
+      {/* Restore Confirmation Modal */}
+      <Modal
+        isOpen={isRestoreModalOpen}
+        onClose={() => setIsRestoreModalOpen(false)}
+        title="Restore Competition"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsRestoreModalOpen(false)}
+              className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                // Restore functionality would go here
+                setIsRestoreModalOpen(false)
+              }}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Restore
+            </button>
+          </div>
+        }
+      >
+        <p className="text-sm text-slate-600">
+          Are you sure you want to restore this competition? It will become active again.
+        </p>
       </Modal>
     </div>
   )

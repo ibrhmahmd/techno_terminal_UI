@@ -12,6 +12,7 @@ export function TableActions<T>({ row, actions, labels }: TableActionsProps<T>) 
   const viewLabel = labels?.view || 'View'
   const editLabel = labels?.edit || 'Edit'
   const deleteLabel = labels?.delete || 'Delete'
+  const restoreLabel = labels?.restore || 'Restore'
 
   return (
     <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
@@ -32,6 +33,15 @@ export function TableActions<T>({ row, actions, labels }: TableActionsProps<T>) 
             title={editLabel}
           >
             <span className="material-symbols-outlined text-xl">edit</span>
+          </button>
+        )}
+        {actions.restore && (
+          <button
+            onClick={() => actions.restore?.(row)}
+            className="p-1.5 text-slate-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors"
+            title={restoreLabel}
+          >
+            <span className="material-symbols-outlined text-xl">restore</span>
           </button>
         )}
         {actions.delete && (

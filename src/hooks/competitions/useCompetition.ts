@@ -3,6 +3,7 @@ import {
   getCompetition, 
   updateCompetition,
   deleteCompetition,
+  restoreCompetition,
   type Competition,
   type UpdateCompetitionInput 
 } from '../../api/competitions'
@@ -15,6 +16,7 @@ interface UseCompetitionReturn {
   refresh: () => Promise<void>
   update: (data: UpdateCompetitionInput) => Promise<void>
   remove: () => Promise<void>
+  restore: () => Promise<void>
 }
 
 export function useCompetition(id: number | string): UseCompetitionReturn {
@@ -74,6 +76,21 @@ export function useCompetition(id: number | string): UseCompetitionReturn {
     }
   }, [id])
 
+  const restore = useCallback(async () => {
+    if (!id || id === '') return
+    setIsMutating(true)
+    try {
+      const numericId = typeof id === 'string' ? parseInt(id, 10) : id
+      await restoreCompetition(numericId)
+      // Refresh competition data after restore
+      await fetchCompetition()
+    } catch (err) {
+      throw err
+    } finally {
+      setIsMutating(false)
+    }
+  }, [id, fetchCompetition])
+
   return {
     competition,
     isLoading,
@@ -82,5 +99,6 @@ export function useCompetition(id: number | string): UseCompetitionReturn {
     refresh: fetchCompetition,
     update,
     remove,
+    restore,
   }
 }

@@ -2,7 +2,8 @@ import client from '../client'
 import type { 
   Competition, CreateCompetitionInput, UpdateCompetitionInput,
   CompetitionCategory, CreateCategoryInput, RegisterTeamInput,
-  TeamRegistration, PaginatedCompetitionsResponse, CompetitionStatus
+  TeamRegistration, PaginatedCompetitionsResponse, CompetitionStatus,
+  CompetitionSummaryResponse
 } from './types'
 
 export interface GetCompetitionsParams {
@@ -85,6 +86,23 @@ export async function getCompetitionStats(competitionId: number): Promise<{
     paid_count: number
     pending_count: number
   } }>(`/competitions/${competitionId}/stats`)
+  return response.data.data
+}
+
+// Soft-delete operations
+export async function restoreCompetition(id: number): Promise<boolean> {
+  const response = await client.post<{ data: boolean }>(`/competitions/${id}/restore`)
+  return response.data.data
+}
+
+export async function getDeletedCompetitions(): Promise<Competition[]> {
+  const response = await client.get<{ data: Competition[] }>('/competitions/deleted')
+  return response.data.data || []
+}
+
+// Competition summary/dashboard
+export async function getCompetitionSummary(id: number): Promise<CompetitionSummaryResponse> {
+  const response = await client.get<{ data: CompetitionSummaryResponse }>(`/competitions/${id}/summary`)
   return response.data.data
 }
 

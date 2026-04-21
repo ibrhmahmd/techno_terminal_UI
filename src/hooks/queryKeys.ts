@@ -22,9 +22,18 @@ export const queryKeys = {
   // Competitions
   competitions: ['competitions'] as const,
   competition: (id: number) => ['competitions', id] as const,
+  competitionDeleted: ['competitions', 'deleted'] as const,
+  competitionSummary: (id: number) => ['competitions', id, 'summary'] as const,
   competitionCategories: ['competitions', 'categories'] as const,
   competitionTeams: (id: number) => ['competitions', id, 'teams'] as const,
-  
+
+  // Teams
+  teams: ['teams'] as const,
+  team: (id: number) => ['teams', id] as const,
+  teamDeleted: ['teams', 'deleted'] as const,
+  teamMembers: (id: number) => ['teams', id, 'members'] as const,
+  teamPayments: (id: number) => ['teams', id, 'payments'] as const,
+
   // Finance
   receipts: ['finance', 'receipts'] as const,
   refunds: ['finance', 'refunds'] as const,

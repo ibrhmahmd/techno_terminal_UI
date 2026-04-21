@@ -12,6 +12,7 @@ import { EnrollmentsPage } from './pages/EnrollmentsPage'
 import { FinancePage } from './pages/FinancePage'
 import { CompetitionsPage } from './pages/CompetitionsPage'
 import { CompetitionDetailPage } from './pages/CompetitionDetailPage'
+import { TeamDetailPage } from './pages/TeamDetailPage'
 import { CoursesPage } from './pages/CoursesPage'
 import { CourseDetailPage } from './pages/CourseDetailPage'
 import { ReportsPage } from './pages/ReportsPage'
@@ -53,6 +54,7 @@ function App() {
             <Route path="/attendance" element={<div>Attendance</div>} />
             <Route path="/competitions" element={<CompetitionsPage />} />
             <Route path="/competitions/:id" element={<CompetitionDetailPage />} />
+            <Route path="/teams/:id" element={<TeamDetailPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/staff" element={<StaffPage />} />
             <Route path="/settings" element={<SettingsPage />} />

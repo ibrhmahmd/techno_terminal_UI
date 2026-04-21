@@ -1,9 +1,9 @@
-import { Search, Plus, Inbox, History, Clock } from 'lucide-react'
+import { Search, Plus, Inbox, History, Clock, Trash2 } from 'lucide-react'
 
 interface EmptyStateProps {
   title?: string
   message?: string
-  icon?: 'search' | 'inbox' | 'history' | 'schedule' | 'none' | string
+  icon?: 'search' | 'inbox' | 'history' | 'schedule' | 'trash' | 'none' | string
   actionLabel?: string
   onAction?: () => void
   className?: string
@@ -22,6 +22,7 @@ export function EmptyState({
     inbox: Inbox,
     history: History,
     schedule: Clock,
+    trash: Trash2,
     none: () => null
   }[icon] || Inbox // fallback to Inbox for invalid values
 

@@ -13,12 +13,14 @@ export interface DataTableActions<T> {
   view?: (row: T) => void
   edit?: (row: T) => void
   delete?: (row: T) => void
+  restore?: (row: T) => void
 }
 
 export interface ActionLabels {
   view?: string
   edit?: string
   delete?: string
+  restore?: string
 }
 
 // Base properties shared between all tables
@@ -27,11 +29,11 @@ export interface DataTableBaseProps<T> {
   keyExtractor: (row: T) => string
   isLoading?: boolean
   emptyMessage?: string
-  emptyIcon?: 'search' | 'inbox' | 'history' | 'schedule' | 'none'
+  emptyIcon?: 'search' | 'inbox' | 'history' | 'schedule' | 'trash' | 'none'
   onRowClick?: (row: T) => void
   sortField?: string
   sortDirection?: 'asc' | 'desc'
-  onSort?: (field: string | any) => void
+  onSort?: (field: string) => void
   actions?: DataTableActions<T>
   actionLabels?: ActionLabels
   className?: string
