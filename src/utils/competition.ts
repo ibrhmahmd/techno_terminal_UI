@@ -18,7 +18,7 @@ export function isRegistrationOpen(competition: Competition): boolean {
  * Calculate available team slots for a competition
  * Returns null if there's no maximum limit
  */
-export function getAvailableSlots(competition: Competition): number | null {
+export function getAvailableSlots(_competition: Competition): number | null {
   // max_teams is not part of Competition interface, so we return null
   // This function may need to be updated if the API adds this field
   return null

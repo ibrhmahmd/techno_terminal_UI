@@ -34,12 +34,16 @@ export interface CompetitionCategory {
 
 export interface TeamRegistration {
   id: string
+  team_id: string  // Alias for id
   category_id: string
   team_name: string
   members: TeamMember[]
+  members_count: number  // Computed from members.length
   registration_date: string
   payment_status: 'pending' | 'paid' | 'waived'
   total_fee: number
+  collected: number  // Amount collected
+  expected: number  // Expected amount
 }
 
 export interface TeamMember {

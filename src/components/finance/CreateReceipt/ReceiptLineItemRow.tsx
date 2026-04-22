@@ -1,4 +1,4 @@
-import type { Student } from '../../../api/crm'
+import type { StudentListItem } from '../../../api/crm'
 import type { StudentEnrollmentInfo } from '../../../hooks/finance/useStudentEnrollments'
 import { EnrollmentSelection } from './EnrollmentSelection'
 import { StudentCombobox } from '../../common/combobox'
@@ -6,8 +6,8 @@ import { StudentCombobox } from '../../common/combobox'
 export interface ReceiptLineItem {
   id: string
   studentSearch: string
-  selectedStudent: Student | null
-  students: Student[]
+  selectedStudent: StudentListItem | null
+  students: StudentListItem[]
   selectedEnrollment: StudentEnrollmentInfo | null
   amount: number
   payment_type: 'course_level' | 'competition' | 'materials' | 'registration' | 'other'

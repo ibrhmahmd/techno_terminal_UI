@@ -1,7 +1,7 @@
 import client from '../client'
 import type { 
   Competition, CreateCompetitionInput, UpdateCompetitionInput,
-  CompetitionCategory, CreateCategoryInput, RegisterTeamInput,
+  CompetitionCategory, RegisterTeamInput,
   TeamRegistration, PaginatedCompetitionsResponse, CompetitionStatus,
   CompetitionSummaryResponse
 } from './types'

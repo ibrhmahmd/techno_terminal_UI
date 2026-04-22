@@ -8,7 +8,7 @@ import {
 } from '../../config/studentGrouping'
 
 export function AgeBucketEditor() {
-  const { ageBuckets, setAgeBuckets, addBucket, removeBucket, resetToDefaults } =
+  const { ageBuckets, addBucket, removeBucket, resetToDefaults } =
     useGroupingSettingsStore()
   const [newBucket, setNewBucket] = useState<Partial<AgeBucket>>({
     min: 0,
@@ -18,7 +18,7 @@ export function AgeBucketEditor() {
   })
   const [errors, setErrors] = useState<string[]>([])
 
-  const validation = validateAgeBuckets(ageBuckets)
+  const _validation = validateAgeBuckets(ageBuckets)
 
   const handleAddBucket = () => {
     if (!newBucket.label || newBucket.min === undefined || newBucket.max === undefined) {

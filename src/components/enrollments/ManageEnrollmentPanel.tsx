@@ -5,7 +5,7 @@ import { StudentCombobox, GroupCombobox } from '../common/combobox'
 import { transferEnrollment, deleteEnrollment } from '../../api/enrollments'
 import { useStudentEnrollments } from '../../hooks/finance/useStudentEnrollments'
 import { useStudentsSearch } from '../../hooks/useDirectory'
-import type { Student } from '../../api/crm'
+import type { StudentListItem } from '../../api/crm'
 import type { EnrichedGroupPublic } from '../../api/academics'
 import type { StudentEnrollmentInfo } from '../../hooks/finance/useStudentEnrollments'
 import { getEnrichedGroups } from '../../api/academics'
@@ -19,7 +19,7 @@ export function ManageEnrollmentPanel({ isLoading, setIsLoading }: ManageEnrollm
   const { showToast, ToastComponent } = useToast()
 
   // Step 1: Student Selection
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(null)
   const [studentSearch, setStudentSearch] = useState('')
 
   // Debounce student search
@@ -148,7 +148,7 @@ export function ManageEnrollmentPanel({ isLoading, setIsLoading }: ManageEnrollm
                 </div>
                 <div>
                   <p className="font-semibold text-on-surface text-sm">{selectedStudent.full_name}</p>
-                  <p className="text-xs text-on-surface-variant">{selectedStudent.id_code || `ID #${selectedStudent.id}`}</p>
+                  <p className="text-xs text-on-surface-variant">{`ID #${selectedStudent.id}`}</p>
                 </div>
               </div>
             </div>

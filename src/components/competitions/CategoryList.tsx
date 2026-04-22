@@ -1,10 +1,9 @@
-import { useState } from 'react'
 import type { CompetitionCategory } from '../../api/competitions'
-import { Modal } from '../common/Modal'
-import { LoadingSpinner } from '../common/LoadingSpinner'
 
 interface CategoryListProps {
   categories: CompetitionCategory[]
+  competitionId: string
+  canManage: boolean
   onViewTeams: (categoryId: string, categoryName: string) => void
   onRegisterTeam: (categoryId: string) => void
   // NOTE: Categories are auto-generated from team registrations
@@ -14,6 +13,8 @@ interface CategoryListProps {
 
 export function CategoryList({
   categories,
+  competitionId: _competitionId,
+  canManage: _canManage,
   onViewTeams,
   onRegisterTeam,
 }: CategoryListProps) {

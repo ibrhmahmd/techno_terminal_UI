@@ -4,7 +4,7 @@
 import client from '../../client'
 import type { PaginationParams, PaginationResult } from '../../../types/pagination'
 import type { PaginatedApiResponse, ApiResponse } from '../../../types/api'
-import type { Student, StudentWithDetails, StudentListItem, Parent, ParentInfo } from './types/models'
+import type { Student, StudentWithDetails, Parent, ParentInfo } from './types/models'
 import type { CreateStudentDTO, UpdateStudentDTO } from './types/inputs'
 
 // Pagination Result Helpers

@@ -43,7 +43,7 @@ export interface UseProgressLevelFormReturn {
 }
 
 export function useProgressLevelForm(
-  groupId: number,
+  _groupId: number,
   initialData?: Partial<ProgressLevelFormData>
 ): UseProgressLevelFormReturn {
   // Fetch courses for selector

@@ -7,7 +7,6 @@ import {
 interface UseCompetitionCategoriesReturn {
   categories: CompetitionCategory[]
   isLoading: boolean
-  isMutating: boolean
   error: string | null
   refresh: () => Promise<void>
   // NOTE: Categories are auto-generated from team registrations
@@ -19,7 +18,6 @@ export function useCompetitionCategories(
 ): UseCompetitionCategoriesReturn {
   const [categories, setCategories] = useState<CompetitionCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isMutating, setIsMutating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetchCategories = useCallback(async () => {

@@ -10,6 +10,9 @@ export interface AttendanceUpdate {
   status: AttendanceStatus
 }
 
+// Alias for backward compatibility
+export type AttendanceEntry = AttendanceUpdate
+
 export interface MarkAttendanceRequest {
   entries: {
     student_id: number

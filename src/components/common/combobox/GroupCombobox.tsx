@@ -13,7 +13,7 @@ export interface GroupComboboxProps {
   recentGroupIds: number[]
 }
 
-const DAYS = ['All', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
+// DAYS constant available for future day filtering feature
 
 export function GroupCombobox({
   value,
@@ -52,7 +52,7 @@ export function GroupCombobox({
       } else if (groupByMode === 'instructor') {
         groupKey = g.instructor_name || 'No Instructor'
       } else if (groupByMode === 'day') {
-        groupKey = g.default_day || g.schedule_day || 'No Specific Day'
+        groupKey = g.default_day || 'No Specific Day'
       } else if (groupByMode === 'competition') {
         const isComp = g.course_name?.toLowerCase().includes('competition') || g.group_name?.toLowerCase().includes('competition') || g.group_name?.toLowerCase().includes('wro') || g.group_name?.toLowerCase().includes('fll')
         groupKey = isComp ? 'Competition Teams' : 'Regular Groups'

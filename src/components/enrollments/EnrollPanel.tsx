@@ -46,11 +46,8 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading }: EnrollPane
   // Auto-populate pricing when group is selected
   useEffect(() => {
     if (selectedGroup) {
-      // Use the correct API field: course.price_per_level
-      const coursePrice = selectedGroup.course?.price_per_level
-      const defaultPrice = 150
-      
-      setAmount(coursePrice || defaultPrice)
+      // Default price - API doesn't provide course price on group type
+      setAmount(150)
     }
   }, [selectedGroup])
 
@@ -156,7 +153,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading }: EnrollPane
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-on-surface text-sm truncate">{selectedStudent.full_name}</p>
-                  <p className="text-xs text-on-surface-variant">{selectedStudent.id_code || `ID #${selectedStudent.id}`}</p>
+                  <p className="text-xs text-on-surface-variant">{`ID #${selectedStudent.id}`}</p>
                 </div>
                 <button
                   onClick={() => handleStudentChange(null)}
@@ -221,15 +218,9 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading }: EnrollPane
               </div>
               
               {/* Price info */}
-              {selectedGroup.course?.price_per_level ? (
-                <p className="mt-3 text-xs text-slate-500 bg-slate-100 px-3 py-2 rounded-lg">
-                  Course fee: {selectedGroup.course.price_per_level} EGP (auto-populated)
-                </p>
-              ) : (
-                <p className="mt-3 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
-                  No course price found - using default (150 EGP)
-                </p>
-              )}
+              <p className="mt-3 text-xs text-slate-500 bg-slate-100 px-3 py-2 rounded-lg">
+                Default course fee: 150 EGP
+              </p>
             </div>
           )}
         </div>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { formatDate, formatTime } from '../../utils/formatting'
 import { useReceipts } from '../../hooks/finance'
-import type { ReceiptListItem, ReceiptSearchParams } from '../../api/finance'
+import type { ReceiptSearchParams } from '../../api/finance'
 
 const PAYMENT_METHODS = [
   { value: 'cash', label: 'Cash' },

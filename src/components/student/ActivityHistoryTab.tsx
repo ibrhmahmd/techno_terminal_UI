@@ -9,8 +9,7 @@ import { EmptyState } from '../common/EmptyState'
 import {
   useActivityHistory,
   useActivitySummary,
-  useEnrollmentHistory,
-  useCompetitionHistory
+  useEnrollmentHistory
 } from '../../hooks/useStudentActivity'
 import type { ActivityLogResponseDTO, ActivitySummaryItem, EnrollmentHistoryEntry } from '../../api/crm'
 

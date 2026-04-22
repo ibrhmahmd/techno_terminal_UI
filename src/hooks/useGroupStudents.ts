@@ -55,8 +55,7 @@ export function useGroupStudents(groupId: number, level?: number): UseGroupStude
     if (!student) throw new Error('Student not found')
     
     const result = await transferEnrollment({
-      student_id: student.student_id,
-      from_group_id: groupId,
+      from_enrollment_id: enrollmentId,
       to_group_id: toGroupId,
     })
     // Refresh the list after transfer

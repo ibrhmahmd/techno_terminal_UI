@@ -4,7 +4,7 @@ interface TabNavigationProps {
   enrollmentCount: number
 }
 
-export function TabNavigation({ activeTab, onTabChange, enrollmentCount }: TabNavigationProps) {
+export function TabNavigation({ activeTab, onTabChange, enrollmentCount: _enrollmentCount }: TabNavigationProps) {
   const tabs = [
     { id: 'attendance' as const, label: 'Attendance' },
     { id: 'students' as const, label: 'Students' },

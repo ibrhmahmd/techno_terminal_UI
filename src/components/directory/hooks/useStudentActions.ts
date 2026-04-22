@@ -64,7 +64,7 @@ export function useStudentActions(
         }
 
         if (status && status !== 'active') {
-          await updateStudentStatus(newStudent.id, status)
+          await updateStudentStatus(newStudent.id, { status })
         }
 
         showToast('Student created successfully', 'success')
@@ -90,12 +90,12 @@ export function useStudentActions(
       try {
         await updateStudentMutation.mutateAsync({ id: student.id, data })
 
-        if (selectedParent && selectedParent.id !== student.parent?.id) {
+        if (selectedParent) {
           await linkParentToStudent(student.id, selectedParent.id)
         }
 
         if (status && status !== student.status) {
-          await updateStudentStatus(student.id, status)
+          await updateStudentStatus(student.id, { status })
         }
 
         showToast('Student updated successfully', 'success')
