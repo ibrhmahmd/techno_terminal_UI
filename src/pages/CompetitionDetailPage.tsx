@@ -47,9 +47,9 @@ export function CompetitionDetailPage() {
   const [selectedCategory, setSelectedCategory] = useState(categories.find(c => c.id === '') || null)
   const [selectedCategoryName, setSelectedCategoryName] = useState('')
 
-  // Teams state for viewing modal
-  const [teams, setTeams] = useState<TeamRegistration[]>([])
-  const [, setTeamsLoading] = useState(false)
+  // Category teams state for viewing modal
+  const [categoryTeams, setCategoryTeams] = useState<TeamRegistration[]>([])
+  const [, setCategoryTeamsLoading] = useState(false)
 
   const isLoading = competitionLoading || categoriesLoading || summaryLoading
 
@@ -85,15 +85,15 @@ export function CompetitionDetailPage() {
   const handleViewTeams = async (categoryId: string, categoryName: string) => {
     setSelectedCategoryName(categoryName)
     setIsTeamsModalOpen(true)
-    setTeamsLoading(true)
+    setCategoryTeamsLoading(true)
     try {
-      const numericCompetitionId = parseInt(competitionId, 10)
-      const teamsData = await getCategoryTeams(numericCompetitionId, categoryId)
-      setTeams(teamsData)
-    } catch {
-      setTeams([])
+      const teamsData = await getCategoryTeams(parseInt(competitionId, 10), categoryId)
+      setCategoryTeams(teamsData)
+    } catch (err) {
+      console.error('Failed to load teams:', err)
+      setCategoryTeams([])
     } finally {
-      setTeamsLoading(false)
+      setCategoryTeamsLoading(false)
     }
   }
 
@@ -279,21 +279,21 @@ export function CompetitionDetailPage() {
                       <span className="material-symbols-outlined">groups</span>
                       Total Teams
                     </div>
-                    <p className="text-2xl font-bold text-on-surface">{summary.total_teams}</p>
+                    <p className="text-2xl font-bold text-on-surface">{summary.total_teams ?? 0}</p>
                   </div>
                   <div className="bg-white rounded-xl border border-slate-200 p-4">
                     <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
                       <span className="material-symbols-outlined">person</span>
                       Participants
                     </div>
-                    <p className="text-2xl font-bold text-on-surface">{summary.total_students}</p>
+                    <p className="text-2xl font-bold text-on-surface">{summary.total_students ?? 0}</p>
                   </div>
                   <div className="bg-white rounded-xl border border-slate-200 p-4">
                     <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
                       <span className="material-symbols-outlined">payments</span>
                       Revenue
                     </div>
-                    <p className="text-2xl font-bold text-on-surface">{summary.total_collected.toLocaleString()} EGP</p>
+                    <p className="text-2xl font-bold text-on-surface">{(summary.total_collected ?? 0).toLocaleString()} EGP</p>
                   </div>
                 </div>
               )}
@@ -421,19 +421,19 @@ export function CompetitionDetailPage() {
               <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Competition Summary</h2>
               <div className="grid grid-cols-4 gap-4 mb-6">
                 <div className="text-center p-4 bg-slate-50 rounded-lg">
-                  <p className="text-3xl font-bold text-secondary">{summary.total_teams}</p>
+                  <p className="text-3xl font-bold text-secondary">{summary.total_teams ?? 0}</p>
                   <p className="text-sm text-slate-600">Total Teams</p>
                 </div>
                 <div className="text-center p-4 bg-slate-50 rounded-lg">
-                  <p className="text-3xl font-bold text-secondary">{summary.total_students}</p>
+                  <p className="text-3xl font-bold text-secondary">{summary.total_students ?? 0}</p>
                   <p className="text-sm text-slate-600">Students</p>
                 </div>
                 <div className="text-center p-4 bg-slate-50 rounded-lg">
-                  <p className="text-3xl font-bold text-secondary">{summary.total_expected.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-secondary">{(summary.total_expected ?? 0).toLocaleString()}</p>
                   <p className="text-sm text-slate-600">Expected Revenue</p>
                 </div>
                 <div className="text-center p-4 bg-slate-50 rounded-lg">
-                  <p className="text-3xl font-bold text-green-600">{summary.total_collected.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-green-600">{(summary.total_collected ?? 0).toLocaleString()}</p>
                   <p className="text-sm text-slate-600">Collected</p>
                 </div>
               </div>
@@ -441,27 +441,27 @@ export function CompetitionDetailPage() {
 
             {/* Categories breakdown */}
             <div className="space-y-4">
-              {summary.categories.map((cat) => (
+              {(summary.categories ?? []).map((cat) => (
                 <div key={cat.category_id} className="bg-white rounded-xl border border-slate-200 p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-on-surface">{cat.category_name}</h3>
                     <span className="px-3 py-1 bg-secondary-container text-secondary text-xs rounded-full font-medium">
-                      {cat.teams.length} Teams
+                      {(cat.teams ?? []).length} Teams
                     </span>
                   </div>
-                  {cat.teams.length === 0 ? (
+                  {(cat.teams ?? []).length === 0 ? (
                     <p className="text-sm text-slate-500">No teams registered yet</p>
                   ) : (
                     <div className="space-y-2">
-                      {cat.teams.map((team) => (
+                      {(cat.teams ?? []).map((team) => (
                         <div key={team.team_id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <p className="font-medium text-on-surface">{team.team_name}</p>
                             <p className="text-xs text-slate-500">{team.members_count} members</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-medium text-on-surface">{team.collected.toLocaleString()} EGP</p>
-                            <p className="text-xs text-slate-500">of {team.expected.toLocaleString()} EGP</p>
+                            <p className="text-sm font-medium text-on-surface">{(team.collected ?? 0).toLocaleString()} EGP</p>
+                            <p className="text-xs text-slate-500">of {(team.expected ?? 0).toLocaleString()} EGP</p>
                           </div>
                         </div>
                       ))}
@@ -505,10 +505,10 @@ export function CompetitionDetailPage() {
         size="lg"
       >
         <div className="space-y-4 max-h-96 overflow-y-auto">
-          {teams.length === 0 ? (
+          {categoryTeams.length === 0 ? (
             <p className="text-center text-slate-500 py-8">No teams registered yet</p>
           ) : (
-            teams.map(team => (
+            categoryTeams.map(team => (
               <div key={team.id} className="p-4 bg-slate-50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold text-on-surface">{team.team_name}</h4>
