@@ -18,6 +18,8 @@ import { CourseDetailPage } from './pages/CourseDetailPage'
 import { ReportsPage } from './pages/ReportsPage'
 import { StaffPage } from './pages/StaffPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { NotificationsPage } from './pages/NotificationsPage'
+import { RoleBasedRoute } from './components/common/RoleBasedRoute'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useAuthStore()
@@ -58,6 +60,13 @@ function App() {
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/staff" element={<StaffPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+          </Route>
+          
+          {/* Admin-only Routes */}
+          <Route element={<RoleBasedRoute allowedRoles={['admin', 'system_admin']} />}>
+            <Route element={<AppLayout />}>
+              <Route path="/notifications" element={<NotificationsPage />} />
+            </Route>
           </Route>
         </Route>
 

@@ -12,7 +12,7 @@ import type {
   TeamListFilters,
 } from './types'
 
-const TEAMS_BASE = '/api/v1/teams'
+const TEAMS_BASE = '/teams'
 
 export async function getTeams(filters?: TeamListFilters): Promise<TeamDTO[]> {
   const params = new URLSearchParams()
