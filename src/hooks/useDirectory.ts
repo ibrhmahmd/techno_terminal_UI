@@ -4,13 +4,20 @@ import {
   getParentsPaginated,
   searchStudents,
   searchParents,
+  filterStudents,
   createStudent,
   updateStudent,
   deleteStudent,
+  softDeleteStudent,
+  restoreStudent,
+  hardDeleteStudent,
+  getDeletedStudents,
   createParent,
   type StudentListItem,
   type ParentListItem,
   type UpdateStudentDTO,
+  type StudentFilterParams,
+  type StudentFilterResult,
 } from '../api/crm'
 
 export const directoryKeys = {
@@ -18,6 +25,8 @@ export const directoryKeys = {
     all:        ['directory', 'students'] as const,
     list:       (page: number, size: number) => ['directory', 'students', 'list', page, size] as const,
     search:     (term: string)  => ['directory', 'students', 'search', term] as const,
+    deleted:    (page: number, size: number) => ['directory', 'students', 'deleted', page, size] as const,
+    filter:     (filters: StudentFilterParams) => ['directory', 'students', 'filter', filters] as const,
   },
   parents: {
     all:        ['directory', 'parents'] as const,
@@ -43,6 +52,15 @@ export function useStudentsSearch(term: string) {
     queryFn: () => searchStudents(term),
     staleTime: 2 * 60 * 1000,
     enabled: term.length >= 2,
+  })
+}
+
+export function useStudentsFilter(params: StudentFilterParams, enabled: boolean = true) {
+  return useQuery<StudentFilterResult>({
+    queryKey: directoryKeys.students.filter(params),
+    queryFn: () => filterStudents(params),
+    staleTime: 2 * 60 * 1000,
+    enabled,
   })
 }
 
@@ -89,6 +107,30 @@ export function useUpdateStudent() {
 export function useDeleteStudent() {
   const invalidate = useStudentInvalidator()
   return useMutation({ mutationFn: deleteStudent, onSuccess: invalidate })
+}
+
+export function useSoftDeleteStudent() {
+  const invalidate = useStudentInvalidator()
+  return useMutation({ mutationFn: softDeleteStudent, onSuccess: invalidate })
+}
+
+export function useRestoreStudent() {
+  const invalidate = useStudentInvalidator()
+  return useMutation({ mutationFn: restoreStudent, onSuccess: invalidate })
+}
+
+export function useHardDeleteStudent() {
+  const invalidate = useStudentInvalidator()
+  return useMutation({ mutationFn: hardDeleteStudent, onSuccess: invalidate })
+}
+
+export function useDeletedStudents(page: number, pageSize: number, enabled: boolean) {
+  return useQuery({
+    queryKey: directoryKeys.students.deleted(page, pageSize),
+    queryFn: () => getDeletedStudents({ skip: (page - 1) * pageSize, limit: pageSize }),
+    staleTime: 3 * 60 * 1000,
+    enabled,
+  })
 }
 
 export function useCreateParent() {
