@@ -31,8 +31,21 @@ export async function getCompetition(id: number): Promise<Competition> {
 }
 
 export async function createCompetition(data: CreateCompetitionInput): Promise<Competition> {
-  const response = await client.post<{ data: Competition }>('/competitions', data)
-  return response.data.data
+  console.log('[API] createCompetition - Request payload:', JSON.stringify(data, null, 2))
+  try {
+    const response = await client.post<{ data: Competition }>('/competitions', data)
+    console.log('[API] createCompetition - Response:', response.status, response.data)
+    return response.data.data
+  } catch (error: any) {
+    console.error('[API] createCompetition - Error:', {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      message: error?.message,
+      requestPayload: data
+    })
+    throw error
+  }
 }
 
 export async function updateCompetition(id: number, data: UpdateCompetitionInput): Promise<Competition> {
@@ -49,14 +62,19 @@ export async function getCompetitionCategories(competitionId: number): Promise<C
   return response.data.data || []
 }
 
-export async function addCompetitionCategory(competitionId: number, data: CreateCategoryInput): Promise<CompetitionCategory> {
-  const response = await client.post<{ data: CompetitionCategory }>(`/competitions/${competitionId}/categories`, data)
-  return response.data.data
-}
+// NOTE: Categories are auto-generated from team registrations
+// POST /competitions/{id}/categories returns 405 - no separate categories table
+// Categories are derived from existing teams (3-table schema)
+// See API docs: docs/api/competitions/competitions.md line 118-122
 
-export async function deleteCategory(competitionId: number, categoryId: string): Promise<void> {
-  await client.delete(`/competitions/${competitionId}/categories/${categoryId}`)
-}
+// export async function addCompetitionCategory(competitionId: number, data: CreateCategoryInput): Promise<CompetitionCategory> {
+//   const response = await client.post<{ data: CompetitionCategory }>(`/competitions/${competitionId}/categories`, data)
+//   return response.data.data
+// }
+
+// export async function deleteCategory(competitionId: number, categoryId: string): Promise<void> {
+//   await client.delete(`/competitions/${competitionId}/categories/${categoryId}`)
+// }
 
 export async function registerTeam(data: RegisterTeamInput): Promise<TeamRegistration> {
   const response = await client.post<{ data: TeamRegistration }>('/competitions/register-team', data)
@@ -96,8 +114,20 @@ export async function restoreCompetition(id: number): Promise<boolean> {
 }
 
 export async function getDeletedCompetitions(): Promise<Competition[]> {
-  const response = await client.get<{ data: Competition[] }>('/competitions/deleted')
-  return response.data.data || []
+  console.log('[API] getDeletedCompetitions - Fetching from /competitions/deleted')
+  try {
+    const response = await client.get<{ data: Competition[] }>('/competitions/deleted')
+    console.log('[API] getDeletedCompetitions - Response:', response.status, response.data)
+    return response.data.data || []
+  } catch (error: any) {
+    console.error('[API] getDeletedCompetitions - Error:', {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      message: error?.message
+    })
+    throw error
+  }
 }
 
 // Competition summary/dashboard

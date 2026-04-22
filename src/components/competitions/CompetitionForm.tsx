@@ -18,6 +18,10 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
     notes: initialData?.notes || '',
     fee_per_student: initialData?.fee_per_student ?? 0,
   })
+
+  const handleInputChange = (field: 'name' | 'edition' | 'competition_date' | 'location' | 'notes' | 'fee_per_student', value: string | number) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -45,9 +49,18 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
 
     setIsLoading(true)
     try {
-      await onSubmit(formData)
-    } catch {
-      setError(`Failed to ${mode} competition`)
+      // Clean up empty strings - convert to null for optional fields
+      const cleanedData = {
+        ...formData,
+        competition_date: formData.competition_date || null,
+        edition: formData.edition || null,
+        notes: formData.notes || null,
+      }
+      console.log('[Form] Submitting cleaned data:', cleanedData)
+      await onSubmit(cleanedData as CreateCompetitionInput)
+    } catch (err: any) {
+      console.error('[Form] Submit error:', err)
+      setError(err?.response?.data?.message || `Failed to ${mode} competition`)
     } finally {
       setIsLoading(false)
     }
@@ -84,8 +97,8 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
         </label>
         <textarea
           id="notes"
-          value={formData.notes}
-          onChange={(e) => handleChange('notes', e.target.value)}
+          value={formData.notes || ''}
+          onChange={(e) => handleInputChange('notes', e.target.value)}
           placeholder="Enter competition notes or description..."
           rows={3}
           disabled={isLoading}
@@ -117,8 +130,8 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
           <input
             id="competition_date"
             type="date"
-            value={formData.competition_date}
-            onChange={(e) => handleChange('competition_date', e.target.value)}
+            value={formData.competition_date || ''}
+            onChange={(e) => handleInputChange('competition_date', e.target.value)}
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
@@ -130,8 +143,8 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
           <input
             id="edition"
             type="text"
-            value={formData.edition}
-            onChange={(e) => handleChange('edition', e.target.value)}
+            value={formData.edition || ''}
+            onChange={(e) => handleInputChange('edition', e.target.value)}
             placeholder="e.g., 2024, Summer, etc."
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"

@@ -5,10 +5,9 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
 import { TeamRegistrationModal } from '../components/competitions/TeamRegistrationModal'
 import { CategoryList } from '../components/competitions/CategoryList'
-import { CategoryForm } from '../components/competitions/CategoryForm'
 import { useCompetition, useCompetitionCategories, useCompetitionSummary } from '../hooks/competitions'
 import { useTeams } from '../hooks/teams'
-import { getCategoryTeams, registerTeam, isCompetitionDeleted, type CreateCategoryInput, type RegisterTeamInput, type TeamRegistration } from '../api/competitions'
+import { getCategoryTeams, registerTeam, isCompetitionDeleted, type RegisterTeamInput, type TeamRegistration } from '../api/competitions'
 import { paymentStatusColors } from '../utils/colors'
 
 export function CompetitionDetailPage() {
@@ -26,8 +25,6 @@ export function CompetitionDetailPage() {
   const {
     categories,
     isLoading: categoriesLoading,
-    add: addCategory,
-    remove: deleteCategory,
   } = useCompetitionCategories(competitionId)
 
   // Summary data
@@ -40,7 +37,6 @@ export function CompetitionDetailPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'teams' | 'summary'>('overview')
 
   // Modal states
-  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false)
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false)
   const [isTeamsModalOpen, setIsTeamsModalOpen] = useState(false)
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
@@ -54,23 +50,6 @@ export function CompetitionDetailPage() {
   const isLoading = competitionLoading || categoriesLoading || summaryLoading
 
   const isDeleted = competition ? isCompetitionDeleted(competition) : false
-
-  const handleAddCategory = async (data: CreateCategoryInput) => {
-    try {
-      await addCategory(data)
-      setIsAddCategoryModalOpen(false)
-    } catch {
-      // Error handled by hook
-    }
-  }
-
-  const handleDeleteCategory = async (categoryId: string) => {
-    try {
-      await deleteCategory(categoryId)
-    } catch {
-      // Error handled by hook
-    }
-  }
 
   const handleRegisterTeam = async (data: RegisterTeamInput) => {
     try {
@@ -354,15 +333,13 @@ export function CompetitionDetailPage() {
           <CategoryList
             categories={categories}
             competitionId={competitionId}
-            onAddCategory={() => setIsAddCategoryModalOpen(true)}
-            onDeleteCategory={handleDeleteCategory}
+            canManage={!isDeleted}
             onRegisterTeam={(categoryId) => {
               const category = categories.find(c => c.id === categoryId)
               setSelectedCategory(category || null)
               setIsRegistrationModalOpen(true)
             }}
             onViewTeams={handleViewTeams}
-            canManage={!isDeleted}
           />
         )}
 
@@ -473,18 +450,6 @@ export function CompetitionDetailPage() {
           </div>
         )}
       </section>
-
-      {/* Add Category Modal */}
-      <Modal
-        isOpen={isAddCategoryModalOpen}
-        onClose={() => setIsAddCategoryModalOpen(false)}
-        title="Add Competition Category"
-      >
-        <CategoryForm
-          onSubmit={handleAddCategory}
-          onCancel={() => setIsAddCategoryModalOpen(false)}
-        />
-      </Modal>
 
       {/* Team Registration Modal */}
       <TeamRegistrationModal

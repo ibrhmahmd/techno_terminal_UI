@@ -1,10 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   getCompetitionCategories,
-  addCompetitionCategory,
-  deleteCategory,
   type CompetitionCategory,
-  type CreateCategoryInput,
 } from '../../api/competitions'
 
 interface UseCompetitionCategoriesReturn {
@@ -13,8 +10,8 @@ interface UseCompetitionCategoriesReturn {
   isMutating: boolean
   error: string | null
   refresh: () => Promise<void>
-  add: (data: CreateCategoryInput) => Promise<CompetitionCategory>
-  remove: (categoryId: string) => Promise<void>
+  // NOTE: Categories are auto-generated from team registrations
+  // No add/remove functionality - backend doesn't support POST/DELETE
 }
 
 export function useCompetitionCategories(
@@ -48,44 +45,11 @@ export function useCompetitionCategories(
     fetchCategories()
   }, [fetchCategories])
 
-  const add = useCallback(
-    async (data: CreateCategoryInput) => {
-      if (!competitionId || competitionId === '') throw new Error('No competition ID')
-      setIsMutating(true)
-      try {
-        const numericId = typeof competitionId === 'string' ? parseInt(competitionId, 10) : competitionId
-        const newCategory = await addCompetitionCategory(numericId, data)
-        setCategories((prev) => [...prev, newCategory])
-        return newCategory
-      } finally {
-        setIsMutating(false)
-      }
-    },
-    [competitionId]
-  )
-
-  const remove = useCallback(
-    async (categoryId: string) => {
-      if (!competitionId || competitionId === '') throw new Error('No competition ID')
-      setIsMutating(true)
-      try {
-        const numericId = typeof competitionId === 'string' ? parseInt(competitionId, 10) : competitionId
-        await deleteCategory(numericId, categoryId)
-        setCategories((prev) => prev.filter((c) => c.id !== categoryId))
-      } finally {
-        setIsMutating(false)
-      }
-    },
-    [competitionId]
-  )
-
   return {
     categories,
     isLoading,
-    isMutating,
+    isMutating: false, // No mutations - categories are auto-generated
     error,
     refresh: fetchCategories,
-    add,
-    remove,
   }
 }

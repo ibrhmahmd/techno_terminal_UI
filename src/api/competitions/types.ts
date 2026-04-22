@@ -52,18 +52,18 @@ export interface TeamMember {
 
 export interface CreateCompetitionInput {
   name: string
-  edition?: string
-  competition_date?: string
+  edition?: string | null
+  competition_date?: string | null
   location: string
-  notes?: string
+  notes?: string | null
   fee_per_student: number
   // Legacy fields for compatibility
-  description?: string
-  start_date?: string
-  end_date?: string
-  registration_deadline?: string
-  max_teams?: number
-  fee_per_participant?: number
+  description?: string | null
+  start_date?: string | null
+  end_date?: string | null
+  registration_deadline?: string | null
+  max_teams?: number | null
+  fee_per_participant?: number | null
 }
 
 export interface UpdateCompetitionInput {
