@@ -3,6 +3,8 @@ import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useStudentsSearch } from '../../hooks/useDirectory'
 import { useReceipts } from '../../hooks/finance'
 import type { CreateReceiptRequest } from '../../api/finance'
+import type { UnpaidEnrollment } from '../../api/crm/students/types/finance'
+import type { Student } from '../../api/crm'
 import { ReceiptLineItemRow } from './CreateReceipt/ReceiptLineItemRow'
 import type { ReceiptLineItem } from './CreateReceipt/ReceiptLineItemRow'
 
@@ -17,9 +19,11 @@ interface CreateReceiptPanelProps {
   isLoading: boolean
   onSuccess: (message: string, receiptId?: number) => void
   onError: (message: string) => void
+  initialData?: UnpaidEnrollment | null
+  onClearInitialData?: () => void
 }
 
-export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateReceiptPanelProps) {
+export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData, onClearInitialData }: CreateReceiptPanelProps) {
   const { create, previewRisk, isCreating, createError, overpaymentRisk, clearOverpaymentRisk } = useReceipts()
   const [payerName, setPayerName] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer' | 'other'>('cash')
@@ -45,6 +49,55 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError }: CreateRece
   const { data: searchResults, isLoading: isSearchingStudents } = useStudentsSearch(activeSearchQuery)
 
   const totalAmount = lineItems.reduce((sum, item) => sum + (item.amount || 0), 0)
+
+  // Initialize from initialData when provided (Pay button from Unpaid Enrollments)
+  useEffect(() => {
+    if (initialData) {
+      // Construct minimal Student object
+      const selectedStudent: Student = {
+        id: initialData.student_id,
+        full_name: initialData.student_name,
+        phone: null,
+        status: 'active',
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      // Map UnpaidEnrollment to StudentEnrollmentInfo format
+      const selectedEnrollment = {
+        enrollment_id: initialData.enrollment_id,
+        group_id: initialData.group_id,
+        group_name: initialData.group_name,
+        level_number: initialData.level_number,
+        amount_due: initialData.amount_due,
+        discount_applied: initialData.discount_applied,
+        amount_paid: initialData.total_paid, // Map total_paid to amount_paid
+        remaining_balance: initialData.remaining_balance
+      }
+
+      // Pre-fill the form with initial data
+      setPayerName('')
+      setPaymentMethod('cash')
+      setNotes('')
+      setLineItems([{
+        id: '1',
+        studentSearch: initialData.student_name,
+        selectedStudent,
+        students: [selectedStudent],
+        selectedEnrollment,
+        amount: initialData.remaining_balance, // Pre-fill with full remaining balance
+        payment_type: 'course_level',
+        discount: 0,
+        notes: ''
+      }])
+      setLocalOverpaymentRisk(null)
+      clearOverpaymentRisk?.()
+
+      // Clear initial data so it doesn't re-apply
+      onClearInitialData?.()
+    }
+  }, [initialData, onClearInitialData])
 
   // Sync search results to the active line item
   useEffect(() => {

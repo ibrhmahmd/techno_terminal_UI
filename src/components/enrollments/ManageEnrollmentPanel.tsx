@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
+import { useToast } from '../common/Toast'
 import { StudentCombobox, GroupCombobox } from '../common/combobox'
 import { transferEnrollment, deleteEnrollment } from '../../api/enrollments'
 import { useStudentEnrollments } from '../../hooks/finance/useStudentEnrollments'
@@ -11,12 +12,12 @@ import { getEnrichedGroups } from '../../api/academics'
 
 interface ManageEnrollmentPanelProps {
   isLoading: boolean
-  onSuccess: (message: string) => void
-  onError: (message: string) => void
   setIsLoading: (loading: boolean) => void
 }
 
-export function ManageEnrollmentPanel({ isLoading, onSuccess, onError, setIsLoading }: ManageEnrollmentPanelProps) {
+export function ManageEnrollmentPanel({ isLoading, setIsLoading }: ManageEnrollmentPanelProps) {
+  const { showToast, ToastComponent } = useToast()
+
   // Step 1: Student Selection
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [studentSearch, setStudentSearch] = useState('')
@@ -72,12 +73,11 @@ export function ManageEnrollmentPanel({ isLoading, onSuccess, onError, setIsLoad
   const handleExecute = async () => {
     if (!selectedEnrollment) return
     setIsLoading(true)
-    onError('')
 
     try {
       if (mode === 'transfer') {
         if (!destinationGroup) {
-          onError('Please select a target group for the transfer.')
+          showToast('Please select a target group for the transfer.', 'error')
           setIsLoading(false)
           return
         }
@@ -85,10 +85,10 @@ export function ManageEnrollmentPanel({ isLoading, onSuccess, onError, setIsLoad
           from_enrollment_id: selectedEnrollment.enrollment_id,
           to_group_id: destinationGroup.id
         })
-        onSuccess(`Successfully transferred student to ${destinationGroup.group_name}`)
+        showToast(`Successfully transferred student to ${destinationGroup.group_name}`, 'success')
       } else {
         await deleteEnrollment(selectedEnrollment.enrollment_id)
-        onSuccess('Successfully dropped student enrollment')
+        showToast('Successfully dropped student enrollment', 'success')
       }
 
       setSelectedStudent(null)
@@ -98,7 +98,7 @@ export function ManageEnrollmentPanel({ isLoading, onSuccess, onError, setIsLoad
       setDestinationGroup(null)
       setDropNotes('')
     } catch {
-      onError('The operation failed. Please verify the student state and try again.')
+      showToast('The operation failed. Please verify the student state and try again.', 'error')
     } finally {
       setIsLoading(false)
     }
@@ -239,7 +239,7 @@ export function ManageEnrollmentPanel({ isLoading, onSuccess, onError, setIsLoad
               {/* Full-width Transfer/Drop Toggle */}
               <div className="flex gap-3 p-1 bg-surface-container-low border border-slate-200 rounded-xl w-full">
                 <button
-                  onClick={() => { setMode('transfer'); onError('') }}
+                  onClick={() => { setMode('transfer') }}
                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                     mode === 'transfer'
                       ? 'bg-white text-secondary shadow-sm border border-slate-200'
@@ -250,7 +250,7 @@ export function ManageEnrollmentPanel({ isLoading, onSuccess, onError, setIsLoad
                   Transfer
                 </button>
                 <button
-                  onClick={() => { setMode('drop'); onError('') }}
+                  onClick={() => { setMode('drop') }}
                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                     mode === 'drop'
                       ? 'bg-white text-error shadow-sm border border-slate-200'
@@ -316,6 +316,8 @@ export function ManageEnrollmentPanel({ isLoading, onSuccess, onError, setIsLoad
           )}
         </div>
       </div>
+
+      {ToastComponent}
     </div>
   )
 }

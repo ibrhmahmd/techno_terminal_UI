@@ -1,23 +1,24 @@
 import { useState, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
+import { useToast } from '../common/Toast'
 import { useStudentsSearch } from '../../hooks/useDirectory'
 import { useGroupsFlat } from '../../hooks/useGroupQueries'
 import { useRecentGroups } from '../../hooks/useRecentGroups'
+import { useStudentSiblings } from '../../hooks/students/useStudentSiblings'
 import { createEnrollment } from '../../api/enrollments'
 import { StudentCombobox, GroupCombobox } from '../common/combobox'
+import { Users, X, MapPin, Calendar, Info } from 'lucide-react'
 import type { StudentListItem } from '../../api/crm'
 import type { EnrichedGroupPublic } from '../../api/academics'
 
 interface EnrollPanelProps {
   useMockData: boolean
   isLoading: boolean
-  onSuccess: (message: string) => void
-  onError: (message: string) => void
   setIsLoading: (loading: boolean) => void
 }
 
 
-export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsLoading }: EnrollPanelProps) {
+export function EnrollPanel({ useMockData, isLoading, setIsLoading }: EnrollPanelProps) {
   const [studentSearch, setStudentSearch] = useState('')
   const [groupSearch, setGroupSearch] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(null)
@@ -25,22 +26,31 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
   const [amount, setAmount] = useState(150)
   const [discount, setDiscount] = useState(0)
   const [notes, setNotes] = useState('')
+  const [isAutoDiscount, setIsAutoDiscount] = useState(false)
+  const { showToast, ToastComponent } = useToast()
+
+  // Fetch siblings when student is selected
+  const { siblings } = useStudentSiblings(selectedStudent?.id || null)
+
+  // Auto-apply sibling discount (50 EGP) when student has siblings
+  useEffect(() => {
+    if (selectedStudent && siblings.length > 0) {
+      setDiscount(50)
+      setIsAutoDiscount(true)
+    } else {
+      setDiscount(0)
+      setIsAutoDiscount(false)
+    }
+  }, [selectedStudent, siblings.length])
 
   // Auto-populate pricing when group is selected
   useEffect(() => {
     if (selectedGroup) {
-      // Try to get pricing from various possible fields
-      const groupWithPricing = selectedGroup as EnrichedGroupPublic & {
-        pricing?: number
-        price?: number
-        course?: { price?: number }
-        course_price?: number
-      }
-      const groupPrice = groupWithPricing.pricing || groupWithPricing.price
-      const coursePrice = groupWithPricing.course?.price || groupWithPricing.course_price
+      // Use the correct API field: course.price_per_level
+      const coursePrice = selectedGroup.course?.price_per_level
       const defaultPrice = 150
       
-      setAmount(groupPrice || coursePrice || defaultPrice)
+      setAmount(coursePrice || defaultPrice)
     }
   }, [selectedGroup])
 
@@ -61,18 +71,37 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
   const students = studentsData || []
   const groups = groupsData || []
 
+  const handleStudentChange = (student: StudentListItem | null) => {
+    setSelectedStudent(student)
+    // Reset group selection when student changes
+    setSelectedGroup(null)
+    setGroupSearch('')
+    setAmount(150)
+    setDiscount(0)
+    setIsAutoDiscount(false)
+  }
+
+  const handleGroupChange = (group: EnrichedGroupPublic | null) => {
+    setSelectedGroup(group)
+  }
+
+  const clearGroupSelection = () => {
+    setSelectedGroup(null)
+    setGroupSearch('')
+    setAmount(150)
+  }
+
   const handleEnroll = async () => {
     if (!selectedStudent || !selectedGroup) {
-      onError('Please select both student and group')
+      showToast('Please select both student and group', 'error')
       return
     }
     
     setIsLoading(true)
-    onError('')
     try {
       if (useMockData) {
         await new Promise(r => setTimeout(r, 500))
-        onSuccess(`Enrolled ${selectedStudent.full_name} in ${selectedGroup.group_name}`)
+        showToast(`Enrolled ${selectedStudent.full_name} in ${selectedGroup.group_name}`, 'success')
       } else {
         await createEnrollment({
           student_id: selectedStudent.id,
@@ -81,7 +110,7 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
           discount,
           notes
         })
-        onSuccess(`Successfully enrolled ${selectedStudent.full_name}`)
+        showToast(`Successfully enrolled ${selectedStudent.full_name}`, 'success')
         // Cache the group selection for quick reuse
         addRecentGroup(selectedGroup.id)
       }
@@ -92,9 +121,10 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
       setGroupSearch('')
       setAmount(150)
       setDiscount(0)
+      setIsAutoDiscount(false)
       setNotes('')
     } catch {
-      onError('Failed to create enrollment')
+      showToast('Failed to create enrollment', 'error')
     } finally {
       setIsLoading(false)
     }
@@ -106,38 +136,107 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
       {/* Main Grid: 1:2 ratio (student:group) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Student Selection - 1/3 width */}
-        <div className="lg:col-span-1">
-          <h3 className="text-lg font-semibold text-on-surface mb-4">1. Select Student</h3>
-          <StudentCombobox
-            value={selectedStudent}
-            onChange={setSelectedStudent}
-            search={studentSearch}
-            setSearch={setStudentSearch}
-            students={students}
-            isLoading={isSearchingStudents}
-          />
+        <div className="lg:col-span-1 space-y-3">
+          <h3 className="text-lg font-semibold text-on-surface">1. Select Student</h3>
+          
+          {!selectedStudent ? (
+            <StudentCombobox
+              value={selectedStudent}
+              onChange={handleStudentChange}
+              search={studentSearch}
+              setSearch={setStudentSearch}
+              students={students}
+              isLoading={isSearchingStudents}
+            />
+          ) : (
+            <div className="p-4 bg-surface-container-low border border-slate-200 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary font-bold text-base">
+                  {selectedStudent.full_name.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-on-surface text-sm truncate">{selectedStudent.full_name}</p>
+                  <p className="text-xs text-on-surface-variant">{selectedStudent.id_code || `ID #${selectedStudent.id}`}</p>
+                </div>
+                <button
+                  onClick={() => handleStudentChange(null)}
+                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Change student"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              
+              {/* Sibling discount badge */}
+              {siblings.length > 0 && (
+                <div className="mt-3 flex items-center gap-2 text-xs text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+                  <Info className="w-3 h-3" />
+                  <span>{siblings.length} sibling(s) found - 50 EGP discount auto-applied</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Group Selection - 2/3 width */}
-        <div className="lg:col-span-2">
-          <h3 className="text-lg font-semibold text-on-surface mb-4">2. Select Group</h3>
-          <GroupCombobox
-            value={selectedGroup}
-            onChange={setSelectedGroup}
-            search={groupSearch}
-            setSearch={setGroupSearch}
-            groups={groups}
-            isLoading={isLoadingGroups}
-            recentGroupIds={recentGroupIds}
-          />
+        <div className="lg:col-span-2 space-y-3">
+          <h3 className="text-lg font-semibold text-on-surface">2. Select Group</h3>
+          
+          {!selectedGroup ? (
+            <GroupCombobox
+              value={selectedGroup}
+              onChange={handleGroupChange}
+              search={groupSearch}
+              setSearch={setGroupSearch}
+              groups={groups}
+              isLoading={isLoadingGroups}
+              recentGroupIds={recentGroupIds}
+            />
+          ) : (
+            <div className="p-4 bg-surface-container-low border border-slate-200 rounded-xl">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-base">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-on-surface text-sm truncate">{selectedGroup.group_name}</p>
+                    <p className="text-xs text-on-surface-variant flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {selectedGroup.course_name}
+                    </p>
+                    <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+                      <Calendar className="w-3 h-3" />
+                      Level {selectedGroup.level_number}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={clearGroupSelection}
+                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Change group"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              
+              {/* Price info */}
+              {selectedGroup.course?.price_per_level ? (
+                <p className="mt-3 text-xs text-slate-500 bg-slate-100 px-3 py-2 rounded-lg">
+                  Course fee: {selectedGroup.course.price_per_level} EGP (auto-populated)
+                </p>
+              ) : (
+                <p className="mt-3 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+                  No course price found - using default (150 EGP)
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Payment Details Section */}
       <h3 className="text-lg font-semibold text-on-surface mb-4">3. Payment Details</h3>
-      <p className="text-sm text-slate-500 mb-3">
-        {selectedGroup ? `Auto-populated from ${selectedGroup.course_name} pricing` : 'Enter payment details'}
-      </p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-on-surface mb-2">Course Fee (EGP)</label>
@@ -150,12 +249,20 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-on-surface mb-2">Discount (EGP)</label>
+          <label className="block text-sm font-medium text-on-surface mb-2">
+            Discount (EGP)
+            {isAutoDiscount && (
+              <span className="ml-2 text-xs text-green-600 font-normal">(Sibling discount auto-applied)</span>
+            )}
+          </label>
           <input
             type="number"
             min={0}
             value={discount}
-            onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+            onChange={(e) => {
+              setDiscount(parseFloat(e.target.value) || 0)
+              setIsAutoDiscount(false)
+            }}
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
           />
         </div>
@@ -187,6 +294,8 @@ export function EnrollPanel({ useMockData, isLoading, onSuccess, onError, setIsL
         <span className="material-symbols-outlined">person_add</span>
         Enroll Student
       </button>
+
+      {ToastComponent}
     </div>
   )
 }

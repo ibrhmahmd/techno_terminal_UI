@@ -9,7 +9,7 @@ import type { EnrichedGroupPublic } from '../../api/academics'
 
 interface UnpaidEnrollmentsPanelProps {
   onError: (message: string) => void
-  onPay?: (enrollment: UnpaidEnrollment) => void
+  onPay: (enrollment: UnpaidEnrollment) => void
 }
 
 interface GroupedEnrollments {

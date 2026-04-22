@@ -4,6 +4,7 @@ import { CreateReceiptPanel } from '../components/finance/CreateReceiptPanel'
 import { SearchReceiptsPanel } from '../components/finance/SearchReceiptsPanel'
 import { UnpaidEnrollmentsPanel } from '../components/finance/UnpaidEnrollmentsPanel'
 import { useReceipts } from '../hooks/finance'
+import type { UnpaidEnrollment } from '../api/crm/students/types/finance'
 
 type PanelType = 'create' | 'search' | 'unpaid'
 
@@ -12,6 +13,7 @@ export function FinancePage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [createdReceiptId, setCreatedReceiptId] = useState<number | null>(null)
+  const [initialReceiptData, setInitialReceiptData] = useState<UnpaidEnrollment | null>(null)
   const { isSearching, downloadPdf } = useReceipts()
 
   const handleDownloadPdf = async (receiptId: number) => {
@@ -47,6 +49,17 @@ export function FinancePage() {
     setError(null)
     setSuccess(null)
     setCreatedReceiptId(null)
+    // Clear initial data after switching away from create panel
+    if (panel !== 'create') {
+      setInitialReceiptData(null)
+    }
+  }
+
+  const handlePayFromUnpaid = (enrollment: UnpaidEnrollment) => {
+    setInitialReceiptData(enrollment)
+    setActivePanel('create')
+    setError(null)
+    setSuccess(null)
   }
 
   return (
@@ -114,6 +127,8 @@ export function FinancePage() {
             isLoading={isSearching}
             onSuccess={handleSuccess}
             onError={handleError}
+            initialData={initialReceiptData}
+            onClearInitialData={() => setInitialReceiptData(null)}
           />
         )}
         {activePanel === 'search' && (
@@ -125,6 +140,7 @@ export function FinancePage() {
         {activePanel === 'unpaid' && (
           <UnpaidEnrollmentsPanel
             onError={handleError}
+            onPay={handlePayFromUnpaid}
           />
         )}
       </section>
