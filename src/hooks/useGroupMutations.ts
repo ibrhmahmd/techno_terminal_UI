@@ -3,12 +3,11 @@ import {
   updateGroup,
   deleteGroup,
   archiveGroup,
-  levelUpGroup,
-  scheduleGroupLevel,
+  progressGroupLevel,
   type Group,
   type UpdateGroupDTO,
-  type ScheduleGroupLevelInput,
-  type ScheduleGroupLevelResponse,
+  type ProgressGroupLevelRequest,
+  type ProgressGroupLevelResult,
 } from '../api/academics'
 import { queryKeys } from './queryKeys'
 
@@ -18,8 +17,8 @@ interface UseGroupMutationsReturn {
   updateGroup: (data: UpdateGroupDTO) => Promise<Group>
   deleteGroup: () => Promise<void>
   archiveGroup: () => Promise<Group>
-  levelUp: () => Promise<Group>
-  createNewLevel: (data: ScheduleGroupLevelInput) => Promise<ScheduleGroupLevelResponse>
+  levelUp: () => Promise<ProgressGroupLevelResult>
+  createNewLevel: (data: ProgressGroupLevelRequest) => Promise<ProgressGroupLevelResult>
   status: MutationStatus
   error: string | null
   clearError: () => void
@@ -58,18 +57,18 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     onSuccess: invalidateGroups,
   })
 
-  // Level up mutation
+  // Level up mutation (simple - no overrides)
   const levelUpMutation = useMutation({
-    mutationFn: async (): Promise<Group> => {
-      return levelUpGroup(groupId)
+    mutationFn: async (): Promise<ProgressGroupLevelResult> => {
+      return progressGroupLevel(groupId)
     },
     onSuccess: invalidateGroups,
   })
 
-  // Create new level mutation
+  // Create new level mutation (full overrides)
   const createLevelMutation = useMutation({
-    mutationFn: async (data: ScheduleGroupLevelInput): Promise<ScheduleGroupLevelResponse> => {
-      return scheduleGroupLevel(groupId, data)
+    mutationFn: async (data: ProgressGroupLevelRequest): Promise<ProgressGroupLevelResult> => {
+      return progressGroupLevel(groupId, data)
     },
     onSuccess: invalidateGroups,
   })
@@ -119,11 +118,11 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     return archiveMutation.mutateAsync()
   }
 
-  const handleLevelUp = async (): Promise<Group> => {
+  const handleLevelUp = async (): Promise<ProgressGroupLevelResult> => {
     return levelUpMutation.mutateAsync()
   }
 
-  const handleCreateNewLevel = async (data: ScheduleGroupLevelInput): Promise<ScheduleGroupLevelResponse> => {
+  const handleCreateNewLevel = async (data: ProgressGroupLevelRequest): Promise<ProgressGroupLevelResult> => {
     return createLevelMutation.mutateAsync(data)
   }
 

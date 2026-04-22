@@ -16,6 +16,7 @@ export type {
   ScheduleGroupInput,
   UpdateGroupDTO,
   GenerateLevelSessionsRequest,
+  /** @deprecated Use ProgressGroupLevelRequest instead */
   ScheduleGroupLevelRequest,
   ProgressGroupLevelRequest,
   CancelLevelInput,
@@ -37,8 +38,20 @@ export type {
   InstructorAssignmentDTO,
   StudentAttendance,
   CreateNewLevelInput,
+  /** @deprecated Use ProgressGroupLevelRequest instead */
   ScheduleGroupLevelInput,
+  /** @deprecated Use ProgressGroupLevelResult instead */
   ScheduleGroupLevelResponse,
+  ProgressGroupLevelResult,
+  GroupLifecycleHistoryDTO,
+  GroupLevelTimelineItem,
+  CompleteLevelResponse,
+  CancelLevelResponse,
+  CourseAssignmentDTO,
+  EnrollmentTransitionDTO,
+  GroupLevelAnalyticsDTO,
+  GroupEnrollmentAnalyticsDTO,
+  AnalyticsFilters,
 } from './lifecycle';
 
 // Competition types
@@ -48,4 +61,8 @@ export type {
   PaginatedTeamResponse,
   TeamMemberPublic,
   GroupCompetitionHistoryResponseDTO,
+  LinkTeamResponse,
+  CompetitionRegistrationResponse,
+  CompleteParticipationResponse,
+  WithdrawParticipationResponse,
 } from './competitions';

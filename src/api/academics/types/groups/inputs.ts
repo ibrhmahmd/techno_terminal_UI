@@ -37,8 +37,8 @@ export interface GenerateLevelSessionsRequest {
 }
 
 /**
- * Input for scheduling a new level for a group
- * POST /academics/groups/{group_id}/schedule-level
+ * @deprecated Use ProgressGroupLevelRequest with target_level instead.
+ * The schedule-level endpoint has been replaced by progress-level.
  */
 export interface ScheduleGroupLevelRequest {
   level_number: number;
@@ -53,6 +53,20 @@ export interface ScheduleGroupLevelRequest {
  */
 export interface ProgressGroupLevelRequest {
   price_override?: number;
+  /** Target level number (defaults to current + 1 if not provided) */
+  target_level?: number;
+  /** Whether to auto-migrate enrollments (user chooses) */
+  auto_migrate_enrollments?: boolean;
+  /** Whether to complete the current level (user chooses) */
+  complete_current_level?: boolean;
+  /** Override instructor ID */
+  instructor_id?: number;
+  /** Session start date in YYYY-MM-DD format */
+  session_start_date?: string;
+  /** Override course ID */
+  course_id?: number;
+  /** Override group name (max 255 chars) */
+  group_name?: string;
 }
 
 /**

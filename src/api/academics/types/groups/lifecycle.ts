@@ -86,8 +86,8 @@ export interface CreateNewLevelInput {
 }
 
 /**
- * Input for scheduling a new group level (auto-generates sessions)
- * Aligned with API: POST /academics/groups/{group_id}/schedule-level
+ * @deprecated Use ProgressGroupLevelRequest from './inputs' instead.
+ * The schedule-level endpoint has been replaced by progress-level.
  */
 export interface ScheduleGroupLevelInput {
   level_number: number;
@@ -97,8 +97,8 @@ export interface ScheduleGroupLevelInput {
 }
 
 /**
- * Response from scheduling a new group level
- * Contains the created level and generated sessions
+ * @deprecated Use ProgressGroupLevelResult instead.
+ * The schedule-level endpoint has been replaced by progress-level.
  */
 export interface ScheduleGroupLevelResponse {
   level_id: number;
@@ -113,6 +113,18 @@ export interface ScheduleGroupLevelResponse {
 }
 
 /**
+ * Response from progressing group to a new level
+ * Aligned with API: POST /academics/groups/{group_id}/progress-level
+ */
+export interface ProgressGroupLevelResult {
+  old_level_number: number;
+  new_level_number: number;
+  enrollments_migrated: number;
+  sessions_created: number;
+  message: string;
+}
+
+/**
  * Student attendance record for a session
  */
 export interface StudentAttendance {
@@ -121,4 +133,126 @@ export interface StudentAttendance {
   billing_status: "paid" | "due";
   attendance: (boolean | null)[];
   notes?: string;
+}
+
+/**
+ * Full group lifecycle history response
+ * GET /academics/groups/{group_id}/history
+ */
+export interface GroupLifecycleHistoryDTO {
+  group_id: number;
+  group_name: string;
+  created_at: string;
+  current_level: number;
+  total_levels: number;
+  completed_levels: number;
+  levels_timeline: GroupLevelTimelineItem[];
+  course_assignments: CourseAssignmentDTO[];
+  enrollment_transitions: EnrollmentTransitionDTO[];
+}
+
+export interface GroupLevelTimelineItem {
+  id: number;
+  level_number: number;
+  status: 'active' | 'completed' | 'cancelled';
+  start_date: string;
+  end_date?: string;
+  course_name: string;
+  instructor_name: string;
+  enrollment_count: number;
+}
+
+/**
+ * Response from completing a level
+ * POST /academics/groups/{group_id}/levels/{level_number}/complete
+ */
+export interface CompleteLevelResponse {
+  completed_level: {
+    id: number;
+    level_number: number;
+    status: string;
+  };
+  new_level: {
+    id: number;
+    level_number: number;
+    status: string;
+  };
+}
+
+/**
+ * Response from cancelling a level
+ * POST /academics/groups/{group_id}/levels/{level_number}/cancel
+ */
+export interface CancelLevelResponse {
+  level_id: number;
+  level_number: number;
+  status: 'cancelled';
+}
+
+/**
+ * Course assignment history record
+ * GET /academics/groups/{group_id}/courses/history
+ */
+export interface CourseAssignmentDTO {
+  course_id: number;
+  course_name: string;
+  assigned_at: string;
+  removed_at?: string;
+  assigned_by_user_id?: number;
+  notes?: string;
+}
+
+/**
+ * Enrollment transition record
+ * GET /academics/groups/{group_id}/enrollments/history
+ */
+export interface EnrollmentTransitionDTO {
+  enrollment_id: number;
+  student_id: number;
+  student_name: string;
+  group_level_id: number;
+  level_number: number;
+  level_entered_at: string;
+  level_completed_at?: string;
+  status: 'active' | 'completed' | 'dropped';
+}
+
+/**
+ * Level analytics data
+ * GET /academics/groups/{group_id}/levels/analytics
+ */
+export interface GroupLevelAnalyticsDTO {
+  level_id: number;
+  level_number: number;
+  student_count: number;
+  sessions_completed: number;
+  sessions_total: number;
+  completion_rate: number;
+  average_attendance: number;
+}
+
+/**
+ * Enrollment analytics data
+ * GET /academics/groups/{group_id}/enrollments/analytics
+ */
+export interface GroupEnrollmentAnalyticsDTO {
+  group_id: number;
+  total_enrollments: number;
+  active_enrollments: number;
+  completed_enrollments: number;
+  dropped_enrollments: number;
+  students_by_level: Array<{
+    level_number: number;
+    student_count: number;
+  }>;
+  recent_transitions: EnrollmentTransitionDTO[];
+}
+
+/**
+ * Filters for enrollment analytics
+ */
+export interface AnalyticsFilters {
+  status?: 'active' | 'completed' | 'dropped';
+  skip?: number;
+  limit?: number;
 }

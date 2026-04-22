@@ -22,6 +22,8 @@ export {
   updateGroup,
   deleteGroup,
   archiveGroup,
+  progressGroupLevel,
+  /** @deprecated Use progressGroupLevel instead */
   levelUpGroup,
   listSessionsForGroup,
   getGroupsGrouped,
@@ -34,13 +36,27 @@ export {
   getGroupEnrollmentHistory,
   getGroupInstructorHistory,
   createNewLevel,
+  /** @deprecated Use progressGroupLevel instead */
   scheduleGroupLevel,
+  getGroupLifecycleHistory,
+  getGroupLevel,
+  completeGroupLevel,
+  cancelGroupLevel,
+  getGroupCourseHistory,
+  getGroupEnrollmentTransitions,
+  getGroupLevelAnalytics,
+  getGroupEnrollmentAnalytics,
 } from './lifecycle';
 
 // Competitions router functions
 export {
   getGroupCompetitions,
   getGroupTeams,
+  linkTeamToGroup,
+  registerForCompetition,
+  completeCompetitionParticipation,
+  withdrawFromCompetition,
+  getGroupCompetitionAnalytics,
 } from './competitions';
 
 // Utility functions

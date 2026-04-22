@@ -25,6 +25,8 @@ import type {
   UpdateGroupDTO,
   GroupByField,
   GroupedGroupsResponse,
+  ProgressGroupLevelRequest,
+  ProgressGroupLevelResult,
 } from "../types/groups";
 import type { Session } from "../types/sessions";
 
@@ -113,7 +115,22 @@ export async function archiveGroup(groupId: number): Promise<Group> {
   return response.data.data;
 }
 
-// level up group
+// progress group to next/target level with optional overrides
+export async function progressGroupLevel(
+  groupId: number,
+  data?: ProgressGroupLevelRequest,
+): Promise<ProgressGroupLevelResult> {
+  const response = await client.post<ApiResponse<ProgressGroupLevelResult>>(
+    `/academics/groups/${groupId}/progress-level`,
+    data ?? {},
+  );
+  return response.data.data;
+}
+
+/**
+ * @deprecated Use progressGroupLevel instead.
+ * Simple level up without overrides - maintained for backward compatibility.
+ */
 export async function levelUpGroup(groupId: number): Promise<Group> {
   const response = await client.post<ApiResponse<Group>>(
     `/academics/groups/${groupId}/progress-level`,

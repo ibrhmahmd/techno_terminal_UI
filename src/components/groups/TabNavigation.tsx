@@ -28,11 +28,6 @@ export function TabNavigation({ activeTab, onTabChange, enrollmentCount }: TabNa
           </button>
         ))}
       </div>
-      <div className="pb-3 flex space-x-4">
-        <span className="text-[10px] uppercase font-bold text-outline">
-          {enrollmentCount} Students Enrolled
-        </span>
-      </div>
     </div>
   )
 }

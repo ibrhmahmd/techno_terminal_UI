@@ -64,3 +64,47 @@ export interface GroupCompetitionHistoryResponseDTO {
   wins: number;
   runner_ups: number;
 }
+
+/**
+ * Response from linking a team to a group
+ * POST /academics/groups/{group_id}/teams/{team_id}/link
+ */
+export interface LinkTeamResponse {
+  team_id: number;
+  team_name: string;
+  group_id: number;
+}
+
+/**
+ * Response from registering for a competition
+ * POST /academics/groups/{group_id}/competitions/{competition_id}/register
+ */
+export interface CompetitionRegistrationResponse {
+  participation_id: number;
+  group_id: number;
+  team_id: number;
+  competition_id: number;
+  entered_at: string;
+  is_active: boolean;
+}
+
+/**
+ * Response from completing competition participation
+ * PATCH /academics/groups/{group_id}/competitions/{participation_id}/complete
+ */
+export interface CompleteParticipationResponse {
+  participation_id: number;
+  is_active: boolean;
+  left_at: string;
+  final_placement?: number;
+}
+
+/**
+ * Response from withdrawing from competition
+ * DELETE /academics/groups/{group_id}/competitions/{participation_id}
+ */
+export interface WithdrawParticipationResponse {
+  participation_id: number;
+  status: 'withdrawn';
+  withdrawn_at: string;
+}

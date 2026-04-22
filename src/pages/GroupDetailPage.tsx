@@ -7,14 +7,15 @@ import { TabNavigation } from '../components/groups/TabNavigation'
 import { AttendanceTab } from '../components/groups/AttendanceTab'
 import { StudentsTab } from '../components/groups/StudentsTab'
 import { HistoryTab } from '../components/groups/history/HistoryTab'
-import { GroupInfoCard } from '../components/groups/detail/GroupInfoCard'
+import { GroupInfoCard, ProgressLevelDialog } from '../components/groups/detail'
 import { EditGroupDialog } from '../components/groups/detail/EditGroupDialog'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { useGroupDetail } from '../hooks/useGroupDetail'
-import { useGroupHistory } from '../hooks/useGroupHistory'
+import { useGroupLifecycle } from '../hooks/useGroupLifecycle'
+import { useGroupCompetitions } from '../hooks/useGroupCompetitions'
 import { useGroupMutations } from '../hooks/useGroupMutations'
 import { useToast } from '../components/common/Toast'
-import type { UpdateGroupDTO } from '../api/academics'
+import type { UpdateGroupDTO, ProgressGroupLevelRequest } from '../api/academics'
 
 export function GroupDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -25,6 +26,7 @@ export function GroupDetailPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false)
+  const [isProgressLevelDialogOpen, setIsProgressLevelDialogOpen] = useState(false)
   const [isSavingNotes, setIsSavingNotes] = useState(false)
 
   const {
@@ -41,12 +43,32 @@ export function GroupDetailPage() {
 
   const {
     enrollmentHistory,
-    competitions,
     instructorHistory,
-    isLoading: isHistoryLoading,
+    lifecycleHistory,
+    courseHistory,
+    enrollmentTransitions,
+    levelAnalytics,
+    enrollmentAnalytics,
+    isLoadingHistory,
+    isLoadingAnalytics,
     pagination,
     setEnrollmentPage,
-  } = useGroupHistory(groupId)
+    completeLevel,
+    cancelLevel,
+  } = useGroupLifecycle(groupId)
+
+  const {
+    teams,
+    availableTeams,
+    competitions,
+    competitionAnalytics,
+    isLoadingTeams,
+    isLoadingCompetitions,
+    linkTeam,
+    registerForCompetition,
+    completeParticipation,
+    withdrawFromCompetition,
+  } = useGroupCompetitions(groupId)
 
   const { 
     updateGroup, 
@@ -60,13 +82,6 @@ export function GroupDetailPage() {
   // Calculate current level enrollment count from levels data
   const currentLevelEnrollmentCount = currentLevel?.enrollment_count_start || 0
 
-  // Build courses history from levels
-  const coursesHistory = levels.map(level => ({
-    level_number: level.level_number,
-    course_name: group?.course_name || 'Unknown Course',
-    start_date: level.start_date,
-    end_date: level.end_date,
-  }))
 
   const handleUpdateGroup = async (data: UpdateGroupDTO & { notes?: string; status?: 'active' | 'inactive' | 'archived' }) => {
     try {
@@ -104,48 +119,31 @@ export function GroupDetailPage() {
 
   const handleLevelUp = async () => {
     try {
-      await levelUp()
-      showToast('Group leveled up successfully', 'success')
+      const result = await levelUp()
+      showToast(
+        `Group progressed from level ${result.old_level_number} to ${result.new_level_number}. ${result.sessions_created} sessions created, ${result.enrollments_migrated} enrollments migrated.`,
+        'success'
+      )
       await refresh()
     } catch {
       showToast(mutationError || 'Failed to level up group', 'error')
     }
   }
 
-  const handleCreateNewLevel = async () => {
-    if (!currentLevel) {
-      return
-    }
+  const handleCreateNewLevel = () => {
+    setIsProgressLevelDialogOpen(true)
+  }
+
+  const handleProgressLevelConfirm = async (data: ProgressGroupLevelRequest) => {
     try {
-      // Calculate next level number
-      const nextLevelNumber = currentLevel.level_number + 1
-      
-      // Default to current instructor if available
-      const instructorId = group?.instructor_id || 1
-      
-      // Calculate start date (next week from today)
-      const startDate = new Date()
-      startDate.setDate(startDate.getDate() + 7)
-      const startDateStr = startDate.toISOString().split('T')[0]
-      
-      console.log('[DEBUG] Calling scheduleGroupLevel with:', {
-        level_number: nextLevelNumber,
-        instructor_id: instructorId,
-        start_date: startDateStr,
-        price_override: currentLevel.price_override,
-      })
-      
-      await createNewLevel({
-        level_number: nextLevelNumber,
-        instructor_id: instructorId,
-        start_date: startDateStr,
-        price_override: currentLevel.price_override,
-      })
-      
-      showToast('New level scheduled successfully with 5 auto-generated sessions', 'success')
+      const result = await createNewLevel(data)
+      showToast(
+        `Group progressed from level ${result.old_level_number} to ${result.new_level_number}. ${result.sessions_created} sessions created, ${result.enrollments_migrated} enrollments migrated.`,
+        'success'
+      )
+      setIsProgressLevelDialogOpen(false)
       await refresh()
-    } catch (err: any) {
-      console.error('[DEBUG] createNewLevel failed:', err)
+    } catch {
       showToast(mutationError || 'Failed to create new level', 'error')
     }
   }
@@ -161,15 +159,25 @@ export function GroupDetailPage() {
     }
   }
 
-  const buildPricingHistory = () => {
-    if (!levels.length) return []
-    return levels.map((level) => ({
-      levelNumber: level.level_number,
-      dateRange: { start: level.start_date, end: level.end_date },
-      monthlyFee: level.pricing_snapshot?.monthly_fee ?? level.price_override ?? 0,
-      sessionFee: level.pricing_snapshot?.session_fee ?? 0,
-      isActive: !level.end_date,
-    }))
+  const handleCompleteLevel = async (levelNumber: number) => {
+    try {
+      const result = await completeLevel(levelNumber)
+      showToast(
+        `Level ${result.completed_level.level_number} completed. Now at level ${result.new_level.level_number}.`,
+        'success'
+      )
+    } catch {
+      showToast(mutationError || 'Failed to complete level', 'error')
+    }
+  }
+
+  const handleCancelLevel = async (levelNumber: number, reason?: string) => {
+    try {
+      await cancelLevel(levelNumber, reason)
+      showToast(`Level ${levelNumber} cancelled.`, 'success')
+    } catch {
+      showToast(mutationError || 'Failed to cancel level', 'error')
+    }
   }
 
   if (isLoading) {
@@ -261,14 +269,30 @@ export function GroupDetailPage() {
           {activeTab === 'history' && (
             <HistoryTab
               enrollmentHistory={enrollmentHistory}
-              competitions={competitions}
               instructorHistory={instructorHistory}
-              coursesHistory={coursesHistory}
-              isLoading={isHistoryLoading}
+              lifecycleHistory={lifecycleHistory}
+              courseHistory={courseHistory}
+              enrollmentTransitions={enrollmentTransitions}
+              levelAnalytics={levelAnalytics}
+              enrollmentAnalytics={enrollmentAnalytics}
+              competitions={competitions}
+              competitionAnalytics={competitionAnalytics}
+              teams={teams}
+              availableTeams={availableTeams}
+              isLoadingHistory={isLoadingHistory}
+              isLoadingAnalytics={isLoadingAnalytics}
+              isLoadingTeams={isLoadingTeams}
+              isLoadingCompetitions={isLoadingCompetitions}
               totalEnrollment={pagination.enrollment.total}
               onEnrollmentPageChange={setEnrollmentPage}
               enrollmentSkip={pagination.enrollment.skip}
               enrollmentLimit={pagination.enrollment.limit}
+              onCompleteLevel={handleCompleteLevel}
+              onCancelLevel={handleCancelLevel}
+              onLinkTeam={linkTeam}
+              onRegisterForCompetition={registerForCompetition}
+              onCompleteParticipation={completeParticipation}
+              onWithdrawFromCompetition={withdrawFromCompetition}
             />
           )}
 
@@ -297,6 +321,19 @@ export function GroupDetailPage() {
             message="Are you sure you want to archive this group? It will be hidden from the main groups list but can be accessed later."
             confirmText="Archive"
             variant="warning"
+          />
+
+          <ProgressLevelDialog
+            isOpen={isProgressLevelDialogOpen}
+            groupId={groupId}
+            currentLevelNumber={currentLevel?.level_number ?? 1}
+            currentInstructorId={group?.instructor_id ?? 0}
+            currentCourseId={group?.course_id ?? 0}
+            currentGroupName={group?.group_name ?? ''}
+            currentPriceOverride={currentLevel?.price_override}
+            onClose={() => setIsProgressLevelDialogOpen(false)}
+            onConfirm={handleProgressLevelConfirm}
+            isLoading={false}
           />
         </ErrorBoundary>
       </div>

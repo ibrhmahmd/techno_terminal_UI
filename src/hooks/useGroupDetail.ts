@@ -3,9 +3,11 @@ import {
   getEnrichedGroup,
   getGroupLevels,
   listSessionsForGroup,
+  generateLevelSessions,
   type EnrichedGroupPublic,
   type GroupLevelHistoryDTO,
   type Session,
+  type GenerateLevelSessionsRequest,
 } from '../api/academics'
 
 interface UseGroupDetailReturn {
@@ -18,6 +20,7 @@ interface UseGroupDetailReturn {
   refresh: () => Promise<void>
   setActiveLevel: (levelId: number) => void
   activeLevelId: number | null
+  generateSessions: (data: GenerateLevelSessionsRequest) => Promise<Session[]>
 }
 
 export function useGroupDetail(groupId: number): UseGroupDetailReturn {
@@ -75,6 +78,12 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
     setActiveLevelId(levelId)
   }, [])
 
+  const generateSessions = useCallback(async (data: GenerateLevelSessionsRequest): Promise<Session[]> => {
+    const result = await generateLevelSessions(groupId, data)
+    await fetchData()
+    return result
+  }, [groupId, fetchData])
+
   return {
     group,
     levels,
@@ -85,5 +94,6 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
     refresh: fetchData,
     setActiveLevel,
     activeLevelId,
+    generateSessions,
   }
 }
