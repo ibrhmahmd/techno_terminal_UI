@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { CreateReceiptPanel } from '../components/finance/CreateReceiptPanel'
 import { SearchReceiptsPanel } from '../components/finance/SearchReceiptsPanel'
+import { UnpaidEnrollmentsPanel } from '../components/finance/UnpaidEnrollmentsPanel'
 import { useReceipts } from '../hooks/finance'
 
-type PanelType = 'create' | 'search'
+type PanelType = 'create' | 'search' | 'unpaid'
 
 export function FinancePage() {
   const [activePanel, setActivePanel] = useState<PanelType>('create')
@@ -64,7 +65,7 @@ export function FinancePage() {
       <div className="px-8 pt-4 border-b border-slate-200">
         <div className="max-w-[1400px] mx-auto">
           <div className="flex space-x-1">
-            {(['create', 'search'] as PanelType[]).map((panel) => (
+            {(['create', 'search', 'unpaid'] as PanelType[]).map((panel) => (
               <button
                 key={panel}
                 onClick={() => handleTabChange(panel)}
@@ -75,9 +76,9 @@ export function FinancePage() {
                 }`}
               >
                 <span className="material-symbols-outlined inline-block mr-2 align-text-bottom">
-                  {panel === 'create' ? 'add_circle' : 'search'}
+                  {panel === 'create' ? 'add_circle' : panel === 'search' ? 'search' : 'warning'}
                 </span>
-                {panel === 'create' ? 'Create Receipt' : 'Search Receipts'}
+                {panel === 'create' ? 'Create Receipt' : panel === 'search' ? 'Search Receipts' : 'Unpaid Enrollments'}
                 {activePanel === panel && (
                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-t"></span>
                 )}
@@ -118,6 +119,11 @@ export function FinancePage() {
         {activePanel === 'search' && (
           <SearchReceiptsPanel
             isLoading={isSearching}
+            onError={handleError}
+          />
+        )}
+        {activePanel === 'unpaid' && (
+          <UnpaidEnrollmentsPanel
             onError={handleError}
           />
         )}
