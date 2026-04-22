@@ -9,6 +9,10 @@ export {
   createStudent,
   updateStudent,
   deleteStudent,
+  softDeleteStudent,
+  restoreStudent,
+  hardDeleteStudent,
+  getDeletedStudents,
   getParentById,
   getStudentParents,
 } from './core'
@@ -67,9 +71,18 @@ export {
   searchStudents,
   searchStudentsAdvanced,
   getStudentsGrouped,
+  filterStudents,
   type StudentGroupedResultDTO,
   type StudentGroup,
+  type StudentFilterParams,
 } from './search'
+
+// Payments
+export {
+  getStudentPayments,
+  getPaymentDetails,
+  sendReceiptToStudent,
+} from './payments'
 
 // Utils
 export {
@@ -79,6 +92,7 @@ export {
   getBalanceDisplay,
   getStatusColorClass,
   getStatusLabel,
+  isStudentDeleted,
 } from './utils'
 
 // Types
@@ -102,6 +116,8 @@ export {
   type CourseRecord,
   type CompetitionRecord,
   type TeamRecord,
+  type StudentFilterItem,
+  type StudentFilterResult,
   // Inputs
   type CreateStudentDTO,
   type UpdateStudentDTO,

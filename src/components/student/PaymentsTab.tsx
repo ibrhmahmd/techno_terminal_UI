@@ -1,8 +1,11 @@
 import { useState } from 'react'
-import { CreditCard, ArrowUpRight } from 'lucide-react'
-import type { StudentBalance, EnrollmentBalance } from '../../api/crm/students/types/finance'
-import { EmptyState, LoadingSpinner, StatusDataCard, ItemDetailDialog } from '../common'
-import { useReceipts } from '../../hooks/finance'
+import { CreditCard, ArrowUpRight, FileDown, MessageCircle } from 'lucide-react'
+import type { StudentBalance } from '../../api/crm/students/types/finance'
+import type { PaymentListItem } from '../../api/crm/students/types/payments'
+import { EmptyState, LoadingSpinner } from '../common'
+import { DataTable, type DataTableColumn } from '../common/datatable'
+import { useStudentPayments } from '../../hooks/students/useStudentPayments'
+import { PaymentDetailsDialog } from './PaymentDetailsDialog'
 
 interface PaymentsTabProps {
   studentId: number
@@ -11,24 +14,180 @@ interface PaymentsTabProps {
   error?: string | null
 }
 
-export function PaymentsTab({ studentId, balance, loading, error }: PaymentsTabProps) {
-  const [selectedEnrollment, setSelectedEnrollment] = useState<EnrollmentBalance | null>(null)
-  const receipts = useReceipts()
+export function PaymentsTab({ studentId, balance, loading: balanceLoading, error: balanceError }: PaymentsTabProps) {
+  const {
+    payments,
+    isLoading: paymentsLoading,
+    error: paymentsError,
+    selectedPayment,
+    isDetailsLoading,
+    isSendingReceipt,
+    selectPayment,
+    clearSelectedPayment,
+    sendReceipt,
+    downloadReceipt,
+  } = useStudentPayments(studentId, true)
 
-  // Fetch receipts when dialog opens
-  const handleCardClick = async (enrollment: EnrollmentBalance) => {
-    setSelectedEnrollment(enrollment)
-    if (studentId) {
-      const today = new Date().toISOString().split('T')[0]
-      await receipts.search({
-        student_id: studentId,
-        from_date: '2020-01-01',
-        to_date: today
-      })
+  const [sortField, setSortField] = useState<string>('payment_date')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+
+  // Calculate summary stats from balance data
+  const totalPaid = balance?.enrollments?.reduce((sum: number, e) => sum + e.total_paid, 0) || 0
+  const totalAmountDue = balance?.total_amount_due || 0
+  const totalDiscounts = balance?.total_discounts || 0
+  const netBalance = balance?.net_balance || 0
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
     }
   }
-  // Show loading state while balance is being fetched
-  if (loading) {
+
+  const handleRowClick = (payment: PaymentListItem) => {
+    selectPayment(payment.id)
+  }
+
+  const handleDownloadPdf = async (payment: PaymentListItem, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (payment.receipt_id) {
+      await downloadReceipt(payment.receipt_id)
+    }
+  }
+
+  const handleSendWhatsApp = async (payment: PaymentListItem, e: React.MouseEvent) => {
+    e.stopPropagation()
+    await sendReceipt(payment.id, 'whatsapp')
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800'
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'failed':
+        return 'bg-red-100 text-red-800'
+      case 'refunded':
+        return 'bg-gray-100 text-gray-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'EGP',
+    }).format(amount)
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
+  }
+
+  // Define columns using DataTableColumn type matching design system
+  const paymentColumns: DataTableColumn<PaymentListItem>[] = [
+    {
+      key: 'payment_date',
+      header: 'Date',
+      sortable: true,
+      cell: (payment) => (
+        <span className="text-slate-900">{formatDate(payment.payment_date)}</span>
+      )
+    },
+    {
+      key: 'course_name',
+      header: 'Course',
+      sortable: true,
+      cell: (payment) => (
+        <span className="font-medium text-slate-900">{payment.course_name ?? 'N/A'}</span>
+      )
+    },
+    {
+      key: 'group_name',
+      header: 'Group',
+      sortable: true,
+      cell: (payment) => (
+        <span className="text-slate-600">{payment.group_name ?? 'N/A'}</span>
+      )
+    },
+    {
+      key: 'transaction_type',
+      header: 'Type',
+      sortable: true,
+      cell: (payment) => (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          payment.transaction_type === 'payment' 
+            ? 'bg-green-100 text-green-800' 
+            : 'bg-red-100 text-red-800'
+        }`}>
+          {payment.transaction_type}
+        </span>
+      )
+    },
+    {
+      key: 'amount',
+      header: 'Amount',
+      sortable: true,
+      align: 'right',
+      cell: (payment) => (
+        <span className="font-medium text-slate-900">{formatCurrency(payment.amount)}</span>
+      )
+    },
+    {
+      key: 'payment_method',
+      header: 'Method',
+      sortable: true,
+      cell: (payment) => (
+        <span className="text-slate-600 capitalize">{payment.payment_method.replace('_', ' ')}</span>
+      )
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      sortable: true,
+      cell: (payment) => (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
+          {payment.status}
+        </span>
+      )
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'center',
+      cell: (payment) => (
+        <div className="flex items-center justify-center gap-1">
+          <button
+            onClick={(e) => handleDownloadPdf(payment, e)}
+            className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+            title="Download PDF"
+          >
+            <FileDown className="w-4 h-4" />
+          </button>
+          <button
+            onClick={(e) => handleSendWhatsApp(payment, e)}
+            className="p-1.5 text-slate-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors"
+            title="Send via WhatsApp"
+          >
+            <MessageCircle className="w-4 h-4" />
+          </button>
+        </div>
+      )
+    }
+  ]
+
+  const isLoading = balanceLoading || paymentsLoading
+  const error = balanceError || paymentsError
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <LoadingSpinner size="lg" />
@@ -36,28 +195,12 @@ export function PaymentsTab({ studentId, balance, loading, error }: PaymentsTabP
     )
   }
 
-  // Show error state
   if (error) {
     return (
       <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm">
         <p className="font-medium">Failed to load payment data</p>
         <p className="mt-1">{error}</p>
       </div>
-    )
-  }
-  // Calculate summary stats from enrollment balance data
-  const totalPaid = balance?.enrollments?.reduce((sum: number, e: EnrollmentBalance) => sum + e.total_paid, 0) || 0
-  const totalAmountDue = balance?.total_amount_due || 0
-  const totalDiscounts = balance?.total_discounts || 0
-  const netBalance = balance?.net_balance || 0
-
-  if (!balance || !balance.enrollments || balance.enrollments.length === 0) {
-    return (
-      <EmptyState
-        title="No payment records"
-        message="This student has no enrollment payment history."
-        icon="inbox"
-      />
     )
   }
 
@@ -107,61 +250,34 @@ export function PaymentsTab({ studentId, balance, loading, error }: PaymentsTabP
         </div>
       </div>
 
-      {/* Payment Cards Grid */}
+      {/* Payments Table */}
       <div className="space-y-4">
-        <h3 className="font-semibold text-on-surface">Payment Records</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {balance?.enrollments?.map((enrollment) => (
-            <StatusDataCard
-              key={enrollment.enrollment_id}
-              title={enrollment.group_name}
-              subtitle={`Level ${enrollment.level_number}`}
-              status={enrollment.remaining_balance > 0 ? 'unpaid' : 'paid'}
-              statusLabel={enrollment.remaining_balance > 0 ? 'Outstanding' : 'Paid'}
-              amount={{ value: enrollment.remaining_balance > 0 ? enrollment.remaining_balance : enrollment.total_paid, currency: 'EGP' }}
-              meta={[
-                { label: 'Amount Due', value: `${enrollment.amount_due.toLocaleString()} EGP` },
-                { label: 'Discount', value: `${enrollment.discount_applied.toLocaleString()} EGP` },
-                { label: 'Total Paid', value: `${enrollment.total_paid.toLocaleString()} EGP` }
-              ]}
-              onClick={() => handleCardClick(enrollment)}
-              isClickable
-            />
-          ))}
-        </div>
+        <h3 className="font-semibold text-on-surface">
+          Payment Records ({payments.length})
+        </h3>
+        
+        <DataTable
+          data={payments}
+          columns={paymentColumns}
+          keyExtractor={(p) => p.id.toString()}
+          isLoading={paymentsLoading}
+          emptyMessage="This student has no payment history yet."
+          emptyIcon="inbox"
+          onRowClick={handleRowClick}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+        />
       </div>
 
-      {/* Payment Detail Dialog */}
-      <ItemDetailDialog
-        isOpen={!!selectedEnrollment}
-        onClose={() => {
-          setSelectedEnrollment(null)
-          receipts.clearSelectedReceipt()
-        }}
-        title="Payment Details"
-        sections={[
-          {
-            id: 'enrollment',
-            title: 'Enrollment Information',
-            items: [
-              { label: 'Group', value: selectedEnrollment?.group_name || '-', highlight: true },
-              { label: 'Level', value: selectedEnrollment?.level_number.toString() || '-' },
-              { label: 'Amount Due', value: `${selectedEnrollment?.amount_due.toLocaleString() || 0} EGP` },
-              { label: 'Discount', value: `${selectedEnrollment?.discount_applied.toLocaleString() || 0} EGP` },
-              { label: 'Total Paid', value: `${selectedEnrollment?.total_paid.toLocaleString() || 0} EGP` }
-            ]
-          }
-        ]}
-        document={receipts.selectedReceipt ? {
-          type: 'receipt',
-          id: receipts.selectedReceipt.receipt.id,
-          number: receipts.selectedReceipt.receipt.receipt_number,
-          date: new Date(receipts.selectedReceipt.receipt.paid_at).toLocaleDateString(),
-          issuer: receipts.selectedReceipt.receipt.payer_name,
-          onDownload: () => receipts.downloadPdf(receipts.selectedReceipt!.receipt.id),
-          isDownloading: receipts.isDownloadingPdf
-        } : undefined}
-        isLoading={receipts.isLoadingDetails}
+      {/* Payment Details Dialog */}
+      <PaymentDetailsDialog
+        payment={selectedPayment}
+        isOpen={!!selectedPayment || isDetailsLoading}
+        isLoading={isDetailsLoading}
+        isSendingReceipt={isSendingReceipt}
+        onClose={clearSelectedPayment}
+        onSendReceipt={sendReceipt}
       />
     </div>
   )

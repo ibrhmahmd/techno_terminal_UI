@@ -1,7 +1,7 @@
 interface DirectoryTabsProps {
-  activeTab: 'students' | 'parents' | 'waiting'
+  activeTab: 'students' | 'parents' | 'waiting' | 'advanced'
   waitingCount: number
-  onTabChange: (tab: 'students' | 'parents' | 'waiting') => void
+  onTabChange: (tab: 'students' | 'parents' | 'waiting' | 'advanced') => void
 }
 
 export function DirectoryTabs({ activeTab, waitingCount, onTabChange }: DirectoryTabsProps) {
@@ -48,6 +48,20 @@ export function DirectoryTabs({ activeTab, waitingCount, onTabChange }: Director
             <span className="material-symbols-outlined inline-block mr-2 align-text-bottom">schedule</span>
             Waiting ({waitingCount})
             {activeTab === 'waiting' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-t"></span>
+            )}
+          </button>
+          <button
+            onClick={() => onTabChange('advanced')}
+            className={`px-6 py-3 text-sm font-medium transition-colors relative ${
+              activeTab === 'advanced'
+                ? 'text-on-surface'
+                : 'text-slate-400 hover:text-on-surface'
+            }`}
+          >
+            <span className="material-symbols-outlined inline-block mr-2 align-text-bottom">tune</span>
+            Filter Students
+            {activeTab === 'advanced' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-t"></span>
             )}
           </button>

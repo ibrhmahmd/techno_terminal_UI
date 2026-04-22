@@ -2,6 +2,9 @@
 export { useStudentDetail } from './useStudentDetail'
 export { useStudentHistory } from './useStudentHistory'
 
+// Student payments and finance
+export { useStudentPayments } from './useStudentPayments'
+
 // Optimized hooks for lazy loading (Performance improvement)
 export { useStudentCore } from './useStudentCore'
 export { useStudentBalance } from './useStudentBalance'

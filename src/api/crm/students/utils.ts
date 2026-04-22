@@ -55,3 +55,8 @@ export function getStatusLabel(status: StudentStatus): string {
   }
   return labels[status] || status
 }
+
+// Check if student is soft-deleted
+export function isStudentDeleted(student: Student): boolean {
+  return !!student.deleted_at
+}

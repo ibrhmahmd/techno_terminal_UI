@@ -18,7 +18,7 @@ export const DEFAULT_AGE_BUCKETS: AgeBucket[] = [
 ]
 
 // Group by options for students tab
-export type StudentGroupBy = 'none' | 'status' | 'age' | 'competition'
+export type StudentGroupBy = 'none' | 'status' | 'age' | 'competition' | 'deleted'
 
 // Group by options for waiting tab (no status option)
 export type WaitingGroupBy = 'none' | 'age' | 'competition'
@@ -29,6 +29,7 @@ export const STUDENT_GROUP_OPTIONS = [
   { value: 'status' as const, label: 'Status', icon: 'flag' },
   { value: 'age' as const, label: 'Age', icon: 'cake' },
   { value: 'competition' as const, label: 'Competition', icon: 'emoji_events', disabled: true },
+  { value: 'deleted' as const, label: 'Deleted', icon: 'delete', accent: 'red' },
 ]
 
 export const WAITING_GROUP_OPTIONS = [
@@ -42,6 +43,7 @@ export interface GroupOption {
   label: string
   icon: string
   disabled?: boolean
+  accent?: 'red' | 'default'
 }
 
 /**
@@ -110,4 +112,30 @@ export function formatAgeBucketLabel(bucket: AgeBucket): string {
     return `${bucket.min}+`
   }
   return `${bucket.min}-${bucket.max - 1}`
+}
+
+/**
+ * Transform backend age group label to display format
+ * Backend returns: "Ages 12 15", "Ages 15 Plus", "Ages 9 12", "Unknown"
+ * Should display: "12-15", "15+", "9-12", "Unknown"
+ */
+export function formatAgeGroupLabel(backendLabel: string): string {
+  if (backendLabel === 'Unknown') return 'Unknown'
+  
+  // Match patterns like "Ages 12 15" -> "12-15"
+  const rangeMatch = backendLabel.match(/Ages\s+(\d+)\s+(\d+)/i)
+  if (rangeMatch) {
+    const min = parseInt(rangeMatch[1], 10)
+    const max = parseInt(rangeMatch[2], 10)
+    return `${min}-${max - 1}` // max is exclusive in buckets
+  }
+  
+  // Match patterns like "Ages 15 Plus" -> "15+"
+  const plusMatch = backendLabel.match(/Ages\s+(\d+)\s+Plus/i)
+  if (plusMatch) {
+    return `${plusMatch[1]}+`
+  }
+  
+  // Fallback: remove "Ages " prefix if present
+  return backendLabel.replace(/^Ages\s+/i, '')
 }

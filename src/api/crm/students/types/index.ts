@@ -20,6 +20,8 @@ export {
   type CourseRecord,
   type CompetitionRecord,
   type TeamRecord,
+  type StudentFilterItem,
+  type StudentFilterResult,
 } from './models'
 
 // Inputs/DTOs
@@ -63,3 +65,17 @@ export {
   type ActivitySearchParams,
   type ActivitySearchResultItemDTO,
 } from './activity'
+
+// Payments
+export {
+  type TransactionType,
+  type PaymentListItem,
+  type ReceiptInfo,
+  type PaymentEnrollmentInfo,
+  type StudentSnapshot,
+  type PaymentParentInfo,
+  type PaymentDetailsResponse,
+  type StudentPaymentsListResponse,
+  type SendReceiptRequest,
+  type SendReceiptResponse,
+} from './payments'

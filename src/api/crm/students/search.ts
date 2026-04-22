@@ -4,7 +4,7 @@
 import client from '../../client'
 import type { PaginationParams, PaginationResult } from '../../../types/pagination'
 import type { PaginatedApiResponse, ApiResponse } from '../../../types/api'
-import type { Student, StudentListItem, StudentStatus } from './types/models'
+import type { Student, StudentListItem, StudentStatus, StudentFilterResult } from './types/models'
 
 // Search Students by Name
 export async function searchStudents(query: string): Promise<StudentListItem[]> {
@@ -81,21 +81,70 @@ export async function searchStudentsAdvanced(
   const { skip = 0, limit = 15 } = params
   const response = await client.get<PaginatedApiResponse<Student>>(
     '/crm/students',
-    { 
-      params: { 
-        skip, 
+    {
+      params: {
+        skip,
         limit,
-        ...filters 
-      } 
+        ...filters
+      }
     }
   )
-  
+
   const items = response.data.data || []
   const total = response.data.total || 0
-  
+
   return {
     items,
     total,
     hasMore: total > skip + items.length
   }
+}
+
+// Filter Parameters for /crm/students/filter endpoint
+export interface StudentFilterParams {
+  min_age?: number
+  max_age?: number
+  status?: ('active' | 'waiting' | 'inactive')[]
+  gender?: ('male' | 'female' | 'unknown')[]
+  course_ids?: number[]
+  group_default_day?: string[]
+  instructor_name?: string
+  has_unpaid_balance?: boolean
+  enrollment_date_from?: string  // YYYY-MM-DD
+  enrollment_date_to?: string    // YYYY-MM-DD
+  min_enrollments?: number
+  max_enrollments?: number
+  skip?: number
+  limit?: number
+}
+
+// Filter students with advanced criteria
+export async function filterStudents(
+  params: StudentFilterParams = {}
+): Promise<StudentFilterResult> {
+  const response = await client.get<ApiResponse<StudentFilterResult>>(
+    '/crm/students/filter',
+    {
+      params: {
+        min_age: params.min_age,
+        max_age: params.max_age,
+        status: params.status,
+        gender: params.gender,
+        course_ids: params.course_ids?.join(','),
+        group_default_day: params.group_default_day,
+        instructor_name: params.instructor_name,
+        has_unpaid_balance: params.has_unpaid_balance,
+        enrollment_date_from: params.enrollment_date_from,
+        enrollment_date_to: params.enrollment_date_to,
+        min_enrollments: params.min_enrollments,
+        max_enrollments: params.max_enrollments,
+        skip: params.skip ?? 0,
+        limit: params.limit ?? 50,
+      },
+      paramsSerializer: {
+        indexes: null, // Handle arrays as repeated params (status=active&status=waiting)
+      },
+    }
+  )
+  return response.data.data
 }

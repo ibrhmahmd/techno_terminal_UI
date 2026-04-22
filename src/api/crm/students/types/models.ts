@@ -13,6 +13,7 @@ export interface Student {
   is_active: boolean
   created_at: string
   updated_at: string
+  deleted_at?: string | null
 }
 
 export interface StudentListItem {
@@ -80,6 +81,7 @@ export interface EnrollmentInfo {
   enrollment_id: number
   group_id: number
   group_name: string
+  course_id: number
   course_name: string
   level_number: number
   status: string
@@ -165,4 +167,30 @@ export interface StudentStatusSummary {
   active: number
   waiting: number
   inactive: number
+}
+
+// Filter result item (matches StudentFilterItemDTO from backend docs)
+export interface StudentFilterItem {
+  id: number
+  full_name: string
+  age: number | null
+  status: StudentStatus
+  gender: 'male' | 'female' | 'unknown' | null
+  phone: string | null
+  current_group_id: number | null
+  current_group_name: string | null
+  group_default_day: string | null
+  instructor_id: number | null
+  instructor_name: string | null
+  enrollment_count: number
+  enrolled_courses: number[]
+  unpaid_balance: number | null
+}
+
+// Filter result wrapper (matches StudentFilterResultDTO from backend docs)
+export interface StudentFilterResult {
+  students: StudentFilterItem[]
+  total: number
+  skip: number
+  limit: number
 }

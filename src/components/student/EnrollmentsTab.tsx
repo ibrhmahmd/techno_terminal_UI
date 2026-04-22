@@ -49,7 +49,7 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
       isOpen={isOpen}
       onClose={handleClose}
       title="Enroll Student in New Group"
-      size="lg"
+      size="xl"
       footer={
         <div className="flex justify-end gap-3">
           <button
@@ -79,7 +79,7 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
         </div>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-4 min-h-[400px]">
         <p className="text-sm text-slate-600">
           Search and select a group to enroll this student in:
         </p>
@@ -103,7 +103,7 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
             search={search}
             setSearch={setSearch}
             groups={availableGroups}
-            isLoading={isLoading}
+            isLoading={isLoading || false}
             recentGroupIds={recentGroupIds}
           />
         )}

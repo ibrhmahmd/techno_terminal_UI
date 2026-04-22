@@ -76,6 +76,34 @@ export async function deleteStudent(id: number): Promise<void> {
   await client.delete(`/crm/students/${id}`)
 }
 
+// Soft Delete Student (marks as deleted without removing from DB)
+export async function softDeleteStudent(id: number): Promise<void> {
+  await client.delete(`/crm/students/${id}/soft`)
+}
+
+// Restore Soft-Deleted Student
+export async function restoreStudent(id: number): Promise<Student> {
+  const response = await client.post<ApiResponse<Student>>(`/crm/students/${id}/restore`)
+  return response.data.data
+}
+
+// Hard Delete Student (permanently removes from DB)
+export async function hardDeleteStudent(id: number): Promise<void> {
+  await client.delete(`/crm/students/${id}/hard`)
+}
+
+// Get All Soft-Deleted Students (admin only)
+export async function getDeletedStudents(
+  params: PaginationParams = {}
+): Promise<PaginationResult<Student>> {
+  const { skip = 0, limit = 50 } = params
+  const response = await client.get<PaginatedApiResponse<Student>>(
+    '/crm/admin/deleted-students',
+    { params: { skip, limit } }
+  )
+  return createPaginationResult(response, params)
+}
+
 // Get Parent by ID (helper for student profile)
 export async function getParentById(id: number): Promise<Parent> {
   const response = await client.get<ApiResponse<Parent>>(`/crm/parents/${id}`)
