@@ -20,6 +20,7 @@ export function StudentGroupBySelector({
           { value: 'status', label: 'Status', icon: 'flag' },
           { value: 'age', label: 'Age', icon: 'cake' },
           { value: 'competition', label: 'Competition', icon: 'emoji_events', disabled: true },
+          { value: 'deleted', label: 'Deleted', icon: 'delete', accent: 'red' },
         ]
       : [
           { value: 'none', label: 'All', icon: 'grid_view' },
@@ -35,9 +36,10 @@ export function StudentGroupBySelector({
             disabled ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
-          {options.map(({ value: optVal, label, icon, disabled: optDisabled }) => {
+          {options.map(({ value: optVal, label, icon, disabled: optDisabled, accent }) => {
             const isActive = value === optVal
             const isDisabled = disabled || optDisabled
+            const isRedAccent = accent === 'red'
 
             return (
               <button
@@ -47,13 +49,17 @@ export function StudentGroupBySelector({
                 title={optDisabled ? 'Coming soon' : undefined}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-white text-secondary shadow-sm font-bold'
+                    ? isRedAccent
+                      ? 'bg-red-50 text-red-600 shadow-sm font-bold border border-red-200'
+                      : 'bg-white text-secondary shadow-sm font-bold'
                     : isDisabled
                       ? 'text-slate-300 cursor-not-allowed'
-                      : 'text-slate-500 hover:text-secondary hover:bg-white/50'
+                      : isRedAccent
+                        ? 'text-red-500 hover:text-red-600 hover:bg-red-50/50'
+                        : 'text-slate-500 hover:text-secondary hover:bg-white/50'
                 }`}
               >
-                <span className="material-symbols-outlined text-[16px]">{icon}</span>
+                <span className={`material-symbols-outlined text-[16px] ${isActive && isRedAccent ? 'text-red-500' : ''}`}>{icon}</span>
                 {label}
               </button>
             )
