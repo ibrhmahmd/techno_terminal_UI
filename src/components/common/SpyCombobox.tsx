@@ -203,7 +203,7 @@ export function SpyCombobox<T>({
           )}
 
           {totalItemsCount > 0 ? (
-            <div className="flex w-full h-80">
+            <div className="flex w-full h-full">
               
               {/* Left Sidebar: Categories */}
               {navCategories.length > 0 && (

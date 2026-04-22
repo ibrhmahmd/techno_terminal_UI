@@ -29,7 +29,7 @@ export interface DataTableBaseProps<T> {
   keyExtractor: (row: T) => string
   isLoading?: boolean
   emptyMessage?: string
-  emptyIcon?: 'search' | 'inbox' | 'history' | 'schedule' | 'trash' | 'none'
+  emptyIcon?: 'search' | 'inbox' | 'history' | 'schedule' | 'trash' | 'filter_list' | 'none'
   onRowClick?: (row: T) => void
   sortField?: string
   sortDirection?: 'asc' | 'desc'

@@ -25,11 +25,22 @@ export function SettingsPage() {
     <div className="min-h-screen bg-surface">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-6">
-        <div className="max-w-[1400px] mx-auto">
-          <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">Settings</h1>
-          <p className="text-sm text-on-surface-variant mt-2">
-            Manage your account and system preferences
-          </p>
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">Settings</h1>
+            <p className="text-sm text-on-surface-variant mt-2">
+              Manage your account and system preferences
+            </p>
+          </div>
+          {canManageUsers && (
+            <a
+              href="/notifications"
+              className="flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-secondary-dark transition-colors"
+            >
+              <span className="material-symbols-outlined">notifications</span>
+              Notifications
+            </a>
+          )}
         </div>
       </header>
 

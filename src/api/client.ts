@@ -16,6 +16,12 @@ function onTokenRefreshed(newToken: string) {
   refreshSubscribers = [];
 }
 
+// Debug flag - enable via localStorage.setItem('api_debug', 'true')
+const isDebugEnabled = () => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('api_debug') === 'true' || import.meta.env.DEV;
+};
+
 export const createApiClient = () => {
   const client = axios.create({
     baseURL: '/api/v1',
@@ -24,20 +30,55 @@ export const createApiClient = () => {
     },
   });
 
-  // Request interceptor - add auth token (skip for auth endpoints)
+  // Request interceptor - add auth token (skip for auth endpoints) + debug logging
   client.interceptors.request.use((config) => {
     const token = useAuthStore.getState().token;
     const isAuthEndpoint = config.url?.startsWith('/auth');
     if (token && !isAuthEndpoint) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Debug logging
+    if (isDebugEnabled()) {
+      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
+        params: config.params,
+        data: config.data,
+        headers: config.headers,
+      });
+    }
+    
     return config;
   });
 
-  // Response interceptor - handle token refresh on 401
+  // Response interceptor - handle token refresh on 401 + debug logging
   client.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      // Debug logging for successful responses
+      if (isDebugEnabled()) {
+        console.log(`[API Response] ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`, {
+          data: response.data,
+        });
+      }
+      return response;
+    },
     async (error) => {
+      // Debug logging for errors
+      if (isDebugEnabled()) {
+        const errorData = error.response?.data;
+        console.error(`[API Error] ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${error.response?.status}`, {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: errorData,
+          dataStringified: errorData ? JSON.stringify(errorData, null, 2) : 'No data',
+          headers: error.response?.headers,
+          config: {
+            url: error.config?.url,
+            method: error.config?.method,
+            params: error.config?.params,
+            data: error.config?.data,
+          },
+        });
+      }
       const originalRequest = error.config;
       
       // If error is not 401 or request already retried, reject

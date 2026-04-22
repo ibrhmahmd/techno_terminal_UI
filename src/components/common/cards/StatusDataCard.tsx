@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react'
+import { CheckCircle2, XCircle, Clock, AlertCircle, Info } from 'lucide-react'
 
 interface MetaItem {
   label: string
@@ -8,13 +8,14 @@ interface MetaItem {
 interface StatusDataCardProps {
   title: string
   subtitle?: string
-  status: 'paid' | 'unpaid' | 'partial' | 'overdue' | 'pending' | 'completed' | 'active' | 'inactive'
+  status: 'paid' | 'unpaid' | 'partial' | 'overdue' | 'pending' | 'completed' | 'active' | 'inactive' | 'neutral'
   statusLabel?: string
   amount?: {
     value: number
     currency?: string
   }
   meta?: MetaItem[]
+  details?: { label: string; value: string; icon?: React.ReactNode }[]
   onClick?: () => void
   isClickable?: boolean
 }
@@ -26,9 +27,11 @@ export function StatusDataCard({
   statusLabel,
   amount,
   meta,
+  details,
+  icon,
   onClick,
   isClickable,
-}: StatusDataCardProps) {
+}: StatusDataCardProps & { icon?: React.ReactNode }) {
   const statusConfig = {
     paid: {
       icon: <CheckCircle2 className="w-5 h-5" />,
@@ -110,6 +113,16 @@ export function StatusDataCard({
       badgeBg: 'bg-slate-100',
       badgeText: 'text-slate-700',
     },
+    neutral: {
+      icon: <Info className="w-5 h-5" />,
+      bg: 'bg-slate-50',
+      border: 'border-slate-200',
+      iconBg: 'bg-slate-100',
+      iconColor: 'text-slate-600',
+      textColor: 'text-slate-600',
+      badgeBg: 'bg-slate-100',
+      badgeText: 'text-slate-700',
+    },
   }
 
   const config = statusConfig[status]
@@ -127,7 +140,7 @@ export function StatusDataCard({
     >
       <div className="flex items-start gap-3">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${config.iconBg} ${config.iconColor}`}>
-          {config.icon}
+          {icon || config.icon}
         </div>
         
         <div className="flex-1 min-w-0">
@@ -159,6 +172,22 @@ export function StatusDataCard({
                   </span>
                 </span>
               ))}
+            </div>
+          )}
+
+          {details && details.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-slate-200/60">
+              <div className="grid grid-cols-3 gap-2">
+                {details.map((detail, index) => (
+                  <div key={index} className="text-center">
+                    <p className="text-xs text-slate-500 mb-1 flex items-center justify-center gap-1">
+                      {detail.icon}
+                      {detail.label}
+                    </p>
+                    <p className="text-lg font-semibold text-on-surface">{detail.value}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

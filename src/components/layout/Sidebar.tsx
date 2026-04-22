@@ -30,6 +30,7 @@ const navSections = [
     title: 'Resources',
     items: [
       { path: '/staff', label: 'Staff', icon: 'people' },
+      { path: '/notifications', label: 'Notifications', icon: 'notifications' },
       { path: '/settings', label: 'Settings', icon: 'settings' },
     ],
   },
@@ -51,6 +52,18 @@ export function Sidebar() {
     return false
   }
 
+  // Filter sections based on user role
+  const filteredSections = navSections.map(section => ({
+    ...section,
+    items: section.items.filter(item => {
+      // Notifications is only visible to admin and system_admin
+      if (item.path === '/notifications') {
+        return user?.role === 'admin' || user?.role === 'system_admin'
+      }
+      return true
+    })
+  })).filter(section => section.items.length > 0)
+
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 z-50 flex flex-col overflow-hidden">
       {/* Brand/Header - Matches dashboard.html exactly */}
@@ -66,7 +79,7 @@ export function Sidebar() {
       {/* Navigation - Matches dashboard.html exactly */}
       <nav className="flex-1 overflow-y-auto py-4">
         <div className="px-3 space-y-1">
-          {navSections.map((section) => (
+          {filteredSections.map((section) => (
             <div key={section.title} className="mb-4">
               <p className="px-3 py-2 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                 {section.title}

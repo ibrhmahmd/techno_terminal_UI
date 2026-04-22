@@ -36,3 +36,9 @@ export { RelatedEntityList } from './lists/RelatedEntityList'
 
 // Generic Layout
 export { EntityPageHeader } from './layout/EntityPageHeader'
+
+// Generic Filter Components
+export { DualNumberInput } from './DualNumberInput'
+export { ActiveFilterTag, ActiveFilterTagsList } from './ActiveFilterTag'
+export { FilterPill } from './FilterPill'
+export { FloatingActionBar } from './FloatingActionBar'
