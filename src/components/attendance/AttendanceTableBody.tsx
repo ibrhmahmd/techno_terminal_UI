@@ -1,6 +1,6 @@
 import { StudentInfo } from './StudentInfo'
 import { AttendanceCell } from './AttendanceCell'
-import type { Session } from '../../api/academics'
+import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 import type { AttendanceStatus } from '../../api/attendance'
 
 interface StudentRowData {
@@ -12,7 +12,7 @@ interface StudentRowData {
 
 interface AttendanceTableBodyProps {
   students: StudentRowData[]
-  sessions: Session[]
+  sessions: SessionWithAttendanceDTO[]
   onToggle: (studentId: string, sessionId: number) => void
 }
 
@@ -38,18 +38,18 @@ export function AttendanceTableBody({ students, sessions, onToggle }: Attendance
 
           {/* Attendance Cells */}
           {displaySessions.map((session, sessionIdx) => {
-            const status = student.attendance.get(session.id) || null
+            const status = student.attendance.get(session.session_id) || null
             const isCancelled = session.status === 'cancelled'
             return (
               <td
-                key={`${student.student_id}-${session.id}-${sessionIdx}`}
+                key={`${student.student_id}-${session.session_id}-${sessionIdx}`}
                 className={`px-4 py-2 text-center border-l border-slate-200 ${
                   isCancelled ? 'opacity-50 blur-[1px] bg-gray-100' : ''
                 }`}
               >
                 <AttendanceCell
                   status={status}
-                  onToggle={() => !isCancelled && onToggle(student.student_id, session.id)}
+                  onToggle={() => !isCancelled && onToggle(student.student_id, session.session_id)}
                 />
               </td>
             )

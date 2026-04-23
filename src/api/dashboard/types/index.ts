@@ -8,6 +8,7 @@ export type {
   InstructorInfoDTO,
   TodaySessionDTO,
   AttendanceRecordDTO,
+  StudentRosterDTO,
   SessionWithAttendanceDTO,
   CurrentLevelDTO,
   ScheduledGroupDTO,

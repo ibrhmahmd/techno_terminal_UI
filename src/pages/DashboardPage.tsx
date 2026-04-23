@@ -7,7 +7,7 @@ import { InstructorSelectorBar } from '../components/dashboard/InstructorSelecto
 import { GroupSessionCard } from '../components/dashboard/GroupSessionCard'
 import { QuickActionsGrid } from '../components/dashboard/QuickActionsGrid'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import type { SessionWithAttendanceDTO } from '../api/dashboard'
+import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../api/dashboard'
 
 import { getTodayISO } from '../utils/formatting'
 
@@ -43,9 +43,12 @@ export function DashboardPage() {
     })
   }, [scheduleItems, groups, instructors, selectedInstructor])
 
-  const getSessionsForGroup = (groupId: number): SessionWithAttendanceDTO[] => {
+  const getGroupData = (groupId: number) => {
     const scheduledGroup = scheduleItems.find(sg => sg.group_id === groupId)
-    return scheduledGroup?.current_level?.sessions ?? []
+    return {
+      sessions: scheduledGroup?.current_level?.sessions ?? [],
+      roster: scheduledGroup?.roster ?? []
+    }
   }
 
   const getGroupInfo = (groupId: number) => {
@@ -88,6 +91,7 @@ export function DashboardPage() {
             ) : (
               filteredScheduleItems.map((item, index) => {
                 const group = getGroupInfo(item.group_id)
+                const groupData = getGroupData(item.group_id)
                 const isLast = index === filteredScheduleItems.length - 1
                 return (
                   <div
@@ -98,7 +102,8 @@ export function DashboardPage() {
                       groupName={group?.name || 'Unknown Group'}
                       courseName={group?.course_name || 'Unknown Course'}
                       instructorName={group?.instructor_id ? instructors[group.instructor_id]?.name || 'TBA' : 'TBA'}
-                      sessions={getSessionsForGroup(item.group_id)}
+                      sessions={groupData.sessions}
+                      roster={groupData.roster}
                       groupId={item.group_id}
                       level={item.current_level.level_number}
                     />

@@ -3,7 +3,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  getStudentsByStatus,
+  getWaitingList,
   updateStudentStatus,
   setWaitingPriority,
   type StudentWithDetails,
@@ -31,11 +31,12 @@ export function useWaitingList(params: PaginationParams = { skip: 0, limit: 50 }
   const { data, isLoading, isError, error } = useQuery({
     queryKey: waitingListKeys.list(params),
     queryFn: async () => {
-      const result = await getStudentsByStatus('waiting', params)
-      // Cast items to StudentWithDetails since waiting list students have extra fields
+      const students = await getWaitingList(params)
+      // Returns StudentWithDetails[] directly from dedicated waiting-list endpoint
       return {
-        ...result,
-        items: result.items as StudentWithDetails[],
+        items: students,
+        total: students.length,
+        hasMore: false,
       }
     },
     staleTime: 2 * 60 * 1000, // 2 minutes

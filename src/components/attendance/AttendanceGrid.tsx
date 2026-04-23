@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { Session, UpdateSessionDTO } from '../../api/academics'
+import type { UpdateSessionDTO } from '../../api/academics'
 import { cancelSession, updateSession } from '../../api/academics'
-import { getGroupRoster, type GroupRosterRowDTO } from '../../api/analytics'
+import { getGroupRoster } from '../../api/analytics'
 import { markAttendance, type AttendanceStatus } from '../../api/attendance'
 import { formatTime, getInitials } from '../../utils/formatting'
 import { LoadingSpinner } from '../common/LoadingSpinner'
@@ -13,7 +13,7 @@ import { AttendanceFooter } from './AttendanceFooter'
 import { SessionActionsRow } from './SessionActionsRow'
 import { SessionNotesRow } from './SessionNotesRow'
 import { EditSessionPopup } from './EditSessionPopup'
-import type { SessionWithAttendanceDTO } from '../../api/dashboard'
+import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashboard'
 
 // Toggle cycle: null -> present -> absent -> cancelled -> null
 const NEXT_STATE: Record<string, AttendanceStatus> = {
@@ -25,6 +25,7 @@ const NEXT_STATE: Record<string, AttendanceStatus> = {
 
 interface AttendanceGridProps {
   sessions: SessionWithAttendanceDTO[]
+  roster?: StudentRosterDTO[]   // NEW: Optional roster from dashboard API
   groupId: number
   level: number
   groupInstructorName?: string  // Fallback instructor name for consistency
@@ -41,7 +42,7 @@ interface StudentRow {
   attendance: Map<number, AttendanceStatus>
 }
 
-export function AttendanceGrid({ sessions, groupId, level, groupInstructorName, groupName, courseName }: AttendanceGridProps) {
+export function AttendanceGrid({ sessions, roster, groupId, level, groupInstructorName, groupName, courseName }: AttendanceGridProps) {
   const navigate = useNavigate()
   const [students, setStudents] = useState<StudentRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -56,7 +57,7 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName, 
   const [dirtyNotes, setDirtyNotes] = useState<Set<number>>(new Set())
   
   // Edit session modal state
-  const [editingSession, setEditingSession] = useState<Session | null>(null)
+  const [editingSession, setEditingSession] = useState<SessionWithAttendanceDTO | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   // Debounced attendance state
@@ -96,9 +97,26 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName, 
         `[AttendanceGrid] Fetch #${fetchCycleRef.current} started for group ${groupId} with ${displaySessions.length} sessions`
       )
 
-      const roster = await getGroupRoster(groupId, level)
-      // Use embedded attendance from the new dashboard API
-      const studentRows: StudentRow[] = roster.map((r: GroupRosterRowDTO) => {
+      // NEW: Use provided roster if available, otherwise fall back to old API
+      let rosterData: StudentRosterDTO[]
+      if (roster && roster.length > 0) {
+        rosterData = roster
+        console.debug(`[AttendanceGrid] Using provided roster (${roster.length} students)`)
+      } else {
+        // Fallback: fetch from old API (for backward compatibility with Group Detail page)
+        console.debug(`[AttendanceGrid] Fetching roster from API`)
+        const oldRoster = await getGroupRoster(groupId, level)
+        rosterData = oldRoster.map(r => ({
+          student_id: r.student_id,
+          student_name: r.student_name,
+          gender: 'male' as const,
+          billing_status: (r.balance < 0 ? 'due' : 'paid') as 'due' | 'paid',
+          balance: r.balance
+        }))
+      }
+
+      // Build student rows using roster + session attendance
+      const studentRows: StudentRow[] = rosterData.map((r) => {
         const attendanceMap = new Map<number, AttendanceStatus>()
         displaySessions.forEach((session) => {
           // Get attendance from the embedded data in the session
@@ -110,8 +128,8 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName, 
         return {
           student_id: String(r.student_id),
           full_name: r.student_name,
-          gender: 'male', 
-          billing_status: (r.balance < 0 ? 'Not Yet' : 'paid') as 'due' | 'paid',
+          gender: r.gender || 'male',
+          billing_status: r.billing_status,
           balance: r.balance,
           attendance: attendanceMap,
         }
@@ -129,7 +147,7 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName, 
     } finally {
       setIsLoading(false)
     }
-  }, [groupId, level, displaySessions, showToast])
+  }, [groupId, level, displaySessions, roster, showToast])
 
   // Load roster and attendance data
   useEffect(() => {
@@ -144,7 +162,7 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName, 
   }, [])
 
   // Handle edit session
-  const handleEditSession = useCallback((session: Session) => {
+  const handleEditSession = useCallback((session: SessionWithAttendanceDTO) => {
     setEditingSession(session)
     setIsEditModalOpen(true)
     setHasChanges(true)

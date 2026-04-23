@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import { type Session, type UpdateSessionDTO } from '../../api/academics'
+import { type UpdateSessionDTO } from '../../api/academics'
 import { getEmployeesPaginated } from '../../api/hr'
 import type { Employee } from '../../api/hr'
+import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 
 interface EditSessionPopupProps {
   isOpen: boolean
   onClose: () => void
-  session: Session | null
+  session: SessionWithAttendanceDTO | null
   onSave: (sessionId: number, updates: UpdateSessionDTO) => void
 }
 
@@ -40,11 +41,14 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
   // Reset form when session changes
   useEffect(() => {
     if (session) {
-      setDate(session.session_date)
-      setStartTime(session.start_time)
-      setEndTime(session.end_time)
-      setSelectedInstructorId(session.actual_instructor_id)
-      setOriginalInstructorId(session.actual_instructor_id)
+      // Handle both old Session type and new SessionWithAttendanceDTO
+      // New API uses: date, time_start, time_end, session_id
+      // Old API uses: session_date, start_time, end_time, id
+      setDate(session.session_date || (session as any).date || '')
+      setStartTime(session.start_time || (session as any).time_start || '')
+      setEndTime(session.end_time || (session as any).time_end || '')
+      setSelectedInstructorId(session.actual_instructor_id || 0)
+      setOriginalInstructorId(session.actual_instructor_id || 0)
       setIsSubstitute(session.is_substitute || false)
       setStatus(session.status)
       setNotes(session.notes || '')
@@ -63,7 +67,9 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
 
     setIsLoading(true)
     try {
-      await onSave(session.id, {
+      // Use session_id if available, otherwise fall back to id
+      const sessionId = session.session_id || (session as SessionWithAttendanceDTO).id
+      await onSave(sessionId, {
         session_date: date,
         start_time: startTime,
         end_time: endTime,

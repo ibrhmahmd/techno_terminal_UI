@@ -42,6 +42,14 @@ export interface AttendanceRecordDTO {
   status: 'present' | 'absent' | 'cancelled' | null
 }
 
+export interface StudentRosterDTO {
+  student_id: number
+  student_name: string
+  gender: 'male' | 'female'
+  billing_status: 'paid' | 'due'
+  balance: number
+}
+
 export interface SessionWithAttendanceDTO {
   // Primary identifier (compatible with existing Session type)
   session_id: number
@@ -87,6 +95,7 @@ export interface ScheduledGroupDTO {
   group_id: number
   today_session: TodaySessionDTO | null
   current_level: CurrentLevelDTO
+  roster: StudentRosterDTO[]
 }
 
 export interface DashboardSummaryDTO {

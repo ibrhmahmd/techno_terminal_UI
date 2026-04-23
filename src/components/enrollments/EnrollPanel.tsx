@@ -15,13 +15,22 @@ interface EnrollPanelProps {
   useMockData: boolean
   isLoading: boolean
   setIsLoading: (loading: boolean) => void
+  preSelectedStudent?: StudentListItem | null
+  onEnrollmentSuccess?: () => void
 }
 
 
-export function EnrollPanel({ useMockData, isLoading, setIsLoading }: EnrollPanelProps) {
+export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedStudent, onEnrollmentSuccess }: EnrollPanelProps) {
   const [studentSearch, setStudentSearch] = useState('')
   const [groupSearch, setGroupSearch] = useState('')
-  const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(null)
+  const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(preSelectedStudent ?? null)
+  
+  // Update selectedStudent when preSelectedStudent changes
+  useEffect(() => {
+    if (preSelectedStudent) {
+      setSelectedStudent(preSelectedStudent)
+    }
+  }, [preSelectedStudent])
   const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
   const [amount, setAmount] = useState(150)
   const [discount, setDiscount] = useState(0)
@@ -110,6 +119,8 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading }: EnrollPane
         showToast(`Successfully enrolled ${selectedStudent.full_name}`, 'success')
         // Cache the group selection for quick reuse
         addRecentGroup(selectedGroup.id)
+        // Callback for parent component
+        onEnrollmentSuccess?.()
       }
       // Reset
       setSelectedStudent(null)

@@ -6,12 +6,13 @@ import { useToast } from '../components/common/Toast'
 import { StudentForm } from '../components/crm/StudentForm'
 import { ParentForm } from '../components/crm/ParentForm'
 import { WaitingListPanel } from '../components/crm/WaitingListPanel'
+import { EnrollPanel } from '../components/enrollments/EnrollPanel'
 import { useSearch } from '../hooks/useSearch'
 import { useDirectoryData, type GroupItem } from '../hooks/directory/useDirectoryData'
 import { useStudentActions } from '../components/directory/hooks/useStudentActions'
 import { useAdvancedSearch } from '../hooks/directory/useAdvancedSearch'
 import { AdvancedSearchPanel } from '../components/directory/AdvancedSearchPanel'
-import { createParent, type StudentListItem, type StudentFilterParams } from '../api/crm'
+import { createParent, type StudentListItem, type StudentFilterParams, type StudentWithDetails } from '../api/crm'
 import { studentColumns, parentColumns } from '../components/directory/DirectoryColumns'
 import { DirectoryTabs } from '../components/directory/DirectoryTabs'
 import { AlphabetSlider } from '../components/directory/AlphabetSlider'
@@ -39,6 +40,11 @@ export function DirectoryPage() {
   const [filterPage, setFilterPage] = useState(1)
   const [appliedFilters, setAppliedFilters] = useState<StudentFilterParams | null>(null)
   const { filters, setFilter, resetFilters, hasActiveFilters, convertToApiParams, getActiveFiltersArray } = useAdvancedSearch()
+
+  // Waiting list enrollment modal state
+  const [isWaitingEnrollModalOpen, setIsWaitingEnrollModalOpen] = useState(false)
+  const [selectedWaitingStudent, setSelectedWaitingStudent] = useState<StudentWithDetails | null>(null)
+  const [isEnrollPanelLoading, setIsEnrollPanelLoading] = useState(false)
 
   // Search and filters
   const [searchTerm, setSearchTerm] = useState('')
@@ -354,7 +360,10 @@ export function DirectoryPage() {
               {/* DataTable - flat or grouped */}
               {waitingGroupBy === 'none' ? (
                 <WaitingListPanel
-                  onStudentClick={(student) => navigate(`/students/${student.id}`)}
+                  onEnrollStudent={(student) => {
+                    setSelectedWaitingStudent(student)
+                    setIsWaitingEnrollModalOpen(true)
+                  }}
                 />
               ) : (
                 <DataTable
@@ -629,6 +638,29 @@ export function DirectoryPage() {
         confirmText={confirmDialog.confirmText}
         cancelText="Cancel"
       />
+
+      {/* Waiting List Enrollment Modal */}
+      <Modal
+        isOpen={isWaitingEnrollModalOpen}
+        onClose={() => {
+          setIsWaitingEnrollModalOpen(false)
+          setSelectedWaitingStudent(null)
+        }}
+        title={`Enroll ${selectedWaitingStudent?.full_name || 'Student'}`}
+        size="xl"
+      >
+        <EnrollPanel
+          useMockData={false}
+          isLoading={isEnrollPanelLoading}
+          setIsLoading={setIsEnrollPanelLoading}
+          preSelectedStudent={selectedWaitingStudent}
+          onEnrollmentSuccess={() => {
+            setIsWaitingEnrollModalOpen(false)
+            setSelectedWaitingStudent(null)
+            showToast('Student enrolled successfully!', 'success')
+          }}
+        />
+      </Modal>
 
       {/* Toast Notifications */}
       {ToastComponent}

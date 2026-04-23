@@ -33,6 +33,13 @@ export {
   getStudentsByStatus,
 } from './status'
 
+// Waiting List
+export {
+  getWaitingList,
+  type WaitingListParams,
+  type WaitingListResponse,
+} from './waiting-list'
+
 // History
 export {
   getStatusHistory,

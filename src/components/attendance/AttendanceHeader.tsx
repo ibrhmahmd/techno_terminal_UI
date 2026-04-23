@@ -1,21 +1,21 @@
 import { useMemo } from 'react'
-import type { Session } from '../../api/academics'
+import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 import { formatTime } from '../../utils/formatting'
 import { sessionStatusColors } from '../../utils/colors'
 
 interface AttendanceHeaderProps {
-  sessions: Session[]
+  sessions: SessionWithAttendanceDTO[]
   groupInstructorName?: string  // Fallback from group level for consistency
 }
 
 export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHeaderProps) {
   const displaySessions = useMemo(() => sessions.slice(0, 5), [sessions])
 
-  const isCancelled = (session: Session) => session.status === 'cancelled'
+  const isCancelled = (session: SessionWithAttendanceDTO) => session.status === 'cancelled'
 
   // Helper to get instructor name with fallback
-  const getInstructorName = (session: Session) => {
-    // Prefer session-level instructor name if available
+  const getInstructorName = (session: SessionWithAttendanceDTO) => {
+    // Prefer session-level instructor name if available (from new API)
     if (session.instructor_name && session.instructor_name.trim() !== '') {
       return session.instructor_name
     }
@@ -40,7 +40,7 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
 
           return (
             <th
-              key={`session-header-${session.id}-${sessionIdx}`}
+              key={`session-header-${session.session_id}-${sessionIdx}`}
               className={`px-4 py-4 text-[10px] font-bold uppercase tracking-[0.2em] border-b border-slate-300 text-center border-l border-slate-200 bg-slate-100 ${
                 cancelled ? 'opacity-50 blur-[1px] bg-gray-200' : ''
               }`}
@@ -50,7 +50,7 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
                   Session {sessionIdx + 1}
                 </span>
                 <span className="block text-[9px] font-semibold tracking-normal text-slate-800">
-                  {session.start_time ? formatTime(session.start_time) : ''}
+                  {session.time_start ? formatTime(session.time_start) : ''}
                 </span>
                 {/* Instructor name */}
                 <span className="block text-[9px] font-semibold text-slate-900 mt-0.5">

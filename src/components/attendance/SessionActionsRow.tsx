@@ -69,7 +69,7 @@ export function SessionActionsRow({ sessions, onEdit, onCancel, disabled }: Sess
 
                     {session.status === 'scheduled' && (
                       <button
-                        onClick={() => handleCancelClick(session.id)}
+                        onClick={() => handleCancelClick(session.session_id)}
                         disabled={disabled}
                         className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Cancel this session"
