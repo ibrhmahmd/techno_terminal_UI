@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react'
-import { type Session } from '../api/academics'
 import { useDashboard } from '../hooks/dashboard'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DashboardHeader } from '../components/dashboard/DashboardHeader'
@@ -8,6 +7,7 @@ import { InstructorSelectorBar } from '../components/dashboard/InstructorSelecto
 import { GroupSessionCard } from '../components/dashboard/GroupSessionCard'
 import { QuickActionsGrid } from '../components/dashboard/QuickActionsGrid'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
+import type { SessionWithAttendanceDTO } from '../api/dashboard'
 
 import { getTodayISO } from '../utils/formatting'
 
@@ -15,40 +15,41 @@ export function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(getTodayISO)
   const [selectedInstructor, setSelectedInstructor] = useState<string | null>(null)
 
-  const { scheduleItems, enrichedGroups, groupSessions, isLoading, error } = useDashboard(selectedDate)
+  const { scheduleItems, groups, instructors, summary, isLoading, error } = useDashboard(selectedDate)
 
   // Reset instructor filter when date changes
   useEffect(() => {
     setSelectedInstructor(null)
   }, [selectedDate])
 
-  // Extract unique instructors from enriched groups (exclude TBA)
+  // Extract unique instructors from summary (exclude TBA)
   const uniqueInstructors = useMemo(() => {
-    const instructors = new Set<string>()
-    enrichedGroups.forEach(g => {
-      if (g.instructor_name && g.instructor_name !== 'TBA') {
-        instructors.add(g.instructor_name)
-      }
-    })
-    return Array.from(instructors)
-  }, [enrichedGroups])
+    if (!summary?.unique_instructor_ids) return []
+    return summary.unique_instructor_ids
+      .map(id => instructors[id])
+      .filter(i => i && i.name !== 'TBA')
+      .map(i => i.name)
+  }, [instructors, summary])
 
   // Filter schedule items by selected instructor
   const filteredScheduleItems = useMemo(() => {
     if (!selectedInstructor) return scheduleItems
 
     return scheduleItems.filter(item => {
-      const group = enrichedGroups.find(g => g.id === item.group_id)
-      return group?.instructor_name === selectedInstructor
+      const group = groups[item.group_id]
+      if (!group?.instructor_id) return false
+      const instructor = instructors[group.instructor_id]
+      return instructor?.name === selectedInstructor
     })
-  }, [scheduleItems, enrichedGroups, selectedInstructor])
+  }, [scheduleItems, groups, instructors, selectedInstructor])
 
-  const getSessionsForGroup = (groupId: number): Session[] => {
-    return groupSessions[groupId] || []
+  const getSessionsForGroup = (groupId: number): SessionWithAttendanceDTO[] => {
+    const scheduledGroup = scheduleItems.find(sg => sg.group_id === groupId)
+    return scheduledGroup?.current_level?.sessions ?? []
   }
 
-  const getEnrichedData = (groupId: number) => {
-    return enrichedGroups.find(g => g.id === groupId)
+  const getGroupInfo = (groupId: number) => {
+    return groups[groupId]
   }
 
   return (
@@ -86,7 +87,7 @@ export function DashboardPage() {
               </div>
             ) : (
               filteredScheduleItems.map((item, index) => {
-                const enriched = getEnrichedData(item.group_id)
+                const group = getGroupInfo(item.group_id)
                 const isLast = index === filteredScheduleItems.length - 1
                 return (
                   <div
@@ -94,12 +95,12 @@ export function DashboardPage() {
                     className={`relative ${!isLast ? 'pb-8 border-b-2 border-slate-200' : ''}`}
                   >
                     <GroupSessionCard
-                      groupName={item.group_name}
-                      courseName={item.course_name}
-                      instructorName={enriched?.instructor_name || 'TBA'}
+                      groupName={group?.name || 'Unknown Group'}
+                      courseName={group?.course_name || 'Unknown Course'}
+                      instructorName={group?.instructor_id ? instructors[group.instructor_id]?.name || 'TBA' : 'TBA'}
                       sessions={getSessionsForGroup(item.group_id)}
                       groupId={item.group_id}
-                      level={item.level_number}
+                      level={item.current_level.level_number}
                     />
                   </div>
                 )

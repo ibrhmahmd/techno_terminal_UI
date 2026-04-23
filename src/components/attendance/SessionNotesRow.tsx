@@ -1,14 +1,14 @@
-import type { Session } from '../../api/academics'
+import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 
 interface SessionNotesRowProps {
-  sessions: Session[]
+  sessions: SessionWithAttendanceDTO[]
   notes: Record<number, string>
   onNoteChange: (sessionId: number, value: string) => void
   disabled?: boolean
 }
 
 export function SessionNotesRow({ sessions, notes, onNoteChange, disabled }: SessionNotesRowProps) {
-  const isCancelled = (session: Session) => session.status === 'cancelled'
+  const isCancelled = (session: SessionWithAttendanceDTO) => session.status === 'cancelled'
 
   return (
     <tr className="bg-slate-100 border-y border-slate-200">
@@ -24,14 +24,14 @@ export function SessionNotesRow({ sessions, notes, onNoteChange, disabled }: Ses
 
         return (
           <td
-            key={`notes-${session.id}`}
+            key={`notes-${session.session_id}`}
             className={`px-4 py-3 border-l border-slate-200 ${
               cancelled ? 'opacity-50 blur-[1px] bg-gray-100' : ''
             }`}
           >
             <textarea
-              value={notes[session.id] || ''}
-              onChange={(e) => onNoteChange(session.id, e.target.value)}
+              value={notes[session.session_id] || ''}
+              onChange={(e) => onNoteChange(session.session_id, e.target.value)}
               placeholder={cancelled ? 'Session cancelled' : 'Add session notes...'}
               disabled={disabled || cancelled}
               rows={3}

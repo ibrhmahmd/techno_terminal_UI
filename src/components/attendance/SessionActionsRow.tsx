@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import type { Session } from '../../api/academics'
+import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 import { sessionStatusColors } from '../../utils/colors'
 import { ConfirmDialog } from '../common/ConfirmDialog'
 
 interface SessionActionsRowProps {
-  sessions: Session[]
-  onEdit: (session: Session) => void
+  sessions: SessionWithAttendanceDTO[]
+  onEdit: (session: SessionWithAttendanceDTO) => void
   onCancel: (sessionId: number) => void
   disabled?: boolean
 }
@@ -14,7 +14,7 @@ export function SessionActionsRow({ sessions, onEdit, onCancel, disabled }: Sess
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [sessionToDelete, setSessionToDelete] = useState<number | null>(null)
 
-  const isCancelled = (session: Session) => session.status === 'cancelled'
+  const isCancelled = (session: SessionWithAttendanceDTO) => session.status === 'cancelled'
 
   const handleCancelClick = (sessionId: number) => {
     setSessionToDelete(sessionId)
@@ -45,7 +45,7 @@ export function SessionActionsRow({ sessions, onEdit, onCancel, disabled }: Sess
 
           return (
             <td
-              key={`actions-${session.id}`}
+              key={`actions-${session.session_id}`}
               className={`px-4 py-3 border-l border-slate-200 text-center ${
                 cancelled ? 'opacity-50 blur-[1px] bg-gray-100' : ''
               }`}

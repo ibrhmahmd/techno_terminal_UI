@@ -1,59 +1,37 @@
-import { useQuery, useQueries } from '@tanstack/react-query'
-import { getDailySchedule, getEnrichedGroups, getGroupSessions, type Session } from '../../api/academics'
+import { useQuery } from '@tanstack/react-query'
+import { getDashboardOverview } from '../../api/dashboard'
+import type { DashboardDailyOverviewDTO } from '../../api/dashboard'
 
 export const dashboardKeys = {
-  schedule:      (date: string) => ['dashboard', 'schedule', date] as const,
-  enrichedGroups: ['dashboard', 'enrichedGroups'] as const,
-  sessions:      (groupId: number) => ['dashboard', 'sessions', groupId] as const,
+  overview: (date: string) => ['dashboard', 'overview', date] as const,
 }
 
+/**
+ * Get consolidated dashboard data
+ * Uses the new optimized endpoint that returns groups, instructors, 
+ * sessions, and attendance in a single request
+ * 
+ * @param selectedDate - Date in YYYY-MM-DD format
+ * @see docs/api/dashboard-api.md
+ */
 export function useDashboard(selectedDate: string) {
-
-  // 1. Daily schedule — cached per date (5 min stale)
-  const scheduleQuery = useQuery({
-    queryKey: dashboardKeys.schedule(selectedDate),
-    queryFn: () => getDailySchedule(selectedDate),
-    staleTime: 5 * 60 * 1000,
+  const { data, isLoading, error } = useQuery<DashboardDailyOverviewDTO>({
+    queryKey: dashboardKeys.overview(selectedDate),
+    queryFn: () => getDashboardOverview({ date: selectedDate, include_attendance: true }),
+    staleTime: 5 * 60 * 1000, // 5 minutes, matching API cache_ttl
+    enabled: !!selectedDate,
   })
-
-  // 2. Enriched groups — cached globally (10 min stale, changes infrequently)
-  const groupsQuery = useQuery({
-    queryKey: dashboardKeys.enrichedGroups,
-    queryFn: getEnrichedGroups,
-    staleTime: 10 * 60 * 1000,
-  })
-
-  // 3. Sessions — parallel useQueries
-  const scheduleItems = scheduleQuery.data ?? []
-  const uniqueGroupIds = [...new Set(scheduleItems.map(item => item.group_id))]
-
-  const sessionQueries = useQueries({
-    queries: uniqueGroupIds.map(groupId => ({
-      queryKey: dashboardKeys.sessions(groupId),
-      queryFn: () => getGroupSessions(groupId),
-      staleTime: 5 * 60 * 1000,
-    })),
-  })
-
-  // Build sessions map from parallel results
-  const groupSessions: Record<number, Session[]> = {}
-  uniqueGroupIds.forEach((groupId, i) => {
-    const sessions = sessionQueries[i]?.data ?? []
-    groupSessions[groupId] = [...sessions]
-      .sort((a, b) => new Date(a.session_date).getTime() - new Date(b.session_date).getTime())
-      .slice(0, 5)
-  })
-
-  const isLoading = scheduleQuery.isLoading || groupsQuery.isLoading
-  const isSessionsLoading = sessionQueries.some(q => q.isLoading)
-  const error = scheduleQuery.error || groupsQuery.error
 
   return {
-    scheduleItems,
-    enrichedGroups: groupsQuery.data ?? [],
-    groupSessions,
+    // Raw data from API
+    data,
     isLoading,
-    isSessionsLoading,
     error: error ? 'Failed to load dashboard data.' : null,
+    
+    // Convenience accessors for backward compatibility
+    scheduleItems: data?.scheduled_groups ?? [],
+    groups: data?.groups ?? {},
+    instructors: data?.instructors ?? {},
+    summary: data?.summary,
   }
 }

@@ -20,6 +20,8 @@ export function CompetitionDetailPage() {
     competition,
     isLoading: competitionLoading,
     error: competitionError,
+    remove: deleteCompetition,
+    isMutating: isDeletingCompetition,
   } = useCompetition(competitionId)
 
   const {
@@ -40,6 +42,7 @@ export function CompetitionDetailPage() {
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false)
   const [isTeamsModalOpen, setIsTeamsModalOpen] = useState(false)
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(categories.find(c => c.id === '') || null)
   const [selectedCategoryName, setSelectedCategoryName] = useState('')
 
@@ -57,7 +60,18 @@ export function CompetitionDetailPage() {
       setIsRegistrationModalOpen(false)
       setSelectedCategory(null)
     } catch {
-      // Error handled by modal
+      // Error handled by hook
+    }
+  }
+
+  const handleDeleteCompetition = async () => {
+    try {
+      await deleteCompetition()
+      setIsDeleteModalOpen(false)
+      // Navigate back to competitions list after successful deletion
+      navigate('/competitions')
+    } catch {
+      // Error handled by hook
     }
   }
 
@@ -160,11 +174,16 @@ export function CompetitionDetailPage() {
                     Edit
                   </button>
                   <button
-                    onClick={() => {}}
-                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    disabled={isDeletingCompetition}
+                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-sm">delete</span>
-                    Delete
+                    {isDeletingCompetition ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      <span className="material-symbols-outlined text-sm">delete</span>
+                    )}
+                    {isDeletingCompetition ? 'Deleting...' : 'Delete'}
                   </button>
                 </>
               )}
@@ -524,6 +543,42 @@ export function CompetitionDetailPage() {
         <p className="text-sm text-slate-600">
           Are you sure you want to restore this competition? It will become active again.
         </p>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Competition"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsDeleteModalOpen(false)}
+              disabled={isDeletingCompetition}
+              className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteCompetition}
+              disabled={isDeletingCompetition}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              {isDeletingCompetition && <LoadingSpinner size="sm" />}
+              Delete
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-slate-600">
+            Are you sure you want to delete <strong>{competition?.name}</strong>?
+          </p>
+          <p className="text-sm text-slate-500">
+            This will soft-delete the competition. You can restore it later from the trash.
+          </p>
+        </div>
       </Modal>
     </div>
   )

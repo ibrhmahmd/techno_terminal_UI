@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { Session, UpdateSessionDTO } from '../../api/academics'
 import { cancelSession, updateSession } from '../../api/academics'
 import { getGroupRoster, type GroupRosterRowDTO } from '../../api/analytics'
-import { getSessionAttendance, markAttendance, type SessionAttendanceRowDTO, type AttendanceStatus } from '../../api/attendance'
+import { markAttendance, type AttendanceStatus } from '../../api/attendance'
 import { formatTime, getInitials } from '../../utils/formatting'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useToast } from '../common/Toast'
@@ -13,6 +13,7 @@ import { AttendanceFooter } from './AttendanceFooter'
 import { SessionActionsRow } from './SessionActionsRow'
 import { SessionNotesRow } from './SessionNotesRow'
 import { EditSessionPopup } from './EditSessionPopup'
+import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 
 // Toggle cycle: null -> present -> absent -> cancelled -> null
 const NEXT_STATE: Record<string, AttendanceStatus> = {
@@ -23,7 +24,7 @@ const NEXT_STATE: Record<string, AttendanceStatus> = {
 }
 
 interface AttendanceGridProps {
-  sessions: Session[]
+  sessions: SessionWithAttendanceDTO[]
   groupId: number
   level: number
   groupInstructorName?: string  // Fallback instructor name for consistency
@@ -70,7 +71,7 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName, 
   useEffect(() => {
     const initialNotes: Record<number, string> = {}
     sessions.forEach(s => {
-      initialNotes[s.id] = s.notes || ''
+      initialNotes[s.session_id] = s.notes || ''
     })
     setSessionNotes(initialNotes)
     setDirtyNotes(new Set())
@@ -96,15 +97,14 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName, 
       )
 
       const roster = await getGroupRoster(groupId, level)
-      const attendancePromises = displaySessions.map((s) => getSessionAttendance(s.id))
-      const attendanceResults = await Promise.all(attendancePromises)
-
+      // Use embedded attendance from the new dashboard API
       const studentRows: StudentRow[] = roster.map((r: GroupRosterRowDTO) => {
         const attendanceMap = new Map<number, AttendanceStatus>()
-        displaySessions.forEach((session, idx) => {
-          const sessionAttendance = attendanceResults[idx] || []
-          const record = sessionAttendance.find((a: SessionAttendanceRowDTO) => Number(a.student_id) === r.student_id)
-          attendanceMap.set(session.id, (record?.status as AttendanceStatus) || null)
+        displaySessions.forEach((session) => {
+          // Get attendance from the embedded data in the session
+          const sessionAttendance = session.attendance || []
+          const record = sessionAttendance.find((a) => a.student_id === r.student_id)
+          attendanceMap.set(session.session_id, record?.status || null)
         })
 
         return {
@@ -247,18 +247,18 @@ export function AttendanceGrid({ sessions, groupId, level, groupInstructorName, 
         const payload: Record<string, AttendanceStatus> = {}
 
         students.forEach((student) => {
-          const status = student.attendance.get(session.id)
+          const status = student.attendance.get(session.session_id)
           if (status === 'present' || status === 'absent' || status === 'cancelled') {
             payload[student.student_id] = status
           }
         })
-
+        
         if (Object.keys(payload).length > 0) {
           const entries = Object.entries(payload).map(([student_id, status]) => ({
             student_id,
             status,
           }))
-          return markAttendance(session.id, entries)
+          return markAttendance(session.session_id, entries)
         }
         return Promise.resolve()
       })

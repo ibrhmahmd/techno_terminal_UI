@@ -1,11 +1,11 @@
-import type { Session } from '../../api/academics'
+import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 import { AttendanceGrid } from '../attendance/AttendanceGrid'
 
 interface GroupSessionCardProps {
   groupName: string
   courseName: string
   instructorName: string
-  sessions: Session[]
+  sessions: SessionWithAttendanceDTO[]
   groupId: number
   level: number
 }

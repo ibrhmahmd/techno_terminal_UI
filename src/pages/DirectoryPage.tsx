@@ -14,6 +14,7 @@ import { AdvancedSearchPanel } from '../components/directory/AdvancedSearchPanel
 import { createParent, type StudentListItem, type StudentFilterParams } from '../api/crm'
 import { studentColumns, parentColumns } from '../components/directory/DirectoryColumns'
 import { DirectoryTabs } from '../components/directory/DirectoryTabs'
+import { AlphabetSlider } from '../components/directory/AlphabetSlider'
 import { StudentGroupBySelector } from '../components/directory/StudentGroupBySelector'
 import type { StudentGroupBy, WaitingGroupBy } from '../config/studentGrouping'
 
@@ -39,8 +40,10 @@ export function DirectoryPage() {
   const [appliedFilters, setAppliedFilters] = useState<StudentFilterParams | null>(null)
   const { filters, setFilter, resetFilters, hasActiveFilters, convertToApiParams, getActiveFiltersArray } = useAdvancedSearch()
 
-  // Search state
-  const { searchTerm, setSearchTerm, debouncedSearch, clearSearch } = useSearch({
+  // Search and filters
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
+  const { debouncedSearch, clearSearch } = useSearch({
     debounceMs: 300,
     minLength: 2,
   })
@@ -201,6 +204,7 @@ export function DirectoryPage() {
     resetFilters()
     setAppliedFilters(null)
     setFilterPage(1)
+    setSelectedLetter(null)
   }, [resetFilters])
 
   return (
@@ -262,21 +266,38 @@ export function DirectoryPage() {
                 />
               </div>
 
-              {/* DataTable - flat or grouped */}
-              {studentGroupBy === 'deleted' || studentGroupBy === 'none' ? (
-                <DataTable
-                  data={studentGroupBy === 'deleted' ? students : displayStudents}
-                  columns={studentColumns}
-                  keyExtractor={(s) => s.id.toString()}
-                  isLoading={isLoading}
-                  emptyMessage={studentGroupBy === 'deleted'
-                    ? 'No deleted students found' 
-                    : searchTerm.length >= 2 
-                      ? 'No students match your search' 
-                      : 'No students found'}
-                  emptyIcon={studentGroupBy === 'deleted' ? 'trash' : 'search'}
-                  onRowClick={(student) => navigate(`/students/${student.id}`)}
-                  actions={studentGroupBy === 'deleted' ? {
+              {/* DataTable with AlphabetSlider */}
+              <div className="flex gap-4">
+                {/* Alphabet Slider - hidden on mobile */}
+                <div className="hidden md:block">
+                  <AlphabetSlider
+                    selectedLetter={selectedLetter}
+                    onSelect={setSelectedLetter}
+                  />
+                </div>
+                
+                {/* DataTable - flat or grouped */}
+                <div className="flex-1 min-w-0">
+                  {studentGroupBy === 'deleted' || studentGroupBy === 'none' ? (
+                    <DataTable
+                      data={studentGroupBy === 'deleted' 
+                        ? selectedLetter 
+                          ? students.filter(s => s.full_name.charAt(0).toUpperCase() === selectedLetter)
+                          : students
+                        : selectedLetter
+                          ? displayStudents.filter(s => s.full_name.charAt(0).toUpperCase() === selectedLetter)
+                          : displayStudents}
+                      columns={studentColumns}
+                      keyExtractor={(s) => s.id.toString()}
+                      isLoading={isLoading}
+                      emptyMessage={studentGroupBy === 'deleted'
+                        ? (selectedLetter ? `No deleted students found starting with "${selectedLetter}"` : 'No deleted students found')
+                        : searchTerm.length >= 2 
+                          ? 'No students match your search' 
+                          : (selectedLetter ? `No students found starting with "${selectedLetter}"` : 'No students found')}
+                      emptyIcon={studentGroupBy === 'deleted' ? 'trash' : 'search'}
+                      onRowClick={(student) => navigate(`/students/${student.id}`)}
+                      actions={studentGroupBy === 'deleted' ? {
                     view: (student) => navigate(`/students/${student.id}`),
                     restore: handleRestoreStudent,
                     delete: handleHardDeleteWithConfirm
@@ -308,8 +329,10 @@ export function DirectoryPage() {
                   }}
                 />
               )}
-            </>
-          )}
+            </div>
+          </div>
+        </>
+      )}
           {activeTab === 'waiting' && (
             <>
               {/* Group by selector for waiting list */}
