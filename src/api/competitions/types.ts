@@ -127,6 +127,8 @@ export interface CategoryResponse {
 
 export interface CompetitionSummaryCategory {
   category: CompetitionCategory
+  category_id: string  // Convenience alias for category.id
+  category_name: string  // Convenience alias for category.name
   teams: TeamRegistration[]
 }
 
@@ -135,6 +137,9 @@ export interface CompetitionSummaryResponse {
   categories: CompetitionSummaryCategory[]
   total_teams: number
   total_participants: number
+  total_students: number  // Alias for total_participants
+  total_expected: number  // Total expected revenue
+  total_collected: number  // Total collected revenue
 }
 
 // Helper type for checking if competition is soft-deleted

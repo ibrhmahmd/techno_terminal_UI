@@ -44,7 +44,7 @@ export function GroupDetailPage() {
   const {
     enrollmentHistory,
     instructorHistory,
-    lifecycleHistory,
+    lifecycleHistory: _lifecycleHistory,
     courseHistory,
     enrollmentTransitions,
     levelAnalytics,
@@ -270,8 +270,7 @@ export function GroupDetailPage() {
             <HistoryTab
               enrollmentHistory={enrollmentHistory}
               instructorHistory={instructorHistory}
-              lifecycleHistory={lifecycleHistory}
-              courseHistory={courseHistory}
+              coursesHistory={courseHistory}
               enrollmentTransitions={enrollmentTransitions}
               levelAnalytics={levelAnalytics}
               enrollmentAnalytics={enrollmentAnalytics}

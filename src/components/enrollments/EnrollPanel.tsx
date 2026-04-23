@@ -30,7 +30,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading }: EnrollPane
   const { showToast, ToastComponent } = useToast()
 
   // Fetch siblings when student is selected
-  const { siblings } = useStudentSiblings(selectedStudent?.id || null)
+  const { siblings } = useStudentSiblings(selectedStudent?.id || null, !!selectedStudent)
 
   // Auto-apply sibling discount (50 EGP) when student has siblings
   useEffect(() => {

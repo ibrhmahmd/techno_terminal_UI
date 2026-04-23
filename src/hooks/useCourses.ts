@@ -71,11 +71,12 @@ export function useCourses() {
 
   const totalPages = Math.ceil(processedCourses.length / pageSize)
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
+  const handleSort = (field: string) => {
+    const typedField = field as SortField
+    if (sortField === typedField) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
     } else {
-      setSortField(field)
+      setSortField(typedField)
       setSortDirection('asc')
     }
     setCurrentPage(1)

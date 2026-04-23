@@ -18,7 +18,7 @@ export function AgeBucketEditor() {
   })
   const [errors, setErrors] = useState<string[]>([])
 
-  const _validation = validateAgeBuckets(ageBuckets)
+  // Validation is computed but displayed via error states in the UI
 
   const handleAddBucket = () => {
     if (!newBucket.label || newBucket.min === undefined || newBucket.max === undefined) {

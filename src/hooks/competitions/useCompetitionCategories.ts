@@ -46,7 +46,6 @@ export function useCompetitionCategories(
   return {
     categories,
     isLoading,
-    isMutating: false, // No mutations - categories are auto-generated
     error,
     refresh: fetchCategories,
   }

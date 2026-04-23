@@ -28,7 +28,7 @@ export function CompetitionDetailPage() {
   } = useCompetitionCategories(competitionId)
 
   // Summary data
-  const { summary, isLoading: summaryLoading } = useCompetitionSummary(competitionId)
+  const { summary, isLoading: summaryLoading } = useCompetitionSummary(parseInt(competitionId, 10))
 
   // Teams data
   const { teams, isLoading: teamsLoading } = useTeams({ competition_id: parseInt(competitionId, 10) })

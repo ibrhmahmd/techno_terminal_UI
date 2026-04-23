@@ -6,19 +6,19 @@ import { Modal } from '../components/common/Modal'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { CompetitionCard } from '../components/competitions/CompetitionCard'
 import { CompetitionForm } from '../components/competitions/CompetitionForm'
-import { DataTable } from '../components/common/DataTable'
+import { DataTable } from '../components/common/datatable'
 import { useCompetitions, useDeletedCompetitions } from '../hooks/competitions'
-import { createCompetition, deleteCompetition, restoreCompetition, isCompetitionDeleted } from '../api/competitions'
+import { createCompetition, deleteCompetition, restoreCompetition } from '../api/competitions'
 import type { Competition, CreateCompetitionInput, UpdateCompetitionInput } from '../api/competitions'
 
 export function CompetitionsPage() {
   const navigate = useNavigate()
   const {
     competitions,
-    totalCount,
+    totalCount: _totalCount,
     isLoading,
     error: hookError,
-    setStatusFilter,
+    setStatusFilter: _setStatusFilter,
     refresh,
   } = useCompetitions()
 

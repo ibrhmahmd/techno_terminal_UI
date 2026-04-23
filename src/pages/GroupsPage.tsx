@@ -31,7 +31,7 @@ export function GroupsPage() {
     sortField,
     sortDirection,
     handleSort,
-    processedGroups,
+    processedGroups: _processedGroups,
     paginatedGroups,
     totalPages,
     refresh,
@@ -140,7 +140,7 @@ export function GroupsPage() {
 
       <PageSection>
         <GroupBySelector
-          value={groupBy}
+          value={groupBy || 'course'}
           onChange={(field) => {
             setGroupBy(field)
             setCurrentPage(1)

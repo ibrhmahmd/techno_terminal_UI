@@ -25,8 +25,8 @@ export function TeamDetailPage() {
   const {
     members,
     isLoading: membersLoading,
-    add: addMember,
-    remove: removeMember,
+    add: _addMember,
+    remove: _removeMember,
   } = useTeamMembers(teamId)
 
   // Payments

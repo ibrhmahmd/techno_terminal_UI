@@ -16,16 +16,15 @@ import { useEnrollmentTrends } from '../components/reports/hooks/useEnrollmentTr
 export function ReportsPage() {
   const [activeTab, setActiveTab] = useState<TabId>('overview')
 
-  // Data hooks with automatic mock fallback
-  const { summary, isLoading: summaryLoading, error: summaryError, refetch: refetchSummary, isUsingMockData: summaryMock } = useDashboardData()
-  const { metrics: revenueMetrics, isLoading: revenueLoading, error: revenueError, refetch: refetchRevenue, isUsingMockData: revenueMock } = useRevenueData(6)
-  const { instructors, isLoading: instructorsLoading, error: instructorsError, refetch: refetchInstructors, isUsingMockData: instructorsMock } = useInstructorPerformance()
-  const { progress: studentProgress, isLoading: progressLoading, error: progressError, refetch: refetchProgress, isUsingMockData: progressMock } = useStudentProgress()
-  const { trends: enrollmentTrends, isLoading: trendsLoading, error: trendsError, refetch: refetchTrends, isUsingMockData: trendsMock } = useEnrollmentTrends(6)
+  // Data hooks
+  const { summary, isLoading: summaryLoading, error: summaryError, refetch: refetchSummary } = useDashboardData()
+  const { metrics: revenueMetrics, isLoading: revenueLoading, error: revenueError, refetch: refetchRevenue } = useRevenueData()
+  const { instructors, isLoading: instructorsLoading, error: instructorsError, refetch: refetchInstructors } = useInstructorPerformance()
+  const { progress: studentProgress, isLoading: progressLoading, error: progressError, refetch: refetchProgress } = useStudentProgress()
+  const { trends: enrollmentTrends, isLoading: trendsLoading, error: trendsError, refetch: refetchTrends } = useEnrollmentTrends()
 
-  // Determine overall loading and mock data state
+  // Determine overall loading state
   const isLoading = summaryLoading || revenueLoading || instructorsLoading || progressLoading || trendsLoading
-  const isUsingMockData = summaryMock || revenueMock || instructorsMock || progressMock || trendsMock
 
   // Aggregate error message
   const hasError = summaryError || revenueError || instructorsError || progressError || trendsError
@@ -104,13 +103,7 @@ export function ReportsPage() {
       </header>
 
       <PageSection>
-        {isUsingMockData && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm">
-            API unavailable. Showing demo data.
-          </div>
-        )}
-
-        {errorMessage && !isUsingMockData && (
+        {errorMessage && (
           <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm flex items-center justify-between">
             <span>{errorMessage}</span>
             <button
