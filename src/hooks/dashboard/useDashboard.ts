@@ -4,6 +4,8 @@ import type { DashboardDailyOverviewDTO } from '../../api/dashboard'
 
 export const dashboardKeys = {
   overview: (date: string) => ['dashboard', 'overview', date] as const,
+  schedule: (date: string) => ['dashboard', 'schedule', date] as const,
+  sessions: (groupId: number) => ['dashboard', 'sessions', groupId] as const,
 }
 
 /**

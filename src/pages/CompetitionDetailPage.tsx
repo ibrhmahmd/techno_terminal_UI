@@ -366,14 +366,14 @@ export function CompetitionDetailPage() {
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-headline text-lg font-semibold text-on-surface">Registered Teams</h2>
-              <span className="text-sm text-slate-500">{teams.length} teams</span>
+              <span className="text-sm text-slate-500">{teams?.length ?? 0} teams</span>
             </div>
 
             {teamsLoading ? (
               <div className="flex items-center justify-center py-12">
                 <LoadingSpinner />
               </div>
-            ) : teams.length === 0 ? (
+            ) : !Array.isArray(teams) || teams.length === 0 ? (
               <div className="text-center py-12">
                 <span className="material-symbols-outlined text-4xl text-slate-300 mb-4">groups</span>
                 <p className="text-slate-500">No teams registered yet</p>

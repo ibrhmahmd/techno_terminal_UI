@@ -5,7 +5,9 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import { TabNavigation } from '../components/groups/TabNavigation'
 import { AttendanceTab } from '../components/groups/AttendanceTab'
+import { LevelsTab } from '../components/groups/LevelsTab'
 import { StudentsTab } from '../components/groups/StudentsTab'
+import { PaymentsTab } from '../components/groups/PaymentsTab'
 import { HistoryTab } from '../components/groups/history/HistoryTab'
 import { GroupInfoCard, ProgressLevelDialog } from '../components/groups/detail'
 import { EditGroupDialog } from '../components/groups/detail/EditGroupDialog'
@@ -15,14 +17,15 @@ import { useGroupLifecycle } from '../hooks/useGroupLifecycle'
 import { useGroupCompetitions } from '../hooks/useGroupCompetitions'
 import { useGroupMutations } from '../hooks/useGroupMutations'
 import { useToast } from '../components/common/Toast'
-import type { UpdateGroupDTO, ProgressGroupLevelRequest } from '../api/academics'
+import type { UpdateGroupDTO, ProgressGroupLevelRequest, GroupLevelHistoryDTO } from '../api/academics'
+import { useMemo } from 'react'
 
 export function GroupDetailPage() {
   const { id } = useParams<{ id: string }>()
   const groupId = Number(id) || 0
   const { showToast } = useToast()
 
-  const [activeTab, setActiveTab] = useState<'attendance' | 'students' | 'history'>('attendance')
+  const [activeTab, setActiveTab] = useState<'attendance' | 'levels' | 'students' | 'payments' | 'history'>('attendance')
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false)
@@ -44,30 +47,47 @@ export function GroupDetailPage() {
   const {
     enrollmentHistory,
     instructorHistory,
-    lifecycleHistory: _lifecycleHistory,
+    lifecycleHistory,
     courseHistory,
-    enrollmentTransitions,
+    enrollmentTransitions: _enrollmentTransitions,
     levelAnalytics,
     enrollmentAnalytics,
     isLoadingHistory,
-    isLoadingAnalytics,
+    isLoadingAnalytics: _isLoadingAnalytics,
     pagination,
     setEnrollmentPage,
-    completeLevel,
-    cancelLevel,
+    completeLevel: _completeLevel,
+    cancelLevel: _cancelLevel,
   } = useGroupLifecycle(groupId)
 
+  // Convert timeline items to GroupLevelHistoryDTO format for components
+  const levelTimeline = useMemo(() => {
+    if (!lifecycleHistory?.levels_timeline) return []
+    return lifecycleHistory.levels_timeline.map(timeline => ({
+      id: timeline.id,
+      level_number: timeline.level_number,
+      price_override: undefined,
+      start_date: timeline.start_date,
+      end_date: timeline.end_date,
+      status: timeline.status,
+      course_name: timeline.course_name,
+      instructor_name: timeline.instructor_name,
+      enrollment_count_start: timeline.enrollment_count,
+      completion_rate: 0, // Not available in timeline
+    })) as unknown as GroupLevelHistoryDTO[]
+  }, [lifecycleHistory])
+
   const {
-    teams,
-    availableTeams,
+    teams: _teams,
+    availableTeams: _availableTeams,
     competitions,
-    competitionAnalytics,
-    isLoadingTeams,
-    isLoadingCompetitions,
-    linkTeam,
-    registerForCompetition,
-    completeParticipation,
-    withdrawFromCompetition,
+    competitionAnalytics: _competitionAnalytics,
+    isLoadingTeams: _isLoadingTeams,
+    isLoadingCompetitions: _isLoadingCompetitions,
+    linkTeam: _linkTeam,
+    registerForCompetition: _registerForCompetition,
+    completeParticipation: _completeParticipation,
+    withdrawFromCompetition: _withdrawFromCompetition,
   } = useGroupCompetitions(groupId)
 
   const { 
@@ -159,27 +179,6 @@ export function GroupDetailPage() {
     }
   }
 
-  const handleCompleteLevel = async (levelNumber: number) => {
-    try {
-      const result = await completeLevel(levelNumber)
-      showToast(
-        `Level ${result.completed_level.level_number} completed. Now at level ${result.new_level.level_number}.`,
-        'success'
-      )
-    } catch {
-      showToast(mutationError || 'Failed to complete level', 'error')
-    }
-  }
-
-  const handleCancelLevel = async (levelNumber: number, reason?: string) => {
-    try {
-      await cancelLevel(levelNumber, reason)
-      showToast(`Level ${levelNumber} cancelled.`, 'success')
-    } catch {
-      showToast(mutationError || 'Failed to cancel level', 'error')
-    }
-  }
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-surface">
@@ -247,7 +246,7 @@ export function GroupDetailPage() {
           {activeTab === 'attendance' && (
             <AttendanceTab
               groupId={groupId}
-              levels={levels}
+              levels={levelTimeline.length > 0 ? levelTimeline : levels}
               sessions={sessions}
               activeLevelId={activeLevelId}
               currentLevelNumber={group.level_number}
@@ -256,13 +255,29 @@ export function GroupDetailPage() {
             />
           )}
 
+          {activeTab === 'levels' && (
+            <LevelsTab
+              groupId={groupId}
+              levels={lifecycleHistory?.levels_timeline || []}
+              levelAnalytics={levelAnalytics}
+              currentLevelNumber={group.level_number}
+            />
+          )}
+
           {activeTab === 'students' && (
             <StudentsTab
               groupId={groupId}
-              levels={levels}
+              levels={levelTimeline.length > 0 ? levelTimeline : levels}
               activeLevelId={activeLevelId}
               currentLevelNumber={group.level_number}
               onLevelChange={setActiveLevel}
+            />
+          )}
+
+          {activeTab === 'payments' && (
+            <PaymentsTab
+              groupId={groupId}
+              enrollmentAnalytics={enrollmentAnalytics}
             />
           )}
 
@@ -270,28 +285,17 @@ export function GroupDetailPage() {
             <HistoryTab
               enrollmentHistory={enrollmentHistory}
               instructorHistory={instructorHistory}
-              coursesHistory={courseHistory}
-              enrollmentTransitions={enrollmentTransitions}
-              levelAnalytics={levelAnalytics}
-              enrollmentAnalytics={enrollmentAnalytics}
+              coursesHistory={courseHistory.map((c, index) => ({
+                level_number: index + 1,
+                course_name: c.course_name,
+                start_date: c.assigned_at,
+              })) as { level_number: number; course_name: string; start_date: string; end_date?: string }[]}
               competitions={competitions}
-              competitionAnalytics={competitionAnalytics}
-              teams={teams}
-              availableTeams={availableTeams}
-              isLoadingHistory={isLoadingHistory}
-              isLoadingAnalytics={isLoadingAnalytics}
-              isLoadingTeams={isLoadingTeams}
-              isLoadingCompetitions={isLoadingCompetitions}
+              isLoading={isLoadingHistory}
               totalEnrollment={pagination.enrollment.total}
               onEnrollmentPageChange={setEnrollmentPage}
               enrollmentSkip={pagination.enrollment.skip}
               enrollmentLimit={pagination.enrollment.limit}
-              onCompleteLevel={handleCompleteLevel}
-              onCancelLevel={handleCancelLevel}
-              onLinkTeam={linkTeam}
-              onRegisterForCompetition={registerForCompetition}
-              onCompleteParticipation={completeParticipation}
-              onWithdrawFromCompetition={withdrawFromCompetition}
             />
           )}
 

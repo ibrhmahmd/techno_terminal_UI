@@ -6,7 +6,6 @@
 // Session models
 export type {
   Session,
-  DailyScheduleItem,
 } from './models';
 
 // Session input DTOs

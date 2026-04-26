@@ -7,27 +7,30 @@ import { EnrollmentTab } from '../components/reports/organisms/EnrollmentTab'
 import { RevenueTab } from '../components/reports/organisms/RevenueTab'
 import { InstructorsTab } from '../components/reports/organisms/InstructorsTab'
 import { ProgressTab } from '../components/reports/organisms/ProgressTab'
-import { useDashboardData } from '../components/reports/hooks/useDashboardData'
+import { useReportsSummary } from '../components/reports/hooks/useReportsSummary'
 import { useRevenueData } from '../components/reports/hooks/useRevenueData'
 import { useInstructorPerformance } from '../components/reports/hooks/useInstructorPerformance'
 import { useStudentProgress } from '../components/reports/hooks/useStudentProgress'
 import { useEnrollmentTrends } from '../components/reports/hooks/useEnrollmentTrends'
+import { useDailyCollections } from '../components/reports/hooks/useDailyCollections'
+import { CollectionsTab } from '../components/reports/organisms/CollectionsTab'
 
 export function ReportsPage() {
   const [activeTab, setActiveTab] = useState<TabId>('overview')
 
   // Data hooks
-  const { summary, isLoading: summaryLoading, error: summaryError, refetch: refetchSummary } = useDashboardData()
+  const { summary, isLoading: summaryLoading, error: summaryError, refetch: refetchSummary } = useReportsSummary()
   const { metrics: revenueMetrics, isLoading: revenueLoading, error: revenueError, refetch: refetchRevenue } = useRevenueData()
   const { instructors, isLoading: instructorsLoading, error: instructorsError, refetch: refetchInstructors } = useInstructorPerformance()
   const { progress: studentProgress, isLoading: progressLoading, error: progressError, refetch: refetchProgress } = useStudentProgress()
   const { trends: enrollmentTrends, isLoading: trendsLoading, error: trendsError, refetch: refetchTrends } = useEnrollmentTrends()
+  const { collections, receipts, date, setDate, isLoading: collectionsLoading, error: collectionsError, refetch: refetchCollections } = useDailyCollections()
 
   // Determine overall loading state
-  const isLoading = summaryLoading || revenueLoading || instructorsLoading || progressLoading || trendsLoading
+  const isLoading = summaryLoading || revenueLoading || instructorsLoading || progressLoading || trendsLoading || collectionsLoading
 
   // Aggregate error message
-  const hasError = summaryError || revenueError || instructorsError || progressError || trendsError
+  const hasError = summaryError || revenueError || instructorsError || progressError || trendsError || collectionsError
   const errorMessage = hasError ? 'Some data failed to load. Using fallback data where available.' : undefined
 
   const handleRetry = () => {
@@ -36,6 +39,7 @@ export function ReportsPage() {
     refetchInstructors()
     refetchProgress()
     refetchTrends()
+    refetchCollections()
   }
 
   const renderTabContent = () => {
@@ -84,6 +88,18 @@ export function ReportsPage() {
             isLoading={progressLoading}
             error={progressError?.message}
             onRetry={refetchProgress}
+          />
+        )
+      case 'collections':
+        return (
+          <CollectionsTab
+            collections={collections}
+            receipts={receipts}
+            date={date}
+            onDateChange={setDate}
+            isLoading={collectionsLoading}
+            error={collectionsError?.message}
+            onRetry={refetchCollections}
           />
         )
       default:

@@ -69,11 +69,6 @@ export interface DeleteEnrollmentResponse {
   data: Enrollment
 }
 
-/** Get group roster query params */
-export interface GetGroupRosterParams {
-  level?: number
-}
-
 /** Student enrollment summary for group students tab */
 export interface StudentEnrollmentSummary {
   student_id: number

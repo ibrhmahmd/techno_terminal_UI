@@ -159,7 +159,7 @@ interface TemplateModalProps {
   isOpen: boolean
   onClose: () => void
   template: NotificationTemplateDTO | null
-  onSave: (data: Partial<NotificationTemplateDTO> & { template_key?: string }) => void
+  onSave: (data: { template_key?: string; name: string; subject: string; body_html: string; body_text?: string; is_active: boolean; variables: { name: string; description: string; required: boolean }[] }) => void
 }
 
 function TemplateModal({ isOpen, onClose, template, onSave }: TemplateModalProps) {

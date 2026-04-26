@@ -21,21 +21,3 @@ export interface Session {
   is_substitute?: boolean;
   notes: string;
 }
-
-/**
- * Daily schedule item - aggregated session info
- */
-export interface DailyScheduleItem {
-  session_id: number;
-  date: string;
-  time_start: string;
-  time_end: string;
-  status: "scheduled" | "completed" | "cancelled";
-  notes: string;
-  group_id: number;
-  group_name: string;
-  level_number: number;
-  course_id: number;
-  course_name: string;
-  enrolled_count: number;
-}

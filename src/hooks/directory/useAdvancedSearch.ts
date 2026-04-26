@@ -16,6 +16,16 @@ export interface FilterState {
   enrollmentDateTo: string
 }
 
+const DAY_NAME_MAP: Record<string, string> = {
+  'Mon': 'monday',
+  'Tue': 'tuesday',
+  'Wed': 'wednesday',
+  'Thu': 'thursday',
+  'Fri': 'friday',
+  'Sat': 'saturday',
+  'Sun': 'sunday',
+}
+
 const initialFilters: FilterState = {
   ageMin: '',
   ageMax: '',
@@ -68,7 +78,10 @@ export function useAdvancedSearch(): UseAdvancedSearchReturn {
     if (filters.status.length > 0) params.status = filters.status
     if (filters.gender.length > 0) params.gender = filters.gender
     if (filters.courseIds.length > 0) params.course_ids = filters.courseIds
-    if (filters.groupDays.length > 0) params.group_default_day = filters.groupDays
+    if (filters.groupDays.length > 0) {
+      // Map abbreviated day names to full lowercase names for backend
+      params.group_default_day = filters.groupDays.map(day => DAY_NAME_MAP[day] || day)
+    }
     if (filters.instructorName.trim()) params.instructor_name = filters.instructorName.trim()
     if (filters.hasUnpaidBalance !== null) params.has_unpaid_balance = filters.hasUnpaidBalance
     if (filters.enrollmentCountMin !== '') params.min_enrollments = Number(filters.enrollmentCountMin)

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { UpdateSessionDTO } from '../../api/academics'
 import { cancelSession, updateSession } from '../../api/academics'
-import { getGroupRoster } from '../../api/analytics'
 import { markAttendance, type AttendanceStatus } from '../../api/attendance'
 import { formatTime, getInitials } from '../../utils/formatting'
 import { LoadingSpinner } from '../common/LoadingSpinner'
@@ -25,12 +24,13 @@ const NEXT_STATE: Record<string, AttendanceStatus> = {
 
 interface AttendanceGridProps {
   sessions: SessionWithAttendanceDTO[]
-  roster?: StudentRosterDTO[]   // NEW: Optional roster from dashboard API
+  roster: StudentRosterDTO[]   // Required: roster from parent component (dashboard or group API)
   groupId: number
   level: number
   groupInstructorName?: string  // Fallback instructor name for consistency
   groupName?: string            // Group name to display in header
   courseName?: string           // Course name to display in header
+  isLoading?: boolean           // External loading state from API hook
 }
 
 interface StudentRow {
@@ -97,23 +97,13 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         `[AttendanceGrid] Fetch #${fetchCycleRef.current} started for group ${groupId} with ${displaySessions.length} sessions`
       )
 
-      // NEW: Use provided roster if available, otherwise fall back to old API
+      // Use provided roster from parent component
       let rosterData: StudentRosterDTO[]
       if (roster && roster.length > 0) {
         rosterData = roster
         console.debug(`[AttendanceGrid] Using provided roster (${roster.length} students)`)
       } else {
-        // Fallback: fetch from old API (for backward compatibility with Group Detail page)
-        console.debug(`[AttendanceGrid] Fetching roster from API`)
-        const oldRoster = await getGroupRoster(groupId, level)
-        rosterData = oldRoster.map(r => ({
-          student_id: r.student_id,
-          student_name: r.student_name,
-          gender: 'male' as const,
-          billing_status: (r.balance < 0 ? 'due' : 'paid') as 'due' | 'paid',
-          balance: r.balance
-        }))
-      }
+        throw new Error('No roster provided. AttendanceGrid requires a roster prop.')      }
 
       // Build student rows using roster + session attendance
       const studentRows: StudentRow[] = rosterData.map((r) => {

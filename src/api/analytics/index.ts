@@ -7,7 +7,6 @@
 
 // Academic module
 export {
-  getDashboardSummary,
   getUnpaidAttendees,
   getGroupRoster,
   getAttendanceHeatmap,

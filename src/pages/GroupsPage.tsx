@@ -140,7 +140,7 @@ export function GroupsPage() {
 
       <PageSection>
         <GroupBySelector
-          value={groupBy || 'course'}
+          value={groupBy ?? null}
           onChange={(field) => {
             setGroupBy(field)
             setCurrentPage(1)

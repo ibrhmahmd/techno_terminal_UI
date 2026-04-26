@@ -9,7 +9,7 @@ import {
   createEmployee,
   updateEmployee,
   deleteEmployee,
-  getHRStats,
+  // getHRStats, // NOTE: Disabled - endpoint not yet implemented
   logAttendance,
   type Employee,
   type CreateEmployeeInput,
@@ -25,13 +25,8 @@ const statusColors: Record<string, string> = {
 }
 
 export function StaffPage() {
-  const [stats, setStats] = useState<{
-    total_employees: number
-    active_employees: number
-    on_leave: number
-    present_today: number
-    monthly_payroll_total: number
-  } | null>(null)
+  // NOTE: Stats disabled - HR Stats endpoint not yet implemented in backend
+  // Stats cards section is commented out below until backend is ready
   
   // Use pagination hook for employees
   const {
@@ -57,12 +52,14 @@ export function StaffPage() {
   // Load initial data - only on mount to prevent infinite loops
   useEffect(() => {
     async function loadData() {
-      try {
-        const statsData = await getHRStats()
-        setStats(statsData)
-      } catch {
-        setError('API unavailable. Failed to load stats.')
-      }
+      // NOTE: HR Stats endpoint not yet implemented in backend
+      // Keeping stats disabled to avoid API errors
+      // try {
+      //   const statsData = await getHRStats()
+      //   setStats(statsData)
+      // } catch {
+      //   setError('API unavailable. Failed to load stats.')
+      // }
       // Trigger employees load
       refresh()
     }
@@ -160,8 +157,8 @@ export function StaffPage() {
           </div>
         )}
 
-        {/* Stats Cards */}
-        {stats && (
+        {/* Stats Cards - DISABLED: HR Stats endpoint not yet implemented */}
+        {/* {stats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div className="p-4 bg-white rounded-xl border border-slate-200">
               <p className="text-sm text-slate-500">Total Employees</p>
@@ -180,7 +177,7 @@ export function StaffPage() {
               <p className="text-2xl font-bold text-secondary">{stats.monthly_payroll_total.toLocaleString()} EGP</p>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Filters */}
         <div className="flex items-center gap-4 mb-6">

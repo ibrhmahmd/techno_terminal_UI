@@ -7,7 +7,6 @@ import { InstructorSelectorBar } from '../components/dashboard/InstructorSelecto
 import { GroupSessionCard } from '../components/dashboard/GroupSessionCard'
 import { QuickActionsGrid } from '../components/dashboard/QuickActionsGrid'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../api/dashboard'
 
 import { getTodayISO } from '../utils/formatting'
 

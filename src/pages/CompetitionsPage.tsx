@@ -15,10 +15,8 @@ export function CompetitionsPage() {
   const navigate = useNavigate()
   const {
     competitions,
-    totalCount: _totalCount,
     isLoading,
     error: hookError,
-    setStatusFilter: _setStatusFilter,
     refresh,
   } = useCompetitions()
 

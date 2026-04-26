@@ -59,6 +59,27 @@ export {
   getGroupCompetitionAnalytics,
 } from './competitions';
 
+// New endpoints (Group Details API v2)
+export {
+  deleteGroupLevel,
+  getDetailedLevels,
+  getAttendanceForLevel,
+  getGroupPayments,
+  getGroupEnrollmentsAll,
+  // Types
+  type DeleteLevelResponse,
+  type DetailedLevelsResponse,
+  type LevelDetailDTO,
+  type AttendanceLevelResponse,
+  type AttendanceRosterDTO,
+  type AttendanceSessionDTO,
+  type GroupPaymentsResponse,
+  type PaymentDetailDTO,
+  type GroupEnrollmentsAllResponse,
+  type EnrollmentDetailDTO,
+  type TransferOptionDTO,
+} from './newEndpoints';
+
 // Utility functions
 export {
   getGroupsWithCompetitions,

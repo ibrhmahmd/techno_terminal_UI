@@ -7,7 +7,7 @@ export interface WaitingListParams {
   order_by_priority?: boolean
 }
 
-interface WaitingListResponse {
+export interface WaitingListResponse {
   success: boolean
   data: StudentWithDetails[]
   message: string

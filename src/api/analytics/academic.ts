@@ -9,22 +9,12 @@
 import client from '../client'
 import type { ApiResponse } from '../../types/api'
 import type {
-  DashboardSummaryPublic,
   UnpaidAttendeeDTO,
   GroupRosterRowDTO,
   AttendanceHeatmapRowDTO,
   StudentProgressDTO,
   CourseCompletionDTO,
 } from './types'
-
-/**
- * Get dashboard summary with active enrollments and today's session count
- * @see docs/api/analytics/academic.md#get-dashboard-summary
- */
-export async function getDashboardSummary(): Promise<DashboardSummaryPublic> {
-  const response = await client.get<ApiResponse<DashboardSummaryPublic>>('/analytics/dashboard/summary')
-  return response.data.data
-}
 
 /**
  * Get unpaid attendees for a specific date

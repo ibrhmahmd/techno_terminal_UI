@@ -17,7 +17,7 @@ export function useTeams(filters?: TeamListFilters): UseTeamsReturn {
   })
 
   return {
-    teams: data || [],
+    teams: Array.isArray(data) ? data : [],
     isLoading,
     error: error instanceof Error ? error.message : null,
     refresh: async () => { await refetch() },
