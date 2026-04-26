@@ -104,7 +104,7 @@ export function AttendanceTab({
 
   // Transform data to AttendanceGrid-compatible format
   const transformedRoster = useMemo(() =>
-    roster.length > 0 ? transformRoster(roster) : undefined
+    roster.length > 0 ? transformRoster(roster) : []
   , [roster])
 
   const transformedSessions = useMemo(() =>
