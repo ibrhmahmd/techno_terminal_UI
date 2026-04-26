@@ -22,7 +22,7 @@ const navSections = [
   {
     title: 'Programs',
     items: [
-      { path: '/competitions', label: 'Competitions', icon: 'emoji_events' },
+      // { path: '/competitions', label: 'Competitions', icon: 'emoji_events' },
       { path: '/reports', label: 'Reports', icon: 'assessment' },
     ],
   },
