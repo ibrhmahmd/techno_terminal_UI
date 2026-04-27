@@ -16,10 +16,10 @@ interface TabNavigationProps {
 
 const DEFAULT_TABS: TabConfig[] = [
   { id: 'overview', label: 'Overview', icon: 'dashboard' },
-  { id: 'enrollment', label: 'Enrollment', icon: 'trending_up' },
+  // { id: 'enrollment', label: 'Enrollment', icon: 'trending_up' },
   { id: 'revenue', label: 'Revenue', icon: 'payments' },
   { id: 'collections', label: 'Collections', icon: 'receipt_long' },
-  { id: 'instructors', label: 'Instructors', icon: 'school' },
+  // { id: 'instructors', label: 'Instructors', icon: 'school' },
   { id: 'progress', label: 'Progress', icon: 'military_tech' },
 ]
 
