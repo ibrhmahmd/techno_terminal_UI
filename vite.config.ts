@@ -6,8 +6,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://techno-terminal-ibrhmahmd2165-00zb1kxm.leapcell.dev',
-        // target : 'http://0.0.0.0:8000',
+        // target: 'https://techno-terminal-ibrhmahmd2165-00zb1kxm.leapcell.dev',
+        target : 'http://0.0.0.0:8000',
         changeOrigin: true,
         secure: true,
       },
