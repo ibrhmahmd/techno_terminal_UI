@@ -1,12 +1,12 @@
 import { Edit2, Trash2, Archive, ArrowUpCircle, Users, Calendar, Clock, BookOpen, PlusCircle } from 'lucide-react'
 import { useState } from 'react'
-import type { EnrichedGroupPublic, GroupLevelHistoryDTO } from '../../../api/academics'
+import type { EnrichedGroupPublic, LevelDetailDTO } from '../../../api/academics'
 import { LevelBadge } from '../shared/LevelBadge'
 import { GroupStatusBadge } from '../shared/GroupStatusBadge'
 
 interface GroupInfoCardProps {
   group: EnrichedGroupPublic
-  currentLevel: GroupLevelHistoryDTO | null
+  currentLevel: LevelDetailDTO | null
   onEdit: () => void
   onDelete: () => void
   onArchive: () => void

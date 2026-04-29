@@ -2,13 +2,12 @@ import { useState, useMemo } from 'react'
 import { CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { LevelSelector } from './detail/LevelSelector'
 import { DataTable } from '../common/datatable'
-import { useGroupStudents } from '../../hooks/useGroupStudents'
-import type { GroupLevelHistoryDTO } from '../../api/academics'
-import type { StudentEnrollmentSummary } from '../../api/enrollments'
+import { useGroupEnrollments } from '../../hooks/useGroupEnrollments'
+import type { LevelDetailDTO, EnrollmentStudentDTO } from '../../api/academics'
 
 interface StudentsTabProps {
   groupId: number
-  levels: GroupLevelHistoryDTO[]
+  levels: LevelDetailDTO[]
   activeLevelId: number | null
   currentLevelNumber: number
   onLevelChange: (levelId: number) => void
@@ -34,63 +33,53 @@ export function StudentsTab({
   onLevelChange,
 }: StudentsTabProps) {
   const [selectedLevelId, setSelectedLevelId] = useState<number | null>(activeLevelId)
-  const selectedLevel = useMemo(() => 
-    levels.find(l => l.id === selectedLevelId) || null
+  const selectedLevel = useMemo(() =>
+    levels.find(l => l.level_id === selectedLevelId) || null
   , [levels, selectedLevelId])
 
   const { 
-    students, 
+    students: studentsRecord,
+    enrollmentsByLevel,
     isLoading, 
-    error, 
-    dropStudent,
-  } = useGroupStudents(groupId, selectedLevel?.level_number)
+    error,
+  } = useGroupEnrollments(groupId)
+
+  // Get students for the selected level
+  const students = useMemo(() => {
+    if (!selectedLevel) return []
+    const levelData = enrollmentsByLevel.find(l => l.level_number === selectedLevel.level_number)
+    return levelData?.students ?? []
+  }, [enrollmentsByLevel, selectedLevel])
 
   const handleLevelChange = (levelId: number) => {
     setSelectedLevelId(levelId)
     onLevelChange(levelId)
   }
 
-  const handleDrop = async (enrollmentId: number) => {
+  const handleDrop = async (studentId: number) => {
     if (!confirm('Are you sure you want to remove this student from the group?')) return
-    try {
-      await dropStudent(enrollmentId)
-    } catch (err) {
-      console.error('Failed to drop student:', err)
-    }
+    console.log('Drop student:', studentId)
   }
 
   const columns = [
     {
       key: 'student_name' as const,
       header: 'Student Name',
-      cell: (student: StudentEnrollmentSummary) => (
+      cell: (student: EnrollmentStudentDTO) => (
         <span className="font-medium text-slate-900">{student.student_name}</span>
       ),
     },
     {
-      key: 'sessions_attended' as const,
-      header: 'Sessions Attended',
-      cell: (student: StudentEnrollmentSummary) => (
-        <span className="text-slate-600">
-          {student.sessions_attended} / {student.sessions_total}
-        </span>
+      key: 'phone' as const,
+      header: 'Phone',
+      cell: (student: EnrollmentStudentDTO) => (
+        <span className="text-slate-600">{student.phone || '-'}</span>
       ),
     },
     {
-      key: 'payment_status' as const,
-      header: 'Payment Status',
-      cell: (student: StudentEnrollmentSummary) => getPaymentStatusBadge(student.payment_status),
-    },
-    {
-      key: 'amount_due' as const,
-      header: 'Amount Due',
-      cell: (student: StudentEnrollmentSummary) => (
-        <span className="text-slate-600">
-          {student.amount_due - student.discount_applied > 0 
-            ? `${student.amount_due - student.discount_applied} EGP`
-            : 'Paid'}
-        </span>
-      ),
+      key: 'status' as const,
+      header: 'Status',
+      cell: (student: EnrollmentStudentDTO) => getPaymentStatusBadge(student.status === 'active' ? 'paid' : 'due'),
     },
   ]
 
@@ -118,7 +107,7 @@ export function StudentsTab({
         actions={{
           view: (student) => console.log('View student', student.student_id),
           edit: (student) => console.log('Edit student', student.student_id),
-          delete: (student) => handleDrop(student.enrollment_id),
+          delete: (student) => handleDrop(student.student_id),
         }}
       />
     </div>

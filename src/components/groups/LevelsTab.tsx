@@ -1,28 +1,19 @@
 import { useState, useMemo } from 'react'
 import { Calendar, Users, BookOpen, GraduationCap, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
-import type { GroupLevelTimelineItem, GroupLevelAnalyticsDTO } from '../../api/academics'
+import type { LevelDetailDTO } from '../../api/academics'
 
 interface LevelsTabProps {
   groupId: number
-  levels: GroupLevelTimelineItem[]
-  levelAnalytics: GroupLevelAnalyticsDTO[]
+  levels: LevelDetailDTO[]
   currentLevelNumber: number
 }
 
 export function LevelsTab({
   groupId: _groupId,
   levels,
-  levelAnalytics,
   currentLevelNumber,
 }: LevelsTabProps) {
   const [expandedLevel, setExpandedLevel] = useState<number | null>(null)
-
-  const levelsWithAnalytics = useMemo(() => {
-    return levels.map(level => {
-      const analytics = levelAnalytics.find(a => a.level_number === level.level_number)
-      return { ...level, analytics }
-    })
-  }, [levels, levelAnalytics])
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -51,7 +42,7 @@ export function LevelsTab({
     }
   }
 
-  const formatDate = (date: string | undefined) => {
+  const formatDate = (date: string | null | undefined) => {
     if (!date) return 'N/A'
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -82,11 +73,11 @@ export function LevelsTab({
       </div>
 
       <div className="grid gap-4">
-        {levelsWithAnalytics.map((level) => (
+        {levels.map((level) => (
           <div
-            key={level.id}
+            key={level.level_id}
             className={`bg-white rounded-xl border transition-all ${
-              expandedLevel === level.id
+              expandedLevel === level.level_id
                 ? 'border-blue-300 shadow-md'
                 : 'border-slate-200 hover:border-slate-300'
             } ${level.level_number === currentLevelNumber ? 'ring-2 ring-blue-100' : ''}`}
@@ -94,7 +85,7 @@ export function LevelsTab({
             {/* Card Header */}
             <div
               className="p-4 cursor-pointer"
-              onClick={() => setExpandedLevel(expandedLevel === level.id ? null : level.id)}
+              onClick={() => setExpandedLevel(expandedLevel === level.level_id ? null : level.level_id)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -112,7 +103,7 @@ export function LevelsTab({
                     </h3>
                     <p className="text-sm text-slate-500 flex items-center gap-1">
                       <BookOpen className="w-4 h-4" />
-                      {level.course_name || 'Unknown Course'}
+                      Course ID: {level.course_id}
                     </p>
                   </div>
                 </div>
@@ -127,7 +118,7 @@ export function LevelsTab({
                 <div className="flex items-center gap-2 text-sm">
                   <Users className="w-4 h-4 text-slate-400" />
                   <span className="text-slate-600">
-                    {level.enrollment_count} students
+                    {level.students_count} students ({level.students_completed} completed, {level.students_dropped} dropped)
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
@@ -139,45 +130,43 @@ export function LevelsTab({
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="w-4 h-4 text-slate-400" />
                   <span className="text-slate-600">
-                    {level.analytics?.sessions_completed || 0}/{level.analytics?.sessions_total || 0} sessions
+                    {level.sessions.length} sessions
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Expanded Details */}
-            {expandedLevel === level.id && level.analytics && (
+            {/* Expanded Details - Payment Summary */}
+            {expandedLevel === level.level_id && level.payment_summary && (
               <div className="px-4 pb-4 border-t border-slate-100 pt-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-slate-50 rounded-lg p-3">
-                    <p className="text-xs text-slate-500 mb-1">Students</p>
-                    <p className="text-lg font-semibold text-slate-900">{level.analytics.student_count}</p>
+                    <p className="text-xs text-slate-500 mb-1">Expected</p>
+                    <p className="text-lg font-semibold text-slate-900">{level.payment_summary.total_expected} EGP</p>
                   </div>
                   <div className="bg-slate-50 rounded-lg p-3">
-                    <p className="text-xs text-slate-500 mb-1">Sessions Completed</p>
-                    <p className="text-lg font-semibold text-slate-900">
-                      {level.analytics.sessions_completed}/{level.analytics.sessions_total}
+                    <p className="text-xs text-slate-500 mb-1">Collected</p>
+                    <p className="text-lg font-semibold text-green-600">
+                      {level.payment_summary.total_collected} EGP
                     </p>
                   </div>
                   <div className="bg-slate-50 rounded-lg p-3">
-                    <p className="text-xs text-slate-500 mb-1">Completion Rate</p>
-                    <p className="text-lg font-semibold text-slate-900">
-                      {level.analytics.completion_rate}%
+                    <p className="text-xs text-slate-500 mb-1">Due</p>
+                    <p className="text-lg font-semibold text-amber-600">
+                      {level.payment_summary.total_due} EGP
                     </p>
                   </div>
                   <div className="bg-slate-50 rounded-lg p-3">
-                    <p className="text-xs text-slate-500 mb-1">Avg Attendance</p>
+                    <p className="text-xs text-slate-500 mb-1">Collection Rate</p>
                     <p className="text-lg font-semibold text-slate-900">
-                      {level.analytics.average_attendance}%
+                      {Math.round(level.payment_summary.collection_rate * 100)}%
                     </p>
                   </div>
                 </div>
 
-                {level.instructor_name && (
-                  <div className="mt-4 text-sm text-slate-600">
-                    <span className="text-slate-500">Instructor:</span> {level.instructor_name}
-                  </div>
-                )}
+                <div className="mt-4 text-sm text-slate-600">
+                  <span className="text-slate-500">Instructor ID:</span> {level.instructor_id}
+                </div>
               </div>
             )}
           </div>

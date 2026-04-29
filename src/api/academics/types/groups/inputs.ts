@@ -37,17 +37,6 @@ export interface GenerateLevelSessionsRequest {
 }
 
 /**
- * @deprecated Use ProgressGroupLevelRequest with target_level instead.
- * The schedule-level endpoint has been replaced by progress-level.
- */
-export interface ScheduleGroupLevelRequest {
-  level_number: number;
-  instructor_id?: number;
-  price_override?: number;
-  start_date?: string;
-}
-
-/**
  * Input for progressing group to next level
  * POST /academics/groups/{group_id}/progress-level
  */

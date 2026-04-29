@@ -215,12 +215,24 @@ export async function deleteGroupLevel(
  * Get detailed levels with sessions for a group
  * Uses lookup table pattern for courses and instructors
  * Auth: require_any
+ * 
+ * @param groupId - The group ID
+ * @param levelNumber - Optional. If provided, returns only that specific level via query param
+ * 
+ * Usage:
+ *   - GET /academics/groups/{group_id}/levels/detailed - returns all levels
+ *   - GET /academics/groups/{group_id}/levels/detailed?level_number=3 - returns specific level
  */
 export async function getDetailedLevels(
-  groupId: number
+  groupId: number,
+  levelNumber?: number
 ): Promise<DetailedLevelsResponse> {
+  const url = `/academics/groups/${groupId}/levels/detailed`
+  const params = levelNumber ? { level_number: levelNumber } : undefined
+  
   const response = await client.get<ApiResponse<DetailedLevelsResponse>>(
-    `/academics/groups/${groupId}/levels/detailed`
+    url,
+    params ? { params } : undefined
   )
   return response.data.data
 }

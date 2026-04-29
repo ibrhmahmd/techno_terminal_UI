@@ -16,8 +16,6 @@ export type {
   ScheduleGroupInput,
   UpdateGroupDTO,
   GenerateLevelSessionsRequest,
-  /** @deprecated Use ProgressGroupLevelRequest instead */
-  ScheduleGroupLevelRequest,
   ProgressGroupLevelRequest,
   CancelLevelInput,
 } from './inputs';
@@ -32,24 +30,13 @@ export type {
 
 // Lifecycle types
 export type {
-  GroupLevelHistoryDTO,
   GroupLevelPublic,
   EnrollmentHistoryDTO,
   InstructorAssignmentDTO,
-  StudentAttendance,
   CreateNewLevelInput,
-  /** @deprecated Use ProgressGroupLevelRequest instead */
-  ScheduleGroupLevelInput,
-  /** @deprecated Use ProgressGroupLevelResult instead */
-  ScheduleGroupLevelResponse,
   ProgressGroupLevelResult,
-  GroupLifecycleHistoryDTO,
-  GroupLevelTimelineItem,
   CompleteLevelResponse,
   CancelLevelResponse,
-  CourseAssignmentDTO,
-  EnrollmentTransitionDTO,
-  GroupLevelAnalyticsDTO,
   GroupEnrollmentAnalyticsDTO,
   AnalyticsFilters,
 } from './lifecycle';

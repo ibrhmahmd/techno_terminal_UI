@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
@@ -13,12 +13,13 @@ import { GroupInfoCard, ProgressLevelDialog } from '../components/groups/detail'
 import { EditGroupDialog } from '../components/groups/detail/EditGroupDialog'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { useGroupDetail } from '../hooks/useGroupDetail'
-import { useGroupLifecycle } from '../hooks/useGroupLifecycle'
+import { useGroupLevels } from '../hooks/useGroupLevels'
+import { useGroupEnrollments } from '../hooks/useGroupEnrollments'
+import { useGroupPayments } from '../hooks/useGroupPayments'
 import { useGroupCompetitions } from '../hooks/useGroupCompetitions'
 import { useGroupMutations } from '../hooks/useGroupMutations'
 import { useToast } from '../components/common/Toast'
-import type { UpdateGroupDTO, ProgressGroupLevelRequest, GroupLevelHistoryDTO } from '../api/academics'
-import { useMemo } from 'react'
+import type { UpdateGroupDTO, ProgressGroupLevelRequest } from '../api/academics'
 
 export function GroupDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -34,8 +35,6 @@ export function GroupDetailPage() {
 
   const {
     group,
-    levels,
-    currentLevel,
     sessions,
     isLoading,
     error,
@@ -44,38 +43,53 @@ export function GroupDetailPage() {
     activeLevelId,
   } = useGroupDetail(groupId)
 
+  // Consolidated levels data (replaces useGroupLifecycle)
   const {
-    enrollmentHistory,
-    instructorHistory,
-    lifecycleHistory,
-    courseHistory,
-    enrollmentTransitions: _enrollmentTransitions,
-    levelAnalytics,
-    enrollmentAnalytics,
-    isLoadingHistory,
-    isLoadingAnalytics: _isLoadingAnalytics,
-    pagination,
-    setEnrollmentPage,
-    completeLevel: _completeLevel,
-    cancelLevel: _cancelLevel,
-  } = useGroupLifecycle(groupId)
+    levels,
+    currentLevel,
+    isLoading: isLoadingLevels,
+    error: levelsError,
+  } = useGroupLevels(groupId)
 
-  // Convert timeline items to GroupLevelHistoryDTO format for components
-  const levelTimeline = useMemo(() => {
-    if (!lifecycleHistory?.levels_timeline) return []
-    return lifecycleHistory.levels_timeline.map(timeline => ({
-      id: timeline.id,
-      level_number: timeline.level_number,
-      price_override: undefined,
-      start_date: timeline.start_date,
-      end_date: timeline.end_date,
-      status: timeline.status,
-      course_name: timeline.course_name,
-      instructor_name: timeline.instructor_name,
-      enrollment_count_start: timeline.enrollment_count,
-      completion_rate: 0, // Not available in timeline
-    })) as unknown as GroupLevelHistoryDTO[]
-  }, [lifecycleHistory])
+  // Consolidated enrollments data
+  const {
+    enrollmentsByLevel,
+    totalEnrollments,
+    activeEnrollments,
+    isLoading: isLoadingEnrollments,
+    error: enrollmentsError,
+  } = useGroupEnrollments(groupId)
+
+  // Real payment data (replaces enrollmentAnalytics estimates)
+  const {
+    summary: paymentSummary,
+    paymentsByLevel,
+    totalExpected,
+    totalCollected,
+    totalDue,
+    collectionRate,
+    isLoading: isLoadingPayments,
+    error: paymentsError,
+  } = useGroupPayments(groupId)
+
+  // Show toast notifications for hook errors
+  useEffect(() => {
+    if (levelsError) {
+      showToast(levelsError, 'error')
+    }
+  }, [levelsError, showToast])
+
+  useEffect(() => {
+    if (enrollmentsError) {
+      showToast(enrollmentsError, 'error')
+    }
+  }, [enrollmentsError, showToast])
+
+  useEffect(() => {
+    if (paymentsError) {
+      showToast(paymentsError, 'error')
+    }
+  }, [paymentsError, showToast])
 
   const {
     teams: _teams,
@@ -99,8 +113,8 @@ export function GroupDetailPage() {
     error: mutationError 
   } = useGroupMutations(groupId)
 
-  // Calculate current level enrollment count from levels data
-  const currentLevelEnrollmentCount = currentLevel?.enrollment_count_start || 0
+  // Current level enrollment count from consolidated data
+  const currentLevelEnrollmentCount = currentLevel?.students_count || 0
 
 
   const handleUpdateGroup = async (data: UpdateGroupDTO & { notes?: string; status?: 'active' | 'inactive' | 'archived' }) => {
@@ -232,7 +246,7 @@ export function GroupDetailPage() {
             onArchive={() => setIsArchiveDialogOpen(true)}
             onLevelUp={handleLevelUp}
             onCreateNewLevel={handleCreateNewLevel}
-            canLevelUp={currentLevel?.completion_rate === 100}
+            canLevelUp={currentLevel?.status === 'active' && currentLevel?.students_completed > 0}
             onNotesChange={handleNotesChange}
             isSavingNotes={isSavingNotes}
           />
@@ -246,7 +260,7 @@ export function GroupDetailPage() {
           {activeTab === 'attendance' && (
             <AttendanceTab
               groupId={groupId}
-              levels={levelTimeline.length > 0 ? levelTimeline : levels}
+              levels={levels}
               sessions={sessions}
               activeLevelId={activeLevelId}
               currentLevelNumber={group.level_number}
@@ -258,8 +272,7 @@ export function GroupDetailPage() {
           {activeTab === 'levels' && (
             <LevelsTab
               groupId={groupId}
-              levels={lifecycleHistory?.levels_timeline || []}
-              levelAnalytics={levelAnalytics}
+              levels={levels}
               currentLevelNumber={group.level_number}
             />
           )}
@@ -267,7 +280,7 @@ export function GroupDetailPage() {
           {activeTab === 'students' && (
             <StudentsTab
               groupId={groupId}
-              levels={levelTimeline.length > 0 ? levelTimeline : levels}
+              levels={levels}
               activeLevelId={activeLevelId}
               currentLevelNumber={group.level_number}
               onLevelChange={setActiveLevel}
@@ -277,25 +290,20 @@ export function GroupDetailPage() {
           {activeTab === 'payments' && (
             <PaymentsTab
               groupId={groupId}
-              enrollmentAnalytics={enrollmentAnalytics}
+              paymentSummary={paymentSummary}
+              paymentsByLevel={paymentsByLevel}
+              totalExpected={totalExpected}
+              totalCollected={totalCollected}
+              totalDue={totalDue}
+              collectionRate={collectionRate}
+              isLoading={isLoadingPayments}
             />
           )}
 
           {activeTab === 'history' && (
             <HistoryTab
-              enrollmentHistory={enrollmentHistory}
-              instructorHistory={instructorHistory}
-              coursesHistory={courseHistory.map((c, index) => ({
-                level_number: index + 1,
-                course_name: c.course_name,
-                start_date: c.assigned_at,
-              })) as { level_number: number; course_name: string; start_date: string; end_date?: string }[]}
               competitions={competitions}
-              isLoading={isLoadingHistory}
-              totalEnrollment={pagination.enrollment.total}
-              onEnrollmentPageChange={setEnrollmentPage}
-              enrollmentSkip={pagination.enrollment.skip}
-              enrollmentLimit={pagination.enrollment.limit}
+              isLoading={false}
             />
           )}
 
@@ -333,7 +341,7 @@ export function GroupDetailPage() {
             currentInstructorId={group?.instructor_id ?? 0}
             currentCourseId={group?.course_id ?? 0}
             currentGroupName={group?.group_name ?? ''}
-            currentPriceOverride={currentLevel?.price_override}
+            currentPriceOverride={undefined}
             onClose={() => setIsProgressLevelDialogOpen(false)}
             onConfirm={handleProgressLevelConfirm}
             isLoading={false}

@@ -6,7 +6,7 @@
  *   import { 
  *     getGroups, 
  *     createGroup, 
- *     getGroupLevels,
+ *     getDetailedLevels,
  *     getGroupCompetitions 
  *   } from '../api/academics/groups'
  */
@@ -23,8 +23,6 @@ export {
   deleteGroup,
   archiveGroup,
   progressGroupLevel,
-  /** @deprecated Use progressGroupLevel instead */
-  levelUpGroup,
   listSessionsForGroup,
   getGroupsGrouped,
 } from './core';
@@ -32,19 +30,11 @@ export {
 // Lifecycle router functions
 export {
   generateLevelSessions,
-  getGroupLevels,
   getGroupEnrollmentHistory,
   getGroupInstructorHistory,
-  createNewLevel,
-  /** @deprecated Use progressGroupLevel instead */
-  scheduleGroupLevel,
-  getGroupLifecycleHistory,
   getGroupLevel,
   completeGroupLevel,
   cancelGroupLevel,
-  getGroupCourseHistory,
-  getGroupEnrollmentTransitions,
-  getGroupLevelAnalytics,
   getGroupEnrollmentAnalytics,
 } from './lifecycle';
 
@@ -70,13 +60,22 @@ export {
   type DeleteLevelResponse,
   type DetailedLevelsResponse,
   type LevelDetailDTO,
+  type CourseInfoDTO,
+  type InstructorInfoDTO,
+  type LevelSessionDTO,
+  type LevelPaymentSummaryDTO,
   type AttendanceLevelResponse,
   type AttendanceRosterDTO,
   type AttendanceSessionDTO,
   type GroupPaymentsResponse,
   type PaymentDetailDTO,
+  type LevelPaymentsDTO,
+  type GroupPaymentsSummaryDTO,
   type GroupEnrollmentsAllResponse,
+  type EnrollmentStudentDTO,
   type EnrollmentDetailDTO,
+  type EnrollmentSummaryDTO,
+  type LevelEnrollmentGroupDTO,
   type TransferOptionDTO,
 } from './newEndpoints';
 

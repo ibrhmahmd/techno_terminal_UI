@@ -3,12 +3,12 @@ import { AttendanceGrid } from '../attendance/AttendanceGrid'
 import { LevelSelector } from './detail/LevelSelector'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useGroupAttendance } from '../../hooks/useGroupAttendance'
-import type { GroupLevelHistoryDTO, Session, AttendanceRosterDTO, AttendanceSessionDTO } from '../../api/academics'
+import type { LevelDetailDTO, Session, AttendanceRosterDTO, AttendanceSessionDTO } from '../../api/academics'
 import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashboard'
 
 interface AttendanceTabProps {
   groupId: number
-  levels: GroupLevelHistoryDTO[]
+  levels: LevelDetailDTO[]
   sessions: Session[] // Kept for backward compatibility with old API
   activeLevelId: number | null
   currentLevelNumber: number
@@ -88,7 +88,7 @@ export function AttendanceTab({
   const [selectedLevelId, setSelectedLevelId] = useState<number | null>(activeLevelId)
 
   const selectedLevel = useMemo(() =>
-    levels.find(l => l.id === selectedLevelId) || null
+    levels.find(l => l.level_id === selectedLevelId) || null
   , [levels, selectedLevelId])
 
   // NEW: Use consolidated attendance endpoint

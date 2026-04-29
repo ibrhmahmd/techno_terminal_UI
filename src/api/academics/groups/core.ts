@@ -127,17 +127,6 @@ export async function progressGroupLevel(
   return response.data.data;
 }
 
-/**
- * @deprecated Use progressGroupLevel instead.
- * Simple level up without overrides - maintained for backward compatibility.
- */
-export async function levelUpGroup(groupId: number): Promise<Group> {
-  const response = await client.post<ApiResponse<Group>>(
-    `/academics/groups/${groupId}/progress-level`,
-  );
-  return response.data.data;
-}
-
 // list sessions for a group
 export async function listSessionsForGroup(groupId: number): Promise<Session[]> {
   const response = await client.get<ApiResponse<Session[]>>(

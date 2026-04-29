@@ -1,9 +1,9 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import type { GroupLevelHistoryDTO } from '../../../api/academics'
+import type { LevelDetailDTO } from '../../../api/academics'
 import { LevelBadge } from '../shared/LevelBadge'
 
 interface LevelSelectorProps {
-  levels: GroupLevelHistoryDTO[]
+  levels: LevelDetailDTO[]
   activeLevelId: number | null
   onLevelChange: (levelId: number) => void
   currentLevelNumber: number
@@ -23,12 +23,12 @@ export function LevelSelector({
     )
   }
 
-  const activeIndex = levels.findIndex((l) => l.id === activeLevelId)
+  const activeIndex = levels.findIndex((l) => l.level_id === activeLevelId)
 
   const navigate = (direction: 'prev' | 'next') => {
     const newIndex = direction === 'prev' ? activeIndex - 1 : activeIndex + 1
     if (newIndex >= 0 && newIndex < levels.length) {
-      onLevelChange(levels[newIndex].id)
+      onLevelChange(levels[newIndex].level_id)
     }
   }
 
@@ -56,13 +56,13 @@ export function LevelSelector({
 
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
         {levels.map((level, index) => {
-          const isActive = level.id === activeLevelId
+          const isActive = level.level_id === activeLevelId
           const isCurrent = level.level_number === currentLevelNumber
 
           return (
             <button
-              key={level.id}
-              onClick={() => onLevelChange(level.id)}
+              key={level.level_id}
+              onClick={() => onLevelChange(level.level_id)}
               className={`flex flex-col items-center gap-1 p-2 rounded-lg min-w-[60px] transition-colors ${
                 isActive ? 'bg-blue-50 border-2 border-blue-200' : 'hover:bg-slate-50'
               }`}
