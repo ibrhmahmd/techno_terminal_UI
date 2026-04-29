@@ -1,87 +1,124 @@
-export interface Employee {
+/**
+ * Employee data as returned by backend API (EmployeePublic schema)
+ */
+export interface EmployeePublic {
   id: number
   full_name: string
+  phone: string
   email: string
-  phone?: string
-  national_id?: string
-  address?: string
-  date_of_birth?: string
-  hire_date: string
+  national_id?: string  // Backend requires this for updates
   job_title: string
   employment_type: 'full_time' | 'part_time' | 'contract'
-  salary: number
-  status: 'active' | 'on_leave' | 'terminated' | 'suspended'
-  is_active?: boolean
-  notes?: string
-  created_at: string
-  updated_at: string
+  is_active: boolean
+  hired_at: string
 }
 
+/**
+ * @deprecated Use EmployeePublic instead. This alias is for backward compatibility during migration.
+ */
+export type Employee = EmployeePublic
+
+/**
+ * Employee list item - simplified view for lists
+ */
 export interface EmployeeListItem {
   id: number
   full_name: string
   job_title: string
   employment_type: 'full_time' | 'part_time' | 'contract'
   is_active: boolean
-  email?: string
-  status?: 'active' | 'on_leave' | 'terminated' | 'suspended'
 }
 
-export interface CreateEmployeeInput {
+/**
+ * Input for creating or updating an employee (EmployeeCreateInput schema)
+ * Note: Backend uses the same schema for both create and update (PUT with partial updates)
+ * 
+ * For CREATE: national_id is required
+ * For UPDATE: All fields are optional (partial update)
+ */
+export interface EmployeeCreateInput {
   full_name: string
   phone: string
   email?: string
-  national_id: string
+  national_id?: string  // Required for create, omit for update
   university?: string
   major?: string
   is_graduate?: boolean
   job_title?: string
-  department?: string  // Added for staff forms
   employment_type: 'full_time' | 'part_time' | 'contract'
   monthly_salary?: number
   contract_percentage?: number
   is_active?: boolean
-  notes?: string
-  hire_date?: string
-  emergency_contact_name?: string  // Added for staff forms
-  emergency_contact_phone?: string  // Added for staff forms
 }
 
-export interface UpdateEmployeeInput extends CreateEmployeeInput {
-  status?: 'active' | 'on_leave' | 'terminated' | 'suspended'
-}
+/**
+ * @deprecated Use EmployeeCreateInput instead. This alias is for backward compatibility during migration.
+ */
+export type CreateEmployeeInput = EmployeeCreateInput
 
-export interface AttendanceRecord {
-  id: number
-  employee_id: number
-  employee_name: string
-  date: string
-  check_in?: string
-  check_out?: string
-  status: 'present' | 'absent' | 'late' | 'on_leave' | 'half_day' | 'early_departure'
-  notes?: string
-  recorded_by?: string
-}
+/**
+ * @deprecated Backend uses EmployeeCreateInput for both create and update operations.
+ * The update is partial - only provided fields are updated.
+ */
+export type UpdateEmployeeInput = EmployeeCreateInput
 
-export interface LogAttendanceInput {
+/**
+ * Input for logging attendance (AttendanceLogInput schema)
+ */
+export interface AttendanceLogInput {
   employee_id: number
   status: 'present' | 'absent' | 'late' | 'early_departure'
-  check_in?: string
-  check_out?: string
+  check_in?: string  // ISO 8601 datetime
+  check_out?: string  // ISO 8601 datetime
   notes?: string
 }
 
-export interface PayrollRecord {
+/**
+ * Output from attendance logging (AttendanceLogOutput schema)
+ */
+export interface AttendanceLogOutput {
+  employee_id: number
+  status: string
+  logged_at: string
+  message: string
+}
+
+/**
+ * Staff account information (StaffAccountPublic schema)
+ */
+export interface StaffAccountPublic {
   id: number
+  username: string
+  email: string
   employee_id: number
   employee_name: string
-  month: string
-  year: number
-  base_salary: number
-  bonus: number
-  deductions: number
-  net_salary: number
-  payment_status: 'pending' | 'processed' | 'paid'
-  payment_date?: string
-  notes?: string
+  job_title: string
+  is_active: boolean
+  created_at: string
 }
+
+/**
+ * Request to create a user account for an employee
+ */
+export interface CreateEmployeeAccountRequest {
+  email: string
+  password: string
+  role: 'admin' | 'system_admin'
+}
+
+/**
+ * Response after creating an employee account
+ */
+export interface EmployeeAccountResponse {
+  employee_id: number
+  user_id: number
+  email: string
+  role: string
+  created_at: string
+}
+
+/**
+ * @deprecated Use AttendanceLogInput instead. This alias is for backward compatibility.
+ */
+export type LogAttendanceInput = AttendanceLogInput
+
