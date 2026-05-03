@@ -31,7 +31,7 @@ const navSections = [
     items: [
       { path: '/staff', label: 'Staff', icon: 'people' },
       { path: '/notifications', label: 'Notifications', icon: 'notifications' },
-      // { path: '/settings', label: 'Settings', icon: 'settings' },
+      { path: '/settings', label: 'Settings', icon: 'settings' },
     ],
   },
 ]

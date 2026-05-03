@@ -13,7 +13,6 @@ import { GroupInfoCard, ProgressLevelDialog } from '../components/groups/detail'
 import { EditGroupDialog } from '../components/groups/detail/EditGroupDialog'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { useGroupDetail } from '../hooks/useGroupDetail'
-import { useGroupLevels } from '../hooks/useGroupLevels'
 import { useGroupEnrollments } from '../hooks/useGroupEnrollments'
 import { useGroupPayments } from '../hooks/useGroupPayments'
 import { useGroupCompetitions } from '../hooks/useGroupCompetitions'
@@ -35,6 +34,8 @@ export function GroupDetailPage() {
 
   const {
     group,
+    levels,
+    currentLevel,
     sessions,
     isLoading,
     error,
@@ -42,14 +43,6 @@ export function GroupDetailPage() {
     setActiveLevel,
     activeLevelId,
   } = useGroupDetail(groupId)
-
-  // Consolidated levels data (replaces useGroupLifecycle)
-  const {
-    levels,
-    currentLevel,
-    isLoading: isLoadingLevels,
-    error: levelsError,
-  } = useGroupLevels(groupId)
 
   // Consolidated enrollments data
   const {
@@ -73,12 +66,6 @@ export function GroupDetailPage() {
   } = useGroupPayments(groupId)
 
   // Show toast notifications for hook errors
-  useEffect(() => {
-    if (levelsError) {
-      showToast(levelsError, 'error')
-    }
-  }, [levelsError, showToast])
-
   useEffect(() => {
     if (enrollmentsError) {
       showToast(enrollmentsError, 'error')

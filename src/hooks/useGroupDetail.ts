@@ -39,13 +39,8 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
       const groupData = await getEnrichedGroup(groupId)
       setGroup(groupData)
 
-      let levelsResponse
-      try {
-        levelsResponse = await getDetailedLevels(groupId, groupData.level_number)
-      } catch (levelsErr) {
-        console.warn('[useGroupDetail] getDetailedLevels failed, trying without level_number:', levelsErr)
-        levelsResponse = await getDetailedLevels(groupId)
-      }
+      // Get ALL levels (not just current level) to show historical levels
+      const levelsResponse = await getDetailedLevels(groupId)
 
       setLevels(levelsResponse.levels)
 

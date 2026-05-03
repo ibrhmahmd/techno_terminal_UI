@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { AttendanceGrid } from '../attendance/AttendanceGrid'
 import { LevelSelector } from './detail/LevelSelector'
 import { LoadingSpinner } from '../common/LoadingSpinner'
@@ -85,11 +85,18 @@ export function AttendanceTab({
   instructorName,
   onLevelChange,
 }: AttendanceTabProps) {
-  const [selectedLevelId, setSelectedLevelId] = useState<number | null>(activeLevelId)
+  // Use activeLevelId directly instead of separate state to avoid sync issues
+  const selectedLevelId = activeLevelId
 
-  const selectedLevel = useMemo(() =>
-    levels.find(l => l.level_id === selectedLevelId) || null
-  , [levels, selectedLevelId])
+  const selectedLevel = useMemo(() => {
+    const found = levels.find(l => l.level_id === selectedLevelId) || levels[0] || null
+    console.log('[AttendanceTab] selectedLevel:', { 
+      selectedLevelId, 
+      found: found ? { level_id: found.level_id, level_number: found.level_number } : null,
+      levelsCount: levels.length
+    })
+    return found
+  }, [levels, selectedLevelId])
 
   // NEW: Use consolidated attendance endpoint
   const {
@@ -107,14 +114,13 @@ export function AttendanceTab({
     roster.length > 0 ? transformRoster(roster) : []
   , [roster])
 
-  const transformedSessions = useMemo(() =>
-    attendanceSessions.length > 0 && roster.length > 0
-      ? transformSessions(attendanceSessions, roster)
-      : []
-  , [attendanceSessions, roster])
+  // Show sessions even if roster is empty (level 1 might have no students yet)
+  const transformedSessions = useMemo(() => {
+    if (attendanceSessions.length === 0) return []
+    return transformSessions(attendanceSessions, roster)
+  }, [attendanceSessions, roster])
 
   const handleLevelChange = (levelId: number) => {
-    setSelectedLevelId(levelId)
     onLevelChange(levelId)
   }
 

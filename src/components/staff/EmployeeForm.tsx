@@ -131,6 +131,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
           <span className="font-medium">{displayError}</span>
         </div>
       )}
+      
 
       {/* Profile Sections */}
       <PersonalInfoSection 

@@ -3,7 +3,7 @@ import { CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { LevelSelector } from './detail/LevelSelector'
 import { DataTable } from '../common/datatable'
 import { useGroupEnrollments } from '../../hooks/useGroupEnrollments'
-import type { LevelDetailDTO, EnrollmentStudentDTO } from '../../api/academics'
+import type { LevelDetailDTO } from '../../api/academics'
 
 interface StudentsTabProps {
   groupId: number
@@ -44,12 +44,23 @@ export function StudentsTab({
     error,
   } = useGroupEnrollments(groupId)
 
-  // Get students for the selected level
+  // Get students for the selected level - combine enrollment data with student lookup
   const students = useMemo(() => {
     if (!selectedLevel) return []
     const levelData = enrollmentsByLevel.find(l => l.level_number === selectedLevel.level_number)
-    return levelData?.students ?? []
-  }, [enrollmentsByLevel, selectedLevel])
+    if (!levelData?.enrollments) return []
+    
+    // Map enrollments with student info from lookup table
+    return levelData.enrollments.map(enrollment => {
+      const studentInfo = studentsRecord[enrollment.student_id]
+      return {
+        ...enrollment,
+        student_name: studentInfo?.student_name || 'Unknown',
+        phone: studentInfo?.phone || null,
+        parent_name: studentInfo?.parent_name || null,
+      }
+    })
+  }, [enrollmentsByLevel, selectedLevel, studentsRecord])
 
   const handleLevelChange = (levelId: number) => {
     setSelectedLevelId(levelId)
@@ -61,25 +72,36 @@ export function StudentsTab({
     console.log('Drop student:', studentId)
   }
 
+  // Combined student type with enrollment data
+  type StudentWithEnrollment = {
+    enrollment_id: number
+    student_id: number
+    status: 'active' | 'completed' | 'dropped'
+    payment_status: 'paid' | 'due' | 'partial'
+    student_name: string
+    phone: string | null
+    parent_name: string | null
+  }
+
   const columns = [
     {
       key: 'student_name' as const,
       header: 'Student Name',
-      cell: (student: EnrollmentStudentDTO) => (
+      cell: (student: StudentWithEnrollment) => (
         <span className="font-medium text-slate-900">{student.student_name}</span>
       ),
     },
     {
       key: 'phone' as const,
       header: 'Phone',
-      cell: (student: EnrollmentStudentDTO) => (
+      cell: (student: StudentWithEnrollment) => (
         <span className="text-slate-600">{student.phone || '-'}</span>
       ),
     },
     {
       key: 'status' as const,
       header: 'Status',
-      cell: (student: EnrollmentStudentDTO) => getPaymentStatusBadge(student.status === 'active' ? 'paid' : 'due'),
+      cell: (student: StudentWithEnrollment) => getPaymentStatusBadge(student.payment_status),
     },
   ]
 

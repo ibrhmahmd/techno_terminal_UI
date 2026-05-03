@@ -97,13 +97,13 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         `[AttendanceGrid] Fetch #${fetchCycleRef.current} started for group ${groupId} with ${displaySessions.length} sessions`
       )
 
-      // Use provided roster from parent component
-      let rosterData: StudentRosterDTO[]
-      if (roster && roster.length > 0) {
-        rosterData = roster
-        console.debug(`[AttendanceGrid] Using provided roster (${roster.length} students)`)
+      // Use provided roster from parent component (handle empty roster gracefully)
+      const rosterData: StudentRosterDTO[] = roster || []
+      if (rosterData.length === 0) {
+        console.debug('[AttendanceGrid] No roster provided, showing empty state')
       } else {
-        throw new Error('No roster provided. AttendanceGrid requires a roster prop.')      }
+        console.debug(`[AttendanceGrid] Using provided roster (${rosterData.length} students)`)
+      }
 
       // Build student rows using roster + session attendance
       const studentRows: StudentRow[] = rosterData.map((r) => {
