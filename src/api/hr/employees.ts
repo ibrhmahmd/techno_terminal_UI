@@ -11,9 +11,11 @@ export async function getEmployees(
   params: GetEmployeesParams = {}
 ): Promise<ApiResponse<EmployeeListItem[]>> {
   const { page = 1, page_size = 20 } = params
+  // Cap page_size at 100 to match backend API maximum
+  const capped_page_size = Math.min(page_size, 100)
   const response = await client.get<ApiResponse<EmployeeListItem[]>>(
     '/hr/employees',
-    { params: { page, page_size } }
+    { params: { page, page_size: capped_page_size } }
   )
   return response.data
 }
