@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DollarSign, CheckCircle, AlertCircle, TrendingUp, Users, CreditCard, ChevronDown, ChevronUp } from 'lucide-react'
+import { DollarSign, CheckCircle, AlertCircle, TrendingUp, CreditCard, ChevronDown, ChevronUp } from 'lucide-react'
 import type { GroupPaymentsSummaryDTO, LevelPaymentsDTO } from '../../api/academics'
 
 interface PaymentsTabProps {

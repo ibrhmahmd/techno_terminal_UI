@@ -161,7 +161,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
         >
           <option value="">Select an instructor...</option>
-          {instructors.filter(i => ('is_active' in i ? i.is_active !== false : i.status === 'active')).map(instructor => (
+          {instructors.filter(i => i.is_active !== false).map(instructor => (
             <option key={instructor.id} value={instructor.id}>
               {instructor.full_name} ({instructor.job_title})
             </option>

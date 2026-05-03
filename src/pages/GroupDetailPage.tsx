@@ -46,10 +46,10 @@ export function GroupDetailPage() {
 
   // Consolidated enrollments data
   const {
-    enrollmentsByLevel,
-    totalEnrollments,
-    activeEnrollments,
-    isLoading: isLoadingEnrollments,
+    enrollmentsByLevel: _enrollmentsByLevel,
+    totalEnrollments: _totalEnrollments,
+    activeEnrollments: _activeEnrollments,
+    isLoading: _isLoadingEnrollments,
     error: enrollmentsError,
   } = useGroupEnrollments(groupId)
 

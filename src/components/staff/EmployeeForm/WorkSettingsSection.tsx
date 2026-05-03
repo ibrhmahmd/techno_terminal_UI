@@ -6,7 +6,7 @@ interface WorkSettingsSectionProps {
     contract_percentage?: number
     is_active: boolean
   }
-  onChange: (field: string, value: string | boolean | number) => void
+  onChange: (field: string, value: string | boolean | number | undefined) => void
   onStatusChange: (is_active: boolean) => void
   mode: 'create' | 'edit'
   isLoading?: boolean
@@ -80,7 +80,7 @@ export function WorkSettingsSection({
             min={0}
             max={100}
             value={formData.contract_percentage || ''}
-            onChange={(e) => onChange('contract_percentage', parseInt(e.target.value, 10) || undefined)}
+            onChange={(e) => onChange('contract_percentage', e.target.value ? parseInt(e.target.value, 10) : undefined)}
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
