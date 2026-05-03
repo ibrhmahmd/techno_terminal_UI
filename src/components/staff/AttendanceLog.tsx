@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { formatDate } from '../../utils/formatting'
-import type { Employee, LogAttendanceInput } from '../../api/hr'
+import type { EmployeePublic, AttendanceLogInput } from '../../api/hr'
 
 interface AttendanceLogProps {
-  employees: Employee[]
+  employees: EmployeePublic[]
   selectedDate: string
-  onLogAttendance: (data: LogAttendanceInput) => Promise<void>
+  onLogAttendance: (data: AttendanceLogInput) => Promise<void>
   onClose: () => void
   isOpen: boolean
 }
@@ -77,7 +77,7 @@ export function AttendanceLog({ employees, selectedDate, onLogAttendance, onClos
     early_departure: 'bg-orange-100 text-orange-700 border-orange-300',
   }
 
-  const activeEmployees = employees.filter(e => e.status === 'active')
+  const activeEmployees = employees.filter(e => e.is_active)
 
   return (
     <Modal

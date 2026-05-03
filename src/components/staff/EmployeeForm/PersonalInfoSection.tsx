@@ -7,11 +7,8 @@ interface PersonalInfoSectionProps {
     university: string
     major: string
     is_graduate: boolean
-    date_of_birth: string
-    hire_date: string
-    address: string
   }
-  onChange: (field: string, value: any) => void
+  onChange: (field: string, value: string | boolean) => void
   isLoading?: boolean
 }
 
@@ -123,45 +120,10 @@ export function PersonalInfoSection({ formData, onChange, isLoading }: PersonalI
         </label>
       </div>
 
-      {/* Dates */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-on-surface">Date of Birth</label>
-          <input
-            type="date"
-            value={formData.date_of_birth}
-            onChange={(e) => onChange('date_of_birth', e.target.value)}
-            disabled={isLoading}
-            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-on-surface">
-            Hire Date <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="date"
-            value={formData.hire_date}
-            onChange={(e) => onChange('hire_date', e.target.value)}
-            required
-            disabled={isLoading}
-            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-          />
-        </div>
-      </div>
-
-      {/* Address */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-on-surface">Address</label>
-        <textarea
-          value={formData.address}
-          onChange={(e) => onChange('address', e.target.value)}
-          placeholder="Enter current address..."
-          rows={2}
-          disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 resize-none"
-        />
-      </div>
+      {/* Note: hired_at is set by backend automatically */}
+      <p className="text-xs text-slate-500 italic">
+        Hire date will be set automatically when the employee profile is created.
+      </p>
     </div>
   )
 }

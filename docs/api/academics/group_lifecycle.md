@@ -24,6 +24,33 @@ Common auth errors:
 
 ---
 
+## ⚠️ Deprecation Notice
+
+Several endpoints in this router are **deprecated** and should not be used for new development.
+
+### Deprecated Endpoints
+
+| Endpoint | Status | Replacement |
+|----------|--------|-------------|
+| `GET /groups/{group_id}/history` | ❌ Deprecated | Use `GET /groups/{group_id}/levels/detailed` |
+| `GET /groups/{group_id}/levels` | ❌ Deprecated | Use `GET /groups/{group_id}/levels/detailed` |
+| `GET /groups/{group_id}/levels/analytics` | ❌ Deprecated | Use `GET /groups/{group_id}/levels/detailed` |
+| `GET /groups/{group_id}/courses/history` | ❌ Deprecated | Use `GET /groups/{group_id}/levels/detailed` (courses lookup) |
+| `GET /groups/{group_id}/enrollments/history` | ❌ Deprecated | Use `GET /groups/{group_id}/enrollments/all` |
+
+### New Consolidated Endpoint
+
+Use **`GET /api/v1/academics/groups/{group_id}/levels/detailed`** for all level data:
+
+```
+GET /api/v1/academics/groups/{group_id}/levels/detailed              # All levels
+GET /api/v1/academics/groups/{group_id}/levels/detailed?level_number=3  # Specific level
+```
+
+Returns: courses lookup, instructors lookup, all levels with sessions and payment summaries.
+
+---
+
 ## DTOs and Schemas
 
 ### Response DTOs

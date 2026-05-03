@@ -1,15 +1,13 @@
-import type { Employee } from '../../../api/hr'
-
 interface WorkSettingsSectionProps {
   formData: {
     job_title: string
     employment_type: string
-    salary: number
-    status: string
-    notes: string
+    monthly_salary: number
+    contract_percentage?: number
+    is_active: boolean
   }
-  onChange: (field: string, value: any) => void
-  onStatusChange: (status: Employee['status']) => void
+  onChange: (field: string, value: string | boolean | number) => void
+  onStatusChange: (is_active: boolean) => void
   mode: 'create' | 'edit'
   isLoading?: boolean
 }
@@ -61,49 +59,50 @@ export function WorkSettingsSection({
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-on-surface">
-            Salary (EGP) <span className="text-red-500">*</span>
+            Monthly Salary (EGP)
           </label>
           <input
             type="number"
             min={0}
             step={100}
-            value={formData.salary}
-            onChange={(e) => onChange('salary', parseInt(e.target.value, 10) || 0)}
-            required
+            value={formData.monthly_salary}
+            onChange={(e) => onChange('monthly_salary', parseInt(e.target.value, 10) || 0)}
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
         </div>
-        {mode === 'edit' && (
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-on-surface">Status</label>
-            <select
-              value={formData.status}
-              onChange={(e) => onStatusChange(e.target.value as Employee['status'])}
-              disabled={isLoading}
-              className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-            >
-              <option value="active">Active</option>
-              <option value="on_leave">On Leave</option>
-              <option value="suspended">Suspended</option>
-              <option value="terminated">Terminated</option>
-            </select>
-          </div>
-        )}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-on-surface">
+            Contract %
+          </label>
+          <input
+            type="number"
+            min={0}
+            max={100}
+            value={formData.contract_percentage || ''}
+            onChange={(e) => onChange('contract_percentage', parseInt(e.target.value, 10) || undefined)}
+            disabled={isLoading}
+            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+          />
+        </div>
       </div>
 
-      {/* Notes */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-on-surface">Additional Notes</label>
-        <textarea
-          value={formData.notes}
-          onChange={(e) => onChange('notes', e.target.value)}
-          placeholder="Enter any work related notes..."
-          rows={3}
-          disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 resize-none"
-        />
-      </div>
+      {/* Active Status Toggle */}
+      {mode === 'edit' && (
+        <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <input
+            type="checkbox"
+            id="is_active"
+            checked={formData.is_active}
+            onChange={(e) => onStatusChange(e.target.checked)}
+            disabled={isLoading}
+            className="w-4 h-4 text-secondary border-slate-200 rounded focus:ring-secondary cursor-pointer"
+          />
+          <label htmlFor="is_active" className="text-sm font-medium text-on-surface cursor-pointer select-none">
+            Employee is active
+          </label>
+        </div>
+      )}
     </div>
   )
 }
