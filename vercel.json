@@ -5,9 +5,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://techno-terminal-ibrhmahmd2165-00zb1kxm.leapcell.dev/api/:path*",
-//    "destination" : 'https://techno-terminal-5c255cfe.fastapicloud.dev/',
-
+      "destination": "https://techno-terminal-ibrhmahmd2165-00zb1kxm.leapcell.dev/api/:path*"
     },
     {
       "source": "/((?!api/).*)",

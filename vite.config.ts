@@ -16,3 +16,4 @@ export default defineConfig({
   },
 })
 
+//    "destination" : 'https://techno-terminal-5c255cfe.fastapicloud.dev/'
