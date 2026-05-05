@@ -1,5 +1,5 @@
 interface GroupStatusBadgeProps {
-  status: 'active' | 'inactive' | 'archived'
+  status: 'active' | 'inactive' | 'archived' | 'completed'
   size?: 'sm' | 'md'
 }
 
@@ -19,6 +19,11 @@ export function GroupStatusBadge({ status, size = 'md' }: GroupStatusBadgeProps)
       bg: 'bg-amber-100',
       text: 'text-amber-700',
       label: 'Archived',
+    },
+    completed: {
+      bg: 'bg-blue-100',
+      text: 'text-blue-700',
+      label: 'Completed',
     },
   }
 

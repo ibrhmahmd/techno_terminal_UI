@@ -21,7 +21,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
   const [startTime, setStartTime] = useState(group.default_time_start?.slice(0, 5) || '')
   const [endTime, setEndTime] = useState(group.default_time_end?.slice(0, 5) || '')
   const [maxCapacity, setMaxCapacity] = useState(group.max_capacity)
-  const [status, setStatus] = useState<'active' | 'inactive' | 'archived'>(group.status || 'inactive')
+  const [status, setStatus] = useState<'active' | 'inactive' | 'archived' | 'completed'>(group.status || 'inactive')
   const [notes, setNotes] = useState('')
   const [instructors, setInstructors] = useState<EmployeePublic[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -59,7 +59,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
           page++
         }
 
-        return allEmployees.filter(e => e.status !== false)
+        return allEmployees.filter(e => e.is_active !== false)
       }
 
       fetchAllActiveEmployees()
@@ -177,7 +177,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
             <div className="flex gap-4">
-              {(['active', 'inactive', 'archived'] as const).map((s) => (
+              {(['active', 'inactive', 'archived', 'completed'] as const).map((s) => (
                 <label key={s} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="radio"
