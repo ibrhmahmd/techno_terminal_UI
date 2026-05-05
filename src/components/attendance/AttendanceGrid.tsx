@@ -45,7 +45,8 @@ interface StudentRow {
   attendance: Map<number, AttendanceStatus>
 }
 
-export function AttendanceGrid({ sessions, roster, groupId, level, groupInstructorName, groupName, courseName, selectedDate }: AttendanceGridProps) {
+export function AttendanceGrid({ sessions, roster, groupId, level: _level, groupInstructorName, groupName, courseName, selectedDate }: AttendanceGridProps) {
+  void _level // Level is passed for future use but currently not needed
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [students, setStudents] = useState<StudentRow[]>([])
@@ -368,7 +369,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       } else if (successfulSessions.length === 0) {
         showToast('Failed to save all changes', 'error')
       } else {
-        showToast(`Saved ${successfulSessions.length}, ${failedSessions.length} failed - click retry`, 'warning')
+        showToast(`Saved ${successfulSessions.length}, ${failedSessions.length} failed - click retry`, 'error')
       }
     } catch (err) {
       console.error('[Save] Failed to save:', err)

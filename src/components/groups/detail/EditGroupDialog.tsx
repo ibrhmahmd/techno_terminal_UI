@@ -21,7 +21,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
   const [startTime, setStartTime] = useState(group.default_time_start?.slice(0, 5) || '')
   const [endTime, setEndTime] = useState(group.default_time_end?.slice(0, 5) || '')
   const [maxCapacity, setMaxCapacity] = useState(group.max_capacity)
-  const [status, setStatus] = useState<'active' | 'inactive' | 'archived'>(group.is_active ? 'active' : 'inactive')
+  const [status, setStatus] = useState<'active' | 'inactive' | 'archived'>(group.status || 'inactive')
   const [notes, setNotes] = useState('')
   const [instructors, setInstructors] = useState<EmployeePublic[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -35,7 +35,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
       setStartTime(group.default_time_start?.slice(0, 5) || '')
       setEndTime(group.default_time_end?.slice(0, 5) || '')
       setMaxCapacity(group.max_capacity)
-      setStatus(group.is_active ? 'active' : 'inactive')
+      setStatus(group.status || 'inactive')
     }
   }, [isOpen, group])
 
@@ -59,7 +59,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
           page++
         }
 
-        return allEmployees.filter(e => e.is_active !== false)
+        return allEmployees.filter(e => e.status !== false)
       }
 
       fetchAllActiveEmployees()

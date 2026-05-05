@@ -113,12 +113,14 @@ export function GroupsTable({
                 </td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                    group.is_active 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-slate-100 text-slate-600'
+                    group.status === 'active'
+                      ? 'bg-green-100 text-green-700'
+                      : group.status === 'completed'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-slate-100 text-slate-600'
                   }`}>
                     <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                    {group.is_active ? 'Active' : 'Archived'}
+                    {group.status === 'active' ? 'Active' : group.status === 'completed' ? 'Completed' : 'Archived'}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
