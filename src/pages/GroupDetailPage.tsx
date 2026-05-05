@@ -104,7 +104,7 @@ export function GroupDetailPage() {
   const currentLevelEnrollmentCount = currentLevel?.students_count || 0
 
 
-  const handleUpdateGroup = async (data: UpdateGroupDTO & { notes?: string; status?: 'active' | 'inactive' | 'archived' }) => {
+  const handleUpdateGroup = async (data: UpdateGroupDTO & { notes?: string; status?: 'active' | 'inactive' | 'archived' | 'completed' }) => {
     try {
       await updateGroup(data)
       showToast('Group updated successfully', 'success')
