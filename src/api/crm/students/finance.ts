@@ -35,9 +35,11 @@ export async function getUnpaidEnrollments(
   params: PaginationParams & { group_id?: number } = {}
 ): Promise<PaginationResult<UnpaidEnrollment>> {
   const { skip = 0, limit = 50, group_id } = params
+  // Backend limits limit to 200 max
+  const cappedLimit = Math.min(limit, 200)
   const response = await client.get<PaginatedApiResponse<UnpaidEnrollment>>(
     '/balance/unpaid-enrollments',
-    { params: { skip, limit, group_id } }
+    { params: { skip, limit: cappedLimit, group_id } }
   )
   
   const items = response.data.data || []

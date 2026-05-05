@@ -8,9 +8,11 @@ export async function getParentsPaginated(
   params: PaginationParams = {}
 ): Promise<PaginationResult<Parent>> {
   const { skip = 0, limit = 15 } = params
+  // Backend likely limits to 100-200, use conservative default
+  const cappedLimit = Math.min(limit, 100)
   const response = await client.get<PaginatedApiResponse<ParentListItem>>(
     '/crm/parents',
-    { params: { skip, limit } }
+    { params: { skip, limit: cappedLimit } }
   )
   
   const paginatedData = response.data

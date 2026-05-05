@@ -33,9 +33,11 @@ export async function getCoursesPaginated(
   params: PaginationParams = {},
 ): Promise<PaginationResult<Course>> {
   const { skip = 0, limit = 100 } = params;
+  // Backend likely limits to 100-200, use conservative default
+  const cappedLimit = Math.min(limit, 100);
   const response = await client.get<PaginatedApiResponse<Course>>(
     "/academics/courses",
-    { params: { skip, limit } },
+    { params: { skip, limit: cappedLimit } },
   );
   const paginatedData = response.data;
   const items = paginatedData.data || [];
@@ -52,9 +54,11 @@ export async function searchCourses(
   params: PaginationParams = {},
 ): Promise<PaginationResult<Course>> {
   const { skip = 0, limit = 100 } = params;
+  // Backend likely limits to 100-200, use conservative default
+  const cappedLimit = Math.min(limit, 100);
   const response = await client.get<PaginatedApiResponse<Course>>(
     "/academics/courses/search",
-    { params: { query, skip, limit } },
+    { params: { query, skip, limit: cappedLimit } },
   );
   const paginatedData = response.data;
   const items = paginatedData.data || [];

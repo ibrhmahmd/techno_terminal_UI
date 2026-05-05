@@ -24,9 +24,11 @@ export async function getStudentsPaginated(
   params: PaginationParams = {}
 ): Promise<PaginationResult<Student>> {
   const { skip = 0, limit = 15 } = params
+  // Backend likely limits to 100-200, use conservative default
+  const cappedLimit = Math.min(limit, 100)
   const response = await client.get<PaginatedApiResponse<Student>>(
     '/crm/students',
-    { params: { skip, limit } }
+    { params: { skip, limit: cappedLimit } }
   )
   return createPaginationResult(response, params)
 }

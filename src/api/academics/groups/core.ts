@@ -49,9 +49,11 @@ export async function getGroupsPaginated(
   params: PaginationParams = {},
 ): Promise<PaginationResult<Group>> {
   const { skip = 0, limit = 50 } = params;
+  // Backend likely limits to 100-200, use conservative default
+  const cappedLimit = Math.min(limit, 100);
   const response = await client.get<PaginatedApiResponse<Group>>(
     '/academics/groups',
-    { params: { skip, limit } },
+    { params: { skip, limit: cappedLimit } },
   );
   const paginatedData = response.data;
   const items = paginatedData.data || [];
