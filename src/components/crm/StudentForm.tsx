@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
+import { DateInput } from '../common/DateInput'
 import { ParentSearchDropdown } from './ParentSearchDropdown'
 import type { CreateStudentDTO, ParentListItem, StudentStatus } from '../../api/crm'
 
@@ -89,19 +90,13 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
       </div>
 
       {/* Birth Date */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="date_of_birth" className="text-sm font-medium text-on-surface">
-          Birth Date
-        </label>
-        <input
-          id="date_of_birth"
-          type="date"
-          value={formData.date_of_birth}
-          onChange={(e) => handleChange('date_of_birth', e.target.value)}
-          disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
-        />
-      </div>
+      <DateInput
+        id="date_of_birth"
+        label="Birth Date"
+        value={formData.date_of_birth}
+        onChange={(value) => handleChange('date_of_birth', value || '')}
+        disabled={isLoading}
+      />
 
       {/* Gender */}
       <div className="flex flex-col gap-1.5">
