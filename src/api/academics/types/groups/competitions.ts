@@ -84,8 +84,10 @@ export interface CompetitionRegistrationResponse {
   group_id: number;
   team_id: number;
   competition_id: number;
+  category_id: number | null;
   entered_at: string;
   is_active: boolean;
+  message: string;
 }
 
 /**
@@ -97,6 +99,7 @@ export interface CompleteParticipationResponse {
   is_active: boolean;
   left_at: string;
   final_placement?: number;
+  message: string;
 }
 
 /**
@@ -107,4 +110,5 @@ export interface WithdrawParticipationResponse {
   participation_id: number;
   status: 'withdrawn';
   withdrawn_at: string;
+  message: string;
 }

@@ -7,8 +7,8 @@ export default defineConfig({
     proxy: {
       '/api': {
         // target: 'https://techno-terminal-ibrhmahmd2165-00zb1kxm.leapcell.dev',
-        target : 'https://techno-terminal-5c255cfe.fastapicloud.dev/',
-        // target : 'http://0.0.0.0:8000',
+        // target : 'https://techno-terminal-5c255cfe.fastapicloud.dev/',
+        target : 'http://0.0.0.0:8000',
         changeOrigin: true,
         secure: true,
       },

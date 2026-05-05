@@ -82,14 +82,17 @@ export interface ProgressGroupLevelResult {
 export interface CompleteLevelResponse {
   completed_level: {
     id: number;
+    group_id: number;
     level_number: number;
     status: string;
   };
   new_level: {
     id: number;
+    group_id: number;
     level_number: number;
     status: string;
   };
+  message: string;
 }
 
 /**
@@ -97,6 +100,8 @@ export interface CompleteLevelResponse {
  * POST /academics/groups/{group_id}/levels/{level_number}/cancel
  */
 export interface CancelLevelResponse {
+  cancelled_at: string;
+  reason?: string;
   level_id: number;
   level_number: number;
   status: 'cancelled';

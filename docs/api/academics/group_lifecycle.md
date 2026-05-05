@@ -6,6 +6,20 @@ Mounted prefix: `/api/v1`
 
 ---
 
+## ⚠️ Deprecation Notice
+
+The following endpoints have been **removed** as of April 2026. Use the consolidated [Group Details Router](group_details.md) endpoints instead:
+
+| Removed Endpoint | Replacement |
+|-----------------|-------------|
+| `GET /academics/groups/{id}/history` | `GET /academics/groups/{id}/levels/detailed` |
+| `GET /academics/groups/{id}/levels` | `GET /academics/groups/{id}/levels/detailed` |
+| `GET /academics/groups/{id}/courses/history` | `courses` lookup in `/levels/detailed` |
+| `GET /academics/groups/{id}/enrollments/history` | `GET /academics/groups/{id}/enrollments/all` |
+| `GET /academics/groups/{id}/levels/analytics` | Analytics merged into `/levels/detailed` |
+
+---
+
 ## Authentication & Authorization
 
 All endpoints require:
@@ -21,33 +35,6 @@ Role guards used in this router:
 Common auth errors:
 - `401 Unauthorized`
 - `403 Forbidden`
-
----
-
-## ⚠️ Deprecation Notice
-
-Several endpoints in this router are **deprecated** and should not be used for new development.
-
-### Deprecated Endpoints
-
-| Endpoint | Status | Replacement |
-|----------|--------|-------------|
-| `GET /groups/{group_id}/history` | ❌ Deprecated | Use `GET /groups/{group_id}/levels/detailed` |
-| `GET /groups/{group_id}/levels` | ❌ Deprecated | Use `GET /groups/{group_id}/levels/detailed` |
-| `GET /groups/{group_id}/levels/analytics` | ❌ Deprecated | Use `GET /groups/{group_id}/levels/detailed` |
-| `GET /groups/{group_id}/courses/history` | ❌ Deprecated | Use `GET /groups/{group_id}/levels/detailed` (courses lookup) |
-| `GET /groups/{group_id}/enrollments/history` | ❌ Deprecated | Use `GET /groups/{group_id}/enrollments/all` |
-
-### New Consolidated Endpoint
-
-Use **`GET /api/v1/academics/groups/{group_id}/levels/detailed`** for all level data:
-
-```
-GET /api/v1/academics/groups/{group_id}/levels/detailed              # All levels
-GET /api/v1/academics/groups/{group_id}/levels/detailed?level_number=3  # Specific level
-```
-
-Returns: courses lookup, instructors lookup, all levels with sessions and payment summaries.
 
 ---
 
@@ -87,26 +74,6 @@ Fields:
 - `effective_to`: when level ended (null if active)
 - `created_at`: snapshot creation timestamp
 
-#### PaginatedResponse[GroupLevelPublic]
-```json
-{
-  "data": [
-    {
-      "id": 1,
-      "group_id": 5,
-      "level_number": 1,
-      "course_name": "Robotics Fundamentals",
-      "instructor_name": "John Doe",
-      "status": "completed",
-      "...": "..."
-    }
-  ],
-  "total": 3,
-  "skip": 0,
-  "limit": 50
-}
-```
-
 ### Request DTOs
 
 #### CancelLevelInput
@@ -123,48 +90,7 @@ Fields:
 
 ## Endpoints
 
-### 1) Get full lifecycle history
-**GET** `/api/v1/academics/groups/{group_id}/history`  
-Auth: `require_any`
-
-Path params:
-- `group_id` (integer, required)
-
-Response:
-- `200 OK` -> `ApiResponse<dict>` containing:
-  - group metadata (id, name, created_at)
-  - current_level, total_levels, completed_levels
-  - levels_timeline: chronological level snapshots
-  - course_assignments: course change history
-  - enrollment_transitions: student level progressions
-
-Errors:
-- `401`, `403`, `404`
-
----
-
-### 2) List all level snapshots for a group
-**GET** `/api/v1/academics/groups/{group_id}/levels`  
-Auth: `require_any`
-
-Path params:
-- `group_id` (integer, required)
-
-Query:
-- `status` (optional): Filter by status (`active`, `completed`, `cancelled`)
-- `include_inactive` (optional, default `false`): Include inactive levels
-- `skip` (optional, default `0`): Pagination offset
-- `limit` (optional, default `50`, max `200`): Page size
-
-Response:
-- `200 OK` -> `PaginatedResponse<GroupLevelPublic>`
-
-Errors:
-- `401`, `403`, `404`
-
----
-
-### 3) Get specific level details
+### 1) Get specific level details
 **GET** `/api/v1/academics/groups/{group_id}/levels/{level_number}`  
 Auth: `require_any`
 
@@ -180,7 +106,7 @@ Errors:
 
 ---
 
-### 4) Complete a level and progress to next
+### 2) Complete a level and progress to next
 **POST** `/api/v1/academics/groups/{group_id}/levels/{level_number}/complete`  
 Auth: `require_admin`
 
@@ -189,19 +115,22 @@ Path params:
 - `level_number` (integer, required)
 
 Response:
-- `200 OK` -> `ApiResponse<dict>` with completed and new level info:
+- `200 OK` -> `ApiResponse<GroupLevelCompletionResponse>` with completed and new level info:
 ```json
 {
   "completed_level": {
     "id": 1,
+    "group_id": 5,
     "level_number": 1,
     "status": "completed"
   },
   "new_level": {
     "id": 2,
+    "group_id": 5,
     "level_number": 2,
     "status": "active"
-  }
+  },
+  "message": "Group progressed from level 1 to level 2"
 }
 ```
 
@@ -215,7 +144,7 @@ Notes:
 
 ---
 
-### 5) Cancel a group level
+### 3) Cancel a group level
 **POST** `/api/v1/academics/groups/{group_id}/levels/{level_number}/cancel`  
 Auth: `require_admin`
 
@@ -227,7 +156,7 @@ Request body:
 - `CancelLevelInput` (optional reason)
 
 Response:
-- `200 OK` -> `ApiResponse<dict>` with level_id, level_number, status
+- `200 OK` -> `ApiResponse<CancelLevelResult>` with level_id, level_number, status, cancelled_at, reason
 
 Errors:
 - `401`, `403`, `404`, `400` (if level already completed)
@@ -238,60 +167,7 @@ Notes:
 
 ---
 
-### 6) Get course assignment history  
-**GET** `/api/v1/academics/groups/{group_id}/courses/history`  
-Auth: `require_any`
-
-Path params:
-- `group_id` (integer, required)
-
-Response:
-- `200 OK` -> `ApiResponse<list<dict>>` with course assignment records:
-  - `course_id`, `assigned_at`, `removed_at`
-  - `assigned_by_user_id`, `notes`
-
-Errors:
-- `401`, `403`, `404`
-
----
-
-### 7) Get enrollment level transitions
-**GET** `/api/v1/academics/groups/{group_id}/enrollments/history`  
-Auth: `require_any`
-
-Path params:
-- `group_id` (integer, required)
-
-Query:
-- `student_id` (optional): Filter by specific student
-
-Response:
-- `200 OK` -> `ApiResponse<list<dict>>` with transition records:
-  - `enrollment_id`, `student_id`, `group_level_id`
-  - `level_entered_at`, `level_completed_at`, `status`
-
-Errors:
-- `401`, `403`, `404`
-
----
-
-### 8) Get level progression analytics
-**GET** `/api/v1/academics/groups/{group_id}/levels/analytics`  
-Auth: `require_any`
-
-Path params:
-- `group_id` (integer, required)
-
-Response:
-- `200 OK` -> `ApiResponse<GroupLevelHistoryResponseDTO>`
-
-Notes:
-- Returns detailed level history with student counts per level.
-- Includes session completion tracking.
-
----
-
-### 9) Get enrollment analytics
+### 4) Get enrollment analytics
 **GET** `/api/v1/academics/groups/{group_id}/enrollments/analytics`  
 Auth: `require_any`
 
@@ -313,7 +189,7 @@ Notes:
 
 ---
 
-### 10) Get instructor history analytics
+### 5) Get instructor history analytics
 **GET** `/api/v1/academics/groups/{group_id}/instructors/analytics`  
 Auth: `require_any`
 
@@ -336,7 +212,7 @@ Aliases:
 
 ## Router Notes
 
-- The Group Lifecycle router exposes **10 endpoints** for level and history management.
+- The Group Lifecycle router exposes **7 endpoints** for level and history management.
 - Immutable level snapshots: Each level progression creates a new `group_levels` record, preserving historical configuration.
 - All level endpoints use `GroupLevelPublic` DTO for consistent responses.
 - List endpoints support pagination with `skip` and `limit` parameters.

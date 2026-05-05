@@ -14,7 +14,7 @@ export interface Group {
   default_day: string;
   default_time_start: string;
   default_time_end: string;
-  is_active: boolean;
+  status: 'active' | 'inactive' | 'archived' | 'completed';  
 }
 
 // Simplified group list item (GroupListItem from API)
@@ -25,8 +25,7 @@ export interface GroupListItem {
   level_number: number;
   default_day: string;
   default_time_start: string;
-  status?: string;
-  is_active: boolean;
+  status: 'active' | 'inactive' | 'archived' | 'completed';  
 }
 
 // Enriched group with related data
@@ -37,7 +36,7 @@ export interface EnrichedGroupPublic extends Group {
   default_day: string;
   schedule_time?: string;
   notes?: string | null;  // Added for editable group notes
-  status: 'active' | 'inactive' | 'archived';  
+  status: 'active' | 'inactive' | 'archived' | 'completed';  
   students?: Array<{ id: number; full_name: string }>;
   current_student_count: number;
 }
