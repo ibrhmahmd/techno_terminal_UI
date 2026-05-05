@@ -20,23 +20,20 @@ export async function getEmployees(
   return response.data
 }
 
-/**
- * @deprecated Use getEmployees() instead. This function is kept for backward compatibility.
- */
-export async function getEmployeesPaginated(
-  params: { skip?: number; limit?: number } = {}
+// Adapter for usePagination hook compatibility
+export async function fetchEmployeesPaginated(
+  params: { skip?: number; limit?: number }
 ): Promise<{ items: EmployeePublic[]; total: number; hasMore: boolean }> {
-  const { skip = 0, limit = 50 } = params
+  const { skip = 0, limit = 20 } = params
   const page = Math.floor(skip / limit) + 1
-  const page_size = limit
-  
-  const result = await getEmployees({ page, page_size })
+
+  const result = await getEmployees({ page, page_size: limit })
   const data = result.data || []
-  
+
   return {
     items: data as EmployeePublic[],
     total: data.length,
-    hasMore: data.length === page_size
+    hasMore: data.length === limit
   }
 }
 
@@ -53,29 +50,4 @@ export async function createEmployee(data: EmployeeCreateInput): Promise<ApiResp
 export async function updateEmployee(id: number, data: Partial<EmployeeCreateInput>): Promise<ApiResponse<EmployeePublic>> {
   const response = await client.put<ApiResponse<EmployeePublic>>(`/hr/employees/${id}`, data)
   return response.data
-}
-
-/**
- * @deprecated This endpoint is not implemented in the backend API.
- * Keeping for reference but will throw an error if called.
- */
-export async function deleteEmployee(_id: number): Promise<void> {
-  void _id // Mark as intentionally used (suppress lint)
-  throw new Error('Delete employee endpoint is not implemented in the backend API')
-}
-
-/**
- * @deprecated This endpoint is not implemented in the backend API.
- * HR stats functionality is planned for future release.
- */
-export async function getHRStats(): Promise<{
-  total_employees: number
-  active_employees: number
-  on_leave: number
-  present_today: number
-  late_today: number
-  absent_today: number
-  monthly_payroll_total: number
-}> {
-  throw new Error('HR stats endpoint is not implemented in the backend API')
 }

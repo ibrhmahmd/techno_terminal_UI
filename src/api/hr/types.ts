@@ -6,17 +6,12 @@ export interface EmployeePublic {
   full_name: string
   phone: string
   email: string
-  national_id?: string  // Backend requires this for updates
+  national_id?: string  
   job_title: string
   employment_type: 'full_time' | 'part_time' | 'contract'
   is_active: boolean
   hired_at: string
 }
-
-/**
- * @deprecated Use EmployeePublic instead. This alias is for backward compatibility during migration.
- */
-export type Employee = EmployeePublic
 
 /**
  * Employee list item - simplified view for lists
@@ -40,7 +35,7 @@ export interface EmployeeCreateInput {
   full_name: string
   phone: string
   email?: string
-  national_id?: string  // Required for create, omit for update
+  national_id?: string  
   university?: string
   major?: string
   is_graduate?: boolean
@@ -50,17 +45,6 @@ export interface EmployeeCreateInput {
   contract_percentage?: number
   is_active?: boolean
 }
-
-/**
- * @deprecated Use EmployeeCreateInput instead. This alias is for backward compatibility during migration.
- */
-export type CreateEmployeeInput = EmployeeCreateInput
-
-/**
- * @deprecated Backend uses EmployeeCreateInput for both create and update operations.
- * The update is partial - only provided fields are updated.
- */
-export type UpdateEmployeeInput = EmployeeCreateInput
 
 /**
  * Input for logging attendance (AttendanceLogInput schema)
@@ -116,9 +100,3 @@ export interface EmployeeAccountResponse {
   role: string
   created_at: string
 }
-
-/**
- * @deprecated Use AttendanceLogInput instead. This alias is for backward compatibility.
- */
-export type LogAttendanceInput = AttendanceLogInput
-
