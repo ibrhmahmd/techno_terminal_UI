@@ -8,6 +8,8 @@ import {
   deleteGroup,
   type GroupByField,
 } from '../api/academics'
+import { getUpcomingDates } from '../utils/date'
+import { dashboardKeys } from './dashboard/useDashboard'
 
 // ── Query Keys ──────────────────────────────────────────
 
@@ -60,8 +62,22 @@ function useGroupInvalidator() {
 }
 
 export function useCreateGroup() {
-  const invalidate = useGroupInvalidator()
-  return useMutation({ mutationFn: createGroup, onSuccess: invalidate })
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: createGroup,
+    onSuccess: () => {
+      // Invalidate groups list
+      qc.invalidateQueries({ queryKey: groupKeys.all })
+      
+      // ALSO invalidate dashboard cache for upcoming dates
+      const upcomingDates = getUpcomingDates(7)
+      upcomingDates.forEach(date => {
+        qc.invalidateQueries({ queryKey: dashboardKeys.overview(date) })
+      })
+      
+      console.log('[useCreateGroup] Invalidated dashboard cache for dates:', upcomingDates)
+    },
+  })
 }
 
 export function useUpdateGroup() {

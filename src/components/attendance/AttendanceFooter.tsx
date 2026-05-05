@@ -6,9 +6,21 @@ interface AttendanceFooterProps {
   onSave: () => void
   hasError?: boolean
   hasChanges?: boolean
+  saveStatus?: Map<number, 'idle' | 'saving' | 'success' | 'error'>
+  onRetrySession?: (sessionId: number) => void
+  dirtySessions?: Set<number>
 }
 
-export function AttendanceFooter({ isSaving, onCancel, onSave, hasError, hasChanges = false }: AttendanceFooterProps) {
+export function AttendanceFooter({ 
+  isSaving, 
+  onCancel, 
+  onSave, 
+  hasError, 
+  hasChanges = false,
+  saveStatus = new Map(),
+  onRetrySession,
+  dirtySessions = new Set()
+}: AttendanceFooterProps) {
   const handleSaveClick = () => {
     console.log('[Footer] Save button clicked!')
     console.log('[Footer] Save button clicked with props:', { isSaving, onCancel, onSave, hasError })
@@ -21,12 +33,36 @@ export function AttendanceFooter({ isSaving, onCancel, onSave, hasError, hasChan
     onCancel()
   }
 
+  // Get failed sessions for retry
+  const failedSessions = Array.from(dirtySessions).filter(
+    sessionId => saveStatus.get(sessionId) === 'error'
+  )
+
   return (
-    <div className={`p-4 bg-surface-container-low border-t border-outline-variant/10 flex justify-end gap-3 transition-all duration-300 ${
+    <div className={`p-4 bg-surface-container-low border-t border-outline-variant/10 flex flex-col gap-3 transition-all duration-300 ${
       hasChanges ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none h-0 py-0 overflow-hidden'
     }`}>
+      {/* Failed sessions retry buttons */}
+      {failedSessions.length > 0 && onRetrySession && (
+        <div className="flex flex-wrap gap-2 items-center text-sm">
+          <span className="text-error font-semibold">Failed to save:</span>
+          {failedSessions.map(sessionId => (
+            <button
+              key={sessionId}
+              onClick={() => onRetrySession(sessionId)}
+              disabled={isSaving}
+              className="px-2 py-1 rounded bg-error-container text-on-error-container text-xs font-semibold hover:opacity-80 transition-opacity disabled:opacity-50 flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-xs">refresh</span>
+              Session {sessionId}
+            </button>
+          ))}
+        </div>
+      )}
+      
+      {/* Main action buttons */}
       {hasChanges && (
-        <>
+        <div className="flex justify-end gap-3">
           <button
             onClick={handleCancelClick}
             className="px-4 py-2 rounded text-sm font-semibold text-outline hover:text-secondary transition-colors"
@@ -51,7 +87,7 @@ export function AttendanceFooter({ isSaving, onCancel, onSave, hasError, hasChan
               </>
             )}
           </button>
-        </>
+        </div>
       )}
     </div>
   )

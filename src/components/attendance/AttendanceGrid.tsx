@@ -64,7 +64,12 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   const [editingSession, setEditingSession] = useState<SessionWithAttendanceDTO | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
-  // Debounced attendance state
+  // EPIC-4: Batch save state
+  const [pendingChanges, setPendingChanges] = useState<Map<number, { student_id: string; status: AttendanceStatus }[]>>(new Map())
+  const [sessionSaveStatus, setSessionSaveStatus] = useState<Map<number, 'idle' | 'saving' | 'success' | 'error'>>(new Map())
+  const [dirtySessions, setDirtySessions] = useState<Set<number>>(new Set())
+
+  // Debounced attendance state (kept for cleanup, but not used for auto-save)
   const attendanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const displaySessions = useMemo(() => sessions.slice(0, 5), [sessions])
@@ -202,7 +207,6 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   }, [refetchData, showToast])
 
   const handleToggle = useCallback((studentId: string, sessionId: number) => {
-    // Get current student data before optimistic update
     const student = students.find(s => s.student_id === studentId)
     if (!student) return
 
@@ -219,66 +223,138 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       })
     })
     
-    // Mark that changes have been made
+    // Queue change for batch save (no auto-save)
+    setPendingChanges(prev => {
+      const newMap = new Map(prev)
+      const existing = newMap.get(sessionId) || []
+      const filtered = existing.filter(e => e.student_id !== studentId)
+      if (nextStatus !== null) {
+        newMap.set(sessionId, [...filtered, { student_id: studentId, status: nextStatus }])
+      } else {
+        newMap.set(sessionId, filtered)
+      }
+      return newMap
+    })
+    
+    setDirtySessions(prev => new Set(prev).add(sessionId))
+    setSessionSaveStatus(prev => {
+      const newMap = new Map(prev)
+      newMap.set(sessionId, 'idle')
+      return newMap
+    })
     setHasChanges(true)
   }, [students])
 
   // Save all attendance changes and notes
   const handleSaveAll = useCallback(async () => {
-    console.log('[Save] handleSaveAll called')
-    console.log('[Save] displaySessions:', displaySessions.length)
-    console.log('[Save] students:', students.length)
-
-    // Clear any pending debounced attendance to avoid double-saving
-    if (attendanceTimeoutRef.current) {
-      clearTimeout(attendanceTimeoutRef.current)
-      attendanceTimeoutRef.current = null
-    }
-    if (displaySessions.length === 0) {
-      console.log('[Save] No sessions to save, returning early')
+    if (pendingChanges.size === 0 && dirtyNotes.size === 0) {
+      console.log('[Save] No changes to save')
       return
     }
+
+    console.log('[Save] Saving all changes:', {
+      sessions: Array.from(pendingChanges.keys()),
+      totalEntries: Array.from(pendingChanges.values()).flat().length,
+      dirtyNotes: Array.from(dirtyNotes)
+    })
 
     setIsSaving(true)
     setError(null)
 
     try {
-      // 1. Save attendance for each session
-      const attendancePromises = displaySessions.map((session) => {
-        const payload: Record<string, AttendanceStatus> = {}
+      // 1. Set all dirty sessions to 'saving' status
+      const sessionsToSave = Array.from(pendingChanges.keys())
+      sessionsToSave.forEach(sessionId => {
+        setSessionSaveStatus(prev => new Map(prev).set(sessionId, 'saving'))
+      })
 
-        students.forEach((student) => {
-          const status = student.attendance.get(session.session_id)
-          if (status === 'present' || status === 'absent' || status === 'cancelled') {
-            payload[student.student_id] = status
+      // 2. Save attendance for each session (parallel)
+      const attendancePromises = sessionsToSave.map(async (sessionId) => {
+        const entries = pendingChanges.get(sessionId) || []
+        
+        if (entries.length === 0) {
+          return { sessionId, status: 'success' as const }
+        }
+        
+        try {
+          await markAttendance(sessionId, entries)
+          return { sessionId, status: 'success' as const }
+        } catch (err) {
+          console.error(`[Save] Failed to save session ${sessionId}:`, err)
+          return { sessionId, status: 'error' as const, error: err }
+        }
+      })
+      
+      // 3. Save notes for dirty sessions
+      const notesPromises = Array.from(dirtyNotes).map(async (sessionId) => {
+        const notes = sessionNotes[sessionId]
+        try {
+          await updateSession(sessionId, { notes })
+          return { sessionId, type: 'notes', status: 'success' as const }
+        } catch (err) {
+          console.error(`[Save] Failed to save notes for session ${sessionId}:`, err)
+          return { sessionId, type: 'notes', status: 'error' as const, error: err }
+        }
+      })
+
+      // 4. Wait for all saves to complete
+      const results = await Promise.allSettled([...attendancePromises, ...notesPromises])
+      
+      // 5. Update per-session status
+      const failedSessions: number[] = []
+      const successfulSessions: number[] = []
+      
+      results.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          const { sessionId, status } = result.value
+          setSessionSaveStatus(prev => new Map(prev).set(sessionId, status))
+          
+          if (status === 'success') {
+            successfulSessions.push(sessionId)
+          } else {
+            failedSessions.push(sessionId)
           }
+        } else {
+          console.error('[Save] Unexpected error:', result.reason)
+        }
+      })
+      
+      // 6. Clear successfully saved sessions from pending
+      if (successfulSessions.length > 0) {
+        setPendingChanges(prev => {
+          const newMap = new Map(prev)
+          successfulSessions.forEach(id => newMap.delete(id))
+          return newMap
         })
         
-        if (Object.keys(payload).length > 0) {
-          const entries = Object.entries(payload).map(([student_id, status]) => ({
-            student_id,
-            status,
-          }))
-          return markAttendance(session.session_id, entries)
-        }
-        return Promise.resolve()
+        setDirtySessions(prev => {
+          const newSet = new Set(prev)
+          successfulSessions.forEach(id => newSet.delete(id))
+          return newSet
+        })
+      }
+      
+      // 7. Clear dirty notes for successful note saves
+      setDirtyNotes(prev => {
+        const newSet = new Set(prev)
+        results.forEach(result => {
+          if (result.status === 'fulfilled' && 
+              'type' in result.value && 
+              result.value.type === 'notes' &&
+              result.value.status === 'success') {
+            newSet.delete(result.value.sessionId)
+          }
+        })
+        return newSet
       })
       
-      // 2. Save notes for dirty sessions
-      const notesPromises = Array.from(dirtyNotes).map(sessionId => {
-        const notes = sessionNotes[sessionId]
-        return updateSession(sessionId, { notes })
-      })
-
-      await Promise.all([...attendancePromises, ...notesPromises])
+      // 8. Check if any sessions remain unsaved
+      const remainingChanges = pendingChanges.size - successfulSessions.length
+      if (remainingChanges === 0 && dirtyNotes.size === 0) {
+        setHasChanges(false)
+      }
       
-      console.log('[Save] All saves completed successfully!')
-      
-      // 3. Clear dirty state and changes flag
-      setDirtyNotes(new Set())
-      setHasChanges(false)
-      
-      // 4. Invalidate dashboard cache if date provided
+      // 9. Invalidate dashboard cache if date provided
       if (selectedDate) {
         await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
         console.log('[AttendanceGrid] Invalidated dashboard cache for', selectedDate)
@@ -286,7 +362,14 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
 
       // 5. REFETCH data (soft refresh - no page reload)
       await refetchData()
-      showToast('All changes saved successfully!', 'success')
+      // 11. Show appropriate toast message
+      if (failedSessions.length === 0) {
+        showToast(`Saved ${successfulSessions.length} session(s) successfully!`, 'success')
+      } else if (successfulSessions.length === 0) {
+        showToast('Failed to save all changes', 'error')
+      } else {
+        showToast(`Saved ${successfulSessions.length}, ${failedSessions.length} failed - click retry`, 'warning')
+      }
     } catch (err) {
       console.error('[Save] Failed to save:', err)
       setError('Failed to save changes')
@@ -294,11 +377,50 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     } finally {
       setIsSaving(false)
     }
-  }, [displaySessions, students, dirtyNotes, sessionNotes, refetchData, showToast, selectedDate, qc])
+  }, [pendingChanges, dirtyNotes, sessionNotes, refetchData, showToast, selectedDate, qc])
+
+  const handleRetrySession = useCallback(async (sessionId: number) => {
+    const entries = pendingChanges.get(sessionId)
+    if (!entries || entries.length === 0) return
+    
+    setSessionSaveStatus(prev => new Map(prev).set(sessionId, 'saving'))
+    
+    try {
+      await markAttendance(sessionId, entries)
+      
+      setPendingChanges(prev => {
+        const newMap = new Map(prev)
+        newMap.delete(sessionId)
+        return newMap
+      })
+      
+      setDirtySessions(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(sessionId)
+        return newSet
+      })
+      
+      setSessionSaveStatus(prev => new Map(prev).set(sessionId, 'success'))
+      
+      const remaining = pendingChanges.size - 1
+      if (remaining === 0 && dirtyNotes.size === 0) {
+        setHasChanges(false)
+      }
+      
+      showToast('Session saved successfully', 'success')
+    } catch (err) {
+      console.error(`[Retry] Failed to save session ${sessionId}:`, err)
+      setSessionSaveStatus(prev => new Map(prev).set(sessionId, 'error'))
+      showToast('Failed to save session', 'error')
+    }
+  }, [pendingChanges, dirtyNotes, showToast])
 
   const handleCancel = useCallback(() => {
     setHasChanges(false)
     setDirtyNotes(new Set())
+    setPendingChanges(new Map())
+    setDirtySessions(new Set())
+    setSessionSaveStatus(new Map())
     refetchData()
   }, [refetchData])
 
@@ -420,7 +542,10 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         onCancel={handleCancel}
         onSave={handleSaveAll}
         hasError={!!error}
-        hasChanges={hasChanges}
+        hasChanges={hasChanges || pendingChanges.size > 0 || dirtyNotes.size > 0}
+        saveStatus={sessionSaveStatus}
+        onRetrySession={handleRetrySession}
+        dirtySessions={dirtySessions}
       />
       
       {/* Edit Session Modal */}
