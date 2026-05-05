@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
 import { type EnrichedGroupPublic, type UpdateGroupDTO } from '../../../api/academics'
-import { getEmployeesPaginated } from '../../../api/hr/employees'
-import type { Employee } from '../../../api/hr'
+import { getEmployees } from '../../../api/hr/employees'
+import type { EmployeePublic } from '../../../api/hr'
 
 interface EditGroupDialogProps {
   isOpen: boolean
@@ -23,7 +23,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
   const [maxCapacity, setMaxCapacity] = useState(group.max_capacity)
   const [status, setStatus] = useState<'active' | 'inactive' | 'archived'>(group.is_active ? 'active' : 'inactive')
   const [notes, setNotes] = useState('')
-  const [instructors, setInstructors] = useState<Employee[]>([])
+  const [instructors, setInstructors] = useState<EmployeePublic[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
 
@@ -39,11 +39,31 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
     }
   }, [isOpen, group])
 
+  // Fetch instructors when dialog opens
   useEffect(() => {
     if (isOpen) {
       setIsFetching(true)
-      getEmployeesPaginated({ skip: 0, limit: 1000 })
-        .then(r => setInstructors(r.items.filter(e => e.is_active !== false)))
+
+      // Fetch all employees with pagination
+      async function fetchAllActiveEmployees(): Promise<EmployeePublic[]> {
+        const allEmployees: EmployeePublic[] = []
+        let page = 1
+        const page_size = 100
+
+        while (true) {
+          const result = await getEmployees({ page, page_size })
+          const data = result.data || []
+          allEmployees.push(...data as EmployeePublic[])
+
+          if (data.length < page_size) break
+          page++
+        }
+
+        return allEmployees.filter(e => e.is_active !== false)
+      }
+
+      fetchAllActiveEmployees()
+        .then(items => setInstructors(items))
         .catch(() => {})
         .finally(() => setIsFetching(false))
     }

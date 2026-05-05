@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { type UpdateSessionDTO } from '../../api/academics'
-import { getEmployeesPaginated } from '../../api/hr'
-import type { Employee } from '../../api/hr'
+import { getEmployees } from '../../api/hr'
+import type { EmployeePublic } from '../../api/hr'
 import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 
 interface EditSessionPopupProps {
@@ -23,14 +23,14 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
   const [status, setStatus] = useState<'scheduled' | 'completed' | 'cancelled'>('scheduled')
   const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [instructors, setInstructors] = useState<Employee[]>([])
+  const [instructors, setInstructors] = useState<EmployeePublic[]>([])
 
   // Load instructors on mount
   useEffect(() => {
     async function loadInstructors() {
       try {
-        const result = await getEmployeesPaginated({ limit: 100 })
-        setInstructors(result.items)
+        const result = await getEmployees({ page: 1, page_size: 100 })
+        setInstructors(result.data as EmployeePublic[])
       } catch {
         setInstructors([])
       }

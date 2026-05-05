@@ -1,11 +1,11 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getCoursesPaginated } from '../api/academics'
-import { getEmployeesPaginated } from '../api/hr'
+import { getEmployees } from '../api/hr'
 import { queryKeys } from './queryKeys'
 import type { ProgressGroupLevelRequest } from '../api/academics'
 import type { Course } from '../api/academics/types/courses'
-import type { Employee } from '../api/hr/types'
+import type { EmployeePublic } from '../api/hr/types'
 
 export interface ProgressLevelFormData {
   target_level: number
@@ -33,7 +33,7 @@ export interface UseProgressLevelFormReturn {
 
   // Data for selectors
   courses: Course[]
-  employees: Employee[]
+  employees: EmployeePublic[]
   isLoadingCourses: boolean
   isLoadingEmployees: boolean
 
@@ -60,8 +60,8 @@ export function useProgressLevelForm(
   const { data: employeesData, isLoading: isLoadingEmployees } = useQuery({
     queryKey: ['employees', 'all'],
     queryFn: async () => {
-      const result = await getEmployeesPaginated({ skip: 0, limit: 100 })
-      return result.items || []
+      const result = await getEmployees({ page: 1, page_size: 100 })
+      return (result.data || []) as EmployeePublic[]
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   })

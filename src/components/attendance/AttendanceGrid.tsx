@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
+import { dashboardKeys } from '../../hooks/dashboard/useDashboard'
 import type { UpdateSessionDTO } from '../../api/academics'
 import { cancelSession, updateSession } from '../../api/academics'
 import { markAttendance, type AttendanceStatus } from '../../api/attendance'
@@ -31,6 +33,7 @@ interface AttendanceGridProps {
   groupName?: string            // Group name to display in header
   courseName?: string           // Course name to display in header
   isLoading?: boolean           // External loading state from API hook
+  selectedDate?: string         // Date for dashboard cache invalidation
 }
 
 interface StudentRow {
@@ -42,8 +45,9 @@ interface StudentRow {
   attendance: Map<number, AttendanceStatus>
 }
 
-export function AttendanceGrid({ sessions, roster, groupId, level, groupInstructorName, groupName, courseName }: AttendanceGridProps) {
+export function AttendanceGrid({ sessions, roster, groupId, level, groupInstructorName, groupName, courseName, selectedDate }: AttendanceGridProps) {
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const [students, setStudents] = useState<StudentRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -93,6 +97,16 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     setIsLoading(true)
     try {
       fetchCycleRef.current += 1
+      console.log('[DEBUG AttendanceGrid] Input data from props:', {
+        groupId,
+        rosterCount: roster?.length || 0,
+        sessionsCount: sessions?.length || 0,
+        sessions: sessions?.map(s => ({
+          sessionId: s.session_id,
+          attendanceCount: s.attendance?.length || 0,
+          statuses: s.attendance?.map(a => a.status)
+        }))
+      })
       console.debug(
         `[AttendanceGrid] Fetch #${fetchCycleRef.current} started for group ${groupId} with ${displaySessions.length} sessions`
       )
@@ -137,7 +151,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     } finally {
       setIsLoading(false)
     }
-  }, [groupId, level, displaySessions, roster, showToast])
+  }, [groupId, displaySessions, roster, showToast, sessions])
 
   // Load roster and attendance data
   useEffect(() => {
@@ -207,28 +221,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     
     // Mark that changes have been made
     setHasChanges(true)
-
-    // Clear any existing timeout
-    if (attendanceTimeoutRef.current) {
-      clearTimeout(attendanceTimeoutRef.current)
-    }
-
-    // Debounce for 5 seconds
-    attendanceTimeoutRef.current = setTimeout(async () => {
-      if (nextStatus !== null) {
-        try {
-          await markAttendance(sessionId, [{
-            student_id: studentId,
-            status: nextStatus
-          }])
-          showToast('Attendance saved', 'success')
-        } catch (err) {
-          console.error('Failed to save attendance:', err)
-          showToast('Failed to save attendance', 'error')
-        }
-      }
-    }, 5000)
-  }, [students, showToast])
+  }, [students])
 
   // Save all attendance changes and notes
   const handleSaveAll = useCallback(async () => {
@@ -285,7 +278,13 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       setDirtyNotes(new Set())
       setHasChanges(false)
       
-      // 4. REFETCH data (soft refresh - no page reload)
+      // 4. Invalidate dashboard cache if date provided
+      if (selectedDate) {
+        await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+        console.log('[AttendanceGrid] Invalidated dashboard cache for', selectedDate)
+      }
+
+      // 5. REFETCH data (soft refresh - no page reload)
       await refetchData()
       showToast('All changes saved successfully!', 'success')
     } catch (err) {
@@ -295,7 +294,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     } finally {
       setIsSaving(false)
     }
-  }, [displaySessions, students, dirtyNotes, sessionNotes, refetchData, showToast])
+  }, [displaySessions, students, dirtyNotes, sessionNotes, refetchData, showToast, selectedDate, qc])
 
   const handleCancel = useCallback(() => {
     setHasChanges(false)

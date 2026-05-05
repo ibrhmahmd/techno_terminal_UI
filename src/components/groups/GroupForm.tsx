@@ -2,7 +2,7 @@ import { useState, type FormEvent, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { ScheduleGroupInput, Course } from '../../api/academics'
 import { getCourses } from '../../api/academics'
-import { getEmployeesPaginated, type Employee } from '../../api/hr'
+import { getEmployees, type EmployeePublic } from '../../api/hr'
 
 interface GroupFormProps {
   initialData?: Partial<ScheduleGroupInput>
@@ -40,27 +40,42 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
   const [startTime, setStartTime] = useState<TimeState>(parseTime(initialData?.default_time_start))
   const [endTime, setEndTime] = useState<TimeState>(parseTime(initialData?.default_time_end))
   const [courses, setCourses] = useState<Course[]>([])
-  const [instructors, setInstructors] = useState<Employee[]>([])
+  const [instructors, setInstructors] = useState<EmployeePublic[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Helper to fetch all employees with pagination
+  const fetchAllEmployees = async (): Promise<EmployeePublic[]> => {
+    const allEmployees: EmployeePublic[] = []
+    let page = 1
+    const page_size = 100
+
+    while (true) {
+      const result = await getEmployees({ page, page_size })
+      const data = (result.data || []) as EmployeePublic[]
+      allEmployees.push(...data)
+
+      if (data.length < page_size) break
+      page++
+    }
+
+    return allEmployees
+  }
 
   // Fetch courses and instructors on mount
   useEffect(() => {
     async function fetchOptions() {
       setIsFetching(true)
       try {
-        const [coursesData, employeesResult] = await Promise.all([
-          getCourses().catch(() => []),
-          getEmployeesPaginated({ skip: 0, limit: 1000 }).then(r => r.items).catch(() => [])
+        const [coursesData, employeesData] = await Promise.all([
+          getCourses().catch(() => [] as Course[]),
+          fetchAllEmployees().catch(() => [])
         ])
-        const employeesData = employeesResult
         console.log('[GroupForm] Fetched courses:', coursesData.length, coursesData)
         console.log('[GroupForm] Fetched employees (raw):', employeesData.length, employeesData)
         setCourses(coursesData)
-        // EmployeeListItem only has: id, full_name, job_title, employment_type, is_active
-        // There is NO department field on the list endpoint — filter by is_active only
-        const activeEmployees = employeesData.filter(e => e.is_active !== false)
+        const activeEmployees = employeesData.filter((e: EmployeePublic) => e.is_active !== false)
         console.log('[GroupForm] Active employees for instructor dropdown:', activeEmployees.length, activeEmployees)
         setInstructors(activeEmployees)
       } catch (err) {

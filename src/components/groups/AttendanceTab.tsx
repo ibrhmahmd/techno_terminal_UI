@@ -117,7 +117,13 @@ export function AttendanceTab({
   // Show sessions even if roster is empty (level 1 might have no students yet)
   const transformedSessions = useMemo(() => {
     if (attendanceSessions.length === 0) return []
-    return transformSessions(attendanceSessions, roster)
+    const transformed = transformSessions(attendanceSessions, roster)
+    console.log('[DEBUG AttendanceTab] Transformed sessions:', transformed.map(s => ({
+      sessionId: s.session_id,
+      attendanceCount: s.attendance?.length || 0,
+      statuses: s.attendance?.map(a => a.status)
+    })))
+    return transformed
   }, [attendanceSessions, roster])
 
   const handleLevelChange = (levelId: number) => {
@@ -154,6 +160,7 @@ export function AttendanceTab({
               level={selectedLevel?.level_number || currentLevelNumber}
               groupInstructorName={instructorName}
               isLoading={isLoading}
+              selectedDate={undefined}
             />
           )}
         </div>

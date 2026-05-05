@@ -20,7 +20,25 @@ export function useGroupAttendance(
     queryKey: ['groups', groupId, 'attendance', levelNumber],
     queryFn: async () => {
       if (!levelNumber) throw new Error('Level number is required')
-      return getAttendanceForLevel(groupId, levelNumber)
+      const result = await getAttendanceForLevel(groupId, levelNumber)
+      console.log('[DEBUG Group Detail] Raw API response:', {
+        groupId,
+        levelNumber,
+        rosterCount: result.roster?.length || 0,
+        sessions: result.sessions?.map(s => ({
+          sessionId: s.session_id,
+          date: s.date,
+          attendanceEntries: Object.entries(s.attendance || {}).map(([studentId, status]) => ({
+            studentId,
+            status
+          })),
+          presentCount: Object.values(s.attendance || {}).filter(st => st === 'present').length,
+          absentCount: Object.values(s.attendance || {}).filter(st => st === 'absent').length,
+          excusedCount: Object.values(s.attendance || {}).filter(st => st === 'excused').length,
+          lateCount: Object.values(s.attendance || {}).filter(st => st === 'late').length,
+        }))
+      })
+      return result
     },
     enabled: !!groupId && !!levelNumber && enabled,
     staleTime: 60 * 1000, // 1 minute - attendance changes frequently

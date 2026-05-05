@@ -8,8 +8,8 @@ import { EmployeeDetailModal } from '../components/staff/EmployeeDetailModal'
 import { useToast } from '../components/common/Toast'
 import { usePagination } from '../hooks/usePagination'
 import { extractErrorMessage, isValidationError } from '../utils/apiErrors'
-import { 
-  getEmployeesPaginated, 
+import {
+  fetchEmployeesPaginated,
   getEmployee,
   createEmployee,
   updateEmployee,
@@ -37,7 +37,7 @@ export function StaffPage() {
     currentPage,
     setPage,
     refresh
-  } = usePagination(getEmployeesPaginated, { initialLimit: 20, initialSkip: 0 })
+  } = usePagination(fetchEmployeesPaginated, { initialLimit: 20, initialSkip: 0 })
   
   // Staff accounts state
   const [staffAccounts, setStaffAccounts] = useState<StaffAccountPublic[]>([])

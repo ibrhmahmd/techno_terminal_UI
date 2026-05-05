@@ -4,13 +4,17 @@ import { markAttendance } from '../../api/attendance'
 import { dashboardKeys } from './useDashboard'
 import type { AttendanceEntry } from '../../api/attendance'
 
-export function useMarkAttendance(sessionId: number, groupId: number) {
+export function useMarkAttendance(sessionId: number, groupId: number, date?: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (entries: AttendanceEntry[]) => markAttendance(sessionId, entries),
     onSuccess: () => {
       // Force re-fetch the specific group's sessions
       qc.invalidateQueries({ queryKey: dashboardKeys.sessions(groupId) })
+      // Invalidate dashboard overview if date provided
+      if (date) {
+        qc.invalidateQueries({ queryKey: dashboardKeys.overview(date) })
+      }
     },
   })
 }

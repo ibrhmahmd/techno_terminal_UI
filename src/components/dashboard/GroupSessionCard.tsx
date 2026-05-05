@@ -9,6 +9,7 @@ interface GroupSessionCardProps {
   roster: StudentRosterDTO[]
   groupId: number
   level: number
+  selectedDate?: string
 }
 
 export function GroupSessionCard({
@@ -18,7 +19,8 @@ export function GroupSessionCard({
   sessions,
   roster,
   groupId,
-  level
+  level,
+  selectedDate
 }: GroupSessionCardProps) {
   return (
     <AttendanceGrid
@@ -29,6 +31,7 @@ export function GroupSessionCard({
       groupInstructorName={instructorName}
       groupName={groupName}
       courseName={courseName}
+      selectedDate={selectedDate}
     />
   )
 }

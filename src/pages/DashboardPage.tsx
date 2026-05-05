@@ -105,6 +105,7 @@ export function DashboardPage() {
                       roster={groupData.roster}
                       groupId={item.group_id}
                       level={item.current_level.level_number}
+                      selectedDate={selectedDate}
                     />
                   </div>
                 )
