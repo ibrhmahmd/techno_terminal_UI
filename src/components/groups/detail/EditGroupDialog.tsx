@@ -9,7 +9,7 @@ interface EditGroupDialogProps {
   isOpen: boolean
   group: EnrichedGroupPublic
   onClose: () => void
-  onSave: (data: UpdateGroupDTO & { name?: string; notes?: string; status?: 'active' | 'inactive' | 'archived' }) => Promise<void>
+  onSave: (data: UpdateGroupDTO & { name?: string; notes?: string; status?: 'active' | 'inactive' | 'archived' | 'completed' }) => Promise<void>
 }
 
 const DAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
