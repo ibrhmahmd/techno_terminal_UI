@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://techno-terminal-5c255cfe.fastapicloud.dev/"
+      "destination": "https://techno-terminal-5c255cfe.fastapicloud.dev/api/:path*"
     },
     {
       "source": "/((?!api/).*)",
