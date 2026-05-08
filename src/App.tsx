@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { useAuthStore } from './store/authStore'
+import { useEffect, useState } from 'react'
 import { AppLayout } from './components/layout/AppLayout'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
@@ -22,13 +23,30 @@ import { SettingsPage } from './pages/SettingsPage'
 import { NotificationsPage } from './pages/NotificationsPage'
 import { RoleBasedRoute } from './components/common/RoleBasedRoute'
 
+function useHasHydrated() {
+  const [hasHydrated, setHasHydrated] = useState(
+    useAuthStore.persist.hasHydrated()
+  )
+  useEffect(() => {
+    const unsub = useAuthStore.persist.onFinishHydration(() => {
+      setHasHydrated(true)
+    })
+    return unsub
+  }, [])
+  return hasHydrated
+}
+
 function ProtectedRoute() {
   const { isAuthenticated } = useAuthStore()
+  const hydrated = useHasHydrated()
+  if (!hydrated) return null // wait for localStorage rehydration before deciding
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />
 }
 
 function PublicRoute() {
   const { isAuthenticated } = useAuthStore()
+  const hydrated = useHasHydrated()
+  if (!hydrated) return null // wait for localStorage rehydration before deciding
   return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Outlet />
 }
 
@@ -73,7 +91,8 @@ function App() {
 
         {/* Default Redirect */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Wildcard: send unknown routes to login, not dashboard, to avoid redirect loops */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
       <SpeedInsights />
     </BrowserRouter>

@@ -39,15 +39,6 @@ export function ProfileTab() {
             </div>
           ))}
         </div>
-
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
-          <p className="text-sm text-blue-700">
-            <span className="material-symbols-outlined inline-block mr-2 align-text-bottom text-base">
-              info
-            </span>
-            Profile information is managed by system administrators. Contact an admin to update your details.
-          </p>
-        </div>
       </div>
     </div>
   )

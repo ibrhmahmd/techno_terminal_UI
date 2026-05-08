@@ -203,17 +203,6 @@ export function PaymentsTab({
           </div>
         )}
       </div>
-
-      {/* Note */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-        <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-        <div>
-          <p className="text-sm text-green-800 font-medium">Real-Time Payment Data</p>
-          <p className="text-sm text-green-700">
-            Showing actual payment data from the finance system. All amounts are in Egyptian Pounds (EGP).
-          </p>
-        </div>
-      </div>
     </div>
   )
 }

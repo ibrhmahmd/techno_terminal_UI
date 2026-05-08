@@ -98,7 +98,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
   }, [])
 
   const refetchData = useCallback(async () => {
-    if (!groupId || displaySessions.length === 0) return
+    if (!groupId) return
 
     setIsLoading(true)
     try {
@@ -126,6 +126,8 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
       }
 
       // Build student rows using roster + session attendance
+      // Even if there are no sessions yet, we still populate students so the
+      // correct empty-state message ("no sessions" vs "no students") is shown.
       const studentRows: StudentRow[] = rosterData.map((r) => {
         const attendanceMap = new Map<number, AttendanceStatus>()
         displaySessions.forEach((session) => {
@@ -148,7 +150,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
       setStudents(studentRows)
       setError(null)
       console.debug(
-        `[AttendanceGrid] Fetch #${fetchCycleRef.current} completed for group ${groupId} (${studentRows.length} students)`
+        `[AttendanceGrid] Fetch #${fetchCycleRef.current} completed for group ${groupId} (${studentRows.length} students, ${displaySessions.length} sessions)`
       )
     } catch (err) {
       console.error('Failed to refresh data:', err)
@@ -443,10 +445,14 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
     )
   }
 
-  // Get time from first session
-  const sessionTime = sessions.length > 0
-    ? `${formatTime(sessions[0].start_time)} - ${formatTime(sessions[0].end_time) || 'Next Hour'}`
-    : ''
+  if (displaySessions.length === 0) {
+    return (
+      <div className="p-8 text-center text-outline-variant">
+        <p className="mb-2">No sessions have been generated for this level yet.</p>
+        <p className="text-sm">{students.length} student{students.length !== 1 ? 's' : ''} enrolled — generate sessions to start marking attendance.</p>
+      </div>
+    )
+  }
 
   const currentInstructorName = groupInstructorName || 'TBA'
   const instructorInitials = getInitials(currentInstructorName, '?')
@@ -484,12 +490,6 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
                         >
                           <span className="material-symbols-outlined text-[18px]">info</span>
                         </button>
-                      </div>
-                      <div className="ml-2 border-l border-slate-200 pl-4">
-                        <p className="text-[11px] font-bold text-slate-800 flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[14px] text-slate-700">schedule</span>
-                          {sessionTime}
-                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
