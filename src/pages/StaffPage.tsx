@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { PageHeader, PageSection, ActionButton, SearchBar, DataTableContainer, LoadingSpinner, Modal, PaginationControls } from '../components/common'
 import { EmployeeForm } from '../components/staff/EmployeeForm'
-import { AttendanceLog } from '../components/staff/AttendanceLog'
 import { CreateAccountModal } from '../components/staff/CreateAccountModal'
 import { EmployeeDetailModal } from '../components/staff/EmployeeDetailModal'
 import { useToast } from '../components/common/Toast'
@@ -13,12 +12,10 @@ import {
   getEmployee,
   createEmployee,
   updateEmployee,
-  logAttendance,
   getStaffAccounts,
   createEmployeeAccount,
   type EmployeePublic,
   type EmployeeCreateInput,
-  type AttendanceLogInput,
   type StaffAccountPublic,
   type CreateEmployeeAccountRequest
 } from '../api/hr'
@@ -59,8 +56,6 @@ export function StaffPage() {
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingEmployee, setEditingEmployee] = useState<EmployeePublic | null>(null)
-  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [isProcessing, setIsProcessing] = useState(false)
 
   // Load initial data - only on mount to prevent infinite loops
@@ -146,10 +141,6 @@ export function StaffPage() {
     }
   }
 
-  const handleLogAttendance = async (data: AttendanceLogInput) => {
-    await logAttendance(data)
-  }
-
   const handleViewEmployee = async (employee: EmployeePublic) => {
     setViewingEmployee(employee)
     setIsLoadingDetail(true)
@@ -200,21 +191,12 @@ export function StaffPage() {
         actions={
           <>
             {activeTab === 'employees' && (
-              <>
-                <ActionButton 
-                  variant="secondary" 
-                  icon="schedule" 
-                  onClick={() => setIsAttendanceModalOpen(true)}
-                >
-                  Log Attendance
-                </ActionButton>
-                <ActionButton 
-                  icon="person_add" 
-                  onClick={() => setIsAddModalOpen(true)}
-                >
-                  Add Employee
-                </ActionButton>
-              </>
+              <ActionButton
+                icon="person_add"
+                onClick={() => setIsAddModalOpen(true)}
+              >
+                Add Employee
+              </ActionButton>
             )}
           </>
         }
@@ -259,12 +241,6 @@ export function StaffPage() {
             placeholder="Search employees..."
             onSearch={setSearchTerm}
             className="flex-1 max-w-md"
-          />
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-2 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
           />
         </div>
 
@@ -450,15 +426,6 @@ export function StaffPage() {
           />
         )}
       </Modal>
-
-      {/* Attendance Log Modal */}
-      <AttendanceLog
-        employees={employees}
-        selectedDate={selectedDate}
-        onLogAttendance={handleLogAttendance}
-        onClose={() => setIsAttendanceModalOpen(false)}
-        isOpen={isAttendanceModalOpen}
-      />
 
       {/* Employee Detail Modal */}
       <EmployeeDetailModal
