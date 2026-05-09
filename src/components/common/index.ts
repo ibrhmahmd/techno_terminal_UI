@@ -43,3 +43,6 @@ export { DualNumberInput } from './DualNumberInput'
 export { ActiveFilterTag, ActiveFilterTagsList } from './ActiveFilterTag'
 export { FilterPill } from './FilterPill'
 export { FloatingActionBar } from './FloatingActionBar'
+
+// Pill Selector
+export { PillSelector, type PillOption, type PillSelectorProps } from './PillSelector'

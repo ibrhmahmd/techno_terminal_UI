@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { LoadingSpinner } from '../common/LoadingSpinner'
+import { useState, useRef, useEffect, type FormEvent, type KeyboardEvent } from 'react'
+import { LoadingSpinner, PillSelector } from '../common'
 import { DateInput } from '../common/DateInput'
 import { ParentSearchDropdown } from './ParentSearchDropdown'
 import type { CreateStudentDTO, ParentListItem, StudentStatus } from '../../api/crm'
@@ -22,11 +22,20 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
     gender: initialData?.gender || '',
     phone: initialData?.phone || '',
     notes: initialData?.notes || '',
-    status: initialStatus,
+    status: initialStatus || 'waiting',
   })
+  const [warnings, setWarnings] = useState<string[]>([])
   const [selectedParent, setSelectedParent] = useState<ParentListItem | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Ref for auto-focus on name input
+  const nameInputRef = useRef<HTMLInputElement>(null)
+
+  // Auto-focus name input on mount
+  useEffect(() => {
+    nameInputRef.current?.focus()
+  }, [])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -38,6 +47,19 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
       if (!formData.full_name.trim()) {
         throw new Error('Full name is required')
       }
+      if (!formData.gender) {
+        throw new Error('Gender is required')
+      }
+
+      // Check for recommended fields (warnings only)
+      const newWarnings: string[] = []
+      if (!formData.phone) {
+        newWarnings.push('Phone is recommended')
+      }
+      if (!formData.date_of_birth) {
+        newWarnings.push('Birth date is recommended')
+      }
+      setWarnings(newWarnings)
 
       // Build submission data with all required fields
       const genderValue = formData.gender as 'male' | 'female' | ''
@@ -62,6 +84,18 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
+  // Handle Enter key to submit form (not for textarea)
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      // Trigger form submission by clicking the submit button's form
+      const form = e.currentTarget.form
+      if (form) {
+        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+      }
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Error Message */}
@@ -72,16 +106,33 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
         </div>
       )}
 
+      {/* Warnings */}
+      {warnings.length > 0 && !error && (
+        <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-700">
+          <span className="material-symbols-outlined text-lg">warning</span>
+          <div>
+            <span className="font-medium">Please consider adding:</span>
+            <ul className="mt-1 ml-4 list-disc">
+              {warnings.map((w, i) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
       {/* Full Name */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="full_name" className="text-sm font-medium text-on-surface">
           Full Name <span className="text-red-500">*</span>
         </label>
         <input
+          ref={nameInputRef}
           id="full_name"
           type="text"
           value={formData.full_name}
           onChange={(e) => handleChange('full_name', e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Enter student's full name"
           required
           disabled={isLoading}
@@ -89,50 +140,64 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
         />
       </div>
 
-      {/* Birth Date */}
-      <DateInput
-        id="date_of_birth"
-        label="Birth Date"
-        value={formData.date_of_birth}
-        onChange={(value) => handleChange('date_of_birth', value || '')}
-        disabled={isLoading}
-      />
+      {/* Phone + Birth Date - 2 column layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Phone */}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="phone" className="text-sm font-medium text-on-surface">
+            Phone
+          </label>
+          <input
+            id="phone"
+            type="tel"
+            value={formData.phone}
+            onChange={(e) => handleChange('phone', e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="+20 123 456 7890"
+            disabled={isLoading}
+            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
+          />
+        </div>
 
-      {/* Gender */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="gender" className="text-sm font-medium text-on-surface">
-          Gender
-        </label>
-        <select
-          id="gender"
-          value={formData.gender}
-          onChange={(e) => handleChange('gender', e.target.value)}
+        {/* Birth Date */}
+        <DateInput
+          id="date_of_birth"
+          label="Birth Date"
+          value={formData.date_of_birth}
+          onChange={(value) => handleChange('date_of_birth', value || '')}
           disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
-        >
-          <option value="">Select gender</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-        </select>
-      </div>
-
-      {/* Phone */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="phone" className="text-sm font-medium text-on-surface">
-          Phone
-        </label>
-        <input
-          id="phone"
-          type="tel"
-          value={formData.phone}
-          onChange={(e) => handleChange('phone', e.target.value)}
-          placeholder="+20 123 456 7890"
-          disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
         />
       </div>
 
-      {/* Notes */}
+      {/* Gender - half width */}
+      <div className="sm:w-1/2">
+        <PillSelector
+          label="Gender"
+          value={formData.gender || ''}
+          onChange={(value) => handleChange('gender', value || '')}
+          disabled={isLoading}
+          required
+          options={[
+            { value: 'male', label: 'Male', dotColor: 'bg-blue-500' },
+            { value: 'female', label: 'Female', dotColor: 'bg-pink-500' },
+          ]}
+        />
+      </div>
+
+      {/* Status - full width */}
+      <PillSelector
+        label="Status"
+        value={formData.status}
+        onChange={(value) => handleChange('status', value as StudentStatus)}
+        disabled={isLoading}
+        options={[
+          { value: 'active', label: 'Active', dotColor: 'bg-green-500' },
+          { value: 'waiting', label: 'Waiting', dotColor: 'bg-amber-500' },
+          { value: 'inactive', label: 'Inactive', dotColor: 'bg-slate-500' },
+        ]}
+      />
+
+      {/* Notes - full width */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="notes" className="text-sm font-medium text-on-surface">
           Notes
@@ -146,35 +211,6 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
           disabled={isLoading}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed resize-none"
         />
-      </div>
-
-      {/* Status Toggle - shown in both create and edit modes */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-on-surface">
-          Status
-        </label>
-        <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
-          {[
-            { value: 'active', label: 'Active', dotColor: 'bg-green-500', ringColor: 'ring-green-500' },
-            { value: 'waiting', label: 'Waiting', dotColor: 'bg-amber-500', ringColor: 'ring-amber-500' },
-            { value: 'inactive', label: 'Inactive', dotColor: 'bg-slate-500', ringColor: 'ring-slate-500' },
-          ].map(({ value, label, dotColor, ringColor }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => handleChange('status', value)}
-              disabled={isLoading}
-              className={`flex-1 px-3 py-2 rounded-md font-medium text-sm transition-all flex items-center justify-center gap-2 ${
-                formData.status === value
-                  ? `bg-white shadow-sm text-on-surface ring-2 ring-offset-1 ${ringColor}`
-                  : 'text-slate-500 hover:text-on-surface hover:bg-white/50'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              <span className={`inline-block w-2 h-2 rounded-full ${dotColor}`}></span>
-              {label}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Parent Selection - only for create mode */}

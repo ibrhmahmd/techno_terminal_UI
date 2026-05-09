@@ -165,7 +165,6 @@ export function DateInput({
         maxLength={10}
         className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
       />
-      <span className="text-xs text-slate-400">Format: DD-MM-YYYY</span>
     </div>
   )
 }

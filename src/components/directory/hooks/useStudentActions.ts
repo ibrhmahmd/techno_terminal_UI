@@ -70,8 +70,34 @@ export function useStudentActions(
         showToast('Student created successfully', 'success')
         closeCreateModal()
         clearSearch()
-      } catch {
-        showToast('Failed to create student', 'error')
+      } catch (err: any) {
+        let message = 'Failed to create student'
+        
+        if (err?.response?.data?.message) {
+          message = err.response.data.message
+        } else if (err instanceof Error) {
+          message = err.message
+        }
+        
+        if (err?.response?.status === 422 && err?.response?.data?.errors) {
+          const validationErrors = err.response.data.errors
+          const errorMessages = Object.entries(validationErrors)
+            .map(([field, msgs]) => {
+              if (Array.isArray(msgs)) {
+                return `${field}: ${msgs.join(', ')}`
+              }
+              return `${field}: ${msgs}`
+            })
+            .join('; ')
+          
+          if (errorMessages) {
+            message = `Validation failed: ${errorMessages}`
+          }
+        }
+        
+        showToast(message, 'error')
+        
+        throw new Error(message)
       } finally {
         setIsLoading(false)
       }

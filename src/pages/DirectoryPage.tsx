@@ -12,7 +12,9 @@ import { useDirectoryData, type GroupItem } from '../hooks/directory/useDirector
 import { useStudentActions } from '../components/directory/hooks/useStudentActions'
 import { useAdvancedSearch } from '../hooks/directory/useAdvancedSearch'
 import { AdvancedSearchPanel } from '../components/directory/AdvancedSearchPanel'
-import { createParent, type StudentListItem, type StudentFilterParams, type StudentWithDetails } from '../api/crm'
+import { createParent, searchParents, type StudentListItem, type StudentFilterParams, type StudentWithDetails, type CreateStudentDTO, type ParentListItem, type StudentStatus } from '../api/crm'
+
+type CreateStudentInput = CreateStudentDTO
 import { studentColumns, parentColumns } from '../components/directory/DirectoryColumns'
 import { DirectoryTabs } from '../components/directory/DirectoryTabs'
 import { AlphabetSlider } from '../components/directory/AlphabetSlider'
@@ -109,6 +111,17 @@ export function DirectoryPage() {
     },
     clearSearch
   )
+
+  // Wrapper to redirect to waiting list tab after successful creation
+  const handleCreateStudentAndRedirect = async (
+    data: CreateStudentInput,
+    parent: ParentListItem | null,
+    status: StudentStatus
+  ) => {
+    await handleCreateStudent(data, parent, status)
+    // Redirect to waiting list tab (default status is 'waiting')
+    handleTabChange('waiting')
+  }
 
   // Confirm dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -584,10 +597,11 @@ export function DirectoryPage() {
       >
         <StudentForm
           onSubmit={(data, parent, status) =>
-            handleCreateStudent(data, parent, status)
+            handleCreateStudentAndRedirect(data, parent, status)
           }
           onCancel={() => setIsCreateStudentModalOpen(false)}
           mode="create"
+          onSearchParents={searchParents}
         />
       </Modal>
 
