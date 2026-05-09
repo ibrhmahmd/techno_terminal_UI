@@ -15,6 +15,7 @@ export interface PillSelectorProps {
   onChange: (value: string) => void
   label?: string
   disabled?: boolean
+  required?: boolean
 }
 
 export function PillSelector({
@@ -23,6 +24,7 @@ export function PillSelector({
   onChange,
   label,
   disabled = false,
+  required = false,
 }: PillSelectorProps) {
   const handleKeyDown = (e: React.KeyboardEvent, currentIndex: number) => {
     if (disabled) return
@@ -56,6 +58,7 @@ export function PillSelector({
       {label && (
         <span className="text-sm font-medium text-on-surface">
           {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
         </span>
       )}
       <div
