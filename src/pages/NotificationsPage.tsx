@@ -5,13 +5,11 @@ import { useState, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { AdminSettingsTab } from '../components/notifications/tabs/AdminSettingsTab'
-import { TemplatesTab } from '../components/notifications/tabs/TemplatesTab'
 import { LogsTab } from '../components/notifications/tabs/LogsTab'
 import { BulkMessagingTab } from '../components/notifications/tabs/BulkMessagingTab'
 
 const tabs = [
   { id: 'admin', label: 'Admin Settings', icon: 'person' },
-  { id: 'templates', label: 'Templates', icon: 'description' },
   { id: 'logs', label: 'Logs', icon: 'history' },
   { id: 'bulk', label: 'Bulk Messaging', icon: 'send' },
 ] as const
@@ -46,7 +44,7 @@ export function NotificationsPage() {
           <div>
             <h1 className="text-2xl font-bold text-on-surface">Notifications</h1>
             <p className="text-slate-500 mt-1">
-              Manage notification preferences, templates, and send bulk messages
+              Manage notification preferences
             </p>
           </div>
 
@@ -73,7 +71,6 @@ export function NotificationsPage() {
           {/* Tab Content */}
           <div className="min-h-[400px]">
             {activeTab === 'admin' && <AdminSettingsTab />}
-            {activeTab === 'templates' && <TemplatesTab />}
             {activeTab === 'logs' && <LogsTab />}
             {activeTab === 'bulk' && <BulkMessagingTab />}
           </div>

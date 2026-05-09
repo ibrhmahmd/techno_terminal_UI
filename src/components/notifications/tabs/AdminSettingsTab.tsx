@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useAdminSettings, useBatchToggleNotifications } from '../../../hooks/notifications'
+import { useAdminSettings } from '../../../hooks/notifications'
 import { useAdditionalRecipients, useAddRecipient, useUpdateRecipient, useDeleteRecipient } from '../../../hooks/notifications'
 import { toggleNotification } from '../../../api/notifications'
 import { notificationKeys } from '../../../hooks/notifications/queryKeys'
@@ -60,7 +60,6 @@ export function AdminSettingsTab() {
   const queryClient = useQueryClient()
   const { data: settings, isLoading: settingsLoading } = useAdminSettings()
   const { data: recipients, isLoading: recipientsLoading } = useAdditionalRecipients()
-  const batchToggle = useBatchToggleNotifications()
   const addRecipient = useAddRecipient()
   const updateRecipient = useUpdateRecipient()
   const deleteRecipient = useDeleteRecipient()
@@ -91,11 +90,6 @@ export function AdminSettingsTab() {
     }
   }
 
-  const handleBulkToggle = (types: NotificationType[], enabled: boolean) => {
-    const updates = types.map(type => ({ type, isEnabled: enabled }))
-    batchToggle.mutate(updates)
-  }
-
   const getSetting = (type: NotificationType) => {
     return settings?.settings.find(s => s.notification_type === type)?.is_enabled ?? false
   }
@@ -119,25 +113,9 @@ export function AdminSettingsTab() {
         <div className="space-y-6">
           {Object.entries(NOTIFICATION_GROUPS).map(([key, group]) => (
             <div key={key} className="border-b border-slate-100 last:border-0 pb-6 last:pb-0">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-slate-400">{group.icon}</span>
-                  <h4 className="font-medium text-slate-700">{group.label}</h4>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleBulkToggle(group.types, true)}
-                    className="text-xs px-3 py-1 rounded-full bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
-                  >
-                    Enable All
-                  </button>
-                  <button
-                    onClick={() => handleBulkToggle(group.types, false)}
-                    className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-                  >
-                    Disable All
-                  </button>
-                </div>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="material-symbols-outlined text-slate-400">{group.icon}</span>
+                <h4 className="font-medium text-slate-700">{group.label}</h4>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
