@@ -108,73 +108,81 @@ export function UsersTab() {
         </button>
       </div>
 
-      {/* Users Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Username
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Email
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Role
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Last Login
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {users.map((user) => (
-              <tr key={user.id} className="hover:bg-slate-50">
-                <td className="px-6 py-4 text-sm font-medium text-on-surface">
-                  {user.username}
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-600">{user.email}</td>
-                <td className="px-6 py-4 text-sm text-slate-600 capitalize">
-                  {user.role.replace('_', ' ')}
-                </td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      user.is_active
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    {user.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-500">
+      {/* Users Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {users.map((user) => (
+          <div key={user.id} className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-lg transition-shadow">
+            {/* Header with avatar and name */}
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-semibold text-lg flex-shrink-0">
+                {user.username.slice(0, 2).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-slate-900 truncate">{user.username}</h3>
+                <p className="text-sm text-slate-500 truncate">{user.email}</p>
+              </div>
+            </div>
+
+            {/* Role & Status */}
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-slate-400 text-sm">work</span>
+                <span className="text-sm text-slate-700 capitalize">{user.role.replace('_', ' ')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-slate-400 text-sm">schedule</span>
+                <span className="text-sm text-slate-500">
                   {new Date(user.last_login).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4">
-                  <button
-                    onClick={() => openResetModal(user)}
-                    disabled={isResetting === user.id}
-                    className="text-sm text-secondary hover:text-secondary/80 flex items-center gap-1"
-                  >
-                    {isResetting === user.id ? (
-                      <LoadingSpinner size="sm" />
-                    ) : (
-                      <span className="material-symbols-outlined text-base">lock_reset</span>
-                    )}
-                    Reset Password
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </span>
+              </div>
+            </div>
+
+            {/* Status badge */}
+            <div className="mb-4">
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                user.is_active
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-gray-100 text-gray-700'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${user.is_active ? 'bg-green-500' : 'bg-gray-500'}`} />
+                {user.is_active ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex gap-2 pt-4 border-t border-slate-100">
+              <button
+                onClick={() => alert(`View user: ${user.username}\nEmail: ${user.email}\nRole: ${user.role}\nEmployee ID: ${user.employee_id}`)}
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                title="View Details"
+              >
+                <span className="material-symbols-outlined text-lg">visibility</span>
+                View
+              </button>
+              <button
+                onClick={() => alert(`Edit user: ${user.username} (Coming soon)`)}
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-secondary bg-secondary-container/30 rounded-lg hover:bg-secondary-container/50 transition-colors"
+                title="Edit"
+              >
+                <span className="material-symbols-outlined text-lg">edit</span>
+                Edit
+              </button>
+              <button
+                onClick={() => openResetModal(user)}
+                disabled={isResetting === user.id}
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-colors disabled:opacity-50"
+                title="Reset Password"
+              >
+                {isResetting === user.id ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <span className="material-symbols-outlined text-lg">lock_reset</span>
+                )}
+                Reset
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Create User Modal */}

@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { ProfileTab } from '../components/settings/ProfileTab'
-import { SecurityTab } from '../components/settings/SecurityTab'
 import { UsersTab } from '../components/settings/UsersTab'
-import { CRMSettingsTab } from '../components/settings/CRMSettingsTab'
 
-type TabType = 'profile' | 'security' | 'users' | 'crm'
+type TabType = 'profile' | 'users'
 
 export function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('profile')
@@ -16,8 +14,6 @@ export function SettingsPage() {
 
   const tabs: { id: TabType; label: string; icon: string }[] = [
     { id: 'profile', label: 'Profile', icon: 'person' },
-    { id: 'security', label: 'Security', icon: 'security' },
-    { id: 'crm', label: 'CRM', icon: 'contacts' },
     ...(canManageUsers ? [{ id: 'users' as TabType, label: 'Users', icon: 'group' }] : []),
   ]
 
@@ -74,8 +70,6 @@ export function SettingsPage() {
       {/* Tab Content */}
       <section className="p-8 max-w-[1400px] mx-auto">
         {activeTab === 'profile' && <ProfileTab />}
-        {activeTab === 'security' && <SecurityTab />}
-        {activeTab === 'crm' && <CRMSettingsTab />}
         {activeTab === 'users' && canManageUsers && <UsersTab />}
       </section>
     </div>
