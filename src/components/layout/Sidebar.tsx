@@ -16,13 +16,12 @@ const navSections = [
     items: [
       { path: '/enrollments', label: 'Enrollments', icon: 'assignment_ind' },
       { path: '/finance', label: 'Finance', icon: 'payments' },
-      // { path: '/attendance', label: 'Attendance', icon: 'check_circle' },
     ],
   },
   {
     title: 'Programs',
     items: [
-      // { path: '/competitions', label: 'Competitions', icon: 'emoji_events' },
+      { path: '/competitions', label: 'Competitions', icon: 'emoji_events' },
       { path: '/reports', label: 'Reports', icon: 'assessment' },
     ],
   },
@@ -36,13 +35,19 @@ const navSections = [
   },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuthStore()
 
   const handleLogout = async () => {
     await logout()
+    onClose()
     navigate('/login')
   }
 
@@ -52,11 +57,15 @@ export function Sidebar() {
     return false
   }
 
+  const handleNavigate = (path: string) => {
+    navigate(path)
+    onClose()
+  }
+
   // Filter sections based on user role
   const filteredSections = navSections.map(section => ({
     ...section,
     items: section.items.filter(item => {
-      // Notifications is only visible to admin and system_admin
       if (item.path === '/notifications') {
         return user?.role === 'admin' || user?.role === 'system_admin'
       }
@@ -65,18 +74,28 @@ export function Sidebar() {
   })).filter(section => section.items.length > 0)
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 z-50 flex flex-col overflow-hidden">
-      {/* Brand/Header - Matches dashboard.html exactly */}
-      <div className="p-6 border-b border-slate-800">
+    <aside
+      className={`fixed left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 z-50 flex flex-col overflow-hidden transition-transform duration-300 ease-in-out ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      } lg:translate-x-0`}
+    >
+      {/* Brand/Header */}
+      <div className="p-6 border-b border-slate-800 flex items-center justify-between">
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => handleNavigate('/dashboard')}
           className="text-left hover:opacity-80 transition-opacity"
         >
           <h1 className="text-xl font-bold font-headline text-white tracking-tight">TechnoTerminal</h1>
         </button>
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1 text-slate-400 hover:text-white transition-colors"
+        >
+          <span className="material-symbols-outlined text-xl">close</span>
+        </button>
       </div>
 
-      {/* Navigation - Matches dashboard.html exactly */}
+      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4">
         <div className="px-3 space-y-1">
           {filteredSections.map((section) => (
@@ -89,7 +108,7 @@ export function Sidebar() {
                 return (
                   <button
                     key={item.path}
-                    onClick={() => navigate(item.path)}
+                    onClick={() => handleNavigate(item.path)}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all ${
                       active
                         ? 'bg-teal-500/10 text-teal-500 border-r-2 border-teal-500'
@@ -108,7 +127,6 @@ export function Sidebar() {
 
       {/* Footer - User Info & Logout */}
       <div className="p-4 border-t border-slate-800 space-y-3">
-        {/* User Info Card */}
         {user && (
           <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/50">
             <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center">
@@ -120,8 +138,6 @@ export function Sidebar() {
             </div>
           </div>
         )}
-        
-        {/* Logout Button */}
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
