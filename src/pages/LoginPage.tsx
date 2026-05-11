@@ -6,14 +6,14 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner'
 
 export function LoginPage() {
   const navigate = useNavigate()
-  const { token, login: storeLogin } = useAuthStore()
+  const { isAuthenticated, login: storeLogin } = useAuthStore()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   // Redirect if already logged in
-  if (token) {
+  if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />
   }
 
@@ -34,7 +34,7 @@ export function LoginPage() {
       } else {
         setError('Login failed. Please check your credentials.')
       }
-    } catch (err) {
+    } catch {
       setError('Invalid email or password.')
     } finally {
       setIsLoading(false)
@@ -70,6 +70,7 @@ export function LoginPage() {
             <input
               id="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@techno.com"
@@ -87,6 +88,7 @@ export function LoginPage() {
             <input
               id="password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"

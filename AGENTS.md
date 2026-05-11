@@ -154,3 +154,9 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 | `vitest.config.ts` | Test runner config |
 | `tsconfig.app.json` | Build TS config (excludes tests) |
 | `vercel.json` | Production deploy config |
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan at
+`specs/001-auth-authentication-system/plan.md`
+<!-- SPECKIT END -->

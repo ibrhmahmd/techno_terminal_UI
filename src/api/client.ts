@@ -22,6 +22,14 @@ const isDebugEnabled = () => {
   return localStorage.getItem('api_debug') === 'true' || import.meta.env.DEV;
 };
 
+const sanitizedHeaders = (headers: Record<string, unknown>): Record<string, unknown> => {
+  const cleaned = { ...headers };
+  if (cleaned.Authorization) {
+    cleaned.Authorization = 'Bearer <redacted>';
+  }
+  return cleaned;
+};
+
 export const createApiClient = () => {
   const client = axios.create({
     baseURL: '/api/v1',
@@ -30,11 +38,11 @@ export const createApiClient = () => {
     },
   });
 
-  // Request interceptor - add auth token (skip for auth endpoints) + debug logging
+  // Request interceptor - add auth token (skip for login/refresh which use other auth) + debug logging
   client.interceptors.request.use((config) => {
     const token = useAuthStore.getState().token;
-    const isAuthEndpoint = config.url?.startsWith('/auth');
-    if (token && !isAuthEndpoint) {
+    const noBearerEndpoints = ['/auth/login', '/auth/refresh'];
+    if (token && !noBearerEndpoints.includes(config.url ?? '')) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
@@ -43,7 +51,7 @@ export const createApiClient = () => {
       console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
         params: config.params,
         data: config.data,
-        headers: config.headers,
+        headers: sanitizedHeaders(config.headers),
       });
     }
     
@@ -86,13 +94,19 @@ export const createApiClient = () => {
         return Promise.reject(error);
       }
 
+      // Don't intercept auth-flow 401s — login/refresh errors are handled by the caller
+      const noRefreshEndpoints = ['/auth/login', '/auth/refresh'];
+      if (noRefreshEndpoints.includes(originalRequest.url ?? '')) {
+        return Promise.reject(error);
+      }
+
       const state = useAuthStore.getState();
       const currentRefreshToken = state.refreshToken;
 
       // No refresh token available - logout and redirect
       if (!currentRefreshToken) {
         await state.logout();
-        window.location.href = "/login";
+        window.location.replace("/login");
         return Promise.reject(error);
       }
 
@@ -127,7 +141,7 @@ export const createApiClient = () => {
       } catch (refreshError) {
         // Refresh failed - logout user
         await state.logout();
-        window.location.href = "/login";
+        window.location.replace("/login");
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
