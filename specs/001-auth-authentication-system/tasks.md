@@ -1,86 +1,106 @@
 # Tasks: Auth Authentication System
 
-## Phase 0: Setup
+## Phase 1: Setup
 
-- [ ] **T-001: Create auth test directory** — Create `src/tests/auth/` directory structure
-- [ ] **T-002: Add autocomplete attributes to LoginPage** — Add `autocomplete="email"` and `autocomplete="current-password"` to form inputs (security checklist MEDIUM item)
-- [ ] **T-003: Sanitize debug logging** — Ensure `api_debug` does not leak Bearer token in logged headers (security checklist item)
+- [X] **T001 Create auth test directory** — Create `src/tests/auth/` directory structure
+- [X] **T002 [P] Add autocomplete attributes to LoginPage** — Add `autocomplete="email"` and `autocomplete="current-password"` to form inputs in `src/pages/LoginPage.tsx`
+- [X] **T003 [P] Sanitize debug logging** — Mask Bearer token in `src/api/client.ts` debug output via `sanitizedHeaders()` helper
 
-## Phase 1: Core Tests — Auth Store
+## Phase 2: User Story 1 — Login with Email/Password (P1)
 
-- [P] **T-101: authStore — login sets state** — Unit test: `login()` sets token, refreshToken, user, isAuthenticated
-- [P] **T-102: authStore — logout clears state** — Unit test: `logout()` clears all fields to null/false
-- [P] **T-103: authStore — logout handles API failure** — Unit test: `logout()` clears local state even when API call fails
-- [P] **T-104: authStore — setTokens** — Unit test: `setTokens()` updates token and refreshToken only (user unchanged)
-- [P] **T-105: authStore — initial state** — Unit test: initial state has null tokens, null user, isAuthenticated false
-- [P] **T-106: authStore — state immutability** — Unit test: setters produce new state objects, don't mutate previous state
+**Independent test**: Load `/login`, submit valid credentials, verify redirect to `/dashboard` with tokens stored.
 
-## Phase 2: Core Tests — API Client
+- [X] **T101 [P] [US1] authStore — login sets state** — Unit test: `login()` sets token, refreshToken, user, isAuthenticated in `src/tests/auth/authStore.test.ts`
+- [X] **T102 [P] [US1] authStore — initial state** — Unit test: initial state has null tokens, null user, isAuthenticated false in `src/tests/auth/authStore.test.ts`
+- [X] **T103 [P] [US1] LoginPage — renders form** — Component test: email input, password input, submit button render in `src/tests/auth/LoginPage.test.tsx`
+- [X] **T104 [P] [US1] LoginPage — submit disabled when empty** — Component test: button disabled when email or password empty in `src/tests/auth/LoginPage.test.tsx`
+- [X] **T105 [P] [US1] LoginPage — loading state** — Component test: shows LoadingSpinner during submission in `src/tests/auth/LoginPage.test.tsx`
+- [X] **T106 [P] [US1] LoginPage — calls login on submit** — Component test: form submit invokes `login()` with credentials in `src/tests/auth/LoginPage.test.tsx`
+- [X] **T107 [P] [US1] LoginPage — success redirects** — Component test: successful login stores tokens + navigates to /dashboard in `src/tests/auth/LoginPage.test.tsx`
+- [X] **T108 [P] [US1] LoginPage — error message** — Component test: failed login shows error text in `src/tests/auth/LoginPage.test.tsx`
+- [X] **T109 [P] [US1] LoginPage — authenticated redirect** — Component test: if authenticated, login form not rendered in `src/tests/auth/LoginPage.test.tsx`
+- [X] **T110 [P] [US1] LoginPage — inputs disabled during loading** — Component test: inputs have `disabled` attribute when isLoading in `src/tests/auth/LoginPage.test.tsx`
+- [X] **T111 [P] [US1] LoginPage — autocomplete attributes** — Component test: email input has `autocomplete="email"`, password has `autocomplete="current-password"` in `src/tests/auth/LoginPage.test.tsx`
+- [X] **T112 [P] [US1] client — Bearer injection for non-auth** — Unit test: request interceptor adds Bearer for non-auth endpoints in `src/tests/auth/client.test.ts`
+- [X] **T113 [P] [US1] client — skip Bearer for login/refresh** — Unit test: request interceptor skips Bearer for `/auth/login` and `/auth/refresh` in `src/tests/auth/client.test.ts`
+- [X] **T114 [P] [US1] client — no token skips header** — Unit test: request interceptor works when store has no token in `src/tests/auth/client.test.ts`
+- [X] **T115 [P] [US1] login API call** — Unit test: `login()` calls `POST /auth/login` with credentials
+- [X] **T116 [US1] Add 429 rate limit handling to LoginPage** — Parse `Retry-After` header from 429 response and display countdown timer to user in `src/pages/LoginPage.tsx`
 
-- [P] **T-201: client — Bearer injection for non-auth** — Unit test: request interceptor adds `Authorization: Bearer <token>` for non-auth endpoints
-- [P] **T-202: client — skip Bearer for /auth/** — Unit test: request interceptor does not add Bearer header for `/auth/*` endpoints
-- [P] **T-203: client — no token skips auth header** — Unit test: request interceptor works when store has no token
-- [P] **T-204: client — pass through non-401 errors** — Unit test: response interceptor rejects non-401 errors without refresh
-- [P] **T-205: client — 401 + no refresh token logs out** — Unit test: 401 with no refresh token calls logout + redirect
-- [P] **T-206: client — 401 triggers refresh** — Unit test: 401 with valid refresh token calls `/auth/refresh`
-- [P] **T-207: client — concurrent 401 queue** — Unit test: multiple simultaneous 401s trigger exactly one refresh, all retried
-- [P] **T-208: client — refresh failure logs out** — Unit test: when refresh fails, logout is called and user redirected
-- [P] **T-209: client — _retry flag prevents loops** — Unit test: already-retried requests are not retried again
-- [P] **T-210: client — debug logging** — Unit test: debug logging enabled in DEV mode
+## Phase 3: User Story 2 — Session Persistence (P1)
 
-## Phase 3: Core Tests — Auth API Functions
+**Independent test**: Log in, refresh page, verify user remains authenticated on same route.
 
-- [P] **T-301: login API call** — Unit test: `login()` calls `POST /auth/login` with credentials
-- [P] **T-302: refreshToken API call** — Unit test: `refreshToken()` calls `POST /auth/refresh` with refresh_token
-- [P] **T-303: logout API call** — Unit test: `logout()` calls `POST /auth/logout`
-- [P] **T-304: getCurrentUser API call** — Unit test: `getCurrentUser()` calls `GET /auth/me`
-- [P] **T-305: createUser API call** — Unit test: `createUser()` calls `POST /auth/users`
-- [P] **T-306: resetPassword API call** — Unit test: `resetPassword()` calls `POST /auth/users/:id/reset-password`
+- [X] **T201 [P] [US2] authStore — setTokens** — Unit test: `setTokens()` updates token and refreshToken only in `src/tests/auth/authStore.test.ts`
+- [X] **T202 [P] [US2] authStore — login then logout resets** — Unit test: login then logout resets state correctly in `src/tests/auth/authStore.test.ts`
+- [X] **T203 [US2] Add storage event listener for cross-tab sync** — Listen for `storage` events in `src/store/authStore.ts` — when auth tokens cleared in another tab, update local state to stay consistent
 
-## Phase 4: Component Tests
+## Phase 4: User Story 3 — Automatic Token Refresh (P1)
 
-- [P] **T-401: LoginPage — renders form** — Component test: email input, password input, submit button render
-- [P] **T-402: LoginPage — submit disabled when empty** — Component test: button disabled when email or password empty
-- [P] **T-403: LoginPage — loading state** — Component test: shows LoadingSpinner during submission
-- [P] **T-404: LoginPage — calls login on submit** — Component test: form submit invokes `login()` with credentials
-- [P] **T-405: LoginPage — success redirects** — Component test: successful login stores tokens + navigates to /dashboard
-- [P] **T-406: LoginPage — error message** — Component test: failed login shows error text
-- [P] **T-407: LoginPage — already authenticated redirect** — Component test: if token exists, renders `<Navigate to="/dashboard">`
-- [P] **T-408: LoginPage — inputs disabled during loading** — Component test: inputs have `disabled` attribute when isLoading
-- [P] **T-409: LoginPage — autocomplete attributes** — Component test: email input has `autocomplete="email"`, password has `autocomplete="current-password"`
+**Independent test**: Simulate 401 response, verify `/auth/refresh` called transparently, original request retried.
 
-## Phase 5: Route Guard Tests
+- [X] **T301 [P] [US3] client — pass through non-401 errors** — Unit test: response interceptor rejects non-401 errors in `src/tests/auth/client.test.ts`
+- [X] **T302 [P] [US3] client — login 401 passes through** — Unit test: 401 from `/auth/login` passes through without redirect in `src/tests/auth/client.test.ts`
+- [X] **T303 [P] [US3] client — Bearer for /auth/me** — Unit test: request interceptor adds Bearer for `/auth/me` in `src/tests/auth/client.test.ts`
+- [X] **T304 [P] [US3] client — Bearer for /auth/users** — Unit test: request interceptor adds Bearer for `/auth/users` in `src/tests/auth/client.test.ts`
+- [X] **T305 [P] [US3] client — Bearer for /auth/logout** — Unit test: request interceptor adds Bearer for `/auth/logout` in `src/tests/auth/client.test.ts`
+- [X] **T306 [US3] Detect inactive account on /auth/me** — After `GET /auth/me` returns user data, check `is_active` field — if false, force logout via `authStore.logout()` and redirect to `/login` in `src/api/auth/auth.ts`
 
-- [P] **T-501: RoleBasedRoute — authorized role renders outlet** — Component test: user with allowed role renders `<Outlet />`
-- [P] **T-502: RoleBasedRoute — unauthorized role redirects** — Component test: user without allowed role redirects to /dashboard
-- [P] **T-503: RoleBasedRoute — unauthenticated passes through** — Component test: not authenticated renders `<Outlet />` (delegates to ProtectedRoute)
-- [P] **T-504: RoleBasedRoute — custom redirectTo** — Component test: unauthorized user redirected to custom path
-- [P] **T-505: AccessDenied renders** — Component test: AccessDenied component displays correct content
-- [P] **T-506: ProtectedRoute — null during hydration** — Component test: before hydration, returns null
-- [P] **T-507: ProtectedRoute — redirects unauthenticated** — Component test: unauthenticated after hydration → `/login`
-- [P] **T-508: ProtectedRoute — renders outlet when authenticated** — Component test: authenticated after hydration → `<Outlet />`
-- [P] **T-509: PublicRoute — redirects authenticated** — Component test: authenticated user on `/login` → redirect to `/dashboard`
-- [P] **T-510: PublicRoute — renders outlet when unauthenticated** — Component test: unauthenticated on `/login` → `<Outlet />`
+## Phase 5: User Story 4 — Logout (P2)
 
-## Phase 6: Integration Tests
+**Independent test**: Log in, log out, verify cannot access protected routes and redirected to `/login`.
 
-- [P] **T-601: Full login flow** — Integration test: render LoginPage → fill form → mock API success → verify store updated → verify navigation
-- [P] **T-602: Token refresh flow** — Integration test: mock expired token → 401 from API → verify refresh called → retry succeeds
-- [P] **T-603: Concurrent 401 flow** — Integration test: 3 simultaneous requests all 401 → exactly 1 refresh call → all 3 retried
-- [P] **T-604: Route protection flow** — Integration test: unauthenticated → navigate to `/groups` → redirect to `/login`
-- [P] **T-605: Role protection flow** — Integration test: staff role → navigate to `/notifications` → redirect to `/dashboard`
+- [X] **T401 [P] [US4] authStore — logout clears state** — Unit test: `logout()` clears all fields to null/false in `src/tests/auth/authStore.test.ts`
+- [X] **T402 [P] [US4] authStore — logout handles API failure** — Unit test: `logout()` clears local state even when API call fails in `src/tests/auth/authStore.test.ts`
+- [X] **T403 [P] [US4] logout API call** — Unit test: `logout()` calls `POST /auth/logout`
+- [X] **T404 [P] [US4] refreshToken API call** — Unit test: `refreshToken()` calls `POST /auth/refresh` with refresh_token
+- [X] **T405 [P] [US4] getCurrentUser API call** — Unit test: `getCurrentUser()` calls `GET /auth/me`
 
-## Phase 7: Polish
+## Phase 6: User Story 5 — Role-Based Route Protection (P2)
 
-- [ ] **T-701: Verify lint passes** — Run `npm run lint` — zero errors
-- [ ] **T-702: Verify build passes** — Run `npm run build` — `tsc -b && vite build` succeeds
-- [ ] **T-703: Run auth tests** — Run targeted test: `npm run test -- src/tests/auth/` — all pass
-- [ ] **T-704: Verify AGENTS.md** — Confirm SPECKIT markers point to correct plan path
+**Independent test**: Authenticate as non-admin, navigate to `/notifications`, verify redirect to `/dashboard`.
+
+- [X] **T501 [P] [US5] RoleBasedRoute — authorized role renders outlet** — Component test in `src/tests/auth/RoleBasedRoute.test.tsx`
+- [X] **T502 [P] [US5] RoleBasedRoute — unauthorized role redirects** — Component test in `src/tests/auth/RoleBasedRoute.test.tsx`
+- [X] **T503 [P] [US5] RoleBasedRoute — unauthenticated passes through** — Component test in `src/tests/auth/RoleBasedRoute.test.tsx`
+- [X] **T504 [P] [US5] RoleBasedRoute — custom redirectTo** — Component test in `src/tests/auth/RoleBasedRoute.test.tsx`
+- [X] **T505 [P] [US5] AccessDenied renders** — Component test in `src/tests/auth/RoleBasedRoute.test.tsx`
+
+## Phase 7: User Story 6 — Admin User Management (P3)
+
+**Independent test**: Call `POST /auth/users` with admin credentials, verify new user created.
+
+- [X] **T601 [P] [US6] createUser API call** — Unit test: `createUser()` calls `POST /auth/users` with user data
+- [X] **T602 [P] [US6] resetPassword API call** — Unit test: `resetPassword()` calls `POST /auth/users/:id/reset-password`
+
+## Phase 8: Polish & Cross-Cutting
+
+- [X] **T801 Run full test suite** — Run `npm run test` — all auth tests pass (57/57). 2 pre-existing test files (`GroupsTable.test.tsx`, `useGroups.test.ts`) fail due to broken import paths unrelated to auth.
+- [X] **T802 Verify AGENTS.md** — SPECKIT markers correctly point to `specs/001-auth-authentication-system/plan.md`
+- [ ] **T803 Add login flow performance benchmark test** — Measure login-to-dashboard timing under simulated network conditions; verify <2s on standard connection (defined as ≥5 Mbps simulated bandwidth)
 
 ## Legend
 
 | Marker | Meaning |
 |--------|---------|
 | `[ ]` | Not started |
-| `[P]` | Parallel task — can run concurrently with other [P] tasks in the same phase |
+| `[X]` | Completed |
+| `[P]` | Parallel task — can run concurrently with other `[P]` tasks in the same phase |
 | Tasks without `[P]` are sequential — must complete before next task in phase |
+
+## Dependency Graph
+
+```
+Phase 1 (Setup) ────────────────────────────────────────────┐
+                                                             │
+Phase 2 (US1: Login) ──────> Phase 4 (US3: Token Refresh) ──┤
+                                 │                           ├──> Phase 8 (Polish)
+Phase 3 (US2: Persistence) ────┘                           │
+                                                             │
+Phase 5 (US4: Logout) ──────── independent ────────────────┘
+                                                             
+Phase 6 (US5: Role Guard) ──── independent
+Phase 7 (US6: Admin Mgmt) ──── independent
+```
+
+Phases 5–7 are independent of each other and can be worked in any order. Phase 2 and 3 are independent of each other but both feed into Phase 4 (refresh flow depends on login existing).

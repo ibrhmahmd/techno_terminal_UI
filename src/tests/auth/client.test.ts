@@ -1,15 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { AxiosRequestConfig } from 'axios'
 
-let capturedRequestInterceptor: ((config: any) => any) | null = null
-let capturedResponseErrorInterceptor: ((error: any) => any) | null = null
+let capturedRequestInterceptor: ((config: AxiosRequestConfig) => AxiosRequestConfig) | null = null
+let capturedResponseErrorInterceptor: ((error: object) => object) | null = null
 
 const mockAxiosInstance = {
   interceptors: {
     request: {
-      use: vi.fn((cb: any) => { capturedRequestInterceptor = cb }),
+      use: vi.fn((cb: (config: AxiosRequestConfig) => AxiosRequestConfig) => { capturedRequestInterceptor = cb }),
     },
     response: {
-      use: vi.fn((_success: any, error: any) => { capturedResponseErrorInterceptor = error }),
+      use: vi.fn((_success: object, error: object) => { capturedResponseErrorInterceptor = error }),
     },
   },
   post: vi.fn(),

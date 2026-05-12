@@ -59,7 +59,17 @@ export async function logout(): Promise<void> {
 
 export async function getCurrentUser(): Promise<User> {
   const response = await client.get<ApiResponse<User>>('/auth/me')
-  return response.data.data
+  const user = response.data.data
+
+  // If account has been deactivated, force logout and redirect
+  if (!user.is_active) {
+    const { useAuthStore } = await import('../../store/authStore')
+    await useAuthStore.getState().logout()
+    window.location.replace('/login')
+    throw new Error('Account deactivated')
+  }
+
+  return user
 }
 
 export async function createUser(request: CreateUserRequest): Promise<User> {

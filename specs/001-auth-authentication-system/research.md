@@ -69,6 +69,16 @@
 | Role type limited to `'admin' \| 'system_admin'` | LOW | `CreateUserRequest` role field is narrow. May need expansion if staff-creation endpoints are added |
 | No loading state between hydration and render | LOW | Returns `null` (blank screen) briefly during hydration. Acceptable — hydration completes in <50ms |
 
+## Clarified Decisions (2026-05-11)
+
+| Question | Decision | Rationale |
+|----------|----------|-----------|
+| Idle session timeout? | **None** — stay logged in until tokens expire server-side | Tokens already have finite lifetimes managed by backend. Adding client-side timeout adds complexity without proportional security benefit |
+| Deactivated accounts mid-session? | **Next API check** — 401 or `/auth/me` detects inactive → force logout | Balances security with simplicity. No extra polling needed — the existing refresh flow handles it |
+| Concurrent tab auth sync? | **Sync via `storage` event** — logout in one tab clears all tabs | Prevents confusing inconsistent states. Low implementation cost via `window.addEventListener('storage', ...)` |
+| Login rate limiting UX? | **Retry-After countdown** — parse 429 header, show timer | Best user experience — gives user clear visibility on when to retry |
+| Production observability? | **Console errors only** — external error tracker picks them up | Auth failures are already logged with structured data. Dedicated auth event pipeline is overengineering for current scope |
+
 ## Dependencies
 
 - Backend API at `/api/v1/auth/*` (external dependency — contract-driven)

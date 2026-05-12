@@ -6,7 +6,7 @@ import type { User } from '../../store/authStore'
 
 const mockLogin = vi.fn()
 let mockIsAuthenticated = false
-let mockStoreLogin = vi.fn()
+const mockStoreLogin = vi.fn()
 
 vi.mock('../../api/auth', () => ({
   login: (...args: unknown[]) => mockLogin(...args),
@@ -129,6 +129,39 @@ describe('LoginPage', () => {
 
     renderLoginPage()
     expect(screen.queryByText('Sign In')).toBeNull()
+  })
+
+  it('shows rate limit message on 429 response with Retry-After', async () => {
+    const error = {
+      response: { status: 429, headers: { 'retry-after': '30' } },
+    }
+    mockLogin.mockRejectedValueOnce(error)
+
+    renderLoginPage()
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pwd' } })
+    fireEvent.click(screen.getByText('Sign In'))
+
+    await waitFor(() => {
+      expect(screen.getByText(/Too many attempts/)).toBeDefined()
+    })
+  })
+
+  it('disables submit button during rate limit countdown', async () => {
+    const error = {
+      response: { status: 429, headers: { 'retry-after': '30' } },
+    }
+    mockLogin.mockRejectedValueOnce(error)
+
+    renderLoginPage()
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pwd' } })
+    fireEvent.click(screen.getByText('Sign In'))
+
+    await waitFor(() => {
+      const button = screen.getByText('Sign In') as HTMLButtonElement
+      expect(button.disabled).toBe(true)
+    })
   })
 
   it('inputs are disabled during loading', async () => {

@@ -5,6 +5,16 @@
 **Status**: Draft
 **Input**: User description: "Implement JWT-based authentication with login, token refresh, session persistence, role-based route protection, and admin user management"
 
+## Clarifications
+
+### Session 2026-05-11
+
+- Q: Should there be an idle session timeout? → A: None — stay logged in until tokens expire server-side
+- Q: How should deactivated accounts be handled mid-session? → A: Next API check — 401 or `/auth/me` detects inactive status, forces logout
+- Q: Should concurrent browser tabs sync auth state? → A: Sync via `storage` event — logout in one tab clears all tabs
+- Q: How should login rate limiting (429) be surfaced? → A: Parse `Retry-After` header, display countdown timer to user
+- Q: How should auth failures be tracked in production? → A: Console errors only — external error tracker (Sentry etc.) picks them up
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Login with Email/Password (Priority: P1)
@@ -108,6 +118,9 @@ A system admin creates a new admin user or resets an existing user's password vi
 - What happens when multiple concurrent requests trigger simultaneous 401s? → Only one refresh request is made; others are queued and retried with the new token
 - What happens when the token is missing from localStorage? → User is treated as unauthenticated
 - What happens when the app loads before Zustand has rehydrated from localStorage? → Components wait for hydration before rendering auth-dependent UI
+- What happens when an admin deactivates an account mid-session? → Next API response (401 or `GET /auth/me`) detects inactive status and forces logout
+- What happens when the login endpoint returns 429 (rate limited)? → Parse `Retry-After` header and display countdown timer to user
+- What happens when a user logs out in one tab? → Other tabs detect the change via `storage` event and sync auth state
 
 ## Requirements
 
@@ -153,3 +166,5 @@ A system admin creates a new admin user or resets an existing user's password vi
 - **Role set is fixed to `admin`, `system_admin`, `staff`** — new roles would require code changes
 - **The backend refresh endpoint accepts the same `refresh_token` used in login** — the API contract assumes this
 - **Network connectivity is generally reliable** — the refresh queue does not implement exponential backoff for retries
+- **No idle session timeout** — user sessions persist until tokens expire server-side; no client-side inactivity timer
+- **Auth failures are observed via console logging** — no dedicated auth event pipeline; external error tracking (Sentry) is expected for production monitoring

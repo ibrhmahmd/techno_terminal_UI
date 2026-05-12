@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { login } from '../api/auth'
@@ -11,6 +11,23 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [retryAfter, setRetryAfter] = useState<number | null>(null)
+  const [countdown, setCountdown] = useState(0)
+
+  // Countdown timer for rate-limit Retry-After
+  useEffect(() => {
+    if (countdown <= 0) return
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          setRetryAfter(null)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [countdown])
 
   // Redirect if already logged in
   if (isAuthenticated) {
@@ -34,8 +51,28 @@ export function LoginPage() {
       } else {
         setError('Login failed. Please check your credentials.')
       }
-    } catch {
-      setError('Invalid email or password.')
+    } catch (err) {
+      const axiosError = err as { response?: { status?: number; headers?: Record<string, string> } }
+      if (axiosError.response?.status === 429) {
+        const retryAfterValue = axiosError.response.headers?.['retry-after']
+        if (retryAfterValue) {
+          const seconds = parseInt(retryAfterValue, 10)
+          if (!isNaN(seconds)) {
+            setRetryAfter(seconds)
+            setCountdown(seconds)
+          } else {
+            const date = new Date(retryAfterValue)
+            if (!isNaN(date.getTime())) {
+              const diff = Math.ceil((date.getTime() - Date.now()) / 1000)
+              const secs = Math.max(1, diff)
+              setRetryAfter(secs)
+              setCountdown(secs)
+            }
+          }
+        }
+      } else {
+        setError('Invalid email or password.')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -54,6 +91,14 @@ export function LoginPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Rate Limit Message */}
+          {retryAfter && (
+            <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-700">
+              <span className="material-symbols-outlined text-lg">timer</span>
+              <span>Too many attempts. Try again in {countdown} second{countdown !== 1 ? 's' : ''}.</span>
+            </div>
+          )}
+
           {/* Error Message */}
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
@@ -101,7 +146,7 @@ export function LoginPage() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading || !email || !password}
+            disabled={isLoading || !email || !password || retryAfter !== null}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mt-2 text-sm font-semibold text-white bg-secondary rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (

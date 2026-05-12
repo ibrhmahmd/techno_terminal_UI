@@ -137,4 +137,30 @@ describe('authStore', () => {
     expect(state.user).toBeNull()
     expect(state.isAuthenticated).toBe(false)
   })
+
+  it('syncs state from localStorage on storage event', () => {
+    const user = {
+      id: 1,
+      employee_id: 100,
+      username: 'admin',
+      email: 'admin@test.com',
+      role: 'admin',
+      is_active: true,
+      last_login: '2026-01-01T00:00:00Z',
+      created_at: '2026-01-01T00:00:00Z',
+    }
+    useAuthStore.getState().login('token', 'refresh', user)
+    expect(useAuthStore.getState().isAuthenticated).toBe(true)
+
+    localStorage.setItem('auth-storage', JSON.stringify({
+      state: { token: null, refreshToken: null, user: null, isAuthenticated: false },
+    }))
+
+    window.dispatchEvent(new StorageEvent('storage', { key: 'auth-storage' }))
+
+    expect(useAuthStore.getState().isAuthenticated).toBe(false)
+    expect(useAuthStore.getState().token).toBeNull()
+    expect(useAuthStore.getState().refreshToken).toBeNull()
+    expect(useAuthStore.getState().user).toBeNull()
+  })
 })

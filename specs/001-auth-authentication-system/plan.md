@@ -1,6 +1,6 @@
 # Implementation Plan: Auth Authentication System
 
-**Branch**: `001-auth-authentication-system` | **Date**: 2026-05-11 | **Spec**: [spec.md](spec.md)
+**Branch**: `001-auth-authentication-system` | **Date**: 2026-05-11 | **Spec**: [spec.md](spec.md) | **Clarifications**: Completed 2026-05-11 (5 items)
 **Input**: Feature specification from `/specs/001-auth-authentication-system/spec.md`
 
 ## Summary
@@ -110,7 +110,10 @@ Break remaining work (test coverage, gap fixes) into executable tasks → `tasks
 Execute tasks from `tasks.md`:
 1. Write auth tests
 2. Address research gaps
-3. Verify build gates pass
+3. Add `storage` event listener for cross-tab auth sync
+4. Parse `Retry-After` header on 429 and display countdown in login form
+5. Detect `is_active: false` on `/auth/me` response and force logout
+6. Verify build gates pass
 
 ## Complexity Tracking
 

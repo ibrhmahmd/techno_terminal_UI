@@ -52,3 +52,23 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 )
+
+// Cross-tab sync: when auth-storage changes in another tab (e.g., logout),
+// re-read persisted state to stay consistent
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'auth-storage') {
+      try {
+        const stored = localStorage.getItem('auth-storage')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (parsed?.state) {
+            useAuthStore.setState(parsed.state)
+          }
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+  })
+}
