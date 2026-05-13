@@ -140,11 +140,6 @@ export function StaffPage() {
             onSearch={setSearchInput}
             className="flex-1 max-w-md"
           />
-          <PillSelector
-            options={EMPLOYMENT_TYPE_OPTIONS}
-            value={employmentType}
-            onChange={handleEmploymentTypeChange}
-          />
         </div>
 
         {isLoading ? (
