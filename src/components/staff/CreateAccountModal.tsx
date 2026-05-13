@@ -1,10 +1,16 @@
 import { useState } from 'react'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import type { EmployeePublic, CreateEmployeeAccountRequest } from '../../api/hr'
+import type { CreateEmployeeAccountRequest } from '../../api/hr'
+
+interface CreateAccountModalEmployeeInfo {
+  id: number
+  full_name: string
+  email?: string
+}
 
 interface CreateAccountModalProps {
-  employee: EmployeePublic
+  employee: CreateAccountModalEmployeeInfo
   isOpen: boolean
   onClose: () => void
   onSubmit: (data: CreateEmployeeAccountRequest) => Promise<void>

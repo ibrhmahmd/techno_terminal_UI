@@ -5,35 +5,36 @@ import type { EmployeePublic, EmployeeListItem, EmployeeCreateInput } from './ty
 interface GetEmployeesParams {
   page?: number
   page_size?: number
+  q?: string
+  employment_type?: string
 }
 
 export async function getEmployees(
   params: GetEmployeesParams = {}
-): Promise<ApiResponse<EmployeeListItem[]>> {
-  const { page = 1, page_size = 20 } = params
+): Promise<ApiResponse<EmployeeListItem[]> & { total: number; skip: number; limit: number }> {
+  const { page = 1, page_size = 20, q, employment_type } = params
   // Cap page_size at 100 to match backend API maximum
   const capped_page_size = Math.min(page_size, 100)
-  const response = await client.get<ApiResponse<EmployeeListItem[]>>(
+  const response = await client.get<ApiResponse<EmployeeListItem[]> & { total: number; skip: number; limit: number }>(
     '/hr/employees',
-    { params: { page, page_size: capped_page_size } }
+    { params: { page, page_size: capped_page_size, q, employment_type } }
   )
   return response.data
 }
 
-// Adapter for usePagination hook compatibility
 export async function fetchEmployeesPaginated(
-  params: { skip?: number; limit?: number }
-): Promise<{ items: EmployeePublic[]; total: number; hasMore: boolean }> {
-  const { skip = 0, limit = 20 } = params
+  params: { skip?: number; limit?: number; q?: string; employment_type?: string }
+): Promise<{ items: EmployeeListItem[]; total: number; hasMore: boolean }> {
+  const { skip = 0, limit = 20, q, employment_type } = params
   const page = Math.floor(skip / limit) + 1
 
-  const result = await getEmployees({ page, page_size: limit })
+  const result = await getEmployees({ page, page_size: limit, q, employment_type })
   const data = result.data || []
 
   return {
-    items: data as EmployeePublic[],
-    total: data.length,
-    hasMore: data.length === limit
+    items: data,
+    total: result.total ?? data.length,
+    hasMore: (result.total ?? data.length) > skip + data.length,
   }
 }
 

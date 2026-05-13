@@ -56,7 +56,8 @@ export function formatInitials(name: string | undefined | null): string {
 /**
  * Format date to localized string
  */
-export function formatDate(dateString: string | Date, options?: Intl.DateTimeFormatOptions): string {
+export function formatDate(dateString: string | Date | null | undefined, options?: Intl.DateTimeFormatOptions): string {
+  if (dateString == null) return ''
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString
   if (isNaN(date.getTime())) return ''
   

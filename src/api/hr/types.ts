@@ -11,6 +11,11 @@ export interface EmployeePublic {
   employment_type: 'full_time' | 'part_time' | 'contract'
   is_active: boolean
   hired_at: string
+  university?: string
+  major?: string
+  is_graduate?: boolean
+  monthly_salary?: number
+  contract_percentage?: number
 }
 
 /**
@@ -22,6 +27,8 @@ export interface EmployeeListItem {
   job_title: string
   employment_type: 'full_time' | 'part_time' | 'contract'
   is_active: boolean
+  phone?: string
+  email?: string
 }
 
 /**

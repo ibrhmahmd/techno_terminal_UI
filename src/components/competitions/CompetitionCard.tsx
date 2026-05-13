@@ -42,7 +42,7 @@ export function CompetitionCard({ competition, onClick }: CompetitionCardProps) 
       <div className="flex items-center justify-between pt-4 border-t border-slate-100">
         <div className="text-sm text-slate-500">
           <span className="font-medium">Created:</span>{' '}
-          {formatDate(competition.created_at)}
+          {competition.created_at ? formatDate(competition.created_at) : 'N/A'}
         </div>
         <span className="px-3 py-1 bg-secondary-container text-secondary text-xs rounded-full font-medium">
           View Details

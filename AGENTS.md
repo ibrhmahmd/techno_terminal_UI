@@ -8,6 +8,7 @@ npm run build    # tsc -b && vite build
 npm run lint     # ESLint
 npm run test     # Vitest
 npm run preview  # Vite preview (production build)
+npm run test -- src/tests/Foo.test.tsx  # single test file
 ```
 
 **Build caveat**: `tsc -b` uses `tsconfig.app.json` which **excludes** `src/tests/` and `*.test.{ts,tsx}` — test files are not typechecked during build.
@@ -33,16 +34,18 @@ npm run preview  # Vite preview (production build)
 
 - `/` redirects to `/dashboard`, wildcard `*` redirects to `/login`
 - `ProtectedRoute` waits for Zustand `persist` rehydration before deciding
+- `/attendance` route exists but renders `<div>Attendance</div>` placeholder
 
 ---
 
 ## 3. Framework & Toolchain Quirks
 
 - **TypeScript strict mode**: `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax` — must use `import type` for type-only imports
+- **`erasableSyntaxOnly: true`**: enums, namespaces, and parameter properties are **forbidden** — use const objects or union types instead
 - **Tailwind v3** (despite `@tailwindcss/postcss` v4 in package.json; `postcss.config.js` uses v3 plugin, `tailwind.config.js` is v3 format)
 - **Fonts**: Space Grotesk (headlines, `font-headline`), Inter (body, `font-body`) — loaded from Google Fonts in `index.html`
 - **Icons**: Lucide React (component) + Google Material Symbols (CSS class `material-symbols-outlined`)
-- **Zustand persist**: Auth store persisted under localStorage key `auth-storage`
+- **Zustand persist**: Auth store persisted under localStorage key `auth-storage`; also syncs across tabs via `storage` event listener
 - **Vercel Speed Insights**: `<SpeedInsights />` in `App.tsx`
 
 ---
@@ -51,9 +54,9 @@ npm run preview  # Vite preview (production build)
 
 - **Environment**: `happy-dom` (not jsdom)
 - **Setup**: `src/test/setup.ts` (just `import '@testing-library/jest-dom'`)
-- **Test files**: `src/tests/` — pattern `*.test.{ts,tsx}`
-- **Vitest globals** enabled (`describe`, `it`, `expect`, `vi` — no import needed for these)
-- Run single file: `npm run test -- src/tests/GroupsHeader.test.tsx`
+- **Test files**: Convention is `src/tests/` with `*.test.{ts,tsx}` pattern (vitest config also accepts `*.spec.*` and subdirectories under `src/`)
+- **Vitest globals** enabled (`describe`, `it`, `expect`, `vi` — no import needed)
+- **Run single file**: `npm run test -- src/tests/GroupsHeader.test.tsx`
 
 ---
 
@@ -63,6 +66,7 @@ npm run preview  # Vite preview (production build)
 - **Request interceptor**: Injects `Bearer` token from `authStore` (skips `/auth/*` endpoints)
 - **Response interceptor**: On 401 → queues concurrent requests, calls `POST /auth/refresh`, retries with new token. Falls back to logout if refresh fails or no refresh token.
 - **Debug mode**: `localStorage.setItem('api_debug', 'true')` logs all requests/responses/errors to console; also auto-enabled in `import.meta.env.DEV`
+- **API response envelope**: `ApiResponse<T>` (single) / `PaginatedApiResponse<T>` (paginated) in `src/types/api.ts`
 
 ### API Domain Folders
 ```
@@ -140,23 +144,8 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 
 ---
 
-## 8. Key Source Files
-
-| File | Purpose |
-|------|---------|
-| `src/App.tsx` | Routing config & protection guards |
-| `src/main.tsx` | App bootstrap (QueryClientProvider) |
-| `src/api/client.ts` | Axios with JWT refresh interceptor |
-| `src/lib/queryClient.ts` | React Query defaults |
-| `src/hooks/queryKeys.ts` | Centralized cache keys |
-| `src/store/authStore.ts` | Zustand auth + persist |
-| `vite.config.ts` | Dev proxy config |
-| `vitest.config.ts` | Test runner config |
-| `tsconfig.app.json` | Build TS config (excludes tests) |
-| `vercel.json` | Production deploy config |
-
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/001-auth-authentication-system/plan.md`
+`specs/003-redesign-employee-cards/plan.md`
 <!-- SPECKIT END -->
