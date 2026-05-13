@@ -10,7 +10,8 @@ export interface EmployeePublic {
   job_title: string
   employment_type: 'full_time' | 'part_time' | 'contract'
   is_active: boolean
-  hired_at: string
+  hired_at: string | null
+  has_account: boolean
   university?: string
   major?: string
   is_graduate?: boolean

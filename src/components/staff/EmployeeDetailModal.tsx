@@ -13,7 +13,7 @@ interface EmployeeDetailModalProps {
 }
 
 export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRetry }: EmployeeDetailModalProps) {
-  const formatDate = (dateString: string | undefined) => {
+  const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return null
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',

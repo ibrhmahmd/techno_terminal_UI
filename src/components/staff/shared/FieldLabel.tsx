@@ -18,7 +18,7 @@ export function FieldLabel({ label, value, isLoading, icon, fallback = 'Not set'
       </div>
       {isLoading ? (
         <Skeleton className="h-5 w-3/4 mt-1" />
-      ) : value ? (
+      ) : value !== undefined && value !== null ? (
         <p className="text-sm text-slate-900">{value}</p>
       ) : (
         <p className="text-sm text-slate-400 italic">{fallback}</p>
