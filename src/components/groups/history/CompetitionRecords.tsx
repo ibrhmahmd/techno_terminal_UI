@@ -1,4 +1,4 @@
-import { Trophy, Medal, Award, XCircle } from 'lucide-react'
+import { CheckCircle, Clock, XCircle } from 'lucide-react'
 import { DataTable } from '../../common/datatable'
 import { LoadingState } from '../../common/LoadingState'
 import { EmptyState } from '../../common/EmptyState'
@@ -9,16 +9,15 @@ const formatDate = (dateString: string) => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+const statusConfig: Record<string, { icon: typeof CheckCircle; color: string; label: string }> = {
+  active: { icon: Clock, color: 'text-blue-600', label: 'Active' },
+  completed: { icon: CheckCircle, color: 'text-green-600', label: 'Completed' },
+  withdrawn: { icon: XCircle, color: 'text-red-600', label: 'Withdrawn' },
+}
+
 interface CompetitionRecordsProps {
   data: CompetitionParticipationDTO[]
   isLoading: boolean
-}
-
-const resultConfig: Record<NonNullable<CompetitionParticipationDTO['result']>, { icon: typeof Trophy; color: string; label: string }> = {
-  winner: { icon: Trophy, color: 'text-yellow-600', label: 'Winner' },
-  runner_up: { icon: Medal, color: 'text-slate-600', label: 'Runner Up' },
-  participant: { icon: Award, color: 'text-blue-600', label: 'Participant' },
-  disqualified: { icon: XCircle, color: 'text-red-600', label: 'Disqualified' },
 }
 
 export function CompetitionRecords({ data, isLoading }: CompetitionRecordsProps) {
@@ -38,36 +37,44 @@ export function CompetitionRecords({ data, isLoading }: CompetitionRecordsProps)
 
   const columns = [
     {
-      key: 'date',
-      header: 'Date',
-      width: '15%',
-      cell: (row: CompetitionParticipationDTO) => formatDate(row.event_date),
-    },
-    {
       key: 'competition',
       header: 'Competition',
-      width: '30%',
+      width: '25%',
       cell: (row: CompetitionParticipationDTO) => (
         <span className="font-medium text-slate-900">{row.competition_name}</span>
       ),
     },
     {
-      key: 'level',
-      header: 'Level',
-      width: '12%',
+      key: 'team',
+      header: 'Team',
+      width: '20%',
       cell: (row: CompetitionParticipationDTO) => (
-        <span className="text-sm text-slate-600">Level {row.level_at_time}</span>
+        <span className="text-sm text-slate-700">{row.team_name}</span>
       ),
     },
     {
-      key: 'result',
-      header: 'Result',
-      width: '18%',
+      key: 'category',
+      header: 'Category',
+      width: '15%',
+      cell: (row: CompetitionParticipationDTO) => (
+        <span className="text-sm text-slate-600">{row.category_name || '-'}</span>
+      ),
+    },
+    {
+      key: 'entered_at',
+      header: 'Entered',
+      width: '15%',
+      cell: (row: CompetitionParticipationDTO) => (
+        <span className="text-sm text-slate-600">{formatDate(row.entered_at)}</span>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      width: '12%',
       cell: (row: CompetitionParticipationDTO) => {
-        if (!row.result) {
-          return <span className="text-sm text-slate-500">-</span>
-        }
-        const config = resultConfig[row.result]
+        const status = row.is_active ? 'active' : row.left_at ? 'completed' : 'withdrawn'
+        const config = statusConfig[status] || statusConfig.completed
         const Icon = config.icon
         return (
           <span className={`flex items-center gap-1.5 text-sm font-medium ${config.color}`}>
@@ -78,22 +85,14 @@ export function CompetitionRecords({ data, isLoading }: CompetitionRecordsProps)
       },
     },
     {
-      key: 'score',
-      header: 'Score',
-      width: '12%',
-      cell: (row: CompetitionParticipationDTO) => (
-        <span className="text-sm text-slate-900 font-medium">{row.score ?? '-'}</span>
-      ),
-    },
-    {
-      key: 'notes',
-      header: 'Notes',
+      key: 'placement',
+      header: 'Placement',
       width: '13%',
       cell: (row: CompetitionParticipationDTO) => (
-        <span className="text-sm text-slate-500 truncate">{row.notes || '-'}</span>
+        <span className="text-sm text-slate-900 font-medium">{row.final_placement ?? '-'}</span>
       ),
     },
   ]
 
-  return <DataTable columns={columns} data={data} keyExtractor={(row) => String(row.id)} />
+  return <DataTable columns={columns} data={data} keyExtractor={(row) => String(row.participation_id)} />
 }

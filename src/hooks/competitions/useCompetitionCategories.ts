@@ -1,22 +1,20 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   getCompetitionCategories,
-  type CompetitionCategory,
+  type CategoryResponse,
 } from '../../api/competitions'
 
 interface UseCompetitionCategoriesReturn {
-  categories: CompetitionCategory[]
+  categories: CategoryResponse[]
   isLoading: boolean
   error: string | null
   refresh: () => Promise<void>
-  // NOTE: Categories are auto-generated from team registrations
-  // No add/remove functionality - backend doesn't support POST/DELETE
 }
 
 export function useCompetitionCategories(
   competitionId: number | string
 ): UseCompetitionCategoriesReturn {
-  const [categories, setCategories] = useState<CompetitionCategory[]>([])
+  const [categories, setCategories] = useState<CategoryResponse[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 

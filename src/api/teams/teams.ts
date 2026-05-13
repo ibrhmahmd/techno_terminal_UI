@@ -10,6 +10,8 @@ import type {
   PayCompetitionFeeInput,
   PayCompetitionFeeResponseDTO,
   TeamListFilters,
+  RegisterTeamInput,
+  TeamRegistrationResultDTO,
 } from './types'
 
 const TEAMS_BASE = '/teams'
@@ -18,12 +20,19 @@ export async function getTeams(filters?: TeamListFilters): Promise<TeamDTO[]> {
   const params = new URLSearchParams()
   if (filters?.competition_id) params.append('competition_id', filters.competition_id.toString())
   if (filters?.category) params.append('category', filters.category)
+  if (filters?.subcategory) params.append('subcategory', filters.subcategory)
+  if (filters?.include_members) params.append('include_members', 'true')
   if (filters?.include_deleted) params.append('include_deleted', 'true')
   
   const query = params.toString()
   const url = query ? `${TEAMS_BASE}?${query}` : TEAMS_BASE
   
   const response = await client.get<TeamDTO[]>(url)
+  return response.data
+}
+
+export async function registerTeam(data: RegisterTeamInput): Promise<TeamRegistrationResultDTO> {
+  const response = await client.post<TeamRegistrationResultDTO>(TEAMS_BASE, data)
   return response.data
 }
 
