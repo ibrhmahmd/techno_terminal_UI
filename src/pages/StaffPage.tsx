@@ -8,15 +8,7 @@ import { EmployeeCard } from '../components/staff/EmployeeCard'
 import { useToast } from '../components/common/Toast'
 import { useEmployees, useEmployee, useCreateEmployee, useUpdateEmployee } from '../hooks/useStaff'
 import { useCreateEmployeeAccount } from '../hooks/useStaffAccounts'
-import { PillSelector } from '../components/common/PillSelector'
 import type { EmployeeCreateInput, CreateEmployeeAccountRequest } from '../api/hr'
-
-const EMPLOYMENT_TYPE_OPTIONS = [
-  { value: '', label: 'All Types' },
-  { value: 'full_time', label: 'Full Time' },
-  { value: 'part_time', label: 'Part Time' },
-  { value: 'contract', label: 'Contract' },
-]
 
 export function StaffPage() {
   const { showToast, ToastComponent } = useToast()
@@ -42,7 +34,7 @@ export function StaffPage() {
   }, [searchInput])
 
   // Filter state
-  const [employmentType, setEmploymentType] = useState('')
+  const [employmentType] = useState('')
 
   // Server data via React Query
   const { data: pageData, isLoading, error, refetch } = useEmployees(debouncedSearch, page, pageSize, employmentType || undefined)
@@ -87,12 +79,6 @@ export function StaffPage() {
     await createAccountMutation.mutateAsync({ employeeId: creatingAccountFor, data })
     setCreatingAccountFor(null)
     showToast('Account created successfully', 'success')
-  }
-
-  // Filter change
-  const handleEmploymentTypeChange = (value: string) => {
-    setEmploymentType(value)
-    setPage(1)
   }
 
   const handleViewEmployee = (id: number) => {
