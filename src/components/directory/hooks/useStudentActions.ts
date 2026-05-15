@@ -63,24 +63,26 @@ export function useStudentActions(
           await linkParentToStudent(newStudent.id, selectedParent.id)
         }
 
-        if (status && status !== 'active') {
+        if (status !== 'active') {
           await updateStudentStatus(newStudent.id, { status })
         }
 
         showToast('Student created successfully', 'success')
         closeCreateModal()
         clearSearch()
-      } catch (err: any) {
+      } catch (err: unknown) {
         let message = 'Failed to create student'
-        
-        if (err?.response?.data?.message) {
-          message = err.response.data.message
+
+        const axiosErr = err as { response?: { data?: { message?: string; errors?: Record<string, unknown> }; status?: number }; message?: string }
+
+        if (axiosErr?.response?.data?.message) {
+          message = axiosErr.response.data.message
         } else if (err instanceof Error) {
           message = err.message
         }
-        
-        if (err?.response?.status === 422 && err?.response?.data?.errors) {
-          const validationErrors = err.response.data.errors
+
+        if (axiosErr?.response?.status === 422 && axiosErr?.response?.data?.errors) {
+          const validationErrors = axiosErr.response.data.errors
           const errorMessages = Object.entries(validationErrors)
             .map(([field, msgs]) => {
               if (Array.isArray(msgs)) {
@@ -89,14 +91,14 @@ export function useStudentActions(
               return `${field}: ${msgs}`
             })
             .join('; ')
-          
+
           if (errorMessages) {
             message = `Validation failed: ${errorMessages}`
           }
         }
-        
+
         showToast(message, 'error')
-        
+
         throw new Error(message)
       } finally {
         setIsLoading(false)
@@ -120,7 +122,7 @@ export function useStudentActions(
           await linkParentToStudent(student.id, selectedParent.id)
         }
 
-        if (status && status !== student.status) {
+        if (status !== student.status) {
           await updateStudentStatus(student.id, { status })
         }
 

@@ -64,7 +64,7 @@ export function useAdvancedSearch(): UseAdvancedSearchReturn {
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === 'ageMin' || key === 'ageMax') return value !== ''
     if (key === 'enrollmentCountMin' || key === 'enrollmentCountMax') return value !== ''
-    if (key === 'hasUnpaidBalance') return value !== null
+    if (key === 'hasUnpaidBalance') return value === true
     if (Array.isArray(value)) return value.length > 0
     if (typeof value === 'string') return value !== ''
     return false

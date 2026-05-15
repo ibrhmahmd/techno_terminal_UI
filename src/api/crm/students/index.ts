@@ -8,7 +8,6 @@ export {
   getStudentWithDetails,
   createStudent,
   updateStudent,
-  deleteStudent,
   softDeleteStudent,
   restoreStudent,
   hardDeleteStudent,

@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useDashboard } from '../hooks/dashboard'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
-import { DashboardHeader } from '../components/dashboard/DashboardHeader'
 import { DaySelectorBar } from '../components/dashboard/DaySelectorBar'
 import { InstructorSelectorBar } from '../components/dashboard/InstructorSelectorBar'
 import { GroupSessionCard } from '../components/dashboard/GroupSessionCard'
