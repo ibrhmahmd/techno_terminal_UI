@@ -2,8 +2,6 @@ import type { CategoryResponse } from '../../api/competitions'
 
 interface CategoryListProps {
   categories: CategoryResponse[]
-  competitionId: string
-  canManage: boolean
   onViewTeams: (category: string) => void
   onRegisterTeam: (category: string) => void
 }

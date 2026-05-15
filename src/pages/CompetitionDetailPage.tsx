@@ -21,6 +21,7 @@ export function CompetitionDetailPage() {
     isLoading: competitionLoading,
     error: competitionError,
     remove: deleteCompetition,
+    restore: restoreCompetitionAction,
     isMutating: isDeletingCompetition,
   } = useCompetition(competitionId)
 
@@ -320,8 +321,6 @@ export function CompetitionDetailPage() {
         {activeTab === 'categories' && (
           <CategoryList
             categories={categories}
-            competitionId={competitionId}
-            canManage={!isDeleted}
             onRegisterTeam={(categoryName) => {
               setSelectedCategory(categoryName)
               setIsRegistrationModalOpen(true)
@@ -469,7 +468,8 @@ export function CompetitionDetailPage() {
               Cancel
             </button>
             <button
-              onClick={() => {
+              onClick={async () => {
+                await restoreCompetitionAction()
                 setIsRestoreModalOpen(false)
               }}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"

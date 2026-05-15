@@ -57,9 +57,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
         sessions_per_level: Number(sessionsPerLevel),
         ...(mode === 'edit' && { is_active: isActive }),
       }
-      console.log('[CourseForm] Submitting payload:', JSON.stringify(payload, null, 2))
       await onSubmit(payload)
-      console.log('[CourseForm] Submit succeeded')
     } catch (err: unknown) {
       console.error('[CourseForm] onSubmit threw:', err)
       const errorMessage = err instanceof Error ? err.message : `Failed to ${mode} course`
