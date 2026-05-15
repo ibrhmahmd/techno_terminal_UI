@@ -4,13 +4,14 @@ import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { RegisterTeamInput } from '../../api/teams'
 
 interface TeamRegistrationModalProps {
+  competitionId: number
   categoryName: string
   isOpen: boolean
   onClose: () => void
   onSubmit: (data: RegisterTeamInput) => Promise<void>
 }
 
-export function TeamRegistrationModal({ categoryName, isOpen, onClose, onSubmit }: TeamRegistrationModalProps) {
+export function TeamRegistrationModal({ competitionId, categoryName, isOpen, onClose, onSubmit }: TeamRegistrationModalProps) {
   const [teamName, setTeamName] = useState('')
   const [studentIds, setStudentIds] = useState<string[]>([''])
   const [isLoading, setIsLoading] = useState(false)
@@ -50,7 +51,7 @@ export function TeamRegistrationModal({ categoryName, isOpen, onClose, onSubmit 
     setIsLoading(true)
     try {
       await onSubmit({
-        competition_id: 0,
+        competition_id: competitionId,
         team_name: teamName,
         category: categoryName,
         student_ids: validIds,

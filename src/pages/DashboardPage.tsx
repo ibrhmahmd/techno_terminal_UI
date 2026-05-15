@@ -59,11 +59,6 @@ export function DashboardPage() {
       <TopNavbar activePage="Dashboard" />
       
       <div className="p-10 flex-1 space-y-8">
-        <DashboardHeader
-          title="System Overview"
-          subtitle="Real-time status of active groups and attendance tracking."
-          showTime
-        />
         <QuickActionsGrid todaySessionCount={scheduleItems.length} />
         <DaySelectorBar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
         <InstructorSelectorBar

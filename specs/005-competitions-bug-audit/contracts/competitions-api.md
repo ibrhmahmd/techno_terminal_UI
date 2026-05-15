@@ -14,9 +14,8 @@ GET /competitions
 **Params**: `include_deleted` (bool, optional)  
 **Response**: `list[CompetitionDTO]` (flat array)
 ```
-⚠️ Frontend currently sends: { status?, skip?, limit?, search? }
-⚠️ Frontend currently expects: { data[], total, skip, limit }
-★ Must align either frontend params/response handling or backend to match.
+✅ Frontend sends: { include_deleted? } — aligned to doc
+✅ Frontend expects: flat Competition[] — aligned to doc
 ```
 
 ### 1.2 Get Competition
@@ -35,8 +34,7 @@ POST /competitions
 **Body**: `CreateCompetitionInput` — `{ name (req), edition?, competition_date?, location?, notes?, fee_per_student? }`  
 **Response**: `CompetitionDTO`
 ```
-⚠️ Frontend sends extra legacy fields (description, start_date, end_date, etc.)
-★ Backward compatible — backend ignores unknown fields.
+✅ Frontend sends doc-aligned CreateCompetitionInput (legacy fields removed)
 ```
 
 ### 1.4 Update Competition
@@ -92,20 +90,29 @@ GET /competitions/{id}/categories
 ```
 **Response**: `list[CategoryResponse]` — `{ category: string, subcategories: string[] }`
 ```
-❌ Frontend expects CompetitionCategory[] (entity objects)
-★ CRITICAL MISMATCH — must align.
+✅ Frontend uses CategoryResponse (string-based) — aligned to doc
 ```
 
 ---
 
 ## 2. Teams — `/api/v1/teams/*`
 
-**Status**: All endpoints documented in `docs/api/competitions/teams.md` are NOT consumed by the frontend. The frontend uses:
-- `POST /competitions/register-team` instead of `POST /teams`
-- `GET /competitions/{id}/categories/{catId}/teams` instead of `GET /teams`
-- `POST /competitions/team-members/{id}/mark-paid` instead of `POST /teams/{id}/members/{sid}/pay`
+**Status**: The frontend consumes the documented `/api/v1/teams/*` endpoints via `src/api/teams/teams.ts`. The undocumented endpoints (`POST /competitions/register-team`, etc.) have been removed.
 
-**Action needed**: Determine which routing the backend actually supports.
+- `POST /teams` → `registerTeam()` ✅ (flat `RegisterTeamInput` payload)
+- `GET /teams` → `getTeams()` ✅
+- `GET /teams/{id}` → `getTeam()` ✅
+- `PATCH /teams/{id}` → `updateTeam()` ✅ (`PUT` variant not implemented — low priority)
+- `DELETE /teams/{id}` → `deleteTeam()` ✅
+- `POST /teams/{id}/restore` → `restoreTeam()` ✅
+- `GET /teams/deleted` → `getDeletedTeams()` ✅
+- `GET /teams/{id}/members` → `getTeamMembers()` ✅
+- `POST /teams/{id}/members` → `addTeamMember()` ✅
+- `DELETE /teams/{id}/members/{student_id}` → `removeTeamMember()` ✅
+- `POST /teams/{id}/members/{student_id}/pay` → `payCompetitionFee()` ✅
+- `PATCH /teams/{id}/placement` → `updatePlacement()` ✅
+
+**Note**: All 13/14 documented endpoints are implemented. `PUT /teams/{id}` (full update) is not implemented — `PATCH` covers the same use case.
 
 ---
 
@@ -118,7 +125,7 @@ GET /academics/groups/{group_id}/competitions
 **Params**: `is_active` (bool, optional)  
 **Response**: `ApiResponse<list<GroupCompetitionParticipationDTO>>`
 ```
-❌ Frontend expects CompetitionParticipationDTO[] (different schema)
+✅ Frontend CompetitionParticipationDTO matches group doc schema
 ```
 
 ### 3.2 List Teams
@@ -128,8 +135,8 @@ GET /academics/groups/{group_id}/teams
 **Params**: `include_inactive` (bool, optional), `skip`, `limit`  
 **Response**: `PaginatedResponse<TeamPublic>`
 ```
-❌ Frontend expects TeamPublic with name field (doc has team_name)
-⚠️ Frontend ignores pagination wrapper
+✅ Frontend TeamPublic uses team_name (aligned to doc)
+⚠️ Frontend ignores pagination wrapper — verify in Phase 1
 ```
 
 ### 3.3 Link Team
@@ -177,7 +184,7 @@ GET /academics/groups/{group_id}/competitions/analytics
 ```
 **Response**: `ApiResponse<GroupCompetitionHistoryResponseDTO>`
 ```
-❌ Frontend expects different field names (competitions[] vs participations[], etc.)
+✅ Frontend GroupCompetitionHistoryResponseDTO matches doc schema (participations[], etc.)
 ```
 
 ---

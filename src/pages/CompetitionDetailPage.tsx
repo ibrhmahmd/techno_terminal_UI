@@ -4,11 +4,12 @@ import { TopNavbar } from "../components/dashboard/TopNavbar";
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
 import { TeamRegistrationModal } from '../components/competitions/TeamRegistrationModal'
+import { CategoryTeamsModal } from '../components/competitions/CategoryTeamsModal'
 import { CategoryList } from '../components/competitions/CategoryList'
 import { useCompetition, useCompetitionCategories, useCompetitionSummary } from '../hooks/competitions'
 import { useTeams } from '../hooks/teams'
 import { registerTeam, type RegisterTeamInput } from '../api/teams'
-import { isCompetitionDeleted } from '../api/competitions'
+import { isCompetitionDeleted, type CompetitionSummaryCategory } from '../api/competitions'
 
 export function CompetitionDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -35,6 +36,8 @@ export function CompetitionDetailPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'teams' | 'summary'>('overview')
 
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false)
+  const [isCategoryTeamsModalOpen, setIsCategoryTeamsModalOpen] = useState(false)
+  const [selectedCategoryTeams, setSelectedCategoryTeams] = useState<CompetitionSummaryCategory | null>(null)
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -324,7 +327,11 @@ export function CompetitionDetailPage() {
               setIsRegistrationModalOpen(true)
             }}
             onViewTeams={(categoryName) => {
-              setSelectedCategory(categoryName)
+              const match = summary?.categories.find(c => c.category_name === categoryName || c.category === categoryName)
+              if (match) {
+                setSelectedCategoryTeams(match)
+                setIsCategoryTeamsModalOpen(true)
+              }
             }}
           />
         )}
@@ -425,8 +432,19 @@ export function CompetitionDetailPage() {
         )}
       </section>
 
+      {/* Category Teams Modal */}
+      <CategoryTeamsModal
+        category={selectedCategoryTeams}
+        isOpen={isCategoryTeamsModalOpen}
+        onClose={() => {
+          setIsCategoryTeamsModalOpen(false)
+          setSelectedCategoryTeams(null)
+        }}
+      />
+
       {/* Team Registration Modal */}
       <TeamRegistrationModal
+        competitionId={parseInt(competitionId, 10) || 0}
         categoryName={selectedCategory || ''}
         isOpen={isRegistrationModalOpen}
         onClose={() => {

@@ -1,11 +1,11 @@
-# Implementation Plan: Competitions Bug Audit
+# Implementation Plan: Competitions Bug Audit & API-UI Gap Analysis
 
-**Branch**: `005-competitions-bug-audit` | **Date**: 2026-05-13 | **Spec**: [spec.md](spec.md)
-**Input**: Feature specification from `/specs/005-competitions-bug-audit/spec.md`
+**Branch**: `005-competitions-bug-audit` | **Date**: 2026-05-13 | **Spec**: `specs/005-competitions-bug-audit/spec.md`
+**Input**: Feature specification from `specs/005-competitions-bug-audit/spec.md`
 
 ## Summary
 
-Audit and fix mismatches between the documented competitions API (`docs/api/competitions/`) and actual frontend consumption (`src/api/competitions/`, `src/hooks/competitions/`, `src/components/competitions/`). The `implementation-map.md` identified 4 critical mismatches (categories response shape, team registration endpoint/payload, 3 undocumented endpoints) and 5 warnings (list params, field name mismatches, student competitions stub). This plan resolves all by capturing real API responses and aligning either the frontend types or the documentation.
+Audit the competitions domain for frontend/backend API contract mismatches, fix all found bugs, and identify API-documented features that lack frontend UI integration. Research (Phase 0) is already complete — 10 mismatches documented in `research.md`. Source code audit confirms most types/API calls are already aligned with docs; remaining work is Phase 1 verification against live backend + UI regression testing.
 
 ## Technical Context
 
@@ -19,35 +19,54 @@ Audit and fix mismatches between the documented competitions API (`docs/api/comp
 **API**: Axios client at `src/api/client.ts`, base URL `/api/v1`, JWT Bearer auth with auto-refresh  
 **Icons**: Material Symbols (`material-symbols-outlined` CSS class) + Lucide React components  
 **Fonts**: Space Grotesk (`font-headline`) for headings, Inter (`font-body`) for body text  
-**Performance Goals**: <1s initial load, <200ms navigation, 60fps animations  
-**Constraints**: Frontend-only — no backend code. Strict TS (`noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax`). Build must pass `tsc -b && vite build`.  
-**Scale/Scope**: Single-page CRM with 18 pages, ~13 API domain modules
+**Constraints**: Frontend-only — no backend code. Strict TS (`noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax`, `erasableSyntaxOnly`). Build must pass `tsc -b && vite build`.  
+**NEEDS CLARIFICATION**: None — research.md already resolves all unknowns with documented evidence.
 
-### Unknowns to Research
+## Research Findings (Phase 0 — Complete)
 
-1. **Category response actual shape** — Does `GET /competitions/{id}/categories` return `CategoryResponse` (strings) or `CompetitionCategory` (entities)? This determines if Categories tab is broken or not.
-2. **Team registration actual endpoint** — Does the backend accept `POST /competitions/register-team` or only `POST /teams`?
-3. **List competitions actual params** — Does the backend accept `status`/`skip`/`limit`/`search` parameters or only `include_deleted`?
-4. **List competitions response format** — Does it return a flat `list[CompetitionDTO]` or a paginated `{ data[], total, skip, limit }` envelope?
-5. **TeamPublic actual field names** — Does the backend return `team_name` (as documented) or `name` (as frontend expects)?
-6. **GroupCompetitionHistoryResponseDTO actual fields** — Does it have `participations[]` (doc) or `competitions[]` (frontend)?
-7. **Actual existence of 3 undocumented endpoints** — `GET .../categories/{catId}/teams`, `POST competitions/register-team`, `POST competitions/team-members/{id}/mark-paid`, `GET competitions/{id}/stats`
+Research is fully documented in `research.md` with 10 identified mismatches. After code audit, **7 of 10 are already resolved in the source code**:
+
+| # | Mismatch | Doc Says | Code Says | Status |
+|---|----------|----------|-----------|--------|
+| 1 | List Competitions response | `list[CompetitionDTO]` (flat) | Flat `Competition[]` via `getCompetitions()` | ✅ Aligned |
+| 2 | List Competitions params | `include_deleted` only | `include_deleted` only | ✅ Aligned |
+| 3 | Categories response shape | `CategoryResponse` (strings) | `CategoryResponse` (strings) | ✅ Aligned |
+| 4 | Team registration endpoint | `POST /teams` | `POST /teams` via `registerTeam()` | ✅ Aligned |
+| 5 | RegisterTeamInput payload | Flat `student_ids: int[]` | Flat `student_ids: int[]` | ✅ Aligned |
+| 6 | Team field name | `team_name` | `team_name` in `TeamDTO` + `TeamPublic` | ✅ Aligned |
+| 7 | GroupCompetitionHistoryDTO | `participations[]` | `participations[]` | ✅ Aligned |
+| 8 | Undocumented endpoints | Not in docs | Removed from code (dead code elimination) | ✅ Resolved |
+| 9 | Dead types | N/A | `CompetitionCategory`, `TeamRegistration`, et al. removed | ✅ Resolved |
+| 10 | Student competitions | `GET /students/{id}/competitions` | Stub returning `[]` | ❌ Backend not implemented |
+
+## API Features Without UI (Gap Analysis)
+
+Based on `docs/api/competitions/` vs `src/pages/` and `src/components/` audit:
+
+| Endpoint | Doc Status | Frontend Status | Gap |
+|----------|-----------|-----------------|-----|
+| `GET /teams` | Documented | `useTeams` hook exists, consumed in CompetitionDetailPage teams tab | ✅ Covered |
+| `PUT /teams/{id}` | Documented | Not implemented in `teams.ts` | ⚠️ Low priority — PATCH covers similar use |
+| `GET /teams/deleted` | Documented | `useDeletedTeams` hook exists, no UI page | ⚠️ No dedicated UI for listing deleted teams |
+| `POST /teams/{id}/members` | Documented | `addTeamMember` API + hook exists, no UI component | ⚠️ No dedicated modal/component for adding members |
+| `GET /students/{id}/competitions` | Documented | Stub returning `[]` | ❌ Backend not implemented, no UI |
+| Group competitions management | Documented | `useGroupCompetitions` hook exists, `HistoryTab` + `CompetitionRecords` exist | ✅ Covered in group detail page |
+| Finance/Analytics competitions | Documented | Fully implemented | ✅ Aligned |
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+### Gate Evaluation
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. Frontend-Only Scope | ✅ Pass | Bug audit stays in `src/`, no backend changes |
-| II. Server State Discipline | ✅ Pass | No new data fetching patterns |
-| III. Global State Minimalism | ✅ Pass | Not relevant |
-| IV. TypeScript Strict Mode | ✅ Pass | Standard build constraint |
-| V. Component Naming | ✅ Pass | Not relevant |
-| Build Gates (lint + build) | ✅ Pass | Standard requirement |
-| Testing | ✅ Pass | Not required by spec |
+| Principle | Check | Status |
+|-----------|-------|--------|
+| **I. Frontend-Only Scope** | Audit is frontend-only. All changes in `src/`. No backend code. | ✅ Pass |
+| **II. Server State Discipline** | All API calls go through `src/api/client.ts` (Axios). Types aligned with doc contracts. React Query hooks used everywhere. | ✅ Pass |
+| **III. Global State Minimalism** | No global state changes. All state is local or React Query. | ✅ Pass |
+| **IV. TypeScript Strict Mode** | No `any`, no unused locals/params. `verbatimModuleSyntax` honored. `erasableSyntaxOnly` respected (no enums). | ✅ Pass |
+| **V. Component Naming Convention** | Existing components follow `*Card`, `*Modal`, `*Form`, `*Page`, `*Tab` conventions. | ✅ Pass |
+| **Cache & API Discipline** | Query keys from `queryKeys.ts`. Mutations invalidate affected caches. | ✅ Pass |
 
-**All gates pass — no violations to justify.**
+**Result**: All gates pass. No violations to justify.
 
 ## Project Structure
 
@@ -55,94 +74,76 @@ Audit and fix mismatches between the documented competitions API (`docs/api/comp
 
 ```text
 specs/005-competitions-bug-audit/
-├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output — captured API responses
-├── data-model.md        # Phase 1 output — aligned type definitions
-├── quickstart.md        # Phase 1 output — audit & fix instructions
-├── contracts/           # Phase 1 output — verified API contracts
+├── plan.md              # This file (filled in)
+├── spec.md              # Feature specification
+├── research.md          # Phase 0 — 10 documented mismatches
+├── data-model.md        # Phase 1 — entity alignment status
+├── quickstart.md        # Phase 1 — verification guide
+├── contracts/
+│   └── competitions-api.md  # Verified API contracts
 ├── checklists/
-│   └── requirements.md  # Spec quality validation
-└── tasks.md             # Phase 2 output (/speckit.tasks command)
+│   └── requirements.md  # Quality checklist
+└── tasks.md             # 39 tasks across 7 phases
 ```
 
-### Source Code
+### Source Code (relevant files)
 
 ```text
 src/
 ├── api/competitions/
-│   ├── types.ts          # ★ Likely needs type alignment
-│   ├── competitions.ts   # ★ May need endpoint/payload alignment
-│   └── index.ts
-├── api/academics/types/groups/
-│   └── competitions.ts   # ★ May need field name alignment
+│   ├── index.ts         # Barrel exports
+│   ├── types.ts         # Competition, CategoryResponse, TeamDTO, etc. (aligned)
+│   └── competitions.ts  # 9 API functions (aligned, no undocumented endpoints)
+├── api/teams/
+│   ├── index.ts         # Barrel exports
+│   ├── types.ts         # RegisterTeamInput, TeamDTO, etc. (aligned)
+│   └── teams.ts         # 14 API functions (PUT /teams/{id} missing)
+├── api/academics/groups/competitions.ts   # Group competitions API
+├── api/academics/types/groups/competitions.ts  # Aligned types
+├── api/crm/students/enrollments.ts       # Stub getStudentCompetitions
 ├── components/competitions/
-│   ├── CompetitionCard.tsx
-│   ├── CompetitionForm.tsx
-│   ├── CategoryList.tsx
-│   ├── CategoryForm.tsx
-│   └── TeamRegistrationModal.tsx
-├── hooks/competitions/
-│   ├── useCompetitions.ts
-│   ├── useCompetition.ts
-│   ├── useCompetitionCategories.ts
-│   ├── useCompetitionTeams.ts
-│   ├── useDeletedCompetitions.ts
-│   └── useCompetitionSummary.ts
+│   ├── CompetitionCard.tsx       # Card display (aligned)
+│   ├── CompetitionForm.tsx       # Create/Edit form (aligned)
+│   ├── CategoryList.tsx          # String-based categories (aligned)
+│   └── TeamRegistrationModal.tsx  # Flat student_ids payload (aligned)
+├── components/groups/history/
+│   └── CompetitionRecords.tsx    # DataTable for participations
+├── components/student/
+│   └── CompetitionsTab.tsx       # Student competition history
 ├── pages/
-│   ├── CompetitionsPage.tsx
-│   └── CompetitionDetailPage.tsx
-└── docs/api/competitions/
-    ├── implementation-map.md  # Existing
-    ├── competitions.md        # ★ May need doc update
-    ├── schemas.md             # ★ May need doc update
-    ├── teams.md               # May need archiving
-    ├── errors.md
-    └── README.md
+│   ├── CompetitionsPage.tsx      # List page with create/delete/restore
+│   ├── CompetitionDetailPage.tsx  # Detail with 4 tabs
+│   └── TeamDetailPage.tsx        # Team detail with members, fees, placement
+└── hooks/
+    ├── competitions/             # 6 hooks (aligned)
+    ├── teams/                    # 7 hooks (aligned)
+    ├── useGroupCompetitions.ts   # Group competitions hook
+    └── students/useStudentCompetitions.ts  # Stub hook
 ```
+
+## Current Status Summary
+
+### What's Already Done
+- Research complete — all 10 mismatches documented with evidence
+- Dead code eliminated — `CompetitionCategory`, `TeamRegistration`, old types, undocumented endpoints removed
+- Types aligned with doc schemas — `CategoryResponse` (strings), `TeamDTO` (`team_name`), `GroupCompetitionHistoryResponseDTO` (`participations[]`)
+- API functions aligned — `getCompetitions(includeDeleted)`, `registerTeam()` uses `POST /teams`, no undocumented endpoints
+- UI components adapted — `CategoryList` handles string categories, `TeamRegistrationModal` sends flat payload
+- Contracts documented — `contracts/competitions-api.md` with verified status per endpoint
+- Tasks generated — 39 tasks across 7 phases in `tasks.md`
+
+### What Still Needs Doing
+1. **Phase 1 verification** (T001-T007): Verify against live backend by running `npm run dev`, enabling debug mode, capturing actual API responses
+2. **Phase 2-6 (stories)**: Fix any remaining mismatches revealed by live verification, then test UI end-to-end
+3. **Phase 7 (polish)**: Build/lint/test passes, doc updates
+
+### API-UI Gaps to Address
+- `PUT /teams/{id}` endpoint not implemented in frontend (low priority — PATCH covers it)
+- `GET /teams/deleted` has hook but no UI page for listing deleted teams
+- `POST /teams/{id}/members` has hook but no add-member UI component
+- `GET /students/{id}/competitions` backend stub — no UI needed until backend is ready
+- Group competitions management (link, register, complete, withdraw) — hooks exist, UI coverage needs verification
 
 ## Complexity Tracking
 
-> No Constitution violations — this section is intentionally empty.
-
-## Phases
-
-### Phase 0 — Research
-
-**Goal**: Resolve all 7 unknowns by capturing real backend responses.
-
-Tasks:
-1. Start dev server, login, enable API debug mode
-2. Capture `GET /competitions/{id}/categories` response
-3. Capture `POST /competitions/register-team` response (or 404)
-4. Capture `GET /competitions` with various params
-5. Capture `GET /academics/groups/{id}/teams` response
-6. Capture `GET /academics/groups/{id}/competitions/analytics` response
-7. Capture `GET /competitions/{id}/stats` response
-8. Capture `GET /competitions/{competitionId}/categories/{categoryId}/teams` response
-9. Capture `POST /competitions/team-members/{id}/mark-paid` response
-10. Consolidate all findings into `research.md`
-
-**Output**: `research.md` — all unknowns resolved with actual API response traces.
-
-### Phase 1 — Design & Contracts
-
-**Goal**: Align frontend types, API calls, and documentation to match actual backend responses.
-
-Tasks:
-1. Update `src/api/competitions/types.ts` — fix `CompetitionCategory` type if backend returns `CategoryResponse`; fix `RegisterTeamInput` if payload differs; fix field names where needed
-2. Update `src/api/competitions/competitions.ts` — align endpoint paths if needed; fix response unwrapping if flat vs paginated
-3. Update `src/api/academics/types/groups/competitions.ts` — align `TeamPublic` field names; align history DTO fields
-4. Update `docs/api/competitions/competitions.md` and `schemas.md` — bring docs in line with actual responses
-5. Update `src/components/competitions/CategoryList.tsx` — if categories response is strings, adapt rendering
-6. Update `src/components/competitions/TeamRegistrationModal.tsx` — if team registration payload format changed
-7. Verify build passes (`npm run build`), lint passes (`npm run lint`), tests pass (`npm run test`)
-8. Generate `contracts/` — verified API contracts for all competition endpoints
-9. Generate `data-model.md` — aligned entity definitions
-10. Generate `quickstart.md` — how to run the audit and fix steps
-11. Update AGENTS.md SPECKIT markers to point to this plan
-
-**Output**: `data-model.md`, `contracts/`, `quickstart.md`, updated source files, updated docs.
-
-### Phase 2 — Tasks (via `/speckit.tasks`)
-
-**Output**: `tasks.md` with concrete implementation steps.
+No constitution violations to justify. Feature is well-scoped and within established conventions.

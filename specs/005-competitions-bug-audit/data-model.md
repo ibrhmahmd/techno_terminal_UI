@@ -32,67 +32,28 @@ Each entity below identifies the source of truth (backend doc) and the frontend 
 
 ---
 
-### 2. CompetitionCategory
+### 2. CompetitionCategory (CategoryResponse)
 
-**Source**: `schemas.md` `CategoryResponse`
+**Source**: `schemas.md` `CategoryResponse`  
+**Frontend type**: `CategoryResponse` in `src/api/competitions/types.ts:39-42`
 
-| Field | Doc Type (CategoryResponse) | Frontend Type (CompetitionCategory) | Status |
-|-------|----------------------------|-------------------------------------|--------|
-| `category` | string | `name` | ❌ Field name mismatch |
-| `subcategories` | string[] | — | ❌ Missing in frontend |
-| — | — | `id` | ❌ Extra (not in response) |
-| — | — | `competition_id` | ❌ Extra |
-| — | — | `description` | ❌ Extra |
-| — | — | `min_age`, `max_age` | ❌ Extra |
-| — | — | `max_team_size` | ❌ Extra |
-| — | — | `registered_teams` | ❌ Extra |
+| Field | Doc Type | Frontend Type | Status |
+|-------|----------|---------------|--------|
+| `category` | string | `category` | ✅ |
+| `subcategories` | string[]? | `subcategories` | ✅ |
 
-**Fix**: **Critical** — frontend `CompetitionCategory` is completely misaligned. Either:
-- Backend provides a full entity endpoint, or
-- Frontend adapts `CategoryList` to render from `CategoryResponse` (category name + subcategories only)
+**Status**: ✅ Fully aligned. The frontend `CompetitionCategory` entity type was removed during dead code elimination. `CategoryList` renders from `CategoryResponse` (string-based).
 
 ---
 
 ### 3. Team / TeamRegistration
 
-**Source**: `schemas.md` `TeamDTO`, `RegisterTeamInput`, `TeamRegistrationResultDTO`
+**Source**: `schemas.md` `TeamDTO`, `RegisterTeamInput`, `TeamRegistrationResultDTO`  
+**Frontend type**: `TeamDTO` in `src/api/competitions/types.ts:64-77`, `RegisterTeamInput` in `src/api/teams/types.ts`, `registerTeam()` calls `POST /teams`
 
-**Backend `TeamDTO`:**
-| Field | Type | Frontend Match |
-|-------|------|----------------|
-| `id` | int | ✅ (as `team_id`) |
-| `competition_id` | int | ✅ |
-| `team_name` | string | ✅ (as `team_name`) |
-| `category` | string | ❌ Frontend uses `category_id` |
-| `subcategory` | string? | ❌ Missing in frontend |
-| `group_id` | int? | ❌ Missing |
-| `coach_id` | int? | ❌ Missing |
-| `fee` | number? | ❌ Frontend uses `total_fee` |
-| `placement_rank` | int? | ❌ Missing |
-| `placement_label` | string? | ❌ Missing |
-| `notes` | string? | ❌ Missing |
-| `created_at` | string | ✅ |
+**Status**: ✅ Fully aligned. Frontend uses the documented `team_name`, flat `RegisterTeamInput` with `student_ids`, and `POST /teams` endpoint. Legacy `TeamRegistration` type removed during dead code elimination. `TeamRegistrationModal` sends `{ competition_id, team_name, category, student_ids }`.
 
-**Backend `RegisterTeamInput` vs Frontend:**
-| Field | Doc (Backend) | Frontend | Status |
-|-------|--------------|----------|--------|
-| `competition_id` | int, required | `string` | ❌ Type mismatch |
-| `team_name` | string, required | `team_name` | ✅ |
-| `category` | string, required | `category_id` (string) | ❌ Field name |
-| `subcategory` | string? | — | ❌ Missing |
-| `student_ids` | list[int], required | `members: [{student_id, role}]` | ❌ **Complete structure mismatch** |
-| `coach_id` | int? | — | ❌ Missing |
-| `group_id` | int? | — | ❌ Missing |
-| `fee` | number? | — | ❌ Missing |
-| `notes` | string? | — | ❌ Missing |
-
-**Backend `TeamRegistrationResultDTO`:**
-| Field | Doc | Frontend `TeamRegistration` | Status |
-|-------|-----|---------------------------|--------|
-| `team` | TeamDTO | `id`, `team_id`, `team_name`, ... | ❌ Flattened |
-| `members_added` | int | `members[]`, `members_count` | ❌ Different |
-
-**Fix**: **Critical** — complete mismatch in registration payload. Must align frontend to backend or vice versa.
+**Note**: Some optional fields (`subcategory`, `coach_id`, `group_id`) are not sent by the frontend form — this is acceptable as they are optional per the doc schema.
 
 ---
 
@@ -113,49 +74,45 @@ Each entity below identifies the source of truth (backend doc) and the frontend 
 
 ---
 
-### 5. CompetitionParticipation (Group)
+### 5. CompetitionParticipationDTO (Group)
 
-**Source**: `group_competitions.md` `GroupCompetitionParticipationDTO` vs Frontend `CompetitionParticipationDTO`
+**Source**: `group_competitions.md` `GroupCompetitionParticipationDTO`  
+**Frontend type**: `CompetitionParticipationDTO` in `src/api/academics/types/groups/competitions.ts:1-14`
 
 | Field | Doc | Frontend | Status |
 |-------|-----|----------|--------|
-| `participation_id` | int | `id` | ✅ (name diff) |
+| `participation_id` | int | `participation_id` | ✅ |
 | `competition_id` | int | `competition_id` | ✅ |
 | `competition_name` | string | `competition_name` | ✅ |
-| `category_id` | int? | — | ❌ Missing |
-| `category_name` | string? | — | ❌ Missing |
-| `team_id` | int? | — | ❌ Missing |
-| `team_name` | string? | — | ❌ Missing |
-| `entered_at` | string | — | ❌ Missing |
-| `left_at` | string? | — | ❌ Missing |
-| `is_active` | bool | — | ❌ Missing |
-| `final_placement` | int? | — | ❌ Missing |
+| `category_id` | int? | `category_id` | ✅ |
+| `category_name` | string? | `category_name` | ✅ |
+| `team_id` | int | `team_id` | ✅ |
+| `team_name` | string | `team_name` | ✅ |
+| `entered_at` | string | `entered_at` | ✅ |
+| `left_at` | string? | `left_at` | ✅ |
+| `is_active` | bool | `is_active` | ✅ |
+| `final_placement` | int? | `final_placement` | ✅ |
 | `notes` | string? | `notes` | ✅ |
-| — | — | `level_at_time` | ⚠️ Extra |
-| — | — | `event_date` | ⚠️ Extra |
-| — | — | `result` | ⚠️ Extra |
-| — | — | `score` | ⚠️ Extra |
 
-**Fix**: These are structurally different DTOs — frontend likely calls a different endpoint or expects a simplified history view.
+**Status**: ✅ Fully aligned. Frontend DTO mirrors the documented DTO exactly.
 
 ---
 
 ### 6. GroupCompetitionHistoryResponseDTO
 
-**Source**: `group_competitions.md`
+**Source**: `group_competitions.md`  
+**Frontend type**: `GroupCompetitionHistoryResponseDTO` in `src/api/academics/types/groups/competitions.ts:25-32`
 
 | Field | Doc | Frontend | Status |
 |-------|-----|----------|--------|
 | `group_id` | int | `group_id` | ✅ |
 | `group_name` | string | `group_name` | ✅ |
-| `participations[]` | list | `competitions[]` | ❌ Field name |
-| `total_participations` | int | `total_competitions` | ❌ Field name |
-| `active_participations` | int | — | ❌ Missing |
-| `completed_participations` | int | — | ❌ Missing |
-| — | — | `wins` | ⚠️ Extra |
-| — | — | `runner_ups` | ⚠️ Extra |
+| `participations[]` | list | `participations[]` | ✅ |
+| `total_participations` | int | `total_participations` | ✅ |
+| `active_participations` | int | `active_participations` | ✅ |
+| `completed_participations` | int | `completed_participations` | ✅ |
 
-**Fix**: Align field names between frontend and backend response.
+**Status**: ✅ Fully aligned. Frontend mirrors the documented DTO exactly. Legacy fields (`wins`, `runner_ups`) removed during dead code elimination.
 
 ---
 
