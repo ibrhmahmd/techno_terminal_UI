@@ -69,5 +69,25 @@ export interface PayCompetitionFeeResponseDTO {
 export interface TeamListFilters {
   competition_id?: number
   category?: string
+  subcategory?: string
+  include_members?: boolean
   include_deleted?: boolean
+}
+
+// RegisterTeamInput from doc: POST /teams
+export interface RegisterTeamInput {
+  competition_id: number
+  team_name: string
+  category: string
+  subcategory?: string
+  student_ids: number[]
+  coach_id?: number
+  group_id?: number
+  fee?: number
+  notes?: string
+}
+
+export interface TeamRegistrationResultDTO {
+  team: TeamDTO
+  members_added: number
 }

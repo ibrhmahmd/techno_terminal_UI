@@ -10,8 +10,11 @@ import type { CreateStudentDTO, UpdateStudentDTO } from './types/inputs'
 // Pagination Result Helpers
 function createPaginationResult<T>(response: { data: PaginatedApiResponse<T> }, params: PaginationParams): PaginationResult<T> {
   const items = response.data.data || []
-  const total = response.data.total || 0
   const skip = params.skip || 0
+  let total = response.data.total ?? 0
+  if (total === 0 && items.length > 0) {
+    total = items.length
+  }
   return {
     items,
     total,
@@ -47,35 +50,15 @@ export async function getStudentWithDetails(id: number): Promise<StudentWithDeta
 
 // Create Student
 export async function createStudent(data: CreateStudentDTO): Promise<Student> {
-  console.log('[DEBUG] Creating student with data:', JSON.stringify(data, null, 2))
-  try {
-    // API expects data wrapped in student_data field
-    const requestBody = { student_data: data }
-    console.log('[DEBUG] Sending wrapped data:', JSON.stringify(requestBody, null, 2))
-    const response = await client.post<ApiResponse<Student>>('/crm/students', requestBody)
-    console.log('[DEBUG] Create student success:', response.data)
-    return response.data.data
-  } catch (error: any) {
-    console.error('[DEBUG] Create student failed:')
-    console.error('[DEBUG] Request URL:', '/crm/students')
-    console.error('[DEBUG] Request data:', JSON.stringify(data, null, 2))
-    console.error('[DEBUG] Error status:', error.response?.status)
-    console.error('[DEBUG] Error status text:', error.response?.statusText)
-    console.error('[DEBUG] Error response data:', JSON.stringify(error.response?.data, null, 2))
-    console.error('[DEBUG] Error message:', error.message)
-    throw error
-  }
+  const requestBody = { student_data: data }
+  const response = await client.post<ApiResponse<Student>>('/crm/students', requestBody)
+  return response.data.data
 }
 
 // Update Student
 export async function updateStudent(id: number, data: UpdateStudentDTO): Promise<Student> {
   const response = await client.patch<ApiResponse<Student>>(`/crm/students/${id}`, data)
   return response.data.data
-}
-
-// Delete Student
-export async function deleteStudent(id: number): Promise<void> {
-  await client.delete(`/crm/students/${id}`)
 }
 
 // Soft Delete Student (marks as deleted without removing from DB)

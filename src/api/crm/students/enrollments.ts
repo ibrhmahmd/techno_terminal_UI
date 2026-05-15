@@ -13,8 +13,11 @@ export async function getStudentCourses(_studentId: number): Promise<CourseRecor
 }
 
 /**
- * TODO: Backend endpoint GET /crm/students/{student_id}/competitions
- * Returns student's competition participation records
+ * TODO: Backend endpoint GET /students/{student_id}/competitions
+ * Documented at docs/api/competitions/teams.md
+ * Returns StudentCompetitionsResponse { student_id, competitions: StudentCompetitionDTO[] }
+ * StudentCompetitionDTO: { membership: TeamMemberDTO, team: TeamDTO, category: CompetitionCategoryDTO, competition: CompetitionDTO }
+ * Note: Full-team endpoint, not per-group scoped
  */
 export async function getStudentCompetitions(_studentId: number): Promise<CompetitionRecord[]> {
   console.warn('API not implemented: getStudentCompetitions - TODO: Backend endpoint GET /crm/students/{student_id}/competitions')

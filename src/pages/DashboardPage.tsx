@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useDashboard } from '../hooks/dashboard'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
-import { DashboardHeader } from '../components/dashboard/DashboardHeader'
 import { DaySelectorBar } from '../components/dashboard/DaySelectorBar'
 import { InstructorSelectorBar } from '../components/dashboard/InstructorSelectorBar'
 import { GroupSessionCard } from '../components/dashboard/GroupSessionCard'
@@ -59,11 +58,6 @@ export function DashboardPage() {
       <TopNavbar activePage="Dashboard" />
       
       <div className="p-10 flex-1 space-y-8">
-        <DashboardHeader
-          title="System Overview"
-          subtitle="Real-time status of active groups and attendance tracking."
-          showTime
-        />
         <QuickActionsGrid todaySessionCount={scheduleItems.length} />
         <DaySelectorBar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
         <InstructorSelectorBar

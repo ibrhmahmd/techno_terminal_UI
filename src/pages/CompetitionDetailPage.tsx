@@ -4,18 +4,18 @@ import { TopNavbar } from "../components/dashboard/TopNavbar";
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
 import { TeamRegistrationModal } from '../components/competitions/TeamRegistrationModal'
+import { CategoryTeamsModal } from '../components/competitions/CategoryTeamsModal'
 import { CategoryList } from '../components/competitions/CategoryList'
 import { useCompetition, useCompetitionCategories, useCompetitionSummary } from '../hooks/competitions'
 import { useTeams } from '../hooks/teams'
-import { getCategoryTeams, registerTeam, isCompetitionDeleted, type RegisterTeamInput, type TeamRegistration } from '../api/competitions'
-import { paymentStatusColors } from '../utils/colors'
+import { registerTeam, type RegisterTeamInput } from '../api/teams'
+import { isCompetitionDeleted, type CompetitionSummaryCategory } from '../api/competitions'
 
 export function CompetitionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const competitionId = id || ''
 
-  // Use custom hooks for data management
   const {
     competition,
     isLoading: competitionLoading,
@@ -29,26 +29,18 @@ export function CompetitionDetailPage() {
     isLoading: categoriesLoading,
   } = useCompetitionCategories(competitionId)
 
-  // Summary data
   const { summary, isLoading: summaryLoading } = useCompetitionSummary(parseInt(competitionId, 10))
 
-  // Teams data
   const { teams, isLoading: teamsLoading } = useTeams({ competition_id: parseInt(competitionId, 10) })
 
-  // Tab state
   const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'teams' | 'summary'>('overview')
 
-  // Modal states
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false)
-  const [isTeamsModalOpen, setIsTeamsModalOpen] = useState(false)
+  const [isCategoryTeamsModalOpen, setIsCategoryTeamsModalOpen] = useState(false)
+  const [selectedCategoryTeams, setSelectedCategoryTeams] = useState<CompetitionSummaryCategory | null>(null)
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState(categories.find(c => c.id === '') || null)
-  const [selectedCategoryName, setSelectedCategoryName] = useState('')
-
-  // Category teams state for viewing modal
-  const [categoryTeams, setCategoryTeams] = useState<TeamRegistration[]>([])
-  const [, setCategoryTeamsLoading] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const isLoading = competitionLoading || categoriesLoading || summaryLoading
 
@@ -68,25 +60,9 @@ export function CompetitionDetailPage() {
     try {
       await deleteCompetition()
       setIsDeleteModalOpen(false)
-      // Navigate back to competitions list after successful deletion
       navigate('/competitions')
     } catch {
       // Error handled by hook
-    }
-  }
-
-  const handleViewTeams = async (categoryId: string, categoryName: string) => {
-    setSelectedCategoryName(categoryName)
-    setIsTeamsModalOpen(true)
-    setCategoryTeamsLoading(true)
-    try {
-      const teamsData = await getCategoryTeams(parseInt(competitionId, 10), categoryId)
-      setCategoryTeams(teamsData)
-    } catch (err) {
-      console.error('Failed to load teams:', err)
-      setCategoryTeams([])
-    } finally {
-      setCategoryTeamsLoading(false)
     }
   }
 
@@ -271,7 +247,7 @@ export function CompetitionDetailPage() {
 
               {/* Stats Cards */}
               {summary && (
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white rounded-xl border border-slate-200 p-4">
                     <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
                       <span className="material-symbols-outlined">groups</span>
@@ -284,14 +260,7 @@ export function CompetitionDetailPage() {
                       <span className="material-symbols-outlined">person</span>
                       Participants
                     </div>
-                    <p className="text-2xl font-bold text-on-surface">{summary.total_students ?? 0}</p>
-                  </div>
-                  <div className="bg-white rounded-xl border border-slate-200 p-4">
-                    <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
-                      <span className="material-symbols-outlined">payments</span>
-                      Revenue
-                    </div>
-                    <p className="text-2xl font-bold text-on-surface">{(summary.total_collected ?? 0).toLocaleString()} EGP</p>
+                    <p className="text-2xl font-bold text-on-surface">{summary.total_participants ?? 0}</p>
                   </div>
                 </div>
               )}
@@ -353,12 +322,17 @@ export function CompetitionDetailPage() {
             categories={categories}
             competitionId={competitionId}
             canManage={!isDeleted}
-            onRegisterTeam={(categoryId) => {
-              const category = categories.find(c => c.id === categoryId)
-              setSelectedCategory(category || null)
+            onRegisterTeam={(categoryName) => {
+              setSelectedCategory(categoryName)
               setIsRegistrationModalOpen(true)
             }}
-            onViewTeams={handleViewTeams}
+            onViewTeams={(categoryName) => {
+              const match = summary?.categories.find(c => c.category_name === categoryName || c.category === categoryName)
+              if (match) {
+                setSelectedCategoryTeams(match)
+                setIsCategoryTeamsModalOpen(true)
+              }
+            }}
           />
         )}
 
@@ -415,22 +389,14 @@ export function CompetitionDetailPage() {
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Competition Summary</h2>
-              <div className="grid grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="text-center p-4 bg-slate-50 rounded-lg">
                   <p className="text-3xl font-bold text-secondary">{summary.total_teams ?? 0}</p>
                   <p className="text-sm text-slate-600">Total Teams</p>
                 </div>
                 <div className="text-center p-4 bg-slate-50 rounded-lg">
-                  <p className="text-3xl font-bold text-secondary">{summary.total_students ?? 0}</p>
+                  <p className="text-3xl font-bold text-secondary">{summary.total_participants ?? 0}</p>
                   <p className="text-sm text-slate-600">Students</p>
-                </div>
-                <div className="text-center p-4 bg-slate-50 rounded-lg">
-                  <p className="text-3xl font-bold text-secondary">{(summary.total_expected ?? 0).toLocaleString()}</p>
-                  <p className="text-sm text-slate-600">Expected Revenue</p>
-                </div>
-                <div className="text-center p-4 bg-slate-50 rounded-lg">
-                  <p className="text-3xl font-bold text-green-600">{(summary.total_collected ?? 0).toLocaleString()}</p>
-                  <p className="text-sm text-slate-600">Collected</p>
                 </div>
               </div>
             </div>
@@ -450,14 +416,10 @@ export function CompetitionDetailPage() {
                   ) : (
                     <div className="space-y-2">
                       {(cat.teams ?? []).map((team) => (
-                        <div key={team.team_id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <div key={team.team.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
-                            <p className="font-medium text-on-surface">{team.team_name}</p>
-                            <p className="text-xs text-slate-500">{team.members_count} members</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-medium text-on-surface">{(team.collected ?? 0).toLocaleString()} EGP</p>
-                            <p className="text-xs text-slate-500">of {(team.expected ?? 0).toLocaleString()} EGP</p>
+                            <p className="font-medium text-on-surface">{team.team.team_name}</p>
+                            <p className="text-xs text-slate-500">{team.members.length} members</p>
                           </div>
                         </div>
                       ))}
@@ -470,9 +432,20 @@ export function CompetitionDetailPage() {
         )}
       </section>
 
+      {/* Category Teams Modal */}
+      <CategoryTeamsModal
+        category={selectedCategoryTeams}
+        isOpen={isCategoryTeamsModalOpen}
+        onClose={() => {
+          setIsCategoryTeamsModalOpen(false)
+          setSelectedCategoryTeams(null)
+        }}
+      />
+
       {/* Team Registration Modal */}
       <TeamRegistrationModal
-        category={selectedCategory}
+        competitionId={parseInt(competitionId, 10) || 0}
+        categoryName={selectedCategory || ''}
         isOpen={isRegistrationModalOpen}
         onClose={() => {
           setIsRegistrationModalOpen(false)
@@ -480,39 +453,6 @@ export function CompetitionDetailPage() {
         }}
         onSubmit={handleRegisterTeam}
       />
-
-      {/* View Teams Modal */}
-      <Modal
-        isOpen={isTeamsModalOpen}
-        onClose={() => setIsTeamsModalOpen(false)}
-        title={`Registered Teams - ${selectedCategoryName}`}
-        size="lg"
-      >
-        <div className="space-y-4 max-h-96 overflow-y-auto">
-          {categoryTeams.length === 0 ? (
-            <p className="text-center text-slate-500 py-8">No teams registered yet</p>
-          ) : (
-            categoryTeams.map(team => (
-              <div key={team.id} className="p-4 bg-slate-50 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold text-on-surface">{team.team_name}</h4>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${paymentStatusColors[team.payment_status] || 'bg-slate-100 text-slate-600'}`}>
-                    {team.payment_status}
-                  </span>
-                </div>
-                <p className="text-sm text-slate-500 mb-2">Registered {formatDate(team.registration_date)}</p>
-                <div className="flex flex-wrap gap-2">
-                  {team.members.map(member => (
-                    <span key={member.id} className="px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-600">
-                      {member.student_name} ({member.role})
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </Modal>
 
       {/* Restore Confirmation Modal */}
       <Modal
@@ -530,7 +470,6 @@ export function CompetitionDetailPage() {
             </button>
             <button
               onClick={() => {
-                // Restore functionality would go here
                 setIsRestoreModalOpen(false)
               }}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
@@ -583,4 +522,3 @@ export function CompetitionDetailPage() {
     </div>
   )
 }
-

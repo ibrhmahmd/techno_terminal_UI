@@ -7,6 +7,7 @@ interface PaginationProps {
   pageSizeOptions?: number[]
   showTotalInfo?: boolean
   loading?: boolean
+  totalRecords?: number
 }
 
 export function Pagination({
@@ -18,6 +19,7 @@ export function Pagination({
   pageSizeOptions = [10, 20, 50, 100],
   showTotalInfo = false,
   loading = false,
+  totalRecords,
 }: PaginationProps) {
   if (totalPages <= 0) return null
 
@@ -53,7 +55,7 @@ export function Pagination({
         <button
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1 || loading}
-          className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center p-1"
+          className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           title="First Page"
         >
           <span className="material-symbols-outlined text-[18px]">first_page</span>
@@ -61,7 +63,7 @@ export function Pagination({
         <button
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1 || loading}
-          className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center p-1"
+          className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           title="Previous Page"
         >
           <span className="material-symbols-outlined text-[18px]">chevron_left</span>
@@ -85,7 +87,7 @@ export function Pagination({
         <button
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages || loading}
-          className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center p-1"
+          className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           title="Next Page"
         >
           <span className="material-symbols-outlined text-[18px]">chevron_right</span>
@@ -93,7 +95,7 @@ export function Pagination({
         <button
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages || loading}
-          className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center p-1"
+          className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           title="Last Page"
         >
           <span className="material-symbols-outlined text-[18px]">last_page</span>
@@ -103,6 +105,11 @@ export function Pagination({
       {/* Right: Optional info text */}
       {showTotalInfo && (
         <div className="flex items-center gap-2">
+          {totalRecords !== undefined && (
+            <span className="text-sm text-slate-500">
+              Showing {Math.min((currentPage - 1) * (pageSize ?? 10) + 1, totalRecords)}–{Math.min(currentPage * (pageSize ?? 10), totalRecords)} of {totalRecords} records
+            </span>
+          )}
           <span className="text-sm text-slate-500">
             Page {currentPage} of {totalPages}
           </span>

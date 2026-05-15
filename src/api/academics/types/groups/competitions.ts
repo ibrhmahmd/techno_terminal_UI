@@ -1,84 +1,42 @@
-/**
- * Competition-related types for groups
- * Aligned with API documentation: docs/api/academics/group_competitions.md
- */
-
-/**
- * Competition participation record for a group
- */
 export interface CompetitionParticipationDTO {
-  id: number;
+  participation_id: number;
   competition_id: number;
   competition_name: string;
-  level_at_time: number;
-  event_date: string;
-  result?: 'winner' | 'runner_up' | 'participant' | 'disqualified';
-  score?: number;
+  category_id?: number;
+  category_name?: string;
+  team_id: number;
+  team_name: string;
+  entered_at: string;
+  left_at?: string | null;
+  is_active: boolean;
+  final_placement?: number | null;
   notes?: string;
 }
 
-/**
- * Team public information
- */
 export interface TeamPublic {
   id: number;
-  name: string;
+  team_name: string;
   group_id: number;
-  group_name: string;
-  competition_id: number;
-  competition_name: string;
+  coach_id?: number;
   created_at: string;
-  members_count: number;
+  is_deleted: boolean;
 }
 
-/**
- * Paginated team response
- */
-export interface PaginatedTeamResponse {
-  data: TeamPublic[];
-  total: number;
-  skip: number;
-  limit: number;
-}
-
-/**
- * Team member information
- */
-export interface TeamMemberPublic {
-  id: number;
-  team_id: number;
-  student_id: number;
-  student_name: string;
-  role: 'leader' | 'member';
-  joined_at: string;
-}
-
-/**
- * Group competition history response
- */
 export interface GroupCompetitionHistoryResponseDTO {
   group_id: number;
   group_name: string;
-  competitions: CompetitionParticipationDTO[];
-  total_competitions: number;
-  wins: number;
-  runner_ups: number;
+  participations: CompetitionParticipationDTO[];
+  total_participations: number;
+  active_participations: number;
+  completed_participations: number;
 }
 
-/**
- * Response from linking a team to a group
- * POST /academics/groups/{group_id}/teams/{team_id}/link
- */
 export interface LinkTeamResponse {
   team_id: number;
   team_name: string;
   group_id: number;
 }
 
-/**
- * Response from registering for a competition
- * POST /academics/groups/{group_id}/competitions/{competition_id}/register
- */
 export interface CompetitionRegistrationResponse {
   participation_id: number;
   group_id: number;
@@ -90,10 +48,6 @@ export interface CompetitionRegistrationResponse {
   message: string;
 }
 
-/**
- * Response from completing competition participation
- * PATCH /academics/groups/{group_id}/competitions/{participation_id}/complete
- */
 export interface CompleteParticipationResponse {
   participation_id: number;
   is_active: boolean;
@@ -102,10 +56,6 @@ export interface CompleteParticipationResponse {
   message: string;
 }
 
-/**
- * Response from withdrawing from competition
- * DELETE /academics/groups/{group_id}/competitions/{participation_id}
- */
 export interface WithdrawParticipationResponse {
   participation_id: number;
   status: 'withdrawn';

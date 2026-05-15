@@ -45,8 +45,6 @@ export type {
 export type {
   CompetitionParticipationDTO,
   TeamPublic,
-  PaginatedTeamResponse,
-  TeamMemberPublic,
   GroupCompetitionHistoryResponseDTO,
   LinkTeamResponse,
   CompetitionRegistrationResponse,

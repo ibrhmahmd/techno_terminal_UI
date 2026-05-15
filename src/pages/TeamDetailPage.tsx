@@ -25,8 +25,8 @@ export function TeamDetailPage() {
   const {
     members,
     isLoading: membersLoading,
-    add: _addMember,
-    remove: _removeMember,
+    add: addMember,
+    remove: removeMember,
   } = useTeamMembers(teamId)
 
   // Payments
@@ -39,6 +39,10 @@ export function TeamDetailPage() {
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isPayModalOpen, setIsPayModalOpen] = useState(false)
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
+  const [newStudentId, setNewStudentId] = useState('')
+  const [addMemberError, setAddMemberError] = useState<string | null>(null)
+  const [isAddingMember, setIsAddingMember] = useState(false)
   const [selectedMember, setSelectedMember] = useState<TeamMemberRosterDTO | null>(null)
 
   // Placement form state
@@ -237,7 +241,18 @@ export function TeamDetailPage() {
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-headline text-lg font-semibold text-on-surface">Team Members</h2>
-                <span className="text-sm text-slate-500">{members.length} members</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-500">{members.length} members</span>
+                  {!isDeleted && (
+                    <button
+                      onClick={() => { setNewStudentId(''); setAddMemberError(null); setIsAddMemberModalOpen(true) }}
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm">add</span>
+                      Add Member
+                    </button>
+                  )}
+                </div>
               </div>
 
               {members.length === 0 ? (
@@ -256,6 +271,15 @@ export function TeamDetailPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        {!isDeleted && (
+                          <button
+                            onClick={async () => { if (confirm('Remove this member from the team?')) { try { await removeMember(member.student_id) } catch { /* handled by hook */ } } }}
+                            className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                            title="Remove member"
+                          >
+                            <span className="material-symbols-outlined text-sm">person_remove</span>
+                          </button>
+                        )}
                         {member.fee_paid ? (
                           <span className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
                             Paid
@@ -412,6 +436,70 @@ export function TeamDetailPage() {
         <p className="text-sm text-slate-600">
           Are you sure you want to delete this team? This action can be reversed by restoring the team later.
         </p>
+      </Modal>
+
+      {/* Add Member Modal */}
+      <Modal
+        isOpen={isAddMemberModalOpen}
+        onClose={() => setIsAddMemberModalOpen(false)}
+        title="Add Team Member"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsAddMemberModalOpen(false)}
+              disabled={isAddingMember}
+              className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                const sid = parseInt(newStudentId, 10)
+                if (isNaN(sid) || sid <= 0) { setAddMemberError('Valid student ID required'); return }
+                setIsAddingMember(true)
+                setAddMemberError(null)
+                try {
+                  await addMember({ student_id: sid })
+                  setIsAddMemberModalOpen(false)
+                  setNewStudentId('')
+                } catch {
+                  setAddMemberError('Failed to add member')
+                } finally {
+                  setIsAddingMember(false)
+                }
+              }}
+              disabled={isAddingMember}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
+            >
+              {isAddingMember && <LoadingSpinner size="sm" />}
+              Add Member
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          {addMemberError && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+              <span className="material-symbols-outlined text-lg">error</span>
+              <span>{addMemberError}</span>
+            </div>
+          )}
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="new_student_id" className="text-sm font-medium text-on-surface">
+              Student ID <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="new_student_id"
+              type="number"
+              value={newStudentId}
+              onChange={(e) => setNewStudentId(e.target.value)}
+              placeholder="Enter student ID..."
+              disabled={isAddingMember}
+              className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+            />
+          </div>
+        </div>
       </Modal>
 
       {/* Pay Fee Modal */}

@@ -7,7 +7,6 @@ import {
   filterStudents,
   createStudent,
   updateStudent,
-  deleteStudent,
   softDeleteStudent,
   restoreStudent,
   hardDeleteStudent,
@@ -102,11 +101,6 @@ export function useUpdateStudent() {
     mutationFn: ({ id, data }: { id: number; data: UpdateStudentDTO }) => updateStudent(id, data),
     onSuccess: invalidate,
   })
-}
-
-export function useDeleteStudent() {
-  const invalidate = useStudentInvalidator()
-  return useMutation({ mutationFn: deleteStudent, onSuccess: invalidate })
 }
 
 export function useSoftDeleteStudent() {

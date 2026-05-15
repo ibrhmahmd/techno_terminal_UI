@@ -227,11 +227,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              
-              {/* Price info */}
-              <p className="mt-3 text-xs text-slate-500 bg-slate-100 px-3 py-2 rounded-lg">
-                Default course fee: 150 EGP
-              </p>
+
             </div>
           )}
         </div>

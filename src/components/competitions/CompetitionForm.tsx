@@ -33,16 +33,15 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
     e.preventDefault()
     setError(null)
 
-    // Validation
     if (!formData.name.trim()) {
       setError('Competition name is required')
       return
     }
-    if (!formData.location.trim()) {
+    if (!formData.location?.trim()) {
       setError('Location is required')
       return
     }
-    if (formData.fee_per_student < 0) {
+    if ((formData.fee_per_student ?? 0) < 0) {
       setError('Fee cannot be negative')
       return
     }
