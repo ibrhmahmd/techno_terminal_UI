@@ -26,10 +26,10 @@
 
 **Purpose**: Create new component files needed for the card layout
 
-- [ ] T001 Create `src/components/groups/GroupCard.tsx`
-- [ ] T002 [P] Create `src/components/groups/ViewToggle.tsx`
-- [ ] T003 [P] Create `src/components/groups/GroupCardGrid.tsx`
-- [ ] T004 [P] Create `src/components/groups/GroupCategoryTabs.tsx`
+- [x] T001 Create `src/components/groups/GroupCard.tsx`
+- [x] T002 [P] Create `src/components/groups/ViewToggle.tsx`
+- [x] T003 [P] Create `src/components/groups/GroupCardGrid.tsx`
+- [x] T004 [P] Create `src/components/groups/GroupCategoryTabs.tsx`
 
 ---
 
@@ -39,8 +39,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 [P] Implement `ViewToggle` at `src/components/groups/ViewToggle.tsx` — segmented pill control with `table_rows` and `grid_view` icons, matching GroupBySelector styling
-- [ ] T006 [P] Implement `GroupCardGrid` at `src/components/groups/GroupCardGrid.tsx` — wraps `CardGrid` (from `src/components/directory/`) with skeleton loading state (reuse `CardSkeleton`) and empty state with icon/message
+- [x] T005 [P] Implement `ViewToggle` at `src/components/groups/ViewToggle.tsx` — segmented pill control with `table_rows` and `grid_view` icons, matching GroupBySelector styling
+- [x] T006 [P] Implement `GroupCardGrid` at `src/components/groups/GroupCardGrid.tsx` — wraps `CardGrid` (from `src/components/directory/`) with skeleton loading state (reuse `CardSkeleton`) and empty state with icon/message
 
 **Checkpoint**: Foundation ready — ViewToggle and GroupCardGrid available. User story implementation can begin.
 
@@ -56,9 +56,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Create `GroupCard` component at `src/components/groups/GroupCard.tsx` — render group name (bold primary), course (pill badge), instructor (fallback "Unassigned"), schedule (day + time), capacity (current_student_count / max_capacity with icon), status (via `GroupStatusBadge`), and skeleton loading state
-- [ ] T008 [P] [US1] Export new components from `src/components/groups/index.ts` (GroupCard, ViewToggle, GroupCardGrid, GroupCategoryTabs)
-- [ ] T009 [US1] Update `src/pages/GroupsPage.tsx` — add `viewMode` state (`'table' | 'cards'`, default `'table'`), render `ViewToggle` in GroupBySelector bar, conditionally render `<CardGrid>` + `<GroupCard>` (flat) or `<DataTable>` based on viewMode
+- [x] T007 [P] [US1] Create `GroupCard` component at `src/components/groups/GroupCard.tsx` — render group name (bold primary), course (pill badge), instructor (fallback "Unassigned"), schedule (day + time), capacity (current_student_count / max_capacity with icon), status (via `GroupStatusBadge`), and skeleton loading state
+- [x] T008 [P] [US1] Export new components from `src/components/groups/index.ts` (GroupCard, ViewToggle, GroupCardGrid, GroupCategoryTabs)
+- [x] T009 [US1] Update `src/pages/GroupsPage.tsx` — add `viewMode` state (`'table' | 'cards'`, default `'table'`), render `ViewToggle` in GroupBySelector bar, conditionally render `<CardGrid>` + `<GroupCard>` (flat) or `<DataTable>` based on viewMode
 
 **Checkpoint**: At this point, users can toggle between table and card views. Flat card view shows all groups with correct info. Card layout is responsive.
 
@@ -74,8 +74,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T010 [P] [US2] Implement `GroupCategoryTabs` at `src/components/groups/GroupCategoryTabs.tsx` — dark-themed horizontal tab bar with category label + count badge, active state highlighting
-- [ ] T011 [US2] Update `src/pages/GroupsPage.tsx` — when `isGroupedView && viewMode === 'cards'`, render `<GroupCategoryTabs>` above `<CardGrid>` with `<GroupCard>`, passing active category state
+- [x] T010 [P] [US2] Implement `GroupCategoryTabs` at `src/components/groups/GroupCategoryTabs.tsx` — dark-themed horizontal tab bar with category label + count badge, active state highlighting
+- [x] T011 [US2] Update `src/pages/GroupsPage.tsx` — when `isGroupedView && viewMode === 'cards'`, render `<GroupCategoryTabs>` above `<CardGrid>` with `<GroupCard>`, passing active category state
 
 **Checkpoint**: Grouped card view works for all grouping options (Day, Course, Instructor, Status, Competition). Users can navigate categories via tabs.
 
@@ -91,8 +91,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T012 [US3] Add action buttons to `GroupCard` at `src/components/groups/GroupCard.tsx` — View (navigate), Edit (open modal), Delete (confirm dialog) using `RowActions` from `src/components/common/RowActions.tsx`
-- [ ] T013 [US3] Wire card actions to existing handlers in `src/pages/GroupsPage.tsx` — pass `onView`, `onEdit`, `onDelete` callbacks to GroupCard
+- [x] T012 [US3] Add action buttons to `GroupCard` at `src/components/groups/GroupCard.tsx` — View (navigate), Edit (open modal), Delete (confirm dialog) using `RowActions` from `src/components/common/RowActions.tsx`
+- [x] T013 [US3] Wire card actions to existing handlers in `src/pages/GroupsPage.tsx` — pass `onView`, `onEdit`, `onDelete` callbacks to GroupCard
 
 **Checkpoint**: Cards are fully interactive with all CRUD actions accessible directly from card view.
 
@@ -102,10 +102,10 @@
 
 **Purpose**: Ensure code quality, no regressions, and build passes
 
-- [ ] T014 [P] Remove any unused imports from `src/pages/GroupsPage.tsx` after adding card view logic
-- [ ] T015 Run `npm run lint` and fix all errors
-- [ ] T016 Run `npm run build` (`tsc -b && vite build`) and verify zero errors
-- [ ] T017 Verify no regressions: table view still works, grouping still works, search still works, CRUD via table view still works
+- [x] T014 [P] Remove any unused imports from `src/pages/GroupsPage.tsx` after adding card view logic
+- [x] T015 Run `npm run lint` and fix all errors
+- [x] T016 Run `npm run build` (`tsc -b && vite build`) and verify zero errors
+- [x] T017 Verify no regressions: table view still works, grouping still works, search still works, CRUD via table view still works
 
 ---
 

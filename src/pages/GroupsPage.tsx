@@ -11,6 +11,10 @@ import {
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { GroupsHeader } from '../components/groups/GroupsHeader'
 import { GroupBySelector } from '../components/groups/GroupBySelector'
+import { GroupCard } from '../components/groups/GroupCard'
+import { ViewToggle } from '../components/groups/ViewToggle'
+import { GroupCardGrid } from '../components/groups/GroupCardGrid'
+import { GroupCategoryTabs } from '../components/groups/GroupCategoryTabs'
 import { useGroups } from '../hooks/useGroups'
 import { useCreateGroup, useUpdateGroup, useDeleteGroup } from '../hooks/useGroupQueries'
 
@@ -31,7 +35,6 @@ export function GroupsPage() {
     sortField,
     sortDirection,
     handleSort,
-    processedGroups: _processedGroups,
     paginatedGroups,
     totalPages,
     refresh,
@@ -49,6 +52,8 @@ export function GroupsPage() {
   const { showToast, ToastComponent } = useToast()
   const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
   const [mutationError, setMutationError] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
+  const [activeCategoryKey, setActiveCategoryKey] = useState<string | null>(null)
 
   const handleView = (id: number) => {
     navigate(`/groups/${id}`)
@@ -145,14 +150,15 @@ export function GroupsPage() {
             setGroupBy(field)
             setCurrentPage(1)
           }}
+          rightSlot={<ViewToggle value={viewMode} onChange={setViewMode} />}
         />
 
         <ErrorBoundary>
-          {isLoading && (
-            <div className="flex items-center justify-center py-20"><LoadingSpinner /></div>
+          {error && !isLoading && (
+            <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-center">{error}</div>
           )}
-          
-          {!isLoading && groupBy === undefined && (
+
+          {groupBy === undefined && !isLoading && (
             <div className="flex flex-col items-center justify-center py-28 gap-3 text-center">
               <span className="material-symbols-outlined text-6xl text-slate-200">grid_view</span>
               <p className="text-slate-400 text-sm font-medium">
@@ -161,11 +167,7 @@ export function GroupsPage() {
             </div>
           )}
 
-          {!isLoading && error && (
-            <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-center">{error}</div>
-          )}
-
-          {!isLoading && !error && groupBy !== undefined && (
+          {groupBy !== undefined && !error && (
             <>
               {mutationError && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 flex items-center gap-2">
@@ -173,59 +175,113 @@ export function GroupsPage() {
                   {mutationError}
                 </div>
               )}
-              {isGroupedView ? (
-                <DataTable
-                  groupedData={groupedData.map(g => ({ ...g, items: g.groups }))}
-                  columns={groupColumns}
-                  keyExtractor={(g) => g.id.toString()}
-                  sortField={sortField}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                  onRowClick={(g) => handleView(g.id)}
-                  actions={{
-                    view: (g) => handleView(g.id),
-                    edit: handleEdit,
-                    delete: (g) => handleDeleteClick(g.id)
-                  }}
-                  emptyMessage="No groups matched your selection"
-                  emptyIcon="none"
-                  defaultActiveGroup={groupedData[0]?.key}
-                />
+              {viewMode === 'cards' ? (
+                isGroupedView ? (
+                  <>
+                    <GroupCategoryTabs
+                      categories={groupedData.map(g => ({ key: g.key, label: g.label, count: g.count }))}
+                      activeKey={activeCategoryKey ?? groupedData[0]?.key ?? ''}
+                      onChange={setActiveCategoryKey}
+                    />
+                    <GroupCardGrid
+                      isLoading={isLoading}
+                      emptyMessage="No groups matched your selection"
+                      emptyIcon="grid_view"
+                    >
+                      {(groupedData.find(g => g.key === (activeCategoryKey ?? groupedData[0]?.key))?.groups ?? []).map((g) => (
+                        <GroupCard
+                          key={g.id}
+                          group={g}
+                          actions={{
+                            onView: () => handleView(g.id),
+                            onEdit: () => handleEdit(g),
+                            onDelete: () => handleDeleteClick(g.id),
+                          }}
+                        />
+                      ))}
+                    </GroupCardGrid>
+                  </>
+                ) : (
+                  <GroupCardGrid
+                    isLoading={isLoading}
+                    emptyMessage="No groups matched your selection"
+                    emptyIcon="grid_view"
+                  >
+                    {isLoading ? null : paginatedGroups.map((g) => (
+                      <GroupCard
+                        key={g.id}
+                        group={g}
+                        actions={{
+                          onView: () => handleView(g.id),
+                          onEdit: () => handleEdit(g),
+                          onDelete: () => handleDeleteClick(g.id),
+                        }}
+                      />
+                    ))}
+                  </GroupCardGrid>
+                )
               ) : (
-                <DataTable
-                  data={paginatedGroups}
-                  columns={groupColumns}
-                  keyExtractor={(g) => g.id.toString()}
-                  sortField={sortField}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                  onRowClick={(g) => handleView(g.id)}
-                  actions={{
-                    view: (g) => handleView(g.id),
-                    edit: handleEdit,
-                    delete: (g) => handleDeleteClick(g.id)
-                  }}
-                  emptyMessage="No groups matched your selection"
-                  emptyIcon="none"
-                />
-              )}
-
-              {!isGroupedView && totalPages > 0 && (
-                <div className="mt-6 pt-4 border-t border-slate-200">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    pageSize={pageSize}
-                    onPageSizeChange={(newSize) => {
-                      setPageSize(newSize)
-                      setCurrentPage(1)
-                    }}
-                    onPageChange={setCurrentPage}
-                    pageSizeOptions={[10, 20, 50, 100]}
-                    showTotalInfo={true}
-                    loading={isLoading}
-                  />
-                </div>
+                <>
+                  {isLoading && (
+                    <div className="flex items-center justify-center py-20"><LoadingSpinner /></div>
+                  )}
+                  {!isLoading && isGroupedView && (
+                    <DataTable
+                      groupedData={groupedData.map(g => ({ ...g, items: g.groups }))}
+                      columns={groupColumns}
+                      keyExtractor={(g) => g.id.toString()}
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                      onSort={handleSort}
+                      onRowClick={(g) => handleView(g.id)}
+                      actions={{
+                        view: (g) => handleView(g.id),
+                        edit: handleEdit,
+                        delete: (g) => handleDeleteClick(g.id)
+                      }}
+                      emptyMessage="No groups matched your selection"
+                      emptyIcon="none"
+                      defaultActiveGroup={groupedData[0]?.key}
+                    />
+                  )}
+                  {!isLoading && !isGroupedView && (
+                    <>
+                      <DataTable
+                        data={paginatedGroups}
+                        columns={groupColumns}
+                        keyExtractor={(g) => g.id.toString()}
+                        sortField={sortField}
+                        sortDirection={sortDirection}
+                        onSort={handleSort}
+                        onRowClick={(g) => handleView(g.id)}
+                        actions={{
+                          view: (g) => handleView(g.id),
+                          edit: handleEdit,
+                          delete: (g) => handleDeleteClick(g.id)
+                        }}
+                        emptyMessage="No groups matched your selection"
+                        emptyIcon="none"
+                      />
+                      {totalPages > 0 && (
+                        <div className="mt-6 pt-4 border-t border-slate-200">
+                          <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            pageSize={pageSize}
+                            onPageSizeChange={(newSize) => {
+                              setPageSize(newSize)
+                              setCurrentPage(1)
+                            }}
+                            onPageChange={setCurrentPage}
+                            pageSizeOptions={[10, 20, 50, 100]}
+                            showTotalInfo={true}
+                            loading={isLoading}
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
               )}
             </>
           )}
