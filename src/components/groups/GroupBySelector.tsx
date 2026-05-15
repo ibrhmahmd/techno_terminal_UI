@@ -1,8 +1,10 @@
+import type { ReactNode } from 'react'
 import type { GroupByField } from '../../api/academics'
 
 interface GroupBySelectorProps {
   value: GroupByField
   onChange: (field: GroupByField) => void
+  rightSlot?: ReactNode
 }
 
 const OPTIONS: Array<{ value: GroupByField; label: string; icon: string }> = [
@@ -14,7 +16,7 @@ const OPTIONS: Array<{ value: GroupByField; label: string; icon: string }> = [
   { value: 'competition', label: 'Competition',  icon: 'emoji_events'   },
 ]
 
-export function GroupBySelector({ value, onChange }: GroupBySelectorProps) {
+export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorProps) {
   return (
     <section className="w-full pb-4">
       <div className="overflow-x-auto">
@@ -36,6 +38,11 @@ export function GroupBySelector({ value, onChange }: GroupBySelectorProps) {
               </button>
             )
           })}
+          {rightSlot && (
+            <div className="ml-auto shrink-0 pl-1 border-l border-slate-200">
+              {rightSlot}
+            </div>
+          )}
         </div>
       </div>
     </section>
