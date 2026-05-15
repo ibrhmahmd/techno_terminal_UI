@@ -147,5 +147,5 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/006-directory-card-ui/plan.md`
+`specs/007-groups-card-layout/plan.md`
 <!-- SPECKIT END -->
