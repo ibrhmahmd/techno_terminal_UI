@@ -1,10 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
-import { DataTable, type DataTableColumn, PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialog } from '../components/common'
+import { PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialog } from '../components/common'
 import { useToast } from '../components/common/Toast'
 import { CourseForm } from '../components/courses/CourseForm'
 import { CoursesHeader } from '../components/courses/CoursesHeader'
+import { CoursesTable, CourseCard } from '../components/courses'
+import { CardGrid } from '../components/directory/CardGrid'
+import { CardSkeleton } from '../components/directory/shared/CardSkeleton'
+import { ViewToggle } from '../components/groups/ViewToggle'
 import { 
   createCourse, 
   updateCourse,
@@ -15,63 +19,6 @@ import {
 } from '../api/academics'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { useCourses } from '../hooks/useCourses'
-
-// Column configuration for Courses DataTable
-const courseColumns: DataTableColumn<Course>[] = [
-  {
-    key: 'name',
-    header: 'Course Name',
-    sortable: true,
-    cell: (course) => <span className="font-semibold text-slate-900">{course.name}</span>
-  },
-  {
-    key: 'category',
-    header: 'Category',
-    sortable: true,
-    cell: (course) => (
-      <span className="text-sm text-slate-600 bg-slate-100/50 px-2.5 py-1 rounded-md border border-slate-200">
-        {course.category || 'Uncategorized'}
-      </span>
-    )
-  },
-  {
-    key: 'price_per_level',
-    header: 'Price/Level',
-    sortable: true,
-    align: 'center',
-    cell: (course) => (
-      <span className="text-sm font-medium text-slate-700">
-        {course.price_per_level?.toLocaleString() ?? '0'} EGP
-      </span>
-    )
-  },
-  {
-    key: 'sessions_per_level',
-    header: 'Sessions/Level',
-    sortable: true,
-    align: 'center',
-    cell: (course) => (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700">
-        <span className="material-symbols-outlined text-xs">schedule</span>
-        {course.sessions_per_level}
-      </span>
-    )
-  },
-  {
-    key: 'is_active',
-    header: 'Status',
-    cell: (course) => (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-        course.is_active 
-          ? 'bg-green-100 text-green-700' 
-          : 'bg-slate-100 text-slate-600'
-      }`}>
-        <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-        {course.is_active ? 'Active' : 'Inactive'}
-      </span>
-    )
-  }
-]
 
 export function CoursesPage() {
   const navigate = useNavigate()
@@ -99,6 +46,7 @@ export function CoursesPage() {
   const [deletingCourseId, setDeletingCourseId] = useState<number | null>(null)
   const { showToast, ToastComponent } = useToast()
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
   const [mutationError, setMutationError] = useState<string | null>(null)
 
   const handleView = (id: number) => {
@@ -185,20 +133,29 @@ export function CoursesPage() {
           <p className="text-sm text-slate-500">
             Showing {paginatedCourses.length} of {totalCourses} courses
           </p>
-          <select
-            value={pageSize}
-            onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1) }}
-            className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-white"
-          >
-            <option value={10}>10 per page</option>
-            <option value={20}>20 per page</option>
-            <option value={50}>50 per page</option>
-          </select>
+          <div className="flex items-center gap-3">
+            <ViewToggle value={viewMode} onChange={setViewMode} />
+            <select
+              value={pageSize}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1) }}
+              className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-white"
+            >
+              <option value={10}>10 per page</option>
+              <option value={20}>20 per page</option>
+              <option value={50}>50 per page</option>
+            </select>
+          </div>
         </div>
 
         <ErrorBoundary>
           {isLoading ? (
-            <div className="flex items-center justify-center py-20"><LoadingSpinner /></div>
+            viewMode === 'cards' ? (
+              <CardGrid>
+                {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
+              </CardGrid>
+            ) : (
+              <div className="flex items-center justify-center py-20"><LoadingSpinner /></div>
+            )
           ) : error ? (
             <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-center">{error}</div>
           ) : (
@@ -209,24 +166,35 @@ export function CoursesPage() {
                   {mutationError}
                 </div>
               )}
-              <DataTable
-                data={paginatedCourses}
-                columns={courseColumns}
-                keyExtractor={(c) => c.id.toString()}
-                sortField={sortField}
-                sortDirection={sortDirection}
-                onSort={handleSort}
-                onRowClick={(c) => handleView(c.id)}
-                actions={{
-                  view: (c) => handleView(c.id),
-                  edit: handleEdit,
-                  delete: (c) => handleDeleteClick(c.id)
-                }}
-                emptyMessage="No courses found"
-                emptyIcon="inbox"
-              />
 
-              {totalPages > 1 && (
+              {viewMode === 'cards' ? (
+                <CardGrid>
+                  {paginatedCourses.map((course) => (
+                    <CourseCard
+                      key={course.id}
+                      course={course}
+                      actions={{
+                        onView: () => handleView(course.id),
+                        onEdit: () => handleEdit(course),
+                        onDelete: () => handleDeleteClick(course.id),
+                      }}
+                    />
+                  ))}
+                </CardGrid>
+              ) : (
+                <CoursesTable
+                  data={paginatedCourses}
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                  onRowClick={(c) => handleView(c.id)}
+                  onView={(c) => handleView(c.id)}
+                  onEdit={handleEdit}
+                  onDelete={(c) => handleDeleteClick(c.id)}
+                />
+              )}
+
+              {viewMode === 'table' && totalPages > 1 && (
                 <div className="mt-6 flex justify-center">
                   <Pagination
                     currentPage={currentPage}

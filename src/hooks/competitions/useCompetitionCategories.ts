@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import {
   getCompetitionCategories,
   type CategoryResponse,
 } from '../../api/competitions'
+import { queryKeys } from '../queryKeys'
 
 interface UseCompetitionCategoriesReturn {
   categories: CategoryResponse[]
@@ -14,37 +15,23 @@ interface UseCompetitionCategoriesReturn {
 export function useCompetitionCategories(
   competitionId: number | string
 ): UseCompetitionCategoriesReturn {
-  const [categories, setCategories] = useState<CategoryResponse[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const numericId = typeof competitionId === 'string' ? (competitionId ? parseInt(competitionId, 10) : 0) : competitionId
+  const isEnabled = !!numericId
 
-  const fetchCategories = useCallback(async () => {
-    if (!competitionId || competitionId === '') {
-      setIsLoading(false)
-      return
-    }
-    setIsLoading(true)
-    setError(null)
-    try {
-      const numericId = typeof competitionId === 'string' ? parseInt(competitionId, 10) : competitionId
-      const data = await getCompetitionCategories(numericId)
-      setCategories(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load categories')
-      setCategories([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [competitionId])
-
-  useEffect(() => {
-    fetchCategories()
-  }, [fetchCategories])
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.competitionCategories(numericId),
+    queryFn: async () => {
+      const result = await getCompetitionCategories(numericId)
+      return result
+    },
+    enabled: isEnabled,
+    staleTime: 5 * 60 * 1000,
+  })
 
   return {
-    categories,
+    categories: data || [],
     isLoading,
-    error,
-    refresh: fetchCategories,
+    error: error instanceof Error ? error.message : null,
+    refresh: async () => { await refetch() },
   }
 }
