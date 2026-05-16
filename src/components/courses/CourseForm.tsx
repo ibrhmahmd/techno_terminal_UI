@@ -22,6 +22,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
   const [description, setDescription] = useState(initialData?.description || '')
   const [pricePerLevel, setPricePerLevel] = useState(initialData?.price_per_level || 0)
   const [sessionsPerLevel, setSessionsPerLevel] = useState(initialData?.sessions_per_level || 0)
+  const [maxLevels, setMaxLevels] = useState(initialData?.max_levels || 0)
   const [isActive, setIsActive] = useState(initialData?.is_active ?? true)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -47,6 +48,29 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
       setIsLoading(false)
       return
     }
+    if (sessionsPerLevel > 100) {
+      setError('Sessions per level cannot exceed 100')
+      setIsLoading(false)
+      return
+    }
+    if (mode === 'create') {
+      if (maxLevels <= 0) {
+        setError('Maximum levels must be greater than 0')
+        setIsLoading(false)
+        return
+      }
+      if (maxLevels > 30) {
+        setError('Maximum levels cannot exceed 30')
+        setIsLoading(false)
+        return
+      }
+      const totalSessions = maxLevels * sessionsPerLevel
+      if (totalSessions > 300) {
+        setError(`Course would generate ${totalSessions} sessions total (${maxLevels} levels × ${sessionsPerLevel} sessions/level). Maximum allowed is 300. Reduce levels or sessions per level.`)
+        setIsLoading(false)
+        return
+      }
+    }
 
     try {
       const payload: AddNewCourseInput | UpdateCourseDTO = {
@@ -55,6 +79,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
         description: description.trim() || undefined,
         price_per_level: Number(pricePerLevel),
         sessions_per_level: Number(sessionsPerLevel),
+        max_levels: Number(maxLevels),
         ...(mode === 'edit' && { is_active: isActive }),
       }
       await onSubmit(payload)
@@ -163,6 +188,45 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
           />
         </div>
       </div>
+
+      {/* Max Levels and Total Sessions */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="max_levels" className="text-sm font-medium text-on-surface">
+            Max Levels <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="max_levels"
+            type="number"
+            min={1}
+            max={30}
+            value={maxLevels}
+            onChange={(e) => setMaxLevels(parseInt(e.target.value, 10) || 0)}
+            required={mode === 'create'}
+            disabled={isLoading}
+            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-on-surface">
+            Total Sessions (estimated)
+          </label>
+          <div className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-600">
+            {maxLevels * sessionsPerLevel || 0}
+          </div>
+        </div>
+      </div>
+
+      {/* Warning for high total sessions */}
+      {maxLevels * sessionsPerLevel > 300 && (
+        <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-700">
+          <span className="material-symbols-outlined text-lg mt-0.5">warning</span>
+          <span>
+            This course will generate <strong>{maxLevels * sessionsPerLevel} sessions</strong> total
+            ({maxLevels} levels × {sessionsPerLevel} sessions/level). Maximum recommended is 300.
+          </span>
+        </div>
+      )}
 
       {/* Active Status - Edit Mode Only */}
       {mode === 'edit' && (

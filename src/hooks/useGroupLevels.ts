@@ -32,12 +32,7 @@ export function useGroupLevels(groupId: number): UseGroupLevelsReturn {
     setIsLoading(true)
     setError(null)
     try {
-      let response
-      try {
-        response = await getDetailedLevels(groupId, 1)
-      } catch {
-        response = await getDetailedLevels(groupId)
-      }
+      const response = await getDetailedLevels(groupId, -1)
       console.log(`[useGroupLevels] Success for groupId: ${groupId}`, {
         levelsCount: response.levels.length,
         coursesCount: Object.keys(response.courses).length,

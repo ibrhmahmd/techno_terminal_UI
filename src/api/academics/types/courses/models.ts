@@ -13,6 +13,7 @@ export interface Course {
   description?: string;
   price_per_level?: number;
   sessions_per_level?: number;
+  max_levels?: number;
   is_active: boolean;
 }
 

@@ -40,7 +40,7 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
       setGroup(groupData)
 
       // Get ALL levels (not just current level) to show historical levels
-      const levelsResponse = await getDetailedLevels(groupId)
+      const levelsResponse = await getDetailedLevels(groupId, -1)
 
       setLevels(levelsResponse.levels)
 

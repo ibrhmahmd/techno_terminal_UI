@@ -14,6 +14,7 @@ export interface AddNewCourseInput {
   notes?: string;
   price_per_level: number;
   sessions_per_level: number;
+  max_levels: number;
 }
 
 /**
