@@ -24,7 +24,7 @@ export const queryKeys = {
   competition: (id: number) => ['competitions', id] as const,
   competitionDeleted: ['competitions', 'deleted'] as const,
   competitionSummary: (id: number) => ['competitions', id, 'summary'] as const,
-  competitionCategories: ['competitions', 'categories'] as const,
+  competitionCategories: (id: number) => ['competitions', id, 'categories'] as const,
 
   // Teams
   teams: ['teams'] as const,

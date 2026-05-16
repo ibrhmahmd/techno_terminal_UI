@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { 
   getCompetition, 
   updateCompetition,
@@ -7,6 +7,7 @@ import {
   type Competition,
   type UpdateCompetitionInput 
 } from '../../api/competitions'
+import { queryKeys } from '../queryKeys'
 
 interface UseCompetitionReturn {
   competition: Competition | null
@@ -20,85 +21,64 @@ interface UseCompetitionReturn {
 }
 
 export function useCompetition(id: number | string): UseCompetitionReturn {
-  const [competition, setCompetition] = useState<Competition | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isMutating, setIsMutating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
+  const numericId = typeof id === 'string' ? (id ? parseInt(id, 10) : 0) : id
+  const isEnabled = !!numericId
 
-  const fetchCompetition = useCallback(async () => {
-    if (!id || id === '') {
-      setIsLoading(false)
-      return
-    }
-    setIsLoading(true)
-    setError(null)
-    try {
-      const numericId = typeof id === 'string' ? parseInt(id, 10) : id
-      const data = await getCompetition(numericId)
-      setCompetition(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load competition')
-      setCompetition(null)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [id])
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.competition(numericId),
+    queryFn: async () => {
+      const result = await getCompetition(numericId)
+      return result
+    },
+    enabled: isEnabled,
+    staleTime: 5 * 60 * 1000,
+  })
 
-  useEffect(() => {
-    fetchCompetition()
-  }, [fetchCompetition])
+  const invalidateRelated = async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.competitions })
+    await queryClient.invalidateQueries({ queryKey: queryKeys.competitionDeleted })
+    await queryClient.invalidateQueries({ queryKey: queryKeys.competition(numericId) })
+  }
 
-  const update = useCallback(async (data: UpdateCompetitionInput) => {
-    if (!id || id === '') return
-    setIsMutating(true)
-    try {
-      const numericId = typeof id === 'string' ? parseInt(id, 10) : id
-      const updated = await updateCompetition(numericId, data)
-      setCompetition(updated)
-    } catch (err) {
-      throw err
-    } finally {
-      setIsMutating(false)
-    }
-  }, [id])
+  const updateMutation = useMutation({
+    mutationFn: async (data: UpdateCompetitionInput) => {
+      return updateCompetition(numericId, data)
+    },
+    onSuccess: async () => {
+      await invalidateRelated()
+    },
+    retry: 0,
+  })
 
-  const remove = useCallback(async () => {
-    if (!id || id === '') return
-    setIsMutating(true)
-    try {
-      const numericId = typeof id === 'string' ? parseInt(id, 10) : id
+  const removeMutation = useMutation({
+    mutationFn: async () => {
       await deleteCompetition(numericId)
-      setCompetition(null)
-    } catch (err) {
-      throw err
-    } finally {
-      setIsMutating(false)
-    }
-  }, [id])
+    },
+    onSuccess: async () => {
+      await invalidateRelated()
+    },
+    retry: 0,
+  })
 
-  const restore = useCallback(async () => {
-    if (!id || id === '') return
-    setIsMutating(true)
-    try {
-      const numericId = typeof id === 'string' ? parseInt(id, 10) : id
+  const restoreMutation = useMutation({
+    mutationFn: async () => {
       await restoreCompetition(numericId)
-      // Refresh competition data after restore
-      await fetchCompetition()
-    } catch (err) {
-      throw err
-    } finally {
-      setIsMutating(false)
-    }
-  }, [id, fetchCompetition])
+    },
+    onSuccess: async () => {
+      await invalidateRelated()
+    },
+    retry: 0,
+  })
 
   return {
-    competition,
+    competition: data || null,
     isLoading,
-    isMutating,
-    error,
-    refresh: fetchCompetition,
-    update,
-    remove,
-    restore,
+    error: error instanceof Error ? error.message : null,
+    refresh: async () => { await refetch() },
+    update: async (data: UpdateCompetitionInput) => { await updateMutation.mutateAsync(data) },
+    remove: removeMutation.mutateAsync,
+    restore: restoreMutation.mutateAsync,
+    isMutating: updateMutation.isPending || removeMutation.isPending || restoreMutation.isPending,
   }
 }

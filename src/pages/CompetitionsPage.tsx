@@ -6,10 +6,12 @@ import { Modal } from '../components/common/Modal'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { CompetitionCard } from '../components/competitions/CompetitionCard'
 import { CompetitionForm } from '../components/competitions/CompetitionForm'
-import { DataTable } from '../components/common/datatable'
+import { CompetitionsTable } from '../components/competitions'
+import { CardGrid } from '../components/directory/CardGrid'
+import { ViewToggle } from '../components/groups/ViewToggle'
 import { useCompetitions, useDeletedCompetitions } from '../hooks/competitions'
 import { createCompetition, deleteCompetition, restoreCompetition } from '../api/competitions'
-import type { Competition, CreateCompetitionInput, UpdateCompetitionInput } from '../api/competitions'
+import type { CreateCompetitionInput, UpdateCompetitionInput } from '../api/competitions'
 
 export function CompetitionsPage() {
   const navigate = useNavigate()
@@ -30,6 +32,7 @@ export function CompetitionsPage() {
 
   // View states
   const [showDeleted, setShowDeleted] = useState(false)
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards')
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -98,6 +101,7 @@ export function CompetitionsPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <ViewToggle value={viewMode} onChange={setViewMode} />
             {/* Trash toggle button */}
             <button
               onClick={() => setShowDeleted(!showDeleted)}
@@ -133,52 +137,13 @@ export function CompetitionsPage() {
         )}
 
         {showDeleted ? (
-          // Deleted competitions DataTable view
-          <DataTable
+          <CompetitionsTable
             data={deletedCompetitions}
-            columns={[
-              {
-                key: 'name',
-                header: 'Name',
-                cell: (row: Competition) => (
-                  <div>
-                    <p className="font-medium text-on-surface">{row.name}</p>
-                    {row.edition && (
-                      <p className="text-xs text-slate-500">{row.edition}</p>
-                    )}
-                  </div>
-                ),
-              },
-              {
-                key: 'location',
-                header: 'Location',
-                cell: (row: Competition) => row.location,
-              },
-              {
-                key: 'date',
-                header: 'Date',
-                cell: (row: Competition) =>
-                  row.competition_date
-                    ? new Date(row.competition_date).toLocaleDateString()
-                    : 'TBD',
-              },
-              {
-                key: 'deleted_at',
-                header: 'Deleted',
-                cell: (row: Competition) =>
-                  row.deleted_at
-                    ? new Date(row.deleted_at).toLocaleDateString()
-                    : '-',
-              },
-            ]}
-            keyExtractor={(row) => row.id.toString()}
             isLoading={isDeletedLoading}
             emptyMessage="No deleted competitions found"
             emptyIcon="trash"
-            actions={{
-              view: (row) => navigate(`/competitions/${row.id}`),
-              restore: (row) => setRestoringCompetition(row.id),
-            }}
+            onView={(row) => navigate(`/competitions/${row.id}`)}
+            onRestore={(row) => setRestoringCompetition(row.id)}
             actionLabels={{
               view: 'View Details',
               restore: 'Restore',
@@ -199,8 +164,14 @@ export function CompetitionsPage() {
               Create First Competition
             </button>
           </div>
+        ) : viewMode === 'table' ? (
+          <CompetitionsTable
+            data={competitions}
+            onView={(row) => navigate(`/competitions/${row.id}`)}
+            onDelete={(row) => setDeletingCompetition(row.id)}
+          />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <CardGrid>
             {competitions.map((competition) => (
               <CompetitionCard
                 key={competition.id}
@@ -208,7 +179,7 @@ export function CompetitionsPage() {
                 onClick={() => navigate(`/competitions/${competition.id}`)}
               />
             ))}
-          </div>
+          </CardGrid>
         )}
       </section>
 
