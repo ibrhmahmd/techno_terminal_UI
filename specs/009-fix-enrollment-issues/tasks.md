@@ -29,11 +29,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T001 [US1] Change initial `useState(150)` to `useState(0)` for the `amount` variable at the top of `src/components/enrollments/EnrollPanel.tsx`
-- [ ] T002 [US1] Change `setAmount(150)` to `setAmount(0)` in the group-selection handler inside `src/components/enrollments/EnrollPanel.tsx`
-- [ ] T003 [US1] Change `setAmount(150)` to `setAmount(0)` in the student-change reset handler inside `src/components/enrollments/EnrollPanel.tsx`
-- [ ] T004 [US1] Change `setAmount(150)` to `setAmount(0)` in the group-clear handler inside `src/components/enrollments/EnrollPanel.tsx`
-- [ ] T005 [US1] Change `setAmount(150)` to `setAmount(0)` in the post-submit form-reset handler inside `src/components/enrollments/EnrollPanel.tsx`
+- [x] T001 [US1] Change initial `useState(150)` to `useState(0)` for the `amount` variable at the top of `src/components/enrollments/EnrollPanel.tsx`
+- [x] T002 [US1] Change `setAmount(150)` to `setAmount(0)` in the group-selection handler inside `src/components/enrollments/EnrollPanel.tsx`
+- [x] T003 [US1] Change `setAmount(150)` to `setAmount(0)` in the student-change reset handler inside `src/components/enrollments/EnrollPanel.tsx`
+- [x] T004 [US1] Change `setAmount(150)` to `setAmount(0)` in the group-clear handler inside `src/components/enrollments/EnrollPanel.tsx`
+- [x] T005 [US1] Change `setAmount(150)` to `setAmount(0)` in the post-submit form-reset handler inside `src/components/enrollments/EnrollPanel.tsx`
 
 **Checkpoint**: New enrollment form shows 0 as the default Course Fee. All 5 code locations updated.
 
@@ -47,8 +47,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T006 [US2] Add `onWheel={(e) => (e.target as HTMLInputElement).blur()}` to the Course Fee `<input type="number">` in `src/components/enrollments/EnrollPanel.tsx`
-- [ ] T007 [US2] Add `onWheel={(e) => (e.target as HTMLInputElement).blur()}` to the Discount `<input type="number">` in `src/components/enrollments/EnrollPanel.tsx`
+- [x] T006 [US2] Add `onWheel={(e) => (e.target as HTMLInputElement).blur()}` to the Course Fee `<input type="number">` in `src/components/enrollments/EnrollPanel.tsx`
+- [x] T007 [US2] Add `onWheel={(e) => (e.target as HTMLInputElement).blur()}` to the Discount `<input type="number">` in `src/components/enrollments/EnrollPanel.tsx`
 
 **Checkpoint**: Scrolling over number inputs in the enrollment form no longer changes values.
 
@@ -62,11 +62,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T008 [US3] Review `src/api/enrollments/enrollments.ts` for any PUT/PATCH endpoint for enrollment editing — document findings
-- [ ] T009 [US3] Review `docs/api/enrollments.md` for edit-related endpoints — document findings
-- [ ] T010 [US3] Produce a written summary listing all existing enrollment endpoints, confirming absence of edit support, and recommending what a PATCH endpoint would need
+- [x] T008 [US3] Review `src/api/enrollments/enrollments.ts` for any PUT/PATCH endpoint for enrollment editing — document findings
+- [x] T009 [US3] Review `docs/api/enrollments.md` for edit-related endpoints — document findings
+- [x] T010 [US3] Produce a written summary listing all existing enrollment endpoints, confirming absence of edit support, and recommending what a PATCH endpoint would need
 
-**Checkpoint**: Written API assessment complete — stored as `docs/api/enrollment-edit-review.md` or reported to the team.
+**Checkpoint**: Written API assessment complete — stored at `docs/api/enrollment-edit-review.md`
 
 ---
 
@@ -74,8 +74,8 @@
 
 **Purpose**: Ensure code quality and no regressions
 
-- [ ] T011 Run `npm run lint` and fix all errors
-- [ ] T012 Run `npm run build` (`tsc -b && vite build`) and verify zero errors
+- [x] T011 Run `npm run lint` and fix all errors
+- [x] T012 Run `npm run build` (`tsc -b && vite build`) and verify zero errors
 
 ---
 

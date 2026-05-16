@@ -32,7 +32,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
     }
   }, [preSelectedStudent])
   const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
-  const [amount, setAmount] = useState(150)
+  const [amount, setAmount] = useState(0)
   const [discount, setDiscount] = useState(0)
   const [notes, setNotes] = useState('')
   const [isAutoDiscount, setIsAutoDiscount] = useState(false)
@@ -56,7 +56,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
   useEffect(() => {
     if (selectedGroup) {
       // Default price - API doesn't provide course price on group type
-      setAmount(150)
+      setAmount(0)
     }
   }, [selectedGroup])
 
@@ -82,7 +82,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
     // Reset group selection when student changes
     setSelectedGroup(null)
     setGroupSearch('')
-    setAmount(150)
+    setAmount(0)
     setDiscount(0)
     setIsAutoDiscount(false)
   }
@@ -94,7 +94,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
   const clearGroupSelection = () => {
     setSelectedGroup(null)
     setGroupSearch('')
-    setAmount(150)
+    setAmount(0)
   }
 
   const handleEnroll = async () => {
@@ -127,7 +127,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
       setSelectedGroup(null)
       setStudentSearch('')
       setGroupSearch('')
-      setAmount(150)
+      setAmount(0)
       setDiscount(0)
       setIsAutoDiscount(false)
       setNotes('')
@@ -243,6 +243,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
             min={0}
             value={amount}
             onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+            onWheel={(e) => (e.target as HTMLInputElement).blur()}
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
           />
         </div>
@@ -261,6 +262,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
               setDiscount(parseFloat(e.target.value) || 0)
               setIsAutoDiscount(false)
             }}
+            onWheel={(e) => (e.target as HTMLInputElement).blur()}
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
           />
         </div>
