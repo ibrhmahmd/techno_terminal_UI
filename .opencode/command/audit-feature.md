@@ -1,6 +1,8 @@
-# /audit-feature
+---
+description: Audit a feature for bugs, dead code, TypeScript violations, data fetching anti-patterns, and accessibility gaps. Produces a spec via /speckit.specify for review before planning.
+---
 
-**Description**: Audit a feature for bugs, dead code, TypeScript violations, data fetching anti-patterns, and accessibility gaps. Produces a spec via /speckit.specify for review before planning.
+# /audit-feature
 
 **Usage**: `/audit-feature <feature-name>`
 
