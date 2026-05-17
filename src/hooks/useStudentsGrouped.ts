@@ -9,11 +9,10 @@ const studentsGroupedKeys = {
     skip: number,
     limit: number,
     tab: 'students' | 'waiting',
-    ageBucketsKey: string // For cache key
+    ageBucketsKey: string
   ) => ['students', 'grouped', groupBy, skip, limit, tab, ageBucketsKey] as const,
 }
 
-// Generate a cache key from age buckets
 function getAgeBucketsKey(
   buckets: { min: number; max: number; key: string }[]
 ): string {
@@ -21,7 +20,7 @@ function getAgeBucketsKey(
 }
 
 interface UseStudentsGroupedOptions {
-  groupBy: 'status' | 'age' // Backend only supports status and age (as age_bucket)
+  groupBy: 'status' | 'age'
   pagination: { page: number; pageSize: number }
   tab: 'students' | 'waiting'
   enabled?: boolean

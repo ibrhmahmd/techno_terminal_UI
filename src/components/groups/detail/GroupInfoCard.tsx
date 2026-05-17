@@ -1,8 +1,9 @@
 import { Edit2, Trash2, Archive, ArrowUpCircle, Users, Calendar, Clock, BookOpen, PlusCircle } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { EnrichedGroupPublic, LevelDetailDTO } from '../../../api/academics'
 import { LevelBadge } from '../shared/LevelBadge'
 import { GroupStatusBadge } from '../shared/GroupStatusBadge'
+import { useDebounce } from '../../../hooks/useDebounce'
 
 interface GroupInfoCardProps {
   group: EnrichedGroupPublic
@@ -30,14 +31,18 @@ export function GroupInfoCard({
   isSavingNotes,
 }: GroupInfoCardProps) {
   const [notes, setNotes] = useState(group.notes || '')
+  const debouncedNotes = useDebounce(notes, 300)
   const formatTime = (time: string | null | undefined) => {
     if (!time) return '--:--'
     return time.slice(0, 5)
   }
 
+  useEffect(() => {
+    onNotesChange?.(debouncedNotes)
+  }, [debouncedNotes, onNotesChange])
+
   const handleNotesChange = (value: string) => {
     setNotes(value)
-    onNotesChange?.(value)
   }
 
   return (
@@ -130,7 +135,7 @@ export function GroupInfoCard({
           <div>
             <p className="text-sm text-slate-500">Students in Level</p>
             <p className="font-medium text-slate-900">
-              {group.current_student_count | 0}
+              {group.current_student_count ?? 0}
             </p>
           </div>
         </div>

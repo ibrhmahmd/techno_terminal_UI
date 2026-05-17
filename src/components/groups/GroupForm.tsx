@@ -2,7 +2,7 @@ import { useState, type FormEvent, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { ScheduleGroupInput, Course } from '../../api/academics'
 import { getCourses } from '../../api/academics'
-import { getEmployees, type EmployeePublic } from '../../api/hr'
+import { useAllEmployees } from '../../hooks/useAllEmployees'
 
 interface GroupFormProps {
   initialData?: Partial<ScheduleGroupInput>
@@ -40,52 +40,27 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
   const [startTime, setStartTime] = useState<TimeState>(parseTime(initialData?.default_time_start))
   const [endTime, setEndTime] = useState<TimeState>(parseTime(initialData?.default_time_end))
   const [courses, setCourses] = useState<Course[]>([])
-  const [instructors, setInstructors] = useState<EmployeePublic[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Helper to fetch all employees with pagination
-  const fetchAllEmployees = async (): Promise<EmployeePublic[]> => {
-    const allEmployees: EmployeePublic[] = []
-    let page = 1
-    const page_size = 100
+  const { data: allEmployees = [], isLoading: isLoadingEmployees } = useAllEmployees()
+  const instructors = allEmployees
 
-    while (true) {
-      const result = await getEmployees({ page, page_size })
-      const data = (result.data || []) as EmployeePublic[]
-      allEmployees.push(...data)
-
-      if (data.length < page_size) break
-      page++
-    }
-
-    return allEmployees
-  }
-
-  // Fetch courses and instructors on mount
+  // Fetch courses on mount
   useEffect(() => {
-    async function fetchOptions() {
+    async function fetchCourses() {
       setIsFetching(true)
       try {
-        const [coursesData, employeesData] = await Promise.all([
-          getCourses().catch(() => [] as Course[]),
-          fetchAllEmployees().catch(() => [])
-        ])
-        console.log('[GroupForm] Fetched courses:', coursesData.length, coursesData)
-        console.log('[GroupForm] Fetched employees (raw):', employeesData.length, employeesData)
+        const coursesData = await getCourses().catch(() => [] as Course[])
         setCourses(coursesData)
-        const activeEmployees = employeesData.filter((e: EmployeePublic) => e.is_active !== false)
-        console.log('[GroupForm] Active employees for instructor dropdown:', activeEmployees.length, activeEmployees)
-        setInstructors(activeEmployees)
-      } catch (err) {
-        console.error('[GroupForm] Failed to fetch dropdown options:', err)
+      } catch {
         // Silently fail - form will fall back to text inputs
       } finally {
         setIsFetching(false)
       }
     }
-    fetchOptions()
+    fetchCourses()
   }, [])
 
   const to24h = (time: TimeState): string => {
@@ -121,11 +96,8 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
         default_time_start: to24h(startTime),
         default_time_end: to24h(endTime),
       }
-      console.log('[GroupForm] Submitting payload:', JSON.stringify(payload, null, 2))
       await onSubmit(payload)
-      console.log('[GroupForm] Submit succeeded')
-    } catch (err: any) {
-      console.error('[GroupForm] onSubmit threw:', err)
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : `Failed to ${mode} group`)
     } finally {
       setIsLoading(false)
@@ -172,7 +144,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           value={instructorId}
           onChange={(e) => setInstructorId(e.target.value)}
           required
-          disabled={isLoading || isFetching}
+          disabled={isLoading || isFetching || isLoadingEmployees}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
         >
           <option value="">Select an instructor...</option>

@@ -20,20 +20,22 @@ export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorP
   return (
     <section className="w-full pb-4">
       <div className="overflow-x-auto">
-        <div className="flex min-w-[560px] items-center gap-1 rounded-lg bg-slate-100 p-1">
+        <div className="flex min-w-[560px] items-center gap-1 rounded-lg bg-slate-100 p-1" role="tablist" aria-label="Group by">
           {OPTIONS.map(({ value: optVal, label, icon }) => {
             const isActive = value === optVal
             return (
               <button
                 key={String(optVal)}
                 onClick={() => onChange(optVal)}
+                role="tab"
+                aria-selected={isActive}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all ${
                   isActive
                     ? 'bg-white text-secondary shadow-sm font-bold'
                     : 'text-slate-500 hover:text-secondary hover:bg-white/50'
                 }`}
               >
-                <span className="material-symbols-outlined text-[16px]">{icon}</span>
+                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">{icon}</span>
                 {label}
               </button>
             )

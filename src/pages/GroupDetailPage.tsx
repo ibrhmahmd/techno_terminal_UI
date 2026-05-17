@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
@@ -22,8 +22,13 @@ import type { UpdateGroupDTO, ProgressGroupLevelRequest } from '../api/academics
 
 export function GroupDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const groupId = Number(id) || 0
   const { showToast } = useToast()
+  const enrollmentsErrorShownRef = useRef(false)
+  const paymentsErrorShownRef = useRef(false)
+
+  const isValidGroupId = !isNaN(groupId) && groupId > 0
 
   const [activeTab, setActiveTab] = useState<'attendance' | 'levels' | 'students' | 'payments' | 'history'>('attendance')
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -39,7 +44,7 @@ export function GroupDetailPage() {
     sessions,
     isLoading,
     error,
-    refresh,
+    refetch,
     setActiveLevel,
     activeLevelId,
   } = useGroupDetail(groupId)
@@ -67,14 +72,16 @@ export function GroupDetailPage() {
 
   // Show toast notifications for hook errors
   useEffect(() => {
-    if (enrollmentsError) {
+    if (enrollmentsError && !enrollmentsErrorShownRef.current) {
       showToast(enrollmentsError, 'error')
+      enrollmentsErrorShownRef.current = true
     }
   }, [enrollmentsError, showToast])
 
   useEffect(() => {
-    if (paymentsError) {
+    if (paymentsError && !paymentsErrorShownRef.current) {
       showToast(paymentsError, 'error')
+      paymentsErrorShownRef.current = true
     }
   }, [paymentsError, showToast])
 
@@ -101,14 +108,12 @@ export function GroupDetailPage() {
   } = useGroupMutations(groupId)
 
   // Current level enrollment count from consolidated data
-  const currentLevelEnrollmentCount = currentLevel?.students_count || 0
-
 
   const handleUpdateGroup = async (data: UpdateGroupDTO & { notes?: string; status?: 'active' | 'inactive' | 'archived' | 'completed' }) => {
     try {
       await updateGroup(data)
       showToast('Group updated successfully', 'success')
-      await refresh()
+      await refetch()
       setIsEditDialogOpen(false)
     } catch {
       showToast(mutationError || 'Failed to update group', 'error')
@@ -119,7 +124,7 @@ export function GroupDetailPage() {
     try {
       await deleteGroup()
       showToast('Group deleted successfully', 'success')
-      window.location.href = '/groups'
+      navigate('/groups')
     } catch {
       showToast(mutationError || 'Failed to delete group', 'error')
       setIsDeleteDialogOpen(false)
@@ -130,7 +135,7 @@ export function GroupDetailPage() {
     try {
       await archiveGroup()
       showToast('Group archived successfully', 'success')
-      await refresh()
+      await refetch()
       setIsArchiveDialogOpen(false)
     } catch {
       showToast(mutationError || 'Failed to archive group', 'error')
@@ -145,7 +150,7 @@ export function GroupDetailPage() {
         `Group progressed from level ${result.old_level_number} to ${result.new_level_number}. ${result.sessions_created} sessions created, ${result.enrollments_migrated} enrollments migrated.`,
         'success'
       )
-      await refresh()
+      await refetch()
     } catch {
       showToast(mutationError || 'Failed to level up group', 'error')
     }
@@ -163,7 +168,7 @@ export function GroupDetailPage() {
         'success'
       )
       setIsProgressLevelDialogOpen(false)
-      await refresh()
+      await refetch()
     } catch {
       showToast(mutationError || 'Failed to create new level', 'error')
     }
@@ -178,6 +183,27 @@ export function GroupDetailPage() {
     } finally {
       setIsSavingNotes(false)
     }
+  }
+
+  if (!isValidGroupId) {
+    return (
+      <div className="min-h-screen bg-surface">
+        <TopNavbar activePage="Groups" />
+        <div className="p-8 max-w-[1400px] mx-auto">
+          <div className="p-12 bg-amber-50 border border-amber-100 rounded-xl text-center">
+            <span className="material-symbols-outlined text-4xl text-amber-500 mb-2">warning</span>
+            <h2 className="text-xl font-bold text-amber-800 mb-2">Invalid Group ID</h2>
+            <p className="text-amber-600 mb-4">The group ID in the URL is not valid.</p>
+            <button
+              onClick={() => navigate('/groups')}
+              className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
+            >
+              Back to Groups
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (isLoading) {
@@ -241,7 +267,6 @@ export function GroupDetailPage() {
           <TabNavigation
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            enrollmentCount={currentLevelEnrollmentCount}
           />
 
           {activeTab === 'attendance' && (
@@ -258,7 +283,6 @@ export function GroupDetailPage() {
 
           {activeTab === 'levels' && (
             <LevelsTab
-              groupId={groupId}
               levels={levels}
               currentLevelNumber={group.level_number}
             />

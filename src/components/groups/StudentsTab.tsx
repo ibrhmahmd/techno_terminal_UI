@@ -2,7 +2,10 @@ import { useState, useMemo } from 'react'
 import { CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { LevelSelector } from './detail/LevelSelector'
 import { DataTable } from '../common/datatable'
+import { ConfirmDialog } from '../common/ConfirmDialog'
+import { useToast } from '../common/Toast'
 import { useGroupEnrollments } from '../../hooks/useGroupEnrollments'
+import { deleteEnrollment } from '../../api/enrollments/enrollments'
 import type { LevelDetailDTO } from '../../api/academics'
 
 interface StudentsTabProps {
@@ -33,6 +36,9 @@ export function StudentsTab({
   onLevelChange,
 }: StudentsTabProps) {
   const [selectedLevelId, setSelectedLevelId] = useState<number | null>(activeLevelId)
+  const [isDropDialogOpen, setIsDropDialogOpen] = useState(false)
+  const [droppingEnrollmentId, setDroppingEnrollmentId] = useState<number | null>(null)
+  const { showToast, ToastComponent } = useToast()
   const selectedLevel = useMemo(() =>
     levels.find(l => l.level_id === selectedLevelId) || null
   , [levels, selectedLevelId])
@@ -67,9 +73,27 @@ export function StudentsTab({
     onLevelChange(levelId)
   }
 
-  const handleDrop = async (studentId: number) => {
-    if (!confirm('Are you sure you want to remove this student from the group?')) return
-    console.log('Drop student:', studentId)
+  const handleDropClick = (enrollmentId: number) => {
+    setDroppingEnrollmentId(enrollmentId)
+    setIsDropDialogOpen(true)
+  }
+
+  const handleConfirmDrop = async () => {
+    if (!droppingEnrollmentId) return
+    try {
+      await deleteEnrollment(droppingEnrollmentId)
+      showToast('Student removed from group', 'success')
+    } catch {
+      showToast('Failed to remove student', 'error')
+    } finally {
+      setIsDropDialogOpen(false)
+      setDroppingEnrollmentId(null)
+    }
+  }
+
+  const handleCancelDrop = () => {
+    setIsDropDialogOpen(false)
+    setDroppingEnrollmentId(null)
   }
 
   // Combined student type with enrollment data
@@ -127,13 +151,24 @@ export function StudentsTab({
         isLoading={isLoading}
         emptyMessage="No students enrolled in this level"
         actions={{
-          view: (student) => console.log('View student', student.student_id),
-          edit: (student) => console.log('Edit student', student.student_id),
-          delete: (student) => handleDrop(student.student_id),
+          view: (student) => showToast(`View student ${student.student_name}`, 'info'),
+          edit: (student) => showToast(`Edit student ${student.student_name}`, 'info'),
+          delete: (student) => handleDropClick(student.enrollment_id),
         }}
       />
+
+      <ConfirmDialog
+        isOpen={isDropDialogOpen}
+        title="Remove Student"
+        message="Are you sure you want to remove this student from the group? This action cannot be undone."
+        confirmText="Remove"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDrop}
+        onCancel={handleCancelDrop}
+        variant="danger"
+      />
+
+      {ToastComponent}
     </div>
   )
 }
-
-export default StudentsTab

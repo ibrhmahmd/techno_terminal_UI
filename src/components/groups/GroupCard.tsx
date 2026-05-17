@@ -2,6 +2,7 @@ import type { EnrichedGroupPublic } from '../../api/academics'
 import { RowActions } from '../common/RowActions'
 import { CardSkeleton } from '../directory/shared/CardSkeleton'
 import { GroupStatusBadge } from './shared/GroupStatusBadge'
+import { formatTimeDisplay } from '../../utils/formatting'
 
 interface GroupCardActions {
   onView?: () => void
@@ -15,23 +16,18 @@ export interface GroupCardProps {
   loading?: boolean
 }
 
-function formatTime(t?: string): string {
-  if (!t) return ''
-  return t.slice(0, 5)
-}
-
 export function GroupCard({ group, actions, loading = false }: GroupCardProps) {
   if (loading) return <CardSkeleton />
 
   const schedule = [
     group.default_day,
-    formatTime(group.default_time_start),
-    formatTime(group.default_time_end),
-  ].filter(Boolean).join(' ')
+    formatTimeDisplay(group.default_time_start),
+    formatTimeDisplay(group.default_time_end),
+  ].filter((s) => s !== '--:--' && Boolean(s)).join(' ')
 
   const hasTime = group.default_time_start && group.default_time_end
   const timeRange = hasTime
-    ? `${formatTime(group.default_time_start)} - ${formatTime(group.default_time_end)}`
+    ? `${formatTimeDisplay(group.default_time_start)} - ${formatTimeDisplay(group.default_time_end)}`
     : null
 
   return (

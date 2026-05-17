@@ -206,5 +206,3 @@ export function PaymentsTab({
     </div>
   )
 }
-
-export default PaymentsTab

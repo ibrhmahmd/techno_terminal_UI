@@ -20,12 +20,13 @@ export function GroupsHeader({ totalGroups, searchTerm, onSearchChange, onCreate
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-lg border border-slate-200">
-            <span className="material-symbols-outlined text-slate-500">search</span>
+            <span className="material-symbols-outlined text-slate-500" aria-hidden="true">search</span>
             <input
               type="text"
               placeholder="Search groups..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
+              aria-label="Search groups"
               className="bg-transparent border-none outline-none text-sm text-on-surface min-w-[200px] placeholder-slate-400"
             />
           </div>
@@ -33,7 +34,7 @@ export function GroupsHeader({ totalGroups, searchTerm, onSearchChange, onCreate
             onClick={onCreateClick}
             className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
           >
-            <span className="material-symbols-outlined text-sm">add</span>
+            <span className="material-symbols-outlined text-sm" aria-hidden="true">add</span>
             Create Group
           </button>
         </div>
