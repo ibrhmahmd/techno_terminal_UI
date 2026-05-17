@@ -90,11 +90,6 @@ export function AttendanceTab({
 
   const selectedLevel = useMemo(() => {
     const found = levels.find(l => l.level_id === selectedLevelId) || levels[0] || null
-    console.log('[AttendanceTab] selectedLevel:', { 
-      selectedLevelId, 
-      found: found ? { level_id: found.level_id, level_number: found.level_number } : null,
-      levelsCount: levels.length
-    })
     return found
   }, [levels, selectedLevelId])
 
@@ -118,11 +113,6 @@ export function AttendanceTab({
   const transformedSessions = useMemo(() => {
     if (attendanceSessions.length === 0) return []
     const transformed = transformSessions(attendanceSessions, roster)
-    console.log('[DEBUG AttendanceTab] Transformed sessions:', transformed.map(s => ({
-      sessionId: s.session_id,
-      attendanceCount: s.attendance?.length || 0,
-      statuses: s.attendance?.map(a => a.status)
-    })))
     return transformed
   }, [attendanceSessions, roster])
 
@@ -168,5 +158,3 @@ export function AttendanceTab({
     </div>
   )
 }
-
-export default AttendanceTab

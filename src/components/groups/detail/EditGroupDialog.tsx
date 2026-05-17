@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
 import { type EnrichedGroupPublic, type UpdateGroupDTO } from '../../../api/academics'
-import { getEmployees } from '../../../api/hr/employees'
-import type { EmployeePublic } from '../../../api/hr'
+import { useAllEmployees } from '../../../hooks/useAllEmployees'
+import { formatTimeInput } from '../../../utils/formatting'
 
 interface EditGroupDialogProps {
   isOpen: boolean
@@ -23,9 +23,9 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
   const [maxCapacity, setMaxCapacity] = useState(group.max_capacity)
   const [status, setStatus] = useState<'active' | 'inactive' | 'archived' | 'completed'>(group.status || 'inactive')
   const [notes, setNotes] = useState('')
-  const [instructors, setInstructors] = useState<EmployeePublic[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [isFetching, setIsFetching] = useState(false)
+
+  const { data: instructors = [], isLoading: isLoadingEmployees } = useAllEmployees()
 
   useEffect(() => {
     if (isOpen) {
@@ -39,36 +39,6 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
     }
   }, [isOpen, group])
 
-  // Fetch instructors when dialog opens
-  useEffect(() => {
-    if (isOpen) {
-      setIsFetching(true)
-
-      // Fetch all employees with pagination
-      async function fetchAllActiveEmployees(): Promise<EmployeePublic[]> {
-        const allEmployees: EmployeePublic[] = []
-        let page = 1
-        const page_size = 100
-
-        while (true) {
-          const result = await getEmployees({ page, page_size })
-          const data = result.data || []
-          allEmployees.push(...data as EmployeePublic[])
-
-          if (data.length < page_size) break
-          page++
-        }
-
-        return allEmployees.filter(e => e.is_active !== false)
-      }
-
-      fetchAllActiveEmployees()
-        .then(items => setInstructors(items))
-        .catch(() => {})
-        .finally(() => setIsFetching(false))
-    }
-  }, [isOpen])
-
   if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,8 +49,8 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
         name,
         instructor_id: Number(instructorId),
         default_day: day,
-        default_time_start: `${startTime}:00`,
-        default_time_end: `${endTime}:00`,
+        default_time_start: formatTimeInput(startTime) ?? undefined,
+        default_time_end: formatTimeInput(endTime) ?? undefined,
         max_capacity: maxCapacity,
         status,
         notes: notes || undefined,
@@ -121,7 +91,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
             <select
               value={instructorId}
               onChange={(e) => setInstructorId(e.target.value)}
-              disabled={isFetching}
+              disabled={isLoadingEmployees}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50"
             >
               {instructors.map((i) => (

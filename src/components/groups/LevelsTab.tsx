@@ -9,10 +9,9 @@ interface LevelsTabProps {
 }
 
 export function LevelsTab({
-  groupId: _groupId,
   levels,
   currentLevelNumber,
-}: LevelsTabProps) {
+}: Omit<LevelsTabProps, 'groupId'>) {
   const [expandedLevel, setExpandedLevel] = useState<number | null>(null)
 
   const getStatusIcon = (status: string) => {
@@ -175,5 +174,3 @@ export function LevelsTab({
     </div>
   )
 }
-
-export default LevelsTab

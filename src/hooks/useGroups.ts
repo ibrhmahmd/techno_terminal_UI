@@ -93,8 +93,10 @@ export function useGroups() {
 
   const totalPages = Math.ceil(processedGroups.length / pageSize)
 
+  const validSortFields: SortField[] = ['name', 'course_name', 'instructor_name', 'current_student_count']
+
   const handleSort = (field: string) => {
-    const typedField = field as SortField
+    const typedField = validSortFields.includes(field as SortField) ? field as SortField : 'name'
     if (sortField === typedField) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
     } else {
@@ -106,7 +108,6 @@ export function useGroups() {
 
   return {
     groups,
-    setGroups: () => {}, // Deprecated, kept for API compatibility if needed
     totalGroups: groups.length,
     isLoading,
     error,

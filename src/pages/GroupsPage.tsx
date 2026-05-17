@@ -81,8 +81,8 @@ export function GroupsPage() {
       await deleteGroupMutation.mutateAsync(deletingGroupId)
       await refresh()
       showToast('Group deleted successfully', 'success')
-    } catch (err: any) {
-      const msg = err.message || 'Failed to delete group'
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to delete group'
       setMutationError(msg)
       showToast(msg, 'error')
     } finally {
@@ -102,15 +102,18 @@ export function GroupsPage() {
       await createGroupMutation.mutateAsync(data)
       setIsCreateModalOpen(false)
       await refresh()
-    } catch (err: any) {
-      console.error('[GroupsPage] createGroup failed:', err)
-      const detail = err?.response?.data?.detail
+    } catch (err: unknown) {
+      const detail = err instanceof Error && 'response' in err
+        ? (err as { response?: { data?: { detail?: unknown } } }).response?.data?.detail
+        : undefined
       let errorMsg = 'Failed to create group.'
       
       if (Array.isArray(detail)) {
-        errorMsg = detail.map((d: any) => `${d.loc?.[d.loc.length-1] || 'Field'}: ${d.msg}`).join(', ')
+        errorMsg = detail.map((d: { loc?: string[]; msg?: string }) => `${d.loc?.[d.loc.length - 1] || 'Field'}: ${d.msg}`).join(', ')
       } else if (typeof detail === 'string') {
         errorMsg = detail
+      } else if (err instanceof Error) {
+        errorMsg = err.message
       }
       
       setMutationError(errorMsg)
@@ -118,7 +121,7 @@ export function GroupsPage() {
     }
   }
 
-  const handleUpdateGroup = async (data: any) => {
+  const handleUpdateGroup = async (data: ScheduleGroupInput) => {
     if (!selectedGroup) return
     setMutationError(null)
     try {
@@ -126,8 +129,8 @@ export function GroupsPage() {
       setIsEditModalOpen(false)
       setSelectedGroup(null)
       await refresh()
-    } catch (err: any) {
-      setMutationError(err.message || 'Failed to update group')
+    } catch (err: unknown) {
+      setMutationError(err instanceof Error ? err.message : 'Failed to update group')
       throw err
     }
   }

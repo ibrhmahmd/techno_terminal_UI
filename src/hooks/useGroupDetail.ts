@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from './queryKeys'
 import {
   getEnrichedGroup,
   getDetailedLevels,
@@ -9,7 +11,6 @@ import {
   type Session,
   type GenerateLevelSessionsRequest,
 } from '../api/academics'
-import { extractErrorMessage } from '../utils/apiErrors'
 
 interface UseGroupDetailReturn {
   group: EnrichedGroupPublic | null
@@ -18,54 +19,53 @@ interface UseGroupDetailReturn {
   sessions: Session[]
   isLoading: boolean
   error: string | null
-  refresh: () => Promise<void>
+  refetch: () => void
   setActiveLevel: (levelId: number) => void
   activeLevelId: number | null
   generateSessions: (data: GenerateLevelSessionsRequest) => Promise<Session[]>
 }
 
 export function useGroupDetail(groupId: number): UseGroupDetailReturn {
-  const [group, setGroup] = useState<EnrichedGroupPublic | null>(null)
-  const [levels, setLevels] = useState<LevelDetailDTO[]>([])
-  const [sessions, setSessions] = useState<Session[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [activeLevelId, setActiveLevelId] = useState<number | null>(null)
+  const qc = useQueryClient()
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const groupData = await getEnrichedGroup(groupId)
-      setGroup(groupData)
+  const { data: groupData, isLoading: isLoadingGroup, error: groupError } = useQuery({
+    queryKey: queryKeys.group(groupId),
+    queryFn: () => getEnrichedGroup(groupId),
+    enabled: groupId > 0,
+    staleTime: 5 * 60 * 1000,
+  })
 
-      // Get ALL levels (not just current level) to show historical levels
-      const levelsResponse = await getDetailedLevels(groupId, -1)
+  const { data: levelsData, isLoading: isLoadingLevels } = useQuery({
+    queryKey: queryKeys.groupLevels(groupId),
+    queryFn: () => getDetailedLevels(groupId, -1).then(r => r.levels),
+    enabled: groupId > 0,
+    staleTime: 5 * 60 * 1000,
+  })
 
-      setLevels(levelsResponse.levels)
+  const { data: sessionsData, isLoading: isLoadingSessions } = useQuery({
+    queryKey: queryKeys.groupSessions(groupId),
+    queryFn: () => listSessionsForGroup(groupId),
+    enabled: groupId > 0,
+    staleTime: 5 * 60 * 1000,
+  })
 
-      const sessionsData = await listSessionsForGroup(groupId)
-      setSessions(sessionsData)
+  const levels = levelsData ?? []
+  const sessions = sessionsData ?? []
+  const isLoading = isLoadingGroup || isLoadingLevels || isLoadingSessions
+  const error = groupError instanceof Error ? groupError.message : null
 
-      // Set active level to current level by default
-      const current = levelsResponse.levels.find((l) => l.status === 'active')
+  // Set active level to current level by default when levels load
+  useEffect(() => {
+    if (levels.length > 0 && activeLevelId === null) {
+      const current = levels.find((l) => l.status === 'active')
       if (current) {
         setActiveLevelId(current.level_id)
-      } else if (levelsResponse.levels.length > 0) {
-        setActiveLevelId(levelsResponse.levels[levelsResponse.levels.length - 1].level_id)
+      } else {
+        setActiveLevelId(levels[levels.length - 1].level_id)
       }
-    } catch (err) {
-      const userMessage = extractErrorMessage(err)
-      console.error('[useGroupDetail] Failed:', { error: err, userMessage })
-      setError(userMessage)
-    } finally {
-      setIsLoading(false)
     }
-  }, [groupId])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+  }, [levels, activeLevelId])
 
   const currentLevel = useMemo(() => {
     return levels.find((l) => l.level_id === activeLevelId) || null
@@ -75,20 +75,24 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
     setActiveLevelId(levelId)
   }, [])
 
-  const generateSessions = useCallback(async (data: GenerateLevelSessionsRequest): Promise<Session[]> => {
+  const refetch = () => {
+    qc.invalidateQueries({ queryKey: queryKeys.group(groupId) })
+  }
+
+  const generateSessions = async (data: GenerateLevelSessionsRequest): Promise<Session[]> => {
     const result = await generateLevelSessions(groupId, data)
-    await fetchData()
+    refetch()
     return result
-  }, [groupId, fetchData])
+  }
 
   return {
-    group,
+    group: groupData ?? null,
     levels,
     currentLevel,
     sessions,
     isLoading,
     error,
-    refresh: fetchData,
+    refetch,
     setActiveLevel,
     activeLevelId,
     generateSessions,

@@ -83,3 +83,32 @@ export function formatShortDate(dateString: string | Date): string {
 export function getTodayISO(): string {
   return new Date().toISOString().split('T')[0]
 }
+
+/**
+ * Normalize a time input string to HH:MM:00 format with zero-padded hours.
+ * Returns null for empty/null input.
+ */
+export function formatTimeInput(value: string | null): string | null {
+  if (!value) return null
+  const trimmed = value.trim()
+  if (!trimmed) return null
+
+  const parts = trimmed.split(':')
+  if (parts.length < 2) return null
+
+  const hours = Number(parts[0])
+  const minutes = parts[1]
+
+  if (isNaN(hours) || hours < 0 || hours > 23) return null
+
+  return `${String(hours).padStart(2, '0')}:${minutes}:00`
+}
+
+/**
+ * Display a time string as HH:MM.
+ * Returns '--:--' for null/undefined values.
+ */
+export function formatTimeDisplay(value: string | null | undefined): string {
+  if (!value) return '--:--'
+  return value.slice(0, 5)
+}

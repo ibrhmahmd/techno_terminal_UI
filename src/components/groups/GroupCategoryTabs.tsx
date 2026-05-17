@@ -14,7 +14,7 @@ export function GroupCategoryTabs({ categories, activeKey, onChange }: GroupCate
   if (categories.length === 0) return null
 
   return (
-    <div className="overflow-x-auto mb-4">
+    <div className="overflow-x-auto mb-4" role="tablist" aria-label="Group categories">
       <div className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
         {categories.map((cat) => {
           const isActive = cat.key === activeKey
@@ -22,6 +22,8 @@ export function GroupCategoryTabs({ categories, activeKey, onChange }: GroupCate
             <button
               key={cat.key}
               onClick={() => onChange(cat.key)}
+              role="tab"
+              aria-selected={cat.key === activeKey}
               className={`flex-1 flex justify-center items-center gap-2.5 min-w-[120px] px-5 py-2 rounded-lg text-sm font-medium transition-all select-none ${
                 isActive
                   ? 'bg-secondary text-white font-bold shadow-lg shadow-secondary/20'

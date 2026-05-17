@@ -41,6 +41,7 @@ export function LevelSelector({
             onClick={() => navigate('prev')}
             disabled={activeIndex <= 0}
             className="p-1 rounded hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="Previous level"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -48,13 +49,14 @@ export function LevelSelector({
             onClick={() => navigate('next')}
             disabled={activeIndex >= levels.length - 1}
             className="p-1 rounded hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="Next level"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2" role="group" aria-label="Level selector">
         {levels.map((level, index) => {
           const isActive = level.level_id === activeLevelId
           const isCurrent = level.level_number === currentLevelNumber
@@ -63,6 +65,7 @@ export function LevelSelector({
             <button
               key={level.level_id}
               onClick={() => onLevelChange(level.level_id)}
+              aria-pressed={isActive}
               className={`flex flex-col items-center gap-1 p-2 rounded-lg min-w-[60px] transition-colors ${
                 isActive ? 'bg-blue-50 border-2 border-blue-200' : 'hover:bg-slate-50'
               }`}

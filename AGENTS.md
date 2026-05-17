@@ -147,5 +147,5 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/009-fix-enrollment-issues/plan.md`
+`specs/010-groups-page-audit/plan.md`
 <!-- SPECKIT END -->

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from './queryKeys'
 import { getAttendanceForLevel } from '../api/academics'
 
 interface UseGroupAttendanceOptions {
@@ -17,28 +18,10 @@ export function useGroupAttendance(
   const { enabled = true } = options
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['groups', groupId, 'attendance', levelNumber],
+    queryKey: queryKeys.groupAttendance(groupId, levelNumber ?? 0),
     queryFn: async () => {
       if (!levelNumber) throw new Error('Level number is required')
-      const result = await getAttendanceForLevel(groupId, levelNumber)
-      console.log('[DEBUG Group Detail] Raw API response:', {
-        groupId,
-        levelNumber,
-        rosterCount: result.roster?.length || 0,
-        sessions: result.sessions?.map(s => ({
-          sessionId: s.session_id,
-          date: s.date,
-          attendanceEntries: Object.entries(s.attendance || {}).map(([studentId, status]) => ({
-            studentId,
-            status
-          })),
-          presentCount: Object.values(s.attendance || {}).filter(st => st === 'present').length,
-          absentCount: Object.values(s.attendance || {}).filter(st => st === 'absent').length,
-          excusedCount: Object.values(s.attendance || {}).filter(st => st === 'excused').length,
-          lateCount: Object.values(s.attendance || {}).filter(st => st === 'late').length,
-        }))
-      })
-      return result
+      return getAttendanceForLevel(groupId, levelNumber)
     },
     enabled: !!groupId && !!levelNumber && enabled,
     staleTime: 60 * 1000, // 1 minute - attendance changes frequently

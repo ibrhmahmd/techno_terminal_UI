@@ -63,5 +63,3 @@ export function CoursesHistoryTable({ data, isLoading }: CoursesHistoryTableProp
     </div>
   )
 }
-
-export default CoursesHistoryTable

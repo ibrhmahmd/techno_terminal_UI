@@ -3,7 +3,6 @@
 import { formatInitials } from '../../utils/formatting'
 
 interface GroupHeaderProps {
-  groupId: string
   name: string
   scheduleTime: string
   level: number

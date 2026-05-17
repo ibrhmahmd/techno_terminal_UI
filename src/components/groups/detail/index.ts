@@ -1,5 +1,4 @@
 export { GroupInfoCard } from './GroupInfoCard'
 export { LevelSelector } from './LevelSelector'
-export { GroupPricingCard } from './GroupPricingCard'
 export { EditGroupDialog } from './EditGroupDialog'
 export { ProgressLevelDialog } from './ProgressLevelDialog'

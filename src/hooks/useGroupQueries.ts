@@ -7,6 +7,7 @@ import {
   updateGroup,
   deleteGroup,
   type GroupByField,
+  type ScheduleGroupInput,
 } from '../api/academics'
 import { getUpcomingDates } from '../utils/date'
 import { dashboardKeys } from './dashboard/useDashboard'
@@ -74,8 +75,6 @@ export function useCreateGroup() {
       upcomingDates.forEach(date => {
         qc.invalidateQueries({ queryKey: dashboardKeys.overview(date) })
       })
-      
-      console.log('[useCreateGroup] Invalidated dashboard cache for dates:', upcomingDates)
     },
   })
 }
@@ -83,7 +82,7 @@ export function useCreateGroup() {
 export function useUpdateGroup() {
   const invalidate = useGroupInvalidator()
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => updateGroup(id, data),
+    mutationFn: ({ id, data }: { id: number; data: ScheduleGroupInput }) => updateGroup(id, data),
     onSuccess: invalidate,
   })
 }

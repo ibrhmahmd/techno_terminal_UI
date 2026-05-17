@@ -5,8 +5,17 @@ export const queryKeys = {
   // Groups
   groups: ['groups'] as const,
   group: (id: number) => ['groups', id] as const,
+  groupLevels: (id: number) => ['groups', id, 'levels'] as const,
+  groupSessions: (id: number) => ['groups', id, 'sessions'] as const,
   groupHistory: (id: number) => ['groups', id, 'history'] as const,
   groupStudents: (id: number) => ['groups', id, 'students'] as const,
+  groupPayments: (id: number) => ['groups', id, 'payments'] as const,
+  groupEnrollments: (id: number) => ['groups', id, 'enrollments'] as const,
+  groupCompetitions: (id: number) => ['groups', id, 'competitions'] as const,
+  groupAttendance: (id: number, levelNumber: number) => ['groups', id, 'attendance', levelNumber] as const,
+  groupTeams: (id: number) => ['groups', id, 'teams'] as const,
+  groupAvailableTeams: (id: number) => ['groups', id, 'available-teams'] as const,
+  groupCompetitionAnalytics: (id: number) => ['groups', id, 'competition-analytics'] as const,
   
   // Students
   students: ['students'] as const,
