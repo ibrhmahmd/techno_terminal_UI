@@ -13,8 +13,6 @@ export interface GroupComboboxProps {
   recentGroupIds: number[]
 }
 
-// DAYS constant available for future day filtering feature
-
 export function GroupCombobox({
   value,
   onChange,
@@ -24,7 +22,7 @@ export function GroupCombobox({
   isLoading,
   recentGroupIds
 }: GroupComboboxProps) {
-  const [groupByMode, setGroupByMode] = useState<'course' | 'instructor' | 'day' | 'competition'>('course')
+  const [groupByMode, setGroupByMode] = useState<'course' | 'instructor' | 'day'>('course')
 
   const categories = useMemo<SpyCategory<EnrichedGroupPublic>[]>(() => {
     let filtered = groups || []
@@ -33,7 +31,7 @@ export function GroupCombobox({
     if (search.trim()) {
       const searchLower = search.toLowerCase()
       filtered = filtered.filter(g => 
-        g.group_name?.toLowerCase().includes(searchLower) ||
+        g.name?.toLowerCase().includes(searchLower) ||
         g.course_name?.toLowerCase().includes(searchLower) ||
         g.instructor_name?.toLowerCase().includes(searchLower)
       )
@@ -52,10 +50,7 @@ export function GroupCombobox({
       } else if (groupByMode === 'instructor') {
         groupKey = g.instructor_name || 'No Instructor'
       } else if (groupByMode === 'day') {
-        groupKey = g.default_day || 'No Specific Day'
-      } else if (groupByMode === 'competition') {
-        const isComp = g.course_name?.toLowerCase().includes('competition') || g.group_name?.toLowerCase().includes('competition') || g.group_name?.toLowerCase().includes('wro') || g.group_name?.toLowerCase().includes('fll')
-        groupKey = isComp ? 'Competition Teams' : 'Regular Groups'
+        groupKey = g.schedule?.day || 'No Specific Day'
       }
       
       if (!othersGrouped[groupKey]) {
@@ -74,7 +69,7 @@ export function GroupCombobox({
       return a.localeCompare(b)
     })
     
-    const iconMap = { course: 'menu_book', instructor: 'person', day: 'calendar_today', competition: 'emoji_events' }
+    const iconMap = { course: 'menu_book', instructor: 'person', day: 'calendar_today' }
     
     const catArray: SpyCategory<EnrichedGroupPublic>[] = []
     
@@ -103,7 +98,7 @@ export function GroupCombobox({
     return (
       <div className="flex items-center justify-between p-3 bg-secondary/10 border border-secondary/20 rounded-lg">
         <div>
-          <span className="font-medium text-on-surface">{value.group_name}</span>
+          <span className="font-medium text-on-surface">{value.name}</span>
           <p className="text-xs text-slate-500 mt-0.5">{value.course_name}</p>
         </div>
         <button 
@@ -125,7 +120,7 @@ export function GroupCombobox({
       onSearchChange={setSearch}
       placeholder="Search groups by name, course, or instructor..."
       isLoading={isLoading}
-      modes={['course', 'instructor', 'day', 'competition']}
+      modes={['course', 'instructor', 'day']}
       activeMode={groupByMode}
       onModeChange={(mode) => setGroupByMode(mode as any)}
       categories={categories}
@@ -161,23 +156,23 @@ export function GroupCombobox({
           <div className="flex justify-between items-start mb-0.5">
             <div>
               <p className="font-medium text-sm text-on-surface leading-tight flex items-center gap-2">
-                {g.group_name}
+                {g.name}
                 {categories.find(c => c.id === 'recents')?.items.some(r => r.id === g.id) && (
                    <span className="material-symbols-outlined text-[14px] text-yellow-500">history</span>
                 )}
               </p>
             </div>
-            {g.default_day && (
+            {g.schedule?.day && (
               <span className="text-[10px] px-2 py-0.5 bg-slate-100 rounded-md text-slate-600 font-semibold border border-slate-200/60 shadow-sm">
-                {g.default_day}
+                {g.schedule.day}
               </span>
             )}
           </div>
           <div className="flex items-center gap-3 text-xs text-slate-500">
-            {g.schedule_time && (
+            {g.schedule?.start_time && (
               <span className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-[12px] opacity-70">schedule</span>
-                {g.schedule_time}
+                {g.schedule.start_time.slice(0, 5)} - {g.schedule.end_time?.slice(0, 5)}
               </span>
             )}
             <span className="flex items-center gap-1">

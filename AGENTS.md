@@ -144,8 +144,15 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 
 ---
 
+## 8. Config & Environment
+
+- **ESLint**: Flat config at `eslint.config.js` (not `.eslintrc`). Ignores `dist/`.
+- **No `.env` files** in repo — no local env setup required.
+- **No CI workflows** (no `.github/`) and **no pre-commit hooks** (no `.husky/`).
+- **Specs**: Read `specs/<NNN>-<name>/plan.md` for active feature plans and context. Multiple specs exist (001–013); check `specs/` directory for the most recent.
+
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/010-groups-page-audit/plan.md`
+`specs/014-competitions-audit/plan.md`
 <!-- SPECKIT END -->

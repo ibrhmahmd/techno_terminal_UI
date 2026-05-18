@@ -27,16 +27,6 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
     return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 
-  const formatCurrency = (value: number | undefined) => {
-    if (value === undefined || value === null) return null
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
-  }
-
-  const formatPercentage = (value: number | undefined) => {
-    if (value === undefined || value === null) return null
-    return `${value}%`
-  }
-
   const modalFooter = (
     <div className="flex justify-end">
       <button
@@ -154,14 +144,14 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
                   {employee.is_graduate === undefined ? 'Not specified' : employee.is_graduate ? 'Yes' : 'No'}
                 </p>
               </div>
-              <div>
+              {/* <div>
                 <p className="text-xs text-blue-700 mb-1">Monthly Salary</p>
                 <p className="text-sm font-medium text-slate-900">{formatCurrency(employee.monthly_salary) || 'Not set'}</p>
               </div>
               <div>
                 <p className="text-xs text-blue-700 mb-1">Contract Percentage</p>
                 <p className="text-sm font-medium text-slate-900">{formatPercentage(employee.contract_percentage) || 'Not set'}</p>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

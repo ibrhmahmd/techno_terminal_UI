@@ -23,7 +23,7 @@ export function TableActions<T>({ row, actions, labels }: TableActionsProps<T>) 
             className="p-1.5 text-slate-400 hover:text-secondary rounded-lg hover:bg-secondary-container transition-colors"
             title={viewLabel}
           >
-            <span className="material-symbols-outlined text-xl">visibility</span>
+            <span className="material-symbols-outlined text-xl" aria-hidden="true">visibility</span>
           </button>
         )}
         {actions.edit && (
@@ -32,7 +32,7 @@ export function TableActions<T>({ row, actions, labels }: TableActionsProps<T>) 
             className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
             title={editLabel}
           >
-            <span className="material-symbols-outlined text-xl">edit</span>
+            <span className="material-symbols-outlined text-xl" aria-hidden="true">edit</span>
           </button>
         )}
         {actions.restore && (
@@ -41,7 +41,7 @@ export function TableActions<T>({ row, actions, labels }: TableActionsProps<T>) 
             className="p-1.5 text-slate-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors"
             title={restoreLabel}
           >
-            <span className="material-symbols-outlined text-xl">restore</span>
+            <span className="material-symbols-outlined text-xl" aria-hidden="true">restore</span>
           </button>
         )}
         {actions.delete && (
@@ -50,7 +50,7 @@ export function TableActions<T>({ row, actions, labels }: TableActionsProps<T>) 
             className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
             title={deleteLabel}
           >
-            <span className="material-symbols-outlined text-xl">delete</span>
+            <span className="material-symbols-outlined text-xl" aria-hidden="true">delete</span>
           </button>
         )}
       </div>

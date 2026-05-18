@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 interface ModalProps {
   isOpen: boolean
@@ -10,6 +10,47 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children, footer, size = 'md' }: ModalProps) {
+  const previousActiveElement = useRef<HTMLElement | null>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (isOpen) {
+      previousActiveElement.current = document.activeElement as HTMLElement
+      modalRef.current?.focus()
+    } else if (previousActiveElement.current) {
+      previousActiveElement.current.focus()
+      previousActiveElement.current = null
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        if (focusableElements.length === 0) return
+        const first = focusableElements[0]
+        const last = focusableElements[focusableElements.length - 1]
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   const sizeClasses = {
@@ -37,15 +78,22 @@ export function Modal({ isOpen, onClose, title, children, footer, size = 'md' }:
       />
       
       {/* Modal */}
-      <div className={`relative bg-white rounded-xl shadow-xl w-full mx-4 ${sizeClasses[size]}`}>
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        tabIndex={-1}
+        className={`relative bg-white rounded-xl shadow-xl w-full mx-4 ${sizeClasses[size]}`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-          <h3 className="font-headline text-lg font-semibold text-on-surface">{title}</h3>
+          <h3 id="modal-title" className="font-headline text-lg font-semibold text-on-surface">{title}</h3>
           <button
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 transition-colors"
           >
-            <span className="material-symbols-outlined">close</span>
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
 

@@ -1,13 +1,6 @@
 import { Trophy, Calendar, Medal, Award, Star } from 'lucide-react'
-// Note: CompetitionRecord type should be defined in the competitions API module
-interface CompetitionRecord {
-  id: number
-  competition_name: string
-  date?: string | null
-  result?: string | null
-  achievement?: string | null
-  notes?: string | null
-}
+import type { CompetitionRecord } from '../../api/competitions'
+import { formatDate } from '../../utils/formatting'
 import { EmptyState } from '../common/EmptyState'
 
 interface CompetitionsTabProps {
@@ -16,21 +9,21 @@ interface CompetitionsTabProps {
 
 export function CompetitionsTab({ competitions }: CompetitionsTabProps) {
   const getAchievementIcon = (achievement?: string | null) => {
-    if (!achievement) return <Trophy className="w-5 h-5 text-slate-500" />
+    if (!achievement) return <Trophy className="w-5 h-5 text-slate-500" aria-hidden="true" />
     const lower = achievement.toLowerCase()
     if (lower.includes('gold') || lower.includes('1st') || lower.includes('first')) {
-      return <Medal className="w-5 h-5 text-yellow-500" />
+      return <Medal className="w-5 h-5 text-yellow-500" aria-hidden="true" />
     }
     if (lower.includes('silver') || lower.includes('2nd') || lower.includes('second')) {
-      return <Medal className="w-5 h-5 text-slate-400" />
+      return <Medal className="w-5 h-5 text-slate-400" aria-hidden="true" />
     }
     if (lower.includes('bronze') || lower.includes('3rd') || lower.includes('third')) {
-      return <Medal className="w-5 h-5 text-amber-700" />
+      return <Medal className="w-5 h-5 text-amber-700" aria-hidden="true" />
     }
     if (lower.includes('winner') || lower.includes('champion')) {
-      return <Award className="w-5 h-5 text-yellow-500" />
+      return <Award className="w-5 h-5 text-yellow-500" aria-hidden="true" />
     }
-    return <Star className="w-5 h-5 text-blue-500" />
+    return <Star className="w-5 h-5 text-blue-500" aria-hidden="true" />
   }
 
   const getAchievementColor = (achievement?: string | null) => {
@@ -85,14 +78,14 @@ export function CompetitionsTab({ competitions }: CompetitionsTabProps) {
             if (count === 0) return null
             return (
               <div key={type} className="bg-white rounded-lg border border-slate-200 p-4 text-center">
-                <Medal className={`w-6 h-6 mx-auto mb-2 ${
+                <Medal aria-hidden="true" className={`w-6 h-6 mx-auto mb-2 ${
                   type === 'Gold' ? 'text-yellow-500' :
                   type === 'Silver' ? 'text-slate-400' :
                   type === 'Bronze' ? 'text-amber-700' :
                   'text-slate-500'
                 }`} />
                 <p className="text-2xl font-bold text-on-surface">{count}</p>
-                <p className="text-xs text-slate-500">{type} {count === 1 ? 'Medal' : 'Medals'}</p>
+                <p className="text-xs text-slate-500">{type === 'Participation' ? 'Participation' : `${type} ${count === 1 ? 'Medal' : 'Medals'}`}</p>
               </div>
             )
           })}
@@ -116,8 +109,8 @@ export function CompetitionsTab({ competitions }: CompetitionsTabProps) {
                     <p className="font-semibold text-on-surface">{competition.competition_name}</p>
                     <div className="flex items-center gap-3 mt-1 text-sm text-slate-500">
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {competition.date}
+                        <Calendar className="w-3 h-3" aria-hidden="true" />
+                        {competition.date ? formatDate(competition.date) : 'N/A'}
                       </span>
                     </div>
                     {competition.result && (
@@ -142,4 +135,4 @@ export function CompetitionsTab({ competitions }: CompetitionsTabProps) {
   )
 }
 
-export default CompetitionsTab
+
