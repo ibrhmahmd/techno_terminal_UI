@@ -12,12 +12,10 @@ describe('GroupsTable Component', () => {
       course_name: 'Intro to Math',
       instructor_id: 5,
       instructor_name: 'Jane Doe',
-      level_number: 1,
-      max_capacity: 20,
-      default_day: 'Monday',
-      default_time_start: '09:00:00',
-      default_time_end: '11:00:00',
-      is_active: true
+      current_level: 1,
+      capacity: 20,
+      schedule: { day: 'Monday', start_time: '09:00:00', end_time: '11:00:00' },
+      status: 'active',
     },
     {
       id: 20,
@@ -26,12 +24,10 @@ describe('GroupsTable Component', () => {
       course_name: 'Advanced Science',
       instructor_id: 6,
       instructor_name: '',
-      level_number: 2,
-      max_capacity: 15,
-      default_day: 'Wednesday',
-      default_time_start: '14:00:00',
-      default_time_end: '16:00:00',
-      is_active: false
+      current_level: 2,
+      capacity: 15,
+      schedule: { day: 'Wednesday', start_time: '14:00:00', end_time: '16:00:00' },
+      status: 'inactive',
     }
   ]
 

@@ -29,7 +29,7 @@ export function useGroups() {
     
     if (stored === 'null') return null // User specifically chose 'All'
     
-    const valid: Array<GroupByField> = ['day', 'course', 'instructor', 'status', 'competition', null]
+    const valid: Array<GroupByField> = ['day', 'course', 'instructor', 'status', null]
     if (valid.includes(stored as GroupByField)) {
         return stored as GroupByField
     }
@@ -61,7 +61,7 @@ export function useGroups() {
 
   const processedGroups = useMemo(() => {
     const filtered = groups.filter((group) =>
-      (group.group_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (group.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (group.course_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (group.instructor_name || '').toLowerCase().includes(searchTerm.toLowerCase())
     )

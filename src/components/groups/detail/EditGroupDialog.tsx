@@ -4,24 +4,25 @@ import { LoadingSpinner } from '../../common/LoadingSpinner'
 import { type EnrichedGroupPublic, type UpdateGroupDTO } from '../../../api/academics'
 import { useAllEmployees } from '../../../hooks/useAllEmployees'
 import { formatTimeInput } from '../../../utils/formatting'
+import { formToSchedule } from '../../../utils/scheduleTransform'
 
 interface EditGroupDialogProps {
   isOpen: boolean
   group: EnrichedGroupPublic
   onClose: () => void
-  onSave: (data: UpdateGroupDTO & { name?: string; notes?: string; status?: 'active' | 'inactive' | 'archived' | 'completed' }) => Promise<void>
+  onSave: (data: UpdateGroupDTO & { name?: string; notes?: string; status?: 'active' | 'inactive' | 'completed' }) => Promise<void>
 }
 
 const DAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 
 export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDialogProps) {
-  const [name, setName] = useState(group.group_name || '')
-  const [instructorId, setInstructorId] = useState(String(group.instructor_id))
-  const [day, setDay] = useState(group.default_day)
-  const [startTime, setStartTime] = useState(group.default_time_start?.slice(0, 5) || '')
-  const [endTime, setEndTime] = useState(group.default_time_end?.slice(0, 5) || '')
-  const [maxCapacity, setMaxCapacity] = useState(group.max_capacity)
-  const [status, setStatus] = useState<'active' | 'inactive' | 'archived' | 'completed'>(group.status || 'inactive')
+  const [name, setName] = useState(group.name || '')
+  const [instructorId, setInstructorId] = useState(String(group.instructor_id ?? ''))
+  const [day, setDay] = useState(group.schedule?.day || '')
+  const [startTime, setStartTime] = useState(group.schedule?.start_time?.slice(0, 5) || '')
+  const [endTime, setEndTime] = useState(group.schedule?.end_time?.slice(0, 5) || '')
+  const [capacity, setCapacity] = useState(group.capacity ?? 12)
+  const [status, setStatus] = useState<'active' | 'inactive' | 'completed'>(group.status || 'inactive')
   const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -29,12 +30,12 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
 
   useEffect(() => {
     if (isOpen) {
-      setName(group.group_name || '')
-      setInstructorId(String(group.instructor_id))
-      setDay(group.default_day)
-      setStartTime(group.default_time_start?.slice(0, 5) || '')
-      setEndTime(group.default_time_end?.slice(0, 5) || '')
-      setMaxCapacity(group.max_capacity)
+      setName(group.name || '')
+      setInstructorId(String(group.instructor_id ?? ''))
+      setDay(group.schedule?.day || '')
+      setStartTime(group.schedule?.start_time?.slice(0, 5) || '')
+      setEndTime(group.schedule?.end_time?.slice(0, 5) || '')
+      setCapacity(group.capacity ?? 12)
       setStatus(group.status || 'inactive')
     }
   }, [isOpen, group])
@@ -48,10 +49,8 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
       await onSave({
         name,
         instructor_id: Number(instructorId),
-        default_day: day,
-        default_time_start: formatTimeInput(startTime) ?? undefined,
-        default_time_end: formatTimeInput(endTime) ?? undefined,
-        max_capacity: maxCapacity,
+        schedule: formToSchedule(day, formatTimeInput(startTime) ?? '', formatTimeInput(endTime) ?? ''),
+        capacity,
         status,
         notes: notes || undefined,
       })
@@ -108,15 +107,16 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
                 onChange={(e) => setDay(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
+                <option value="">Select day</option>
                 {DAYS.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Max Capacity</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Capacity</label>
               <input
                 type="number"
-                value={maxCapacity}
-                onChange={(e) => setMaxCapacity(Number(e.target.value))}
+                value={capacity}
+                onChange={(e) => setCapacity(Number(e.target.value))}
                 min={1}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
@@ -147,7 +147,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
             <div className="flex gap-4">
-              {(['active', 'inactive', 'archived', 'completed'] as const).map((s) => (
+              {(['active', 'inactive', 'completed'] as const).map((s) => (
                 <label key={s} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="radio"

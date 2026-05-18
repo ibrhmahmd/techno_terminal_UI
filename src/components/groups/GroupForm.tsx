@@ -1,11 +1,12 @@
 import { useState, type FormEvent, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import type { ScheduleGroupInput, Course } from '../../api/academics'
+import type { ScheduleGroupInput, Course, Schedule } from '../../api/academics'
 import { getCourses } from '../../api/academics'
 import { useAllEmployees } from '../../hooks/useAllEmployees'
+import { formToSchedule } from '../../utils/scheduleTransform'
 
 interface GroupFormProps {
-  initialData?: Partial<ScheduleGroupInput>
+  initialData?: Partial<ScheduleGroupInput> & { name?: string; start_date?: string }
   onSubmit: (data: ScheduleGroupInput) => Promise<void>
   onCancel: () => void
   mode: 'create' | 'edit'
@@ -22,7 +23,6 @@ interface TimeState {
 }
 
 export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormProps) {
-  // Decompose initial times if editing
   const parseTime = (timeStr?: string): TimeState => {
     if (!timeStr) return { hour: 3, minute: "00", period: 'PM' }
     const [h24, m] = timeStr.split(':').map(Number)
@@ -33,12 +33,15 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
     return { hour, minute, period: period as 'AM' | 'PM' }
   }
 
+  const [name, setName] = useState(initialData?.name || '')
   const [courseId, setCourseId] = useState(initialData?.course_id || '')
   const [instructorId, setInstructorId] = useState(initialData?.instructor_id || '')
-  const [maxCapacity, setMaxCapacity] = useState(initialData?.max_capacity || 12)
-  const [defaultDay, setDefaultDay] = useState(initialData?.default_day || 'Saturday')
-  const [startTime, setStartTime] = useState<TimeState>(parseTime(initialData?.default_time_start))
-  const [endTime, setEndTime] = useState<TimeState>(parseTime(initialData?.default_time_end))
+  const [capacity, setCapacity] = useState(initialData?.capacity || 12)
+  const [startDate, setStartDate] = useState(initialData?.start_date || '')
+  const schedule = initialData?.schedule as Schedule | undefined
+  const [defaultDay, setDefaultDay] = useState(schedule?.day || 'Saturday')
+  const [startTime, setStartTime] = useState<TimeState>(parseTime(schedule?.start_time || (schedule as { time_start?: string } | undefined)?.time_start))
+  const [endTime, setEndTime] = useState<TimeState>(parseTime(schedule?.end_time || (schedule as { time_end?: string } | undefined)?.time_end))
   const [courses, setCourses] = useState<Course[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
@@ -47,7 +50,6 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
   const { data: allEmployees = [], isLoading: isLoadingEmployees } = useAllEmployees()
   const instructors = allEmployees
 
-  // Fetch courses on mount
   useEffect(() => {
     async function fetchCourses() {
       setIsFetching(true)
@@ -75,7 +77,6 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
     setError(null)
     setIsLoading(true)
 
-    // Validation
     if (!courseId) {
       setError('Course is required')
       setIsLoading(false)
@@ -86,15 +87,20 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
       setIsLoading(false)
       return
     }
+    if (!name.trim()) {
+      setError('Group name is required')
+      setIsLoading(false)
+      return
+    }
 
     try {
       const payload: ScheduleGroupInput = {
         course_id: Number(courseId),
+        name: name.trim(),
+        capacity,
         instructor_id: Number(instructorId),
-        max_capacity: maxCapacity,
-        default_day: defaultDay,
-        default_time_start: to24h(startTime),
-        default_time_end: to24h(endTime),
+        schedule: formToSchedule(defaultDay, to24h(startTime), to24h(endTime)),
+        start_date: startDate || new Date().toISOString().split('T')[0],
       }
       await onSubmit(payload)
     } catch (err: unknown) {
@@ -106,7 +112,6 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Error Message */}
       {error && (
         <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
           <span className="material-symbols-outlined text-lg">error</span>
@@ -114,7 +119,24 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
         </div>
       )}
 
-      {/* Course - Dropdown mandatory */}
+      {/* Group Name */}
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="name" className="text-sm font-medium text-on-surface">
+          Group Name <span className="text-red-500">*</span>
+        </label>
+        <input
+          id="name"
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          disabled={isLoading}
+          placeholder="e.g., Robotics - Group A"
+          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+        />
+      </div>
+
+      {/* Course */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="course_id" className="text-sm font-medium text-on-surface">
           Course <span className="text-red-500">*</span>
@@ -134,7 +156,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
         </select>
       </div>
 
-      {/* Instructor - Dropdown mandatory */}
+      {/* Instructor */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="instructor_id" className="text-sm font-medium text-on-surface">
           Instructor <span className="text-red-500">*</span>
@@ -156,25 +178,25 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
         </select>
       </div>
 
-      {/* Max Capacity and Day */}
+      {/* Capacity and Day */}
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="max_capacity" className="text-sm font-medium text-on-surface">
-            Max Capacity
+          <label htmlFor="capacity" className="text-sm font-medium text-on-surface">
+            Capacity
           </label>
           <input
-            id="max_capacity"
+            id="capacity"
             type="number"
             min={1}
-            value={maxCapacity}
-            onChange={(e) => setMaxCapacity(parseInt(e.target.value, 10) || 12)}
+            value={capacity}
+            onChange={(e) => setCapacity(parseInt(e.target.value, 10) || 12)}
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="default_day" className="text-sm font-medium text-on-surface">
-            Default Day <span className="text-red-500">*</span>
+            Day <span className="text-red-500">*</span>
           </label>
           <select
             id="default_day"
@@ -191,7 +213,22 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
         </div>
       </div>
 
-      {/* Start Time - 3 Part Selector */}
+      {/* Start Date */}
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="start_date" className="text-sm font-medium text-on-surface">
+          Start Date
+        </label>
+        <input
+          id="start_date"
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          disabled={isLoading}
+          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+        />
+      </div>
+
+      {/* Start Time */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-on-surface">Start Time</label>
         <div className="grid grid-cols-3 gap-2">
@@ -220,7 +257,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
         </div>
       </div>
 
-      {/* End Time - 3 Part Selector */}
+      {/* End Time */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-on-surface">End Time</label>
         <div className="grid grid-cols-3 gap-2">

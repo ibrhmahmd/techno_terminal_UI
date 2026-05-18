@@ -19,15 +19,19 @@ export interface GroupCardProps {
 export function GroupCard({ group, actions, loading = false }: GroupCardProps) {
   if (loading) return <CardSkeleton />
 
+  const day = group.schedule?.day
+  const startTime = group.schedule?.start_time
+  const endTime = group.schedule?.end_time
+
   const schedule = [
-    group.default_day,
-    formatTimeDisplay(group.default_time_start),
-    formatTimeDisplay(group.default_time_end),
+    day,
+    formatTimeDisplay(startTime),
+    formatTimeDisplay(endTime),
   ].filter((s) => s !== '--:--' && Boolean(s)).join(' ')
 
-  const hasTime = group.default_time_start && group.default_time_end
+  const hasTime = startTime && endTime
   const timeRange = hasTime
-    ? `${formatTimeDisplay(group.default_time_start)} - ${formatTimeDisplay(group.default_time_end)}`
+    ? `${formatTimeDisplay(startTime)} - ${formatTimeDisplay(endTime)}`
     : null
 
   return (
@@ -35,7 +39,7 @@ export function GroupCard({ group, actions, loading = false }: GroupCardProps) {
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
           <h3 className="font-headline font-semibold text-on-surface text-base truncate">
-            {group.group_name}
+            {group.name}
           </h3>
           <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-1">
             <span className="material-symbols-outlined text-[16px]">menu_book</span>
@@ -53,12 +57,12 @@ export function GroupCard({ group, actions, loading = false }: GroupCardProps) {
         {schedule && (
           <span className="flex items-center gap-1">
             <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-            {timeRange ? `${group.default_day} ${timeRange}` : group.default_day}
+            {timeRange ? `${day} ${timeRange}` : day}
           </span>
         )}
         <span className="flex items-center gap-1">
           <span className="material-symbols-outlined text-[16px]">group</span>
-          {group.current_student_count} / {group.max_capacity}
+          {group.current_student_count ?? 0} / {group.capacity}
         </span>
       </div>
 

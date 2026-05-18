@@ -1,5 +1,5 @@
 import { Edit2, Trash2, Archive, ArrowUpCircle, Users, Calendar, Clock, BookOpen, PlusCircle } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { EnrichedGroupPublic, LevelDetailDTO } from '../../../api/academics'
 import { LevelBadge } from '../shared/LevelBadge'
 import { GroupStatusBadge } from '../shared/GroupStatusBadge'
@@ -32,14 +32,30 @@ export function GroupInfoCard({
 }: GroupInfoCardProps) {
   const [notes, setNotes] = useState(group.notes || '')
   const debouncedNotes = useDebounce(notes, 300)
+  const isInitialMount = useRef(true)
   const formatTime = (time: string | null | undefined) => {
     if (!time) return '--:--'
     return time.slice(0, 5)
   }
 
+  // Sync notes when group data changes (e.g., after refetch)
   useEffect(() => {
-    onNotesChange?.(debouncedNotes)
-  }, [debouncedNotes, onNotesChange])
+    const newNotes = group.notes || ''
+    if (newNotes !== notes) {
+      setNotes(newNotes)
+    }
+  }, [group.notes])
+
+  // Only trigger onNotesChange after initial mount and when notes actually change
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+    if (debouncedNotes !== (group.notes || '')) {
+      onNotesChange?.(debouncedNotes)
+    }
+  }, [debouncedNotes, onNotesChange, group.notes])
 
   const handleNotesChange = (value: string) => {
     setNotes(value)
@@ -49,7 +65,7 @@ export function GroupInfoCard({
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{group.group_name}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{group.name}</h1>
           <div className="flex items-center gap-3 mt-2">
             <GroupStatusBadge status={group.status} />
             {currentLevel && (
@@ -123,9 +139,9 @@ export function GroupInfoCard({
           <div>
             <p className="text-sm text-slate-500">Schedule</p>
             <p className="font-medium text-slate-900 flex items-center gap-1">
-              {group.default_day || 'No day'}
+              {group.schedule?.day || 'No day'}
               <Clock className="w-3 h-3" />
-              {formatTime(group.default_time_start)} - {formatTime(group.default_time_end)}
+              {formatTime(group.schedule?.start_time)} - {formatTime(group.schedule?.end_time)}
             </p>
           </div>
         </div>

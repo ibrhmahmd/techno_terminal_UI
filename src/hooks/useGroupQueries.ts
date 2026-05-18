@@ -2,7 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getEnrichedGroups,
   getGroupsGrouped,
-  getGroupsWithCompetitions,
+  searchGroups,
+  getArchivedGroups,
+  getGroupsByCourse,
+  getGroupsByType,
   createGroup,
   updateGroup,
   deleteGroup,
@@ -18,6 +21,10 @@ export const groupKeys = {
   all:    ['groups'] as const,
   flat:   ['groups', 'flat'] as const,
   grouped: (by: GroupByField) => ['groups', 'grouped', by] as const,
+  archived: ['groups', 'archived'] as const,
+  byCourse: (courseId: number) => ['groups', 'by-course', courseId] as const,
+  byType: (groupType: string) => ['groups', 'by-type', groupType] as const,
+  search: (query: string, status?: string) => ['groups', 'search', query, status] as const,
 }
 
 // ── Queries ───────────────────────────────────────────────────────────────────
@@ -27,25 +34,16 @@ export function useGroupsFlat(enabled: boolean) {
   return useQuery({
     queryKey: groupKeys.flat,
     queryFn: getEnrichedGroups,
-    staleTime: 10 * 60 * 1000,   // Groups rarely change — 10 min
+    staleTime: 10 * 60 * 1000,
     enabled,
   })
 }
 
-/** Grouped view (used when groupBy is day | course | instructor | status | competition) */
+/** Grouped view (used when groupBy is day | course | instructor | status) */
 export function useGroupsGrouped(groupBy: Exclude<GroupByField, null>, enabled: boolean) {
   return useQuery({
     queryKey: groupKeys.grouped(groupBy),
     queryFn: async () => {
-      if (groupBy === 'competition') {
-        const groups = await getGroupsWithCompetitions()
-        const inComp = groups.filter(g => g.is_in_competition)
-        const notIn  = groups.filter(g => !g.is_in_competition)
-        return [
-          { key: 'in_competition',     label: 'In Competition',     count: inComp.length, groups: inComp },
-          { key: 'not_in_competition', label: 'Not in Competition', count: notIn.length,  groups: notIn },
-        ]
-      }
       const result = await getGroupsGrouped(groupBy, { skip: 0, limit: 50 })
       return result.groups
     },
@@ -54,12 +52,55 @@ export function useGroupsGrouped(groupBy: Exclude<GroupByField, null>, enabled: 
   })
 }
 
+/** Search groups by name (server-side) */
+export function useSearchGroups(query: string, status?: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: groupKeys.search(query, status),
+    queryFn: () => searchGroups(query, status as any),
+    enabled: enabled && query.length > 0,
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
+/** Get archived (completed) groups */
+export function useArchivedGroups(enabled: boolean = true) {
+  return useQuery({
+    queryKey: groupKeys.archived,
+    queryFn: () => getArchivedGroups({ skip: 0, limit: 100 }),
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+/** Get groups by course ID */
+export function useGroupsByCourse(courseId: number, enabled: boolean = true) {
+  return useQuery({
+    queryKey: groupKeys.byCourse(courseId),
+    queryFn: () => getGroupsByCourse(courseId),
+    enabled: enabled && courseId > 0,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+/** Get groups by type */
+export function useGroupsByType(groupType: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: groupKeys.byType(groupType),
+    queryFn: () => getGroupsByType(groupType),
+    enabled: enabled && groupType.length > 0,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
 // ── Mutations ─────────────────────────────────────────────────────────────────
 
 /** Invalidate all group caches after any mutation */
 function useGroupInvalidator() {
   const qc = useQueryClient()
-  return () => qc.invalidateQueries({ queryKey: groupKeys.all })
+  return () => {
+    qc.invalidateQueries({ queryKey: groupKeys.all })
+    qc.invalidateQueries({ queryKey: groupKeys.archived })
+  }
 }
 
 export function useCreateGroup() {
@@ -67,10 +108,8 @@ export function useCreateGroup() {
   return useMutation({
     mutationFn: createGroup,
     onSuccess: () => {
-      // Invalidate groups list
       qc.invalidateQueries({ queryKey: groupKeys.all })
-      
-      // ALSO invalidate dashboard cache for upcoming dates
+      qc.invalidateQueries({ queryKey: groupKeys.archived })
       const upcomingDates = getUpcomingDates(7)
       upcomingDates.forEach(date => {
         qc.invalidateQueries({ queryKey: dashboardKeys.overview(date) })

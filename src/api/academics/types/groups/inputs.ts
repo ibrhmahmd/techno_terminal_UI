@@ -1,7 +1,9 @@
 /**
  * Group-related input DTOs (Request types)
- * Aligned with API documentation: docs/api/academics/groups.md
+ * Aligned with API documentation: groups-api.md
  */
+
+import type { ScheduleInput } from './models';
 
 /**
  * Input for scheduling a new group
@@ -9,22 +11,23 @@
  */
 export interface ScheduleGroupInput {
   course_id: number;
+  name: string;
+  capacity: number;
   instructor_id: number;
-  default_day: string;
-  default_time_start: string;
-  default_time_end: string;
-  max_capacity?: number;
-  notes?: string;
+  schedule: ScheduleInput;
+  start_date: string;
 }
 
 /**
  * Input for updating a group
  * PATCH /academics/groups/{group_id}
  */
-export interface UpdateGroupDTO extends Partial<ScheduleGroupInput> {
+export interface UpdateGroupDTO {
   name?: string;
-  level_number?: number;
-  status?: string;
+  capacity?: number;
+  schedule?: ScheduleInput;
+  instructor_id?: number;
+  notes?: string;
 }
 
 /**

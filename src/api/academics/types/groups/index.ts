@@ -8,7 +8,10 @@ export type {
   Group,
   GroupListItem,
   EnrichedGroupPublic,
+  RawEnrichedGroupPublic,
   ProgressLevel,
+  Schedule,
+  ScheduleInput,
 } from './models';
 
 // Group input DTOs
@@ -25,7 +28,6 @@ export type {
   GroupByField,
   GroupGroup,
   GroupedGroupsResponse,
-  EnrichedGroupPublicWithCompetition,
 } from './grouping';
 
 // Lifecycle types
@@ -40,14 +42,3 @@ export type {
   GroupEnrollmentAnalyticsDTO,
   AnalyticsFilters,
 } from './lifecycle';
-
-// Competition types
-export type {
-  CompetitionParticipationDTO,
-  TeamPublic,
-  GroupCompetitionHistoryResponseDTO,
-  LinkTeamResponse,
-  CompetitionRegistrationResponse,
-  CompleteParticipationResponse,
-  WithdrawParticipationResponse,
-} from './competitions';

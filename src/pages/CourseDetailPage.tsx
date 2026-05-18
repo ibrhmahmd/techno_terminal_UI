@@ -12,7 +12,6 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { 
   getCourseById, 
   getCourseStats, 
-  getCourseGroups,
   updateCourse,
   deleteCourse,
   type Course,
@@ -20,14 +19,15 @@ import {
   type EnrichedGroupPublic,
   type UpdateCourseDTO
 } from '../api/academics'
+import { useGroupsByCourse } from '../hooks/useGroupQueries'
 
 type TabId = 'info' | 'groups'
 
 const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
   {
-    key: 'group_name',
+    key: 'name',
     header: 'Group Name',
-    cell: (group) => <span className="font-semibold text-slate-900">{group.group_name}</span>
+    cell: (group) => <span className="font-semibold text-slate-900">{group.name}</span>
   },
   {
     key: 'instructor_name',
@@ -39,21 +39,21 @@ const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
     )
   },
   {
-    key: 'level_number',
+    key: 'current_level',
     header: 'Level',
     align: 'center',
     cell: (group) => (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700">
-        Level {group.level_number}
+        Level {group.current_level}
       </span>
     )
   },
   {
-    key: 'max_capacity',
+    key: 'capacity',
     header: 'Capacity',
     align: 'center',
     cell: (group) => (
-      <span className="text-sm text-slate-600">{group.max_capacity} students</span>
+      <span className="text-sm text-slate-600">{group.capacity} students</span>
     )
   },
   {
@@ -82,10 +82,12 @@ export function CourseDetailPage() {
 
   const [course, setCourse] = useState<Course | null>(null)
   const [stats, setStats] = useState<CourseStats | null>(null)
-  const [groups, setGroups] = useState<EnrichedGroupPublic[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabId>('info')
+  
+  // Use the new hook for groups by course
+  const { data: groups = [] } = useGroupsByCourse(courseId)
   
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -95,14 +97,12 @@ export function CourseDetailPage() {
     setIsLoading(true)
     setError(null)
     try {
-      const [courseData, statsData, groupsData] = await Promise.all([
+      const [courseData, statsData] = await Promise.all([
         getCourseById(courseId),
         getCourseStats(courseId).catch(() => null),
-        getCourseGroups(courseId).catch(() => [])
       ])
       setCourse(courseData)
       setStats(statsData)
-      setGroups(groupsData)
     } catch (err: unknown) {
       console.error('[CourseDetailPage] Failed to load course data:', err)
       setError(err instanceof Error ? err.message : 'Failed to load course data')
