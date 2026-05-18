@@ -4,8 +4,8 @@ import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
 import { useTeam, useTeamMembers, useTeamPayments, useTeamPlacement } from '../hooks/teams'
-import { isTeamDeleted } from '../api/teams'
 import type { TeamMemberRosterDTO } from '../api/teams'
+import { extractErrorMessage, getErrorStatus } from '../utils/apiErrors'
 
 export function TeamDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -17,7 +17,6 @@ export function TeamDetailPage() {
     team,
     isLoading: teamLoading,
     error: teamError,
-    restore,
     remove,
   } = useTeam(teamId)
 
@@ -36,7 +35,6 @@ export function TeamDetailPage() {
   const { update: updatePlacement, isUpdating: placementUpdating } = useTeamPlacement(teamId)
 
   // Modal states
-  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isPayModalOpen, setIsPayModalOpen] = useState(false)
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
@@ -44,15 +42,20 @@ export function TeamDetailPage() {
   const [addMemberError, setAddMemberError] = useState<string | null>(null)
   const [isAddingMember, setIsAddingMember] = useState(false)
   const [selectedMember, setSelectedMember] = useState<TeamMemberRosterDTO | null>(null)
+  const [payAmount, setPayAmount] = useState('')
+  const [payError, setPayError] = useState<string | null>(null)
+  const [removeError, setRemoveError] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   // Placement form state
   const [placementRank, setPlacementRank] = useState('')
   const [placementLabel, setPlacementLabel] = useState('')
+  const [placementResult, setPlacementResult] = useState<string | null>(null)
 
   const isLoading = teamLoading || membersLoading
-  const isDeleted = team ? isTeamDeleted(team) : false
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A'
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
@@ -60,47 +63,90 @@ export function TeamDetailPage() {
     })
   }
 
-  const handleRestore = async () => {
-    try {
-      await restore()
-      setIsRestoreModalOpen(false)
-    } catch {
-      // Error handled by hook
-    }
-  }
-
   const handleDelete = async () => {
+    setDeleteError(null)
     try {
       await remove()
       setIsDeleteModalOpen(false)
       navigate('/competitions')
-    } catch {
-      // Error handled by hook
+    } catch (err: unknown) {
+      if (getErrorStatus(err) === 409) {
+        setDeleteError(extractErrorMessage(err) || 'Cannot delete: this team has members who have already paid.')
+      }
     }
   }
 
-  const handlePayFee = async (member: TeamMemberRosterDTO) => {
+  const handlePayFee = async () => {
+    if (!selectedMember) return
+    const amount = parseFloat(payAmount)
+    if (isNaN(amount) || amount <= 0) {
+      setPayError('Enter a valid payment amount greater than 0')
+      return
+    }
+
+    setPayError(null)
     try {
-      await pay({ student_id: member.student_id })
+      await pay(selectedMember.student_id, { amount })
       setIsPayModalOpen(false)
       setSelectedMember(null)
+      setPayAmount('')
     } catch {
-      // Error handled by hook
+      setPayError('Payment failed. Please try again.')
+    }
+  }
+
+  const handleRemoveMember = async (member: TeamMemberRosterDTO) => {
+    setRemoveError(null)
+    try {
+      await removeMember(member.student_id)
+    } catch (err: unknown) {
+      if (getErrorStatus(err) === 400) {
+        setRemoveError(extractErrorMessage(err) || `Cannot remove ${member.student_name}: they have already paid (${member.amount_paid} EGP).`)
+      }
     }
   }
 
   const handleUpdatePlacement = async () => {
     const rank = parseInt(placementRank, 10)
-    if (isNaN(rank)) return
+    if (isNaN(rank) || rank < 1) return
 
+    setPlacementResult(null)
     try {
       await updatePlacement({
         placement_rank: rank,
         placement_label: placementLabel || undefined,
       })
-    } catch {
-      // Error handled by hook
+      setPlacementRank('')
+      setPlacementLabel('')
+      setPlacementResult('Placement updated successfully')
+    } catch (err: unknown) {
+      if (getErrorStatus(err) === 400) {
+        setPlacementResult(extractErrorMessage(err) || 'Cannot set placement before the competition date has passed.')
+      }
     }
+  }
+
+  const handleAddMember = async () => {
+    const sid = parseInt(newStudentId, 10)
+    if (isNaN(sid) || sid <= 0) { setAddMemberError('Valid student ID required'); return }
+    setIsAddingMember(true)
+    setAddMemberError(null)
+    try {
+      await addMember({ student_id: sid })
+      setIsAddMemberModalOpen(false)
+      setNewStudentId('')
+    } catch (err: unknown) {
+      setAddMemberError(extractErrorMessage(err) || 'Failed to add member')
+    } finally {
+      setIsAddingMember(false)
+    }
+  }
+
+  const getPaymentStatus = (member: TeamMemberRosterDTO) => {
+    const remaining = member.amount_due - member.amount_paid
+    if (remaining <= 0) return { label: 'Paid', color: 'bg-green-100 text-green-700' }
+    if (member.amount_paid > 0) return { label: 'Partial', color: 'bg-blue-100 text-blue-700' }
+    return { label: 'Pending', color: 'bg-amber-100 text-amber-700' }
   }
 
   if (isLoading) {
@@ -119,7 +165,7 @@ export function TeamDetailPage() {
       <div className="min-h-screen bg-surface">
         <TopNavbar activePage="Competitions" />
         <div className="text-center py-12">
-          <span className="material-symbols-outlined text-4xl text-slate-300 mb-4">error</span>
+          <span className="material-symbols-outlined text-4xl text-slate-300 mb-4" aria-hidden="true">error</span>
           <p className="text-slate-500">Team not found</p>
           <button
             onClick={() => navigate(-1)}
@@ -132,6 +178,10 @@ export function TeamDetailPage() {
     )
   }
 
+  const totalPaid = members.reduce((sum, m) => sum + m.amount_paid, 0)
+  const totalDue = members.reduce((sum, m) => sum + m.amount_due, 0)
+  const fullyPaidCount = members.filter(m => m.amount_paid >= m.amount_due).length
+
   return (
     <div className="min-h-screen bg-surface">
       <TopNavbar activePage="Competitions" />
@@ -143,17 +193,12 @@ export function TeamDetailPage() {
             onClick={() => navigate(-1)}
             className="flex items-center gap-1 text-sm text-slate-500 hover:text-on-surface mb-2"
           >
-            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            <span className="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
             Back
           </button>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">{team.team_name}</h1>
-              {isDeleted && (
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                  Deleted
-                </span>
-              )}
               {team.placement_rank && (
                 <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
                   Rank #{team.placement_rank}
@@ -161,23 +206,13 @@ export function TeamDetailPage() {
               )}
             </div>
             <div className="flex items-center gap-2">
-              {isDeleted ? (
-                <button
-                  onClick={() => setIsRestoreModalOpen(true)}
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-sm">restore</span>
-                  Restore
-                </button>
-              ) : (
-                <button
-                  onClick={() => setIsDeleteModalOpen(true)}
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-sm">delete</span>
-                  Delete
-                </button>
-              )}
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
+                Delete
+              </button>
             </div>
           </div>
         </div>
@@ -190,20 +225,6 @@ export function TeamDetailPage() {
           </div>
         )}
 
-        {isDeleted && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg">
-            <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-red-600">warning</span>
-              <div>
-                <h3 className="font-medium text-red-900">This team has been deleted</h3>
-                <p className="text-sm text-red-600 mt-2">
-                  You can restore this team to make it active again.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
@@ -212,24 +233,28 @@ export function TeamDetailPage() {
               <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Team Information</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <span className="material-symbols-outlined text-slate-400">category</span>
+                  <span className="material-symbols-outlined text-slate-400" aria-hidden="true">category</span>
                   <span>{team.category}</span>
                 </div>
                 {team.subcategory && (
                   <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="material-symbols-outlined text-slate-400">label</span>
+                    <span className="material-symbols-outlined text-slate-400" aria-hidden="true">label</span>
                     <span>{team.subcategory}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <span className="material-symbols-outlined text-slate-400">payments</span>
-                  <span>{team.fee} EGP fee</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <span className="material-symbols-outlined text-slate-400">schedule</span>
+                  <span className="material-symbols-outlined text-slate-400" aria-hidden="true">schedule</span>
                   <span>Created {formatDate(team.created_at)}</span>
                 </div>
               </div>
+              {team.project_name && (
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <p className="text-sm font-medium text-on-surface">Project: {team.project_name}</p>
+                  {team.project_description && (
+                    <p className="text-sm text-slate-600 mt-1">{team.project_description}</p>
+                  )}
+                </div>
+              )}
               {team.notes && (
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <p className="text-sm text-slate-600">{team.notes}</p>
@@ -243,107 +268,116 @@ export function TeamDetailPage() {
                 <h2 className="font-headline text-lg font-semibold text-on-surface">Team Members</h2>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-slate-500">{members.length} members</span>
-                  {!isDeleted && (
-                    <button
-                      onClick={() => { setNewStudentId(''); setAddMemberError(null); setIsAddMemberModalOpen(true) }}
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-sm">add</span>
-                      Add Member
-                    </button>
-                  )}
+                  <button
+                    onClick={() => { setNewStudentId(''); setAddMemberError(null); setIsAddMemberModalOpen(true) }}
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-sm" aria-hidden="true">add</span>
+                    Add Member
+                  </button>
                 </div>
               </div>
+
+              {removeError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+                  {removeError}
+                </div>
+              )}
 
               {members.length === 0 ? (
                 <p className="text-center text-slate-500 py-8">No members yet</p>
               ) : (
                 <div className="space-y-3">
-                  {members.map((member) => (
-                    <div key={member.team_member_id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-secondary-container rounded-full flex items-center justify-center">
-                          <span className="material-symbols-outlined text-secondary">person</span>
+                  {members.map((member) => {
+                    const status = getPaymentStatus(member)
+                    const remaining = member.amount_due - member.amount_paid
+                    return (
+                      <div key={member.team_member_id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-secondary-container rounded-full flex items-center justify-center">
+                            <span className="material-symbols-outlined text-secondary" aria-hidden="true">person</span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-on-surface">{member.student_name}</p>
+                            <p className="text-sm text-slate-500">
+                              Due: {member.amount_due} EGP · Paid: {member.amount_paid} EGP
+                              {remaining > 0 && <span className="text-red-500"> · Remaining: {remaining} EGP</span>}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-on-surface">{member.student_name}</p>
-                          <p className="text-sm text-slate-500">Share: {member.member_share} EGP</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {!isDeleted && (
+                        <div className="flex items-center gap-2">
                           <button
-                            onClick={async () => { if (confirm('Remove this member from the team?')) { try { await removeMember(member.student_id) } catch { /* handled by hook */ } } }}
+                            onClick={() => handleRemoveMember(member)}
                             className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
                             title="Remove member"
                           >
-                            <span className="material-symbols-outlined text-sm">person_remove</span>
+                            <span className="material-symbols-outlined text-sm" aria-hidden="true">person_remove</span>
                           </button>
-                        )}
-                        {member.fee_paid ? (
-                          <span className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
-                            Paid
+                          <span className={`px-3 py-1 text-xs rounded-full font-medium ${status.color}`}>
+                            {status.label}
                           </span>
-                        ) : (
-                          <>
-                            <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs rounded-full font-medium">
-                              Pending
-                            </span>
-                            {!isDeleted && (
-                              <button
-                                onClick={() => {
-                                  setSelectedMember(member)
-                                  setIsPayModalOpen(true)
-                                }}
-                                className="px-3 py-1 text-xs font-medium text-white bg-secondary rounded hover:bg-secondary/90 transition-colors"
-                              >
-                                Pay
-                              </button>
-                            )}
-                          </>
-                        )}
+                          {remaining > 0 && (
+                            <button
+                              onClick={() => {
+                                setSelectedMember(member)
+                                setPayAmount(remaining.toString())
+                                setPayError(null)
+                                setIsPayModalOpen(true)
+                              }}
+                              className="px-3 py-1 text-xs font-medium text-white bg-secondary rounded hover:bg-secondary/90 transition-colors"
+                            >
+                              Pay
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
 
             {/* Placement */}
-            {!isDeleted && (
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Competition Placement</h2>
-                <div className="flex items-end gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Rank</label>
-                    <input
-                      type="number"
-                      value={placementRank}
-                      onChange={(e) => setPlacementRank(e.target.value)}
-                      placeholder={team.placement_rank?.toString() || '1'}
-                      className="w-32 px-3 py-2 border border-slate-200 rounded-lg text-sm"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Label (optional)</label>
-                    <input
-                      type="text"
-                      value={placementLabel}
-                      onChange={(e) => setPlacementLabel(e.target.value)}
-                      placeholder={team.placement_label || 'Gold, Silver, etc.'}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
-                    />
-                  </div>
-                  <button
-                    onClick={handleUpdatePlacement}
-                    disabled={placementUpdating || !placementRank}
-                    className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
-                  >
-                    {placementUpdating ? 'Saving...' : 'Update'}
-                  </button>
+            <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Competition Placement</h2>
+              {placementResult && (
+                <div className={`mb-4 p-3 rounded-lg text-sm ${placementResult.startsWith('Cannot') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+                  {placementResult}
                 </div>
+              )}
+              <div className="flex items-end gap-4">
+                <div>
+                  <label htmlFor="placement-rank" className="block text-sm font-medium text-slate-700 mb-1">Rank</label>
+                  <input
+                    id="placement-rank"
+                    type="number"
+                    value={placementRank}
+                    onChange={(e) => setPlacementRank(e.target.value)}
+                    placeholder={team.placement_rank?.toString() || '1'}
+                    min="1"
+                    className="w-32 px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label htmlFor="placement-label" className="block text-sm font-medium text-slate-700 mb-1">Label (optional)</label>
+                  <input
+                    id="placement-label"
+                    type="text"
+                    value={placementLabel}
+                    onChange={(e) => setPlacementLabel(e.target.value)}
+                    placeholder={team.placement_label || 'Gold, Silver, etc.'}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                  />
+                </div>
+                <button
+                  onClick={handleUpdatePlacement}
+                  disabled={placementUpdating || !placementRank}
+                  className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
+                >
+                  {placementUpdating ? 'Saving...' : 'Update'}
+                </button>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Sidebar */}
@@ -352,17 +386,21 @@ export function TeamDetailPage() {
               <h3 className="font-semibold text-on-surface mb-4">Team Stats</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Total Fee</span>
-                  <span className="font-semibold text-on-surface">{team.fee} EGP</span>
-                </div>
-                <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600">Members</span>
                   <span className="font-semibold text-on-surface">{members.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Paid Members</span>
+                  <span className="text-sm text-slate-600">Total Fees Due</span>
+                  <span className="font-semibold text-on-surface">{totalDue} EGP</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Total Paid</span>
+                  <span className="font-semibold text-green-600">{totalPaid} EGP</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Fully Paid</span>
                   <span className="font-semibold text-green-600">
-                    {members.filter(m => m.fee_paid).length}
+                    {fullyPaidCount}/{members.length}
                   </span>
                 </div>
                 {team.placement_rank && (
@@ -382,44 +420,16 @@ export function TeamDetailPage() {
         </div>
       </section>
 
-      {/* Restore Modal */}
-      <Modal
-        isOpen={isRestoreModalOpen}
-        onClose={() => setIsRestoreModalOpen(false)}
-        title="Restore Team"
-        size="sm"
-        footer={
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={() => setIsRestoreModalOpen(false)}
-              className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleRestore}
-              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Restore
-            </button>
-          </div>
-        }
-      >
-        <p className="text-sm text-slate-600">
-          Are you sure you want to restore this team? It will become active again.
-        </p>
-      </Modal>
-
       {/* Delete Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={() => { setIsDeleteModalOpen(false); setDeleteError(null) }}
         title="Delete Team"
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
             <button
-              onClick={() => setIsDeleteModalOpen(false)}
+              onClick={() => { setIsDeleteModalOpen(false); setDeleteError(null) }}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
             >
               Cancel
@@ -433,9 +443,19 @@ export function TeamDetailPage() {
           </div>
         }
       >
-        <p className="text-sm text-slate-600">
-          Are you sure you want to delete this team? This action can be reversed by restoring the team later.
-        </p>
+        <div className="space-y-3">
+          <p className="text-sm text-slate-600">
+            Are you sure you want to permanently delete <strong>{team.team_name}</strong>?
+          </p>
+          <p className="text-sm text-red-600">
+            This action cannot be undone.
+          </p>
+          {deleteError && (
+            <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+              {deleteError}
+            </div>
+          )}
+        </div>
       </Modal>
 
       {/* Add Member Modal */}
@@ -454,21 +474,7 @@ export function TeamDetailPage() {
               Cancel
             </button>
             <button
-              onClick={async () => {
-                const sid = parseInt(newStudentId, 10)
-                if (isNaN(sid) || sid <= 0) { setAddMemberError('Valid student ID required'); return }
-                setIsAddingMember(true)
-                setAddMemberError(null)
-                try {
-                  await addMember({ student_id: sid })
-                  setIsAddMemberModalOpen(false)
-                  setNewStudentId('')
-                } catch {
-                  setAddMemberError('Failed to add member')
-                } finally {
-                  setIsAddingMember(false)
-                }
-              }}
+              onClick={handleAddMember}
               disabled={isAddingMember}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
             >
@@ -481,7 +487,7 @@ export function TeamDetailPage() {
         <div className="space-y-4">
           {addMemberError && (
             <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
-              <span className="material-symbols-outlined text-lg">error</span>
+              <span className="material-symbols-outlined text-lg" aria-hidden="true">error</span>
               <span>{addMemberError}</span>
             </div>
           )}
@@ -508,6 +514,8 @@ export function TeamDetailPage() {
         onClose={() => {
           setIsPayModalOpen(false)
           setSelectedMember(null)
+          setPayAmount('')
+          setPayError(null)
         }}
         title="Pay Competition Fee"
         size="sm"
@@ -517,6 +525,8 @@ export function TeamDetailPage() {
               onClick={() => {
                 setIsPayModalOpen(false)
                 setSelectedMember(null)
+                setPayAmount('')
+                setPayError(null)
               }}
               disabled={isPaying}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
@@ -524,25 +534,55 @@ export function TeamDetailPage() {
               Cancel
             </button>
             <button
-              onClick={() => selectedMember && handlePayFee(selectedMember)}
+              onClick={handlePayFee}
               disabled={isPaying}
               className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
             >
-              {isPaying ? 'Processing...' : 'Pay Fee'}
+              {isPaying ? 'Processing...' : 'Pay'}
             </button>
           </div>
         }
       >
         {selectedMember && (
           <div className="space-y-4">
-            <p className="text-sm text-slate-600">
-              Pay competition fee for <strong>{selectedMember.student_name}</strong>?
-            </p>
-            <div className="p-4 bg-slate-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Amount</span>
-                <span className="font-semibold text-on-surface">{selectedMember.member_share} EGP</span>
+            {payError && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+                <span className="material-symbols-outlined text-lg" aria-hidden="true">error</span>
+                <span>{payError}</span>
               </div>
+            )}
+            <p className="text-sm text-slate-600">
+              Payment for <strong>{selectedMember.student_name}</strong>
+            </p>
+            <div className="p-4 bg-slate-50 rounded-lg space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">Amount Due</span>
+                <span className="font-semibold text-on-surface">{selectedMember.amount_due} EGP</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">Already Paid</span>
+                <span className="font-semibold text-green-600">{selectedMember.amount_paid} EGP</span>
+              </div>
+              <div className="flex items-center justify-between text-sm pt-2 border-t border-slate-200">
+                <span className="text-slate-600">Remaining</span>
+                <span className="font-semibold text-red-600">{selectedMember.amount_due - selectedMember.amount_paid} EGP</span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="pay_amount" className="text-sm font-medium text-on-surface">
+                Payment Amount <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="pay_amount"
+                type="number"
+                value={payAmount}
+                onChange={(e) => setPayAmount(e.target.value)}
+                placeholder="Enter amount..."
+                step="0.01"
+                min="0.01"
+                className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
+              />
+              <p className="text-xs text-slate-500">Supports partial payments. Enter any amount greater than 0.</p>
             </div>
           </div>
         )}

@@ -4,18 +4,26 @@ interface CategoryListProps {
   categories: CategoryResponse[]
   onViewTeams: (category: string) => void
   onRegisterTeam: (category: string) => void
+  onRegisterFirstTeam: () => void
 }
 
 export function CategoryList({
   categories,
   onViewTeams,
   onRegisterTeam,
+  onRegisterFirstTeam,
 }: CategoryListProps) {
   if (categories.length === 0) {
     return (
       <div className="text-center py-8">
-        <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">category</span>
+        <span className="material-symbols-outlined text-4xl text-slate-300 mb-2" aria-hidden="true">category</span>
         <p className="text-slate-500 mb-4">No categories yet. Categories are generated from team registrations.</p>
+        <button
+          onClick={onRegisterFirstTeam}
+          className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
+        >
+          Register First Team
+        </button>
       </div>
     )
   }

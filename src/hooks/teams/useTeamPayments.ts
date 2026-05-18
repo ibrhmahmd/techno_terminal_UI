@@ -3,7 +3,7 @@ import { payCompetitionFee, type PayCompetitionFeeInput, type PayCompetitionFeeR
 import { queryKeys } from '../queryKeys'
 
 interface UseTeamPaymentsReturn {
-  pay: (data: PayCompetitionFeeInput) => Promise<PayCompetitionFeeResponseDTO>
+  pay: (studentId: number, data: PayCompetitionFeeInput) => Promise<PayCompetitionFeeResponseDTO>
   isPaying: boolean
   error: string | null
 }
@@ -13,7 +13,8 @@ export function useTeamPayments(teamId: number | string): UseTeamPaymentsReturn 
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (data: PayCompetitionFeeInput) => payCompetitionFee(numericId, data),
+    mutationFn: ({ studentId, data }: { studentId: number; data: PayCompetitionFeeInput }) =>
+      payCompetitionFee(numericId, studentId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.teamMembers(numericId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.team(numericId) })
@@ -21,7 +22,8 @@ export function useTeamPayments(teamId: number | string): UseTeamPaymentsReturn 
   })
 
   return {
-    pay: mutation.mutateAsync,
+    pay: async (studentId: number, data: PayCompetitionFeeInput) =>
+      mutation.mutateAsync({ studentId, data }),
     isPaying: mutation.isPending,
     error: mutation.error instanceof Error ? mutation.error.message : null,
   }
