@@ -2,7 +2,7 @@
 // Provides access to activity logs, enrollment history, competition history, and activity summary
 // @see docs/api/crm/student_history.md
 
-import { useQuery, useMutation, useQueryClient, type UseQueryResult, type UseMutationResult } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query'
 import {
   getStudentActivityHistory,
   getActivitySummary,

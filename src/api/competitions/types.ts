@@ -1,4 +1,4 @@
-import type { TeamDTO, TeamMemberDTO, TeamWithMembersDTO } from '../teams/types'
+import type { TeamWithMembersDTO } from '../teams/types'
 
 // Competition DTO from API docs
 export interface Competition {
