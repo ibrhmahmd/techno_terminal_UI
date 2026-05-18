@@ -103,16 +103,6 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
     setIsLoading(true)
     try {
       fetchCycleRef.current += 1
-      console.log('[DEBUG AttendanceGrid] Input data from props:', {
-        groupId,
-        rosterCount: roster?.length || 0,
-        sessionsCount: sessions?.length || 0,
-        sessions: sessions?.map(s => ({
-          sessionId: s.session_id,
-          attendanceCount: s.attendance?.length || 0,
-          statuses: s.attendance?.map(a => a.status)
-        }))
-      })
       console.debug(
         `[AttendanceGrid] Fetch #${fetchCycleRef.current} started for group ${groupId} with ${displaySessions.length} sessions`
       )
@@ -251,15 +241,8 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
   // Save all attendance changes and notes
   const handleSaveAll = useCallback(async () => {
     if (pendingChanges.size === 0 && dirtyNotes.size === 0) {
-      console.log('[Save] No changes to save')
       return
     }
-
-    console.log('[Save] Saving all changes:', {
-      sessions: Array.from(pendingChanges.keys()),
-      totalEntries: Array.from(pendingChanges.values()).flat().length,
-      dirtyNotes: Array.from(dirtyNotes)
-    })
 
     setIsSaving(true)
     setError(null)
@@ -360,7 +343,6 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
       // 9. Invalidate dashboard cache if date provided
       if (selectedDate) {
         await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
-        console.log('[AttendanceGrid] Invalidated dashboard cache for', selectedDate)
       }
 
       // 5. REFETCH data (soft refresh - no page reload)

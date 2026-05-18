@@ -5,38 +5,41 @@ export interface TeamDTO {
   competition_id: number
   team_name: string
   category: string
-  subcategory?: string
-  group_id?: number
-  coach_id?: number
-  fee: number
-  placement_rank?: number
-  placement_label?: string
-  notes?: string
-  created_at: string
-  deleted_at?: string | null
+  subcategory?: string | null
+  group_id?: number | null
+  coach_id?: number | null
+  project_name: string | null
+  project_description: string | null
+  placement_rank?: number | null
+  placement_label?: string | null
+  notes?: string | null
+  created_at: string | null
 }
 
 export interface UpdateTeamInput {
   team_name?: string
   category?: string
   subcategory?: string
+  project_name?: string
+  project_description?: string
   group_id?: number
   coach_id?: number
-  fee?: number
   notes?: string
 }
 
 export interface TeamMemberRosterDTO {
   team_member_id: number
+  team_id: number
+  team_name: string
   student_id: number
   student_name: string
-  member_share: number
-  fee_paid: boolean
-  payment_id?: number
+  amount_due: number
+  amount_paid: number
 }
 
 export interface AddTeamMemberInput {
   student_id: number
+  amount_due?: number
 }
 
 export interface AddTeamMemberResultDTO {
@@ -45,18 +48,13 @@ export interface AddTeamMemberResultDTO {
   student_name: string
 }
 
-export interface RemoveTeamMemberResultDTO {
-  success: boolean
-  team_member_id: number
-}
-
 export interface PlacementUpdateInput {
   placement_rank: number
   placement_label?: string
 }
 
 export interface PayCompetitionFeeInput {
-  student_id: number
+  amount: number
   parent_id?: number
 }
 
@@ -64,14 +62,15 @@ export interface PayCompetitionFeeResponseDTO {
   receipt_number: string
   payment_id: number
   amount: number
+  amount_paid: number
+  amount_due: number
 }
 
 export interface TeamListFilters {
-  competition_id?: number
+  competition_id: number
   category?: string
   subcategory?: string
   include_members?: boolean
-  include_deleted?: boolean
 }
 
 // RegisterTeamInput from doc: POST /teams
@@ -80,14 +79,35 @@ export interface RegisterTeamInput {
   team_name: string
   category: string
   subcategory?: string
+  project_name?: string
+  project_description?: string
   student_ids: number[]
+  student_fees?: Record<string, number>
   coach_id?: number
   group_id?: number
-  fee?: number
   notes?: string
 }
 
 export interface TeamRegistrationResultDTO {
   team: TeamDTO
   members_added: number
+}
+
+export interface TeamMemberListResponse {
+  team_id: number
+  team_name: string
+  members: TeamMemberRosterDTO[]
+}
+
+export interface TeamWithMembersDTO {
+  team: TeamDTO
+  members: TeamMemberDTO[]
+}
+
+export interface TeamMemberDTO {
+  id: number
+  team_id: number
+  student_id: number
+  amount_due: number
+  amount_paid: number
 }

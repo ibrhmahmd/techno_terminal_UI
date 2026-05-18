@@ -1,5 +1,4 @@
 export { useCompetitions } from './useCompetitions'
 export { useCompetition } from './useCompetition'
 export { useCompetitionCategories } from './useCompetitionCategories'
-export { useDeletedCompetitions } from './useDeletedCompetitions'
 export { useCompetitionSummary } from './useCompetitionSummary'

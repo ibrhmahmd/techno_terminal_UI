@@ -52,7 +52,7 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
         edition: formData.edition || null,
         notes: formData.notes || null,
       }
-      await onSubmit(cleanedData as CreateCompetitionInput)
+      await onSubmit(cleanedData)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : `Failed to ${mode} competition`)
     } finally {
@@ -64,7 +64,7 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
         <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
-          <span className="material-symbols-outlined text-lg">error</span>
+          <span className="material-symbols-outlined text-lg" aria-hidden="true">error</span>
           <span>{error}</span>
         </div>
       )}

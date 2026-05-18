@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
@@ -8,14 +8,12 @@ import { AttendanceTab } from '../components/groups/AttendanceTab'
 import { LevelsTab } from '../components/groups/LevelsTab'
 import { StudentsTab } from '../components/groups/StudentsTab'
 import { PaymentsTab } from '../components/groups/PaymentsTab'
-import { HistoryTab } from '../components/groups/history/HistoryTab'
 import { GroupInfoCard, ProgressLevelDialog } from '../components/groups/detail'
 import { EditGroupDialog } from '../components/groups/detail/EditGroupDialog'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { useGroupDetail } from '../hooks/useGroupDetail'
 import { useGroupEnrollments } from '../hooks/useGroupEnrollments'
 import { useGroupPayments } from '../hooks/useGroupPayments'
-import { useGroupCompetitions } from '../hooks/useGroupCompetitions'
 import { useGroupMutations } from '../hooks/useGroupMutations'
 import { useToast } from '../components/common/Toast'
 import type { UpdateGroupDTO, ProgressGroupLevelRequest } from '../api/academics'
@@ -51,10 +49,6 @@ export function GroupDetailPage() {
 
   // Consolidated enrollments data
   const {
-    enrollmentsByLevel: _enrollmentsByLevel,
-    totalEnrollments: _totalEnrollments,
-    activeEnrollments: _activeEnrollments,
-    isLoading: _isLoadingEnrollments,
     error: enrollmentsError,
   } = useGroupEnrollments(groupId)
 
@@ -84,19 +78,6 @@ export function GroupDetailPage() {
       paymentsErrorShownRef.current = true
     }
   }, [paymentsError, showToast])
-
-  const {
-    teams: _teams,
-    availableTeams: _availableTeams,
-    competitions,
-    competitionAnalytics: _competitionAnalytics,
-    isLoadingTeams: _isLoadingTeams,
-    isLoadingCompetitions: _isLoadingCompetitions,
-    linkTeam: _linkTeam,
-    registerForCompetition: _registerForCompetition,
-    completeParticipation: _completeParticipation,
-    withdrawFromCompetition: _withdrawFromCompetition,
-  } = useGroupCompetitions(groupId)
 
   const { 
     updateGroup, 
@@ -174,7 +155,7 @@ export function GroupDetailPage() {
     }
   }
 
-  const handleNotesChange = async (notes: string) => {
+  const handleNotesChange = useCallback(async (notes: string) => {
     setIsSavingNotes(true)
     try {
       await updateGroup({ notes } as UpdateGroupDTO)
@@ -183,7 +164,7 @@ export function GroupDetailPage() {
     } finally {
       setIsSavingNotes(false)
     }
-  }
+  }, [updateGroup])
 
   if (!isValidGroupId) {
     return (
@@ -275,7 +256,7 @@ export function GroupDetailPage() {
               levels={levels}
               sessions={sessions}
               activeLevelId={activeLevelId}
-              currentLevelNumber={group.level_number}
+              currentLevelNumber={group.current_level}
               instructorName={group.instructor_name}
               onLevelChange={setActiveLevel}
             />
@@ -284,7 +265,7 @@ export function GroupDetailPage() {
           {activeTab === 'levels' && (
             <LevelsTab
               levels={levels}
-              currentLevelNumber={group.level_number}
+              currentLevelNumber={group.current_level}
             />
           )}
 
@@ -293,7 +274,7 @@ export function GroupDetailPage() {
               groupId={groupId}
               levels={levels}
               activeLevelId={activeLevelId}
-              currentLevelNumber={group.level_number}
+              currentLevelNumber={group.current_level}
               onLevelChange={setActiveLevel}
             />
           )}
@@ -312,10 +293,10 @@ export function GroupDetailPage() {
           )}
 
           {activeTab === 'history' && (
-            <HistoryTab
-              competitions={competitions}
-              isLoading={false}
-            />
+            <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">
+              <span className="material-symbols-outlined text-4xl mb-2">history</span>
+              <p className="font-medium">Competition history has been moved to the Competitions section.</p>
+            </div>
           )}
 
           <EditGroupDialog
@@ -351,7 +332,7 @@ export function GroupDetailPage() {
             currentLevelNumber={currentLevel?.level_number ?? 1}
             currentInstructorId={group?.instructor_id ?? 0}
             currentCourseId={group?.course_id ?? 0}
-            currentGroupName={group?.group_name ?? ''}
+            currentGroupName={group?.name ?? ''}
             currentPriceOverride={undefined}
             onClose={() => setIsProgressLevelDialogOpen(false)}
             onConfirm={handleProgressLevelConfirm}

@@ -9,13 +9,10 @@ interface UseCompetitionsReturn {
   refresh: () => Promise<void>
 }
 
-export function useCompetitions(includeDeleted?: boolean): UseCompetitionsReturn {
+export function useCompetitions(): UseCompetitionsReturn {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: [...queryKeys.competitions, { include_deleted: includeDeleted }],
-    queryFn: async () => {
-      const response = await getCompetitions(includeDeleted)
-      return response
-    },
+    queryKey: queryKeys.competitions,
+    queryFn: async () => getCompetitions(),
     staleTime: 5 * 60 * 1000,
   })
 

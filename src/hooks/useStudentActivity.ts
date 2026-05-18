@@ -2,7 +2,7 @@
 // Provides access to activity logs, enrollment history, competition history, and activity summary
 // @see docs/api/crm/student_history.md
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, type UseQueryResult, type UseMutationResult } from '@tanstack/react-query'
 import {
   getStudentActivityHistory,
   getActivitySummary,
@@ -16,10 +16,10 @@ import {
 
 export const activityKeys = {
   all: ['student-activity'] as const,
-  history: (studentId: number, filters?: object) => ['student-activity', 'history', studentId, filters] as const,
-  summary: (studentId: number, params?: object) => ['student-activity', 'summary', studentId, params] as const,
-  enrollments: (studentId: number, params?: object) => ['student-activity', 'enrollments', studentId, params] as const,
-  competitions: (studentId: number, params?: object) => ['student-activity', 'competitions', studentId, params] as const,
+  history: (studentId: number, filters?: Record<string, unknown>) => ['student-activity', 'history', studentId, filters] as const,
+  summary: (studentId: number, params?: Record<string, unknown>) => ['student-activity', 'summary', studentId, params] as const,
+  enrollments: (studentId: number, params?: Record<string, unknown>) => ['student-activity', 'enrollments', studentId, params] as const,
+  competitions: (studentId: number, params?: Record<string, unknown>) => ['student-activity', 'competitions', studentId, params] as const,
 }
 
 interface UseActivityHistoryOptions {
@@ -34,7 +34,7 @@ interface UseActivityHistoryOptions {
 export function useActivityHistory(
   studentId: number,
   options: UseActivityHistoryOptions = {}
-) {
+): UseQueryResult {
   const { enabled = true, ...params } = options
 
   return useQuery({
@@ -50,7 +50,7 @@ export function useActivitySummary(
   studentId: number,
   params?: { date_from?: string; date_to?: string },
   enabled: boolean = true
-) {
+): UseQueryResult {
   return useQuery({
     queryKey: activityKeys.summary(studentId, params),
     queryFn: () => getActivitySummary(studentId, params),
@@ -64,7 +64,7 @@ export function useEnrollmentHistory(
   studentId: number,
   params?: { skip?: number; limit?: number },
   enabled: boolean = true
-) {
+): UseQueryResult<PaginatedEnrollmentHistory> {
   return useQuery<PaginatedEnrollmentHistory>({
     queryKey: activityKeys.enrollments(studentId, params),
     queryFn: () => getEnrollmentHistory(studentId, params),
@@ -78,7 +78,7 @@ export function useCompetitionHistory(
   studentId: number,
   params?: { skip?: number; limit?: number },
   enabled: boolean = true
-) {
+): UseQueryResult<PaginatedCompetitionHistory> {
   return useQuery<PaginatedCompetitionHistory>({
     queryKey: activityKeys.competitions(studentId, params),
     queryFn: () => getCompetitionHistory(studentId, params),
@@ -88,7 +88,7 @@ export function useCompetitionHistory(
 }
 
 // Log manual activity
-export function useLogActivity() {
+export function useLogActivity(): UseMutationResult<void, Error, { studentId: number; data: ActivityLogRequest }> {
   const queryClient = useQueryClient()
 
   return useMutation({

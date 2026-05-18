@@ -85,7 +85,7 @@ export function ManageEnrollmentPanel({ isLoading, setIsLoading }: ManageEnrollm
           from_enrollment_id: selectedEnrollment.enrollment_id,
           to_group_id: destinationGroup.id
         })
-        showToast(`Successfully transferred student to ${destinationGroup.group_name}`, 'success')
+        showToast(`Successfully transferred student to ${destinationGroup.name}`, 'success')
       } else {
         await deleteEnrollment(selectedEnrollment.enrollment_id)
         showToast('Successfully dropped student enrollment', 'success')

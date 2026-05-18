@@ -1,6 +1,6 @@
 /**
  * Groups API - Core Router Functions
- * Main Groups Router: docs/api/academics/groups.md
+ * Main Groups Router: groups-api.md
  * 
  * Endpoints:
  * - GET /academics/groups - List all active groups
@@ -13,6 +13,10 @@
  * - POST /academics/groups/{group_id}/progress-level - Level up group
  * - GET /academics/groups/grouped - Get grouped groups
  * - GET /academics/groups/{group_id}/sessions - List sessions for group
+ * - GET /academics/groups/search - Search groups by name
+ * - GET /academics/groups/archived - List archived (completed) groups
+ * - GET /academics/groups/by-course/{course_id} - Groups for a course
+ * - GET /academics/groups/by-type/{group_type} - Groups by type
  */
 
 import client from "../../client";
@@ -21,6 +25,7 @@ import type { ApiResponse, PaginatedApiResponse } from "../../../types/api";
 import type {
   Group,
   EnrichedGroupPublic,
+  RawEnrichedGroupPublic,
   ScheduleGroupInput,
   UpdateGroupDTO,
   GroupByField,
@@ -49,7 +54,6 @@ export async function getGroupsPaginated(
   params: PaginationParams = {},
 ): Promise<PaginationResult<Group>> {
   const { skip = 0, limit = 50 } = params;
-  // Backend likely limits to 100-200, use conservative default
   const cappedLimit = Math.min(limit, 100);
   const response = await client.get<PaginatedApiResponse<Group>>(
     '/academics/groups',
@@ -70,7 +74,8 @@ export async function getEnrichedGroups(): Promise<EnrichedGroupPublic[]> {
   const response = await client.get<ApiResponse<EnrichedGroupPublic[]>>(
     '/academics/groups/enriched',
   );
-  return response.data.data || [];
+  const data = response.data.data || [];
+  return data.map(normalizeEnrichedGroup);
 }
 
 // get enriched group by ID
@@ -80,7 +85,27 @@ export async function getEnrichedGroup(
   const response = await client.get<ApiResponse<EnrichedGroupPublic>>(
     `/academics/groups/${groupId}/enriched`,
   );
-  return response.data.data;
+  return normalizeEnrichedGroup(response.data.data);
+}
+
+/** Normalize enriched group data for backward compatibility with old API field names */
+function normalizeEnrichedGroup(raw: RawEnrichedGroupPublic): EnrichedGroupPublic {
+  return {
+    ...raw,
+    name: raw.name || raw.group_name || '',
+    capacity: raw.capacity ?? raw.max_capacity ?? 0,
+    schedule: raw.schedule ?? (
+      raw.default_day
+        ? {
+            day: raw.default_day,
+            start_time: raw.default_time_start ?? '',
+            end_time: raw.default_time_end ?? '',
+          }
+        : undefined
+    ),
+    current_level: raw.current_level ?? raw.level_number ?? 0,
+    current_student_count: raw.current_student_count,
+  };
 }
 
 // create group
@@ -130,9 +155,14 @@ export async function progressGroupLevel(
 }
 
 // list sessions for a group
-export async function listSessionsForGroup(groupId: number): Promise<Session[]> {
+export async function listSessionsForGroup(
+  groupId: number,
+  level?: number,
+): Promise<Session[]> {
+  const params = level !== undefined ? { level } : undefined;
   const response = await client.get<ApiResponse<Session[]>>(
     `/academics/groups/${groupId}/sessions`,
+    { params },
   );
   return response.data.data || [];
 }
@@ -147,5 +177,68 @@ export async function getGroupsGrouped(
     '/academics/groups/grouped',
     { params: { group_by: groupBy, skip, limit } },
   );
-  return response.data.data || { groups: [], total: 0, groupBy };
+  const raw = response.data.data || { groups: [], total: 0, groupBy };
+  return {
+    ...raw,
+    groups: raw.groups.map(g => ({
+      ...g,
+      groups: g.groups.map(normalizeEnrichedGroup),
+    })),
+  };
+}
+
+// Search groups by name
+export async function searchGroups(
+  query: string,
+  status?: 'active' | 'inactive' | 'completed',
+): Promise<EnrichedGroupPublic[]> {
+  const params: Record<string, string> = { query };
+  if (status) {
+    params.status = status;
+  }
+  const response = await client.get<ApiResponse<EnrichedGroupPublic[]>>(
+    '/academics/groups/search',
+    { params },
+  );
+  return (response.data.data || []).map(normalizeEnrichedGroup);
+}
+
+// Get archived (completed) groups
+export async function getArchivedGroups(
+  params: PaginationParams = {},
+): Promise<PaginationResult<EnrichedGroupPublic>> {
+  const { skip = 0, limit = 50 } = params;
+  const cappedLimit = Math.min(limit, 100);
+  const response = await client.get<PaginatedApiResponse<EnrichedGroupPublic>>(
+    '/academics/groups/archived',
+    { params: { skip, limit: cappedLimit } },
+  );
+  const paginatedData = response.data;
+  const items = (paginatedData.data || []).map(normalizeEnrichedGroup);
+  const total = paginatedData.total || 0;
+  return {
+    items,
+    total,
+    hasMore: total > skip + items.length,
+  };
+}
+
+// Get groups for a specific course
+export async function getGroupsByCourse(
+  courseId: number,
+): Promise<EnrichedGroupPublic[]> {
+  const response = await client.get<ApiResponse<EnrichedGroupPublic[]>>(
+    `/academics/groups/by-course/${courseId}`,
+  );
+  return (response.data.data || []).map(normalizeEnrichedGroup);
+}
+
+// Get groups by type
+export async function getGroupsByType(
+  groupType: string,
+): Promise<EnrichedGroupPublic[]> {
+  const response = await client.get<ApiResponse<EnrichedGroupPublic[]>>(
+    `/academics/groups/by-type/${groupType}`,
+  );
+  return (response.data.data || []).map(normalizeEnrichedGroup);
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DataTable, PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialog } from '../components/common'
@@ -16,12 +16,15 @@ import { ViewToggle } from '../components/groups/ViewToggle'
 import { GroupCardGrid } from '../components/groups/GroupCardGrid'
 import { GroupCategoryTabs } from '../components/groups/GroupCategoryTabs'
 import { useGroups } from '../hooks/useGroups'
-import { useCreateGroup, useUpdateGroup, useDeleteGroup } from '../hooks/useGroupQueries'
+import { useCreateGroup, useUpdateGroup, useDeleteGroup, useArchivedGroups, useSearchGroups } from '../hooks/useGroupQueries'
 
 import { groupColumns } from '../components/groups/GroupColumns'
 
+type GroupsView = 'active' | 'completed'
+
 export function GroupsPage() {
   const navigate = useNavigate()
+  const [activeView, setActiveView] = useState<GroupsView>('active')
   const {
     totalGroups,
     isLoading,
@@ -44,6 +47,43 @@ export function GroupsPage() {
     groupedData,
     isGroupedView,
   } = useGroups()
+
+  // Server-side search hook
+  const { data: searchResults, isLoading: isSearching } = useSearchGroups(
+    searchTerm,
+    undefined,
+    searchTerm.length > 0 && activeView === 'active'
+  )
+
+  // Archived (completed) groups hook
+  const { data: archivedGroups, isLoading: isLoadingArchived } = useArchivedGroups(
+    activeView === 'completed'
+  )
+
+  // Use search results when query is non-empty, otherwise fall back to paginated groups
+  const displayGroups = useMemo(() => {
+    if (activeView === 'completed') {
+      return archivedGroups?.items ?? []
+    }
+    if (searchTerm.length > 0 && searchResults) {
+      return searchResults
+    }
+    return paginatedGroups
+  }, [activeView, archivedGroups, searchTerm, searchResults, paginatedGroups])
+
+  const displayTotal = useMemo(() => {
+    if (activeView === 'completed') {
+      return archivedGroups?.total ?? 0
+    }
+    if (searchTerm.length > 0) {
+      return searchResults?.length ?? 0
+    }
+    return totalGroups
+  }, [activeView, archivedGroups, searchTerm, searchResults, totalGroups])
+
+  const displayLoading = activeView === 'completed'
+    ? isLoadingArchived
+    : isLoading || (searchTerm.length > 0 && isSearching)
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -140,21 +180,51 @@ export function GroupsPage() {
       <TopNavbar activePage="Groups" />
       
       <GroupsHeader 
-        totalGroups={totalGroups}
+        totalGroups={displayTotal}
         searchTerm={searchTerm}
         onSearchChange={(val) => { setSearchTerm(val); setCurrentPage(1) }}
         onCreateClick={() => setIsCreateModalOpen(true)}
       />
 
+      {/* View Toggle: Active / Completed */}
+      {/* 
+      <div className="px-6 pt-4">
+        <div className="flex gap-2">
+          <button
+            onClick={() => { setActiveView('active'); setCurrentPage(1) }}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              activeView === 'active'
+                ? 'bg-secondary text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            Active
+          </button>
+          <button
+            onClick={() => { setActiveView('completed'); setCurrentPage(1) }}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              activeView === 'completed'
+                ? 'bg-secondary text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            Completed
+          </button>
+        </div>
+      </div>
+      */}
+
       <PageSection>
-        <GroupBySelector
-          value={groupBy ?? null}
-          onChange={(field) => {
-            setGroupBy(field)
-            setCurrentPage(1)
-          }}
-          rightSlot={<ViewToggle value={viewMode} onChange={setViewMode} />}
-        />
+        {activeView === 'active' && (
+          <GroupBySelector
+            value={groupBy ?? null}
+            onChange={(field) => {
+              setGroupBy(field)
+              setCurrentPage(1)
+            }}
+            rightSlot={<ViewToggle value={viewMode} onChange={setViewMode} />}
+          />
+        )}
 
         <ErrorBoundary>
           {error && !isLoading && (
@@ -170,7 +240,7 @@ export function GroupsPage() {
             </div>
           )}
 
-          {groupBy !== undefined && !error && (
+          {groupBy !== undefined && !error && activeView === 'active' && (
             <>
               {mutationError && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 flex items-center gap-2">
@@ -206,11 +276,11 @@ export function GroupsPage() {
                   </>
                 ) : (
                   <GroupCardGrid
-                    isLoading={isLoading}
+                    isLoading={displayLoading}
                     emptyMessage="No groups matched your selection"
                     emptyIcon="grid_view"
                   >
-                    {isLoading ? null : paginatedGroups.map((g) => (
+                    {displayLoading ? null : displayGroups.map((g) => (
                       <GroupCard
                         key={g.id}
                         group={g}
@@ -225,10 +295,10 @@ export function GroupsPage() {
                 )
               ) : (
                 <>
-                  {isLoading && (
+                  {displayLoading && (
                     <div className="flex items-center justify-center py-20"><LoadingSpinner /></div>
                   )}
-                  {!isLoading && isGroupedView && (
+                  {!displayLoading && isGroupedView && (
                     <DataTable
                       groupedData={groupedData.map(g => ({ ...g, items: g.groups }))}
                       columns={groupColumns}
@@ -247,10 +317,10 @@ export function GroupsPage() {
                       defaultActiveGroup={groupedData[0]?.key}
                     />
                   )}
-                  {!isLoading && !isGroupedView && (
+                  {!displayLoading && !isGroupedView && (
                     <>
                       <DataTable
-                        data={paginatedGroups}
+                        data={displayGroups}
                         columns={groupColumns}
                         keyExtractor={(g) => g.id.toString()}
                         sortField={sortField}
@@ -265,7 +335,7 @@ export function GroupsPage() {
                         emptyMessage="No groups matched your selection"
                         emptyIcon="none"
                       />
-                      {totalPages > 0 && (
+                      {totalPages > 0 && searchTerm.length === 0 && (
                         <div className="mt-6 pt-4 border-t border-slate-200">
                           <Pagination
                             currentPage={currentPage}
@@ -282,6 +352,57 @@ export function GroupsPage() {
                           />
                         </div>
                       )}
+                    </>
+                  )}
+                </>
+              )}
+            </>
+          )}
+
+          {/* Completed View */}
+          {activeView === 'completed' && (
+            <>
+              {displayLoading && (
+                <div className="flex items-center justify-center py-20"><LoadingSpinner /></div>
+              )}
+              {!displayLoading && (
+                <>
+                  {viewMode === 'cards' ? (
+                    <GroupCardGrid
+                      isLoading={false}
+                      emptyMessage="No completed groups found"
+                      emptyIcon="inbox"
+                    >
+                      {displayGroups.map((g) => (
+                        <GroupCard
+                          key={g.id}
+                          group={g}
+                          actions={{
+                            onView: () => handleView(g.id),
+                            onEdit: () => handleEdit(g),
+                            onDelete: () => handleDeleteClick(g.id),
+                          }}
+                        />
+                      ))}
+                    </GroupCardGrid>
+                  ) : (
+                    <>
+                      <DataTable
+                        data={displayGroups}
+                        columns={groupColumns}
+                        keyExtractor={(g) => g.id.toString()}
+                        sortField={sortField}
+                        sortDirection={sortDirection}
+                        onSort={handleSort}
+                        onRowClick={(g) => handleView(g.id)}
+                        actions={{
+                          view: (g) => handleView(g.id),
+                          edit: handleEdit,
+                          delete: (g) => handleDeleteClick(g.id)
+                        }}
+                        emptyMessage="No completed groups found"
+                        emptyIcon="inbox"
+                      />
                     </>
                   )}
                 </>

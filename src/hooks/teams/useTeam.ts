@@ -3,7 +3,6 @@ import {
   getTeam,
   updateTeam,
   deleteTeam,
-  restoreTeam,
   type TeamDTO,
   type UpdateTeamInput,
 } from '../../api/teams'
@@ -15,7 +14,6 @@ interface UseTeamReturn {
   error: string | null
   update: (data: UpdateTeamInput) => Promise<TeamDTO>
   remove: () => Promise<boolean>
-  restore: () => Promise<TeamDTO>
   refresh: () => Promise<void>
 }
 
@@ -31,7 +29,7 @@ export function useTeam(teamId: number | string): UseTeamReturn {
       }
       return getTeam(numericId)
     },
-    staleTime: 3 * 60 * 1000, // 3 minutes
+    staleTime: 3 * 60 * 1000,
     enabled: !isNaN(numericId),
   })
 
@@ -48,16 +46,6 @@ export function useTeam(teamId: number | string): UseTeamReturn {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.team(numericId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.teams })
-      queryClient.invalidateQueries({ queryKey: queryKeys.teamDeleted })
-    },
-  })
-
-  const restoreMutation = useMutation({
-    mutationFn: () => restoreTeam(numericId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.team(numericId) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.teams })
-      queryClient.invalidateQueries({ queryKey: queryKeys.teamDeleted })
     },
   })
 
@@ -67,7 +55,6 @@ export function useTeam(teamId: number | string): UseTeamReturn {
     error: error instanceof Error ? error.message : null,
     update: updateMutation.mutateAsync,
     remove: deleteMutation.mutateAsync,
-    restore: restoreMutation.mutateAsync,
     refresh: async () => { await refetch() },
   }
 }

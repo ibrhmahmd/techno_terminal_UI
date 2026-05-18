@@ -5,16 +5,14 @@ import type {
   CategoryResponse, CompetitionSummaryResponse
 } from './types'
 
-export async function getCompetitions(
-  includeDeleted?: boolean
-): Promise<Competition[]> {
-  const params = includeDeleted ? { include_deleted: true } : undefined
-  const response = await client.get<ApiResponse<Competition[]>>('/competitions', { params })
+export async function getCompetitions(): Promise<Competition[]> {
+  const response = await client.get<ApiResponse<Competition[]>>('/competitions')
   return response.data.data || []
 }
 
 export async function getCompetition(id: number): Promise<Competition> {
   const response = await client.get<ApiResponse<Competition>>(`/competitions/${id}`)
+  if (!response.data.data) throw new Error('Competition not found')
   return response.data.data
 }
 
@@ -28,8 +26,9 @@ export async function updateCompetition(id: number, data: UpdateCompetitionInput
   return response.data.data
 }
 
-export async function deleteCompetition(id: number): Promise<void> {
-  await client.delete(`/competitions/${id}`)
+export async function deleteCompetition(id: number): Promise<boolean> {
+  const response = await client.delete<ApiResponse<boolean>>(`/competitions/${id}`)
+  return response.data.data
 }
 
 export async function getCompetitionCategories(competitionId: number): Promise<CategoryResponse[]> {
@@ -37,17 +36,8 @@ export async function getCompetitionCategories(competitionId: number): Promise<C
   return response.data.data || []
 }
 
-export async function restoreCompetition(id: number): Promise<boolean> {
-  const response = await client.post<ApiResponse<boolean>>(`/competitions/${id}/restore`)
-  return response.data.data
-}
-
-export async function getDeletedCompetitions(): Promise<Competition[]> {
-  const response = await client.get<ApiResponse<Competition[]>>('/competitions/deleted')
-  return response.data.data || []
-}
-
 export async function getCompetitionSummary(id: number): Promise<CompetitionSummaryResponse> {
   const response = await client.get<ApiResponse<CompetitionSummaryResponse>>(`/competitions/${id}/summary`)
+  if (!response.data.data) throw new Error('Competition summary not found')
   return response.data.data
 }

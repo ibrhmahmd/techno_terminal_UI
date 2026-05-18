@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   updateGroup,
@@ -28,10 +29,10 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
   const queryClient = useQueryClient()
 
   // Invalidate groups cache helper
-  const invalidateGroups = async () => {
+  const invalidateGroups = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.groups })
     await queryClient.invalidateQueries({ queryKey: queryKeys.group(groupId) })
-  }
+  }, [queryClient, groupId])
 
   // Update group mutation
   const updateMutation = useMutation({
@@ -97,34 +98,34 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     null
 
   // Clear all mutations
-  const clearError = () => {
+  const clearError = useCallback(() => {
     updateMutation.reset()
     deleteMutation.reset()
     archiveMutation.reset()
     levelUpMutation.reset()
     createLevelMutation.reset()
-  }
+  }, [updateMutation, deleteMutation, archiveMutation, levelUpMutation, createLevelMutation])
 
-  // Wrapper functions that maintain the same interface
-  const handleUpdateGroup = async (data: UpdateGroupDTO): Promise<Group> => {
+  // Wrapper functions that maintain the same interface — wrapped in useCallback for stable references
+  const handleUpdateGroup = useCallback(async (data: UpdateGroupDTO): Promise<Group> => {
     return updateMutation.mutateAsync(data)
-  }
+  }, [updateMutation])
 
-  const handleDeleteGroup = async (): Promise<void> => {
+  const handleDeleteGroup = useCallback(async (): Promise<void> => {
     return deleteMutation.mutateAsync()
-  }
+  }, [deleteMutation])
 
-  const handleArchiveGroup = async (): Promise<Group> => {
+  const handleArchiveGroup = useCallback(async (): Promise<Group> => {
     return archiveMutation.mutateAsync()
-  }
+  }, [archiveMutation])
 
-  const handleLevelUp = async (): Promise<ProgressGroupLevelResult> => {
+  const handleLevelUp = useCallback(async (): Promise<ProgressGroupLevelResult> => {
     return levelUpMutation.mutateAsync()
-  }
+  }, [levelUpMutation])
 
-  const handleCreateNewLevel = async (data: ProgressGroupLevelRequest): Promise<ProgressGroupLevelResult> => {
+  const handleCreateNewLevel = useCallback(async (data: ProgressGroupLevelRequest): Promise<ProgressGroupLevelResult> => {
     return createLevelMutation.mutateAsync(data)
-  }
+  }, [createLevelMutation])
 
   return {
     updateGroup: handleUpdateGroup,

@@ -1,5 +1,3 @@
-export { HistoryTab } from './HistoryTab'
 export { EnrollmentHistoryTable } from './EnrollmentHistoryTable'
-export { CompetitionRecords } from './CompetitionRecords'
 export { InstructorHistoryTable } from './InstructorHistoryTable'
 export { HistoryStats } from './HistoryStats'

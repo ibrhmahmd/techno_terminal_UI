@@ -3,25 +3,29 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { TopNavbar } from "../components/dashboard/TopNavbar";
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
+import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { TeamRegistrationModal } from '../components/competitions/TeamRegistrationModal'
 import { CategoryTeamsModal } from '../components/competitions/CategoryTeamsModal'
 import { CategoryList } from '../components/competitions/CategoryList'
 import { useCompetition, useCompetitionCategories, useCompetitionSummary } from '../hooks/competitions'
 import { useTeams } from '../hooks/teams'
 import { registerTeam, type RegisterTeamInput } from '../api/teams'
-import { isCompetitionDeleted, type CompetitionSummaryCategory } from '../api/competitions'
+import type { CategoryWithTeamsDTO } from '../api/competitions'
+import { queryClient } from '../lib/queryClient'
+import { queryKeys } from '../hooks/queryKeys'
+import { extractErrorMessage, getErrorStatus } from '../utils/apiErrors'
 
 export function CompetitionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const competitionId = id || ''
+  const numericId = parseInt(competitionId, 10)
 
   const {
     competition,
     isLoading: competitionLoading,
     error: competitionError,
     remove: deleteCompetition,
-    restore: restoreCompetitionAction,
     isMutating: isDeletingCompetition,
   } = useCompetition(competitionId)
 
@@ -30,44 +34,49 @@ export function CompetitionDetailPage() {
     isLoading: categoriesLoading,
   } = useCompetitionCategories(competitionId)
 
-  const { summary, isLoading: summaryLoading } = useCompetitionSummary(parseInt(competitionId, 10))
+  const { summary, isLoading: summaryLoading } = useCompetitionSummary(numericId)
 
-  const { teams, isLoading: teamsLoading } = useTeams({ competition_id: parseInt(competitionId, 10) })
+  const { teams, isLoading: teamsLoading } = useTeams(numericId)
 
   const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'teams' | 'summary'>('overview')
 
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false)
   const [isCategoryTeamsModalOpen, setIsCategoryTeamsModalOpen] = useState(false)
-  const [selectedCategoryTeams, setSelectedCategoryTeams] = useState<CompetitionSummaryCategory | null>(null)
-  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
+  const [selectedCategoryTeams, setSelectedCategoryTeams] = useState<CategoryWithTeamsDTO | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const isLoading = competitionLoading || categoriesLoading || summaryLoading
-
-  const isDeleted = competition ? isCompetitionDeleted(competition) : false
 
   const handleRegisterTeam = async (data: RegisterTeamInput) => {
     try {
       await registerTeam(data)
       setIsRegistrationModalOpen(false)
       setSelectedCategory(null)
+      await queryClient.invalidateQueries({ queryKey: queryKeys.competitionSummary(numericId) })
+      await queryClient.invalidateQueries({ queryKey: queryKeys.competitionCategories(numericId) })
+      await queryClient.invalidateQueries({ queryKey: queryKeys.teams })
     } catch {
       // Error handled by hook
     }
   }
 
   const handleDeleteCompetition = async () => {
+    setDeleteError(null)
     try {
       await deleteCompetition()
       setIsDeleteModalOpen(false)
       navigate('/competitions')
-    } catch {
-      // Error handled by hook
+    } catch (err: unknown) {
+      if (getErrorStatus(err) === 409) {
+        setDeleteError(extractErrorMessage(err) || 'Cannot delete: this competition has registered teams.')
+      }
     }
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A'
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
@@ -91,7 +100,7 @@ export function CompetitionDetailPage() {
       <div className="min-h-screen bg-surface">
         <TopNavbar activePage="Competitions" />
         <div className="text-center py-12">
-          <span className="material-symbols-outlined text-4xl text-slate-300 mb-4">error</span>
+          <span className="material-symbols-outlined text-4xl text-slate-300 mb-4" aria-hidden="true">error</span>
           <p className="text-slate-500">Competition not found</p>
           <button
             onClick={() => navigate('/competitions')}
@@ -115,7 +124,7 @@ export function CompetitionDetailPage() {
             onClick={() => navigate('/competitions')}
             className="flex items-center gap-1 text-sm text-slate-500 hover:text-on-surface mb-2"
           >
-            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            <span className="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
             Back to Competitions
           </button>
           <div className="flex items-center justify-between">
@@ -126,44 +135,27 @@ export function CompetitionDetailPage() {
                   {competition.edition}
                 </span>
               )}
-              {isDeleted && (
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                  Deleted
-                </span>
-              )}
             </div>
             <div className="flex items-center gap-2">
-              {isDeleted ? (
-                <button
-                  onClick={() => setIsRestoreModalOpen(true)}
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-sm">restore</span>
-                  Restore
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={() => navigate(`/competitions/${competitionId}/edit`)}
-                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-sm">edit</span>
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => setIsDeleteModalOpen(true)}
-                    disabled={isDeletingCompetition}
-                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                  >
-                    {isDeletingCompetition ? (
-                      <LoadingSpinner size="sm" />
-                    ) : (
-                      <span className="material-symbols-outlined text-sm">delete</span>
-                    )}
-                    {isDeletingCompetition ? 'Deleting...' : 'Delete'}
-                  </button>
-                </>
-              )}
+              <button
+                onClick={() => navigate(`/competitions/${competitionId}/edit`)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
+                Edit
+              </button>
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                disabled={isDeletingCompetition}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {isDeletingCompetition ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <span className="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
+                )}
+                {isDeletingCompetition ? 'Deleting...' : 'Delete'}
+              </button>
             </div>
           </div>
         </div>
@@ -176,26 +168,9 @@ export function CompetitionDetailPage() {
           </div>
         )}
 
-        {isDeleted && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg">
-            <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-red-600">warning</span>
-              <div>
-                <h3 className="font-medium text-red-900">This competition has been deleted</h3>
-                <p className="text-sm text-red-700 mt-1">
-                  Deleted on {competition.deleted_at ? formatDate(competition.deleted_at) : 'N/A'}
-                </p>
-                <p className="text-sm text-red-600 mt-2">
-                  You can restore this competition to make it active again, or it will be permanently removed after 30 days.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Tabs Navigation */}
         <div className="mb-6 border-b border-slate-200">
-          <nav className="flex gap-6">
+          <nav role="tablist" aria-label="Competition details" className="flex gap-6">
             {[
               { id: 'overview', label: 'Overview', icon: 'info' },
               { id: 'categories', label: 'Categories', icon: 'category' },
@@ -204,6 +179,10 @@ export function CompetitionDetailPage() {
             ].map((tab) => (
               <button
                 key={tab.id}
+                role="tab"
+                id={`tab-${tab.id}`}
+                aria-selected={activeTab === tab.id}
+                aria-controls={`panel-${tab.id}`}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab.id
@@ -211,7 +190,7 @@ export function CompetitionDetailPage() {
                     : 'border-transparent text-slate-600 hover:text-on-surface'
                 }`}
               >
-                <span className="material-symbols-outlined text-sm">{tab.icon}</span>
+                <span className="material-symbols-outlined text-sm" aria-hidden="true">{tab.icon}</span>
                 {tab.label}
               </button>
             ))}
@@ -220,7 +199,13 @@ export function CompetitionDetailPage() {
 
         {/* Tab Content */}
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load overview</p></div>}>
+          <div
+            role="tabpanel"
+            id="panel-overview"
+            aria-labelledby="tab-overview"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+          >
             <div className="lg:col-span-2 space-y-6">
               {/* Competition Info */}
               <div className="bg-white rounded-xl border border-slate-200 p-6">
@@ -228,19 +213,19 @@ export function CompetitionDetailPage() {
                 {competition.notes && <p className="text-slate-600 mb-4">{competition.notes}</p>}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="material-symbols-outlined text-slate-400">location_on</span>
-                    <span>{competition.location}</span>
+                    <span className="material-symbols-outlined text-slate-400" aria-hidden="true">location_on</span>
+                    <span>{competition.location ?? 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="material-symbols-outlined text-slate-400">payments</span>
+                    <span className="material-symbols-outlined text-slate-400" aria-hidden="true">payments</span>
                     <span>{competition.fee_per_student} EGP per student</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="material-symbols-outlined text-slate-400">event</span>
+                    <span className="material-symbols-outlined text-slate-400" aria-hidden="true">event</span>
                     <span>{competition.competition_date ? formatDate(competition.competition_date) : 'Date TBD'}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="material-symbols-outlined text-slate-400">schedule</span>
+                    <span className="material-symbols-outlined text-slate-400" aria-hidden="true">schedule</span>
                     <span>Created {formatDate(competition.created_at)}</span>
                   </div>
                 </div>
@@ -251,14 +236,14 @@ export function CompetitionDetailPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white rounded-xl border border-slate-200 p-4">
                     <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
-                      <span className="material-symbols-outlined">groups</span>
+                      <span className="material-symbols-outlined" aria-hidden="true">groups</span>
                       Total Teams
                     </div>
                     <p className="text-2xl font-bold text-on-surface">{summary.total_teams ?? 0}</p>
                   </div>
                   <div className="bg-white rounded-xl border border-slate-200 p-4">
                     <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
-                      <span className="material-symbols-outlined">person</span>
+                      <span className="material-symbols-outlined" aria-hidden="true">person</span>
                       Participants
                     </div>
                     <p className="text-2xl font-bold text-on-surface">{summary.total_participants ?? 0}</p>
@@ -274,7 +259,7 @@ export function CompetitionDetailPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-600">Location</span>
-                    <span className="font-semibold text-on-surface">{competition.location}</span>
+                    <span className="font-semibold text-on-surface">{competition.location ?? 'N/A'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-600">Fee per Student</span>
@@ -304,21 +289,16 @@ export function CompetitionDetailPage() {
                       <span className="font-semibold text-slate-500">{formatDate(competition.created_at)}</span>
                     </div>
                   </div>
-                  {isDeleted && competition.deleted_at && (
-                    <div className="pt-4 border-t border-slate-100">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-slate-600">Deleted</span>
-                        <span className="font-semibold text-red-600">{formatDate(competition.deleted_at)}</span>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
           </div>
+          </ErrorBoundary>
         )}
 
         {activeTab === 'categories' && (
+          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load categories</p></div>}>
+          <div role="tabpanel" id="panel-categories" aria-labelledby="tab-categories">
           <CategoryList
             categories={categories}
             onRegisterTeam={(categoryName) => {
@@ -326,17 +306,24 @@ export function CompetitionDetailPage() {
               setIsRegistrationModalOpen(true)
             }}
             onViewTeams={(categoryName) => {
-              const match = summary?.categories.find(c => c.category_name === categoryName || c.category === categoryName)
+              const match = summary?.categories.find(c => c.category === categoryName)
               if (match) {
                 setSelectedCategoryTeams(match)
                 setIsCategoryTeamsModalOpen(true)
               }
             }}
+            onRegisterFirstTeam={() => {
+              setSelectedCategory(null)
+              setIsRegistrationModalOpen(true)
+            }}
           />
+          </div>
+          </ErrorBoundary>
         )}
 
         {activeTab === 'teams' && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load teams</p></div>}>
+          <div role="tabpanel" id="panel-teams" aria-labelledby="tab-teams" className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-headline text-lg font-semibold text-on-surface">Registered Teams</h2>
               <span className="text-sm text-slate-500">{teams?.length ?? 0} teams</span>
@@ -348,8 +335,14 @@ export function CompetitionDetailPage() {
               </div>
             ) : !Array.isArray(teams) || teams.length === 0 ? (
               <div className="text-center py-12">
-                <span className="material-symbols-outlined text-4xl text-slate-300 mb-4">groups</span>
-                <p className="text-slate-500">No teams registered yet</p>
+                <span className="material-symbols-outlined text-4xl text-slate-300 mb-4" aria-hidden="true">groups</span>
+                <p className="text-slate-500 mb-4">No teams registered yet</p>
+                <button
+                  onClick={() => setIsRegistrationModalOpen(true)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
+                >
+                  Register First Team
+                </button>
               </div>
             ) : (
               <div className="space-y-3">
@@ -357,11 +350,14 @@ export function CompetitionDetailPage() {
                   <div
                     key={team.id}
                     onClick={() => navigate(`/teams/${team.id}`)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/teams/${team.id}`) } }}
+                    role="button"
+                    tabIndex={0}
                     className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-secondary-container rounded-full flex items-center justify-center">
-                        <span className="material-symbols-outlined text-secondary">groups</span>
+                        <span className="material-symbols-outlined text-secondary" aria-hidden="true">groups</span>
                       </div>
                       <div>
                         <p className="font-medium text-on-surface">{team.team_name}</p>
@@ -370,22 +366,18 @@ export function CompetitionDetailPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-on-surface">{team.fee} EGP</p>
-                        <p className="text-xs text-slate-500">Team fee</p>
-                      </div>
-                      <span className="material-symbols-outlined text-slate-400">chevron_right</span>
-                    </div>
+                    <span className="material-symbols-outlined text-slate-400" aria-hidden="true">chevron_right</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
+          </ErrorBoundary>
         )}
 
         {activeTab === 'summary' && summary && (
-          <div className="space-y-6">
+          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load summary</p></div>}>
+          <div role="tabpanel" id="panel-summary" aria-labelledby="tab-summary" className="space-y-6">
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Competition Summary</h2>
               <div className="grid grid-cols-2 gap-4 mb-6">
@@ -402,10 +394,12 @@ export function CompetitionDetailPage() {
 
             {/* Categories breakdown */}
             <div className="space-y-4">
-              {(summary.categories ?? []).map((cat) => (
-                <div key={cat.category_id} className="bg-white rounded-xl border border-slate-200 p-6">
+              {(summary.categories ?? []).map((cat, idx) => (
+                <div key={`${cat.category}-${cat.subcategory ?? 'none'}-${idx}`} className="bg-white rounded-xl border border-slate-200 p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-on-surface">{cat.category_name}</h3>
+                    <h3 className="font-semibold text-on-surface">
+                      {cat.category}{cat.subcategory ? ` — ${cat.subcategory}` : ''}
+                    </h3>
                     <span className="px-3 py-1 bg-secondary-container text-secondary text-xs rounded-full font-medium">
                       {(cat.teams ?? []).length} Teams
                     </span>
@@ -428,6 +422,7 @@ export function CompetitionDetailPage() {
               ))}
             </div>
           </div>
+          </ErrorBoundary>
         )}
       </section>
 
@@ -443,8 +438,9 @@ export function CompetitionDetailPage() {
 
       {/* Team Registration Modal */}
       <TeamRegistrationModal
-        competitionId={parseInt(competitionId, 10) || 0}
+        competitionId={numericId || 0}
         categoryName={selectedCategory || ''}
+        categorySubcategories={Object.fromEntries(categories.map(c => [c.category, c.subcategories]))}
         isOpen={isRegistrationModalOpen}
         onClose={() => {
           setIsRegistrationModalOpen(false)
@@ -453,47 +449,16 @@ export function CompetitionDetailPage() {
         onSubmit={handleRegisterTeam}
       />
 
-      {/* Restore Confirmation Modal */}
-      <Modal
-        isOpen={isRestoreModalOpen}
-        onClose={() => setIsRestoreModalOpen(false)}
-        title="Restore Competition"
-        size="sm"
-        footer={
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={() => setIsRestoreModalOpen(false)}
-              className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={async () => {
-                await restoreCompetitionAction()
-                setIsRestoreModalOpen(false)
-              }}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Restore
-            </button>
-          </div>
-        }
-      >
-        <p className="text-sm text-slate-600">
-          Are you sure you want to restore this competition? It will become active again.
-        </p>
-      </Modal>
-
       {/* Delete Confirmation Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={() => { setIsDeleteModalOpen(false); setDeleteError(null) }}
         title="Delete Competition"
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
             <button
-              onClick={() => setIsDeleteModalOpen(false)}
+              onClick={() => { setIsDeleteModalOpen(false); setDeleteError(null) }}
               disabled={isDeletingCompetition}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
             >
@@ -512,11 +477,16 @@ export function CompetitionDetailPage() {
       >
         <div className="space-y-3">
           <p className="text-sm text-slate-600">
-            Are you sure you want to delete <strong>{competition?.name}</strong>?
+            Are you sure you want to permanently delete <strong>{competition?.name}</strong>?
           </p>
-          <p className="text-sm text-slate-500">
-            This will soft-delete the competition. You can restore it later from the trash.
+          <p className="text-sm text-red-600">
+            This action cannot be undone. All associated data will be lost.
           </p>
+          {deleteError && (
+            <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+              {deleteError}
+            </div>
+          )}
         </div>
       </Modal>
     </div>

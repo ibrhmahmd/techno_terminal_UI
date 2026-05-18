@@ -13,7 +13,6 @@ const OPTIONS: Array<{ value: GroupByField; label: string; icon: string }> = [
   { value: 'course',      label: 'Course',       icon: 'menu_book'      },
   { value: 'instructor',  label: 'Instructor',   icon: 'person'         },
   { value: 'status',      label: 'Status',       icon: 'toggle_on'      },
-  { value: 'competition', label: 'Competition',  icon: 'emoji_events'   },
 ]
 
 export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorProps) {

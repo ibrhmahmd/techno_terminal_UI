@@ -6,7 +6,6 @@ interface CompetitionsTableProps {
   data: Competition[]
   columns?: DataTableColumn<Competition>[]
   onView: (competition: Competition) => void
-  onEdit?: (competition: Competition) => void
   onDelete?: (competition: Competition) => void
   onRestore?: (competition: Competition) => void
   isLoading?: boolean
@@ -14,7 +13,6 @@ interface CompetitionsTableProps {
   emptyIcon?: 'search' | 'inbox' | 'history' | 'schedule' | 'trash' | 'filter_list' | 'none'
   actionLabels?: {
     view?: string
-    edit?: string
     delete?: string
     restore?: string
   }
@@ -24,7 +22,6 @@ export function CompetitionsTable({
   data,
   columns = competitionColumns,
   onView,
-  onEdit,
   onDelete,
   onRestore,
   isLoading,
@@ -34,7 +31,6 @@ export function CompetitionsTable({
 }: CompetitionsTableProps) {
   const actions: Record<string, (row: Competition) => void> = {
     view: onView,
-    ...(onEdit && { edit: onEdit }),
     ...(onDelete && { delete: onDelete }),
     ...(onRestore && { restore: onRestore }),
   }

@@ -1,9 +1,9 @@
 import { Modal } from '../common/Modal'
 import { useNavigate } from 'react-router-dom'
-import type { CompetitionSummaryCategory } from '../../api/competitions'
+import type { CategoryWithTeamsDTO } from '../../api/competitions'
 
 interface CategoryTeamsModalProps {
-  category: CompetitionSummaryCategory | null
+  category: CategoryWithTeamsDTO | null
   isOpen: boolean
   onClose: () => void
 }
@@ -13,11 +13,13 @@ export function CategoryTeamsModal({ category, isOpen, onClose }: CategoryTeamsM
 
   if (!category) return null
 
+  const title = `${category.category}${category.subcategory ? ` — ${category.subcategory}` : ''}`
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Teams - ${category.category_name}`} size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={`Teams - ${title}`} size="lg">
       {category.teams.length === 0 ? (
         <div className="text-center py-8">
-          <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">groups</span>
+          <span className="material-symbols-outlined text-4xl text-slate-300 mb-2" aria-hidden="true">groups</span>
           <p className="text-slate-500">No teams in this category yet</p>
         </div>
       ) : (
@@ -26,11 +28,14 @@ export function CategoryTeamsModal({ category, isOpen, onClose }: CategoryTeamsM
             <div
               key={team.id}
               onClick={() => { navigate(`/teams/${team.id}`); onClose() }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/teams/${team.id}`); onClose() } }}
+              role="button"
+              tabIndex={0}
               className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-secondary-container rounded-full flex items-center justify-center">
-                  <span className="material-symbols-outlined text-secondary">groups</span>
+                  <span className="material-symbols-outlined text-secondary" aria-hidden="true">groups</span>
                 </div>
                 <div>
                   <p className="font-medium text-on-surface">{team.team_name}</p>
@@ -40,10 +45,7 @@ export function CategoryTeamsModal({ category, isOpen, onClose }: CategoryTeamsM
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-on-surface">{team.fee} EGP</span>
-                <span className="material-symbols-outlined text-slate-400">chevron_right</span>
-              </div>
+              <span className="material-symbols-outlined text-slate-400" aria-hidden="true">chevron_right</span>
             </div>
           ))}
         </div>

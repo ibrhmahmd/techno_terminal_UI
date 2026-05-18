@@ -81,6 +81,11 @@ export function extractErrorMessage(error: unknown): string {
   return 'An unexpected error occurred. Please try again.'
 }
 
+export function getErrorStatus(error: unknown): number | null {
+  const axiosError = error as AxiosError
+  return axiosError?.response?.status ?? null
+}
+
 export function isAuthError(error: unknown): boolean {
   const axiosError = error as AxiosError
   const status = axiosError?.response?.status

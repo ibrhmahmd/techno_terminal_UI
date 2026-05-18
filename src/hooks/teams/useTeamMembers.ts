@@ -6,16 +6,16 @@ import {
   type TeamMemberRosterDTO,
   type AddTeamMemberInput,
   type AddTeamMemberResultDTO,
-  type RemoveTeamMemberResultDTO,
 } from '../../api/teams'
 import { queryKeys } from '../queryKeys'
 
 interface UseTeamMembersReturn {
   members: TeamMemberRosterDTO[]
+  teamName: string
   isLoading: boolean
   error: string | null
   add: (data: AddTeamMemberInput) => Promise<AddTeamMemberResultDTO>
-  remove: (studentId: number) => Promise<RemoveTeamMemberResultDTO>
+  remove: (studentId: number) => Promise<boolean>
   refresh: () => Promise<void>
 }
 
@@ -31,7 +31,7 @@ export function useTeamMembers(teamId: number | string): UseTeamMembersReturn {
       }
       return getTeamMembers(numericId)
     },
-    staleTime: 3 * 60 * 1000, // 3 minutes
+    staleTime: 3 * 60 * 1000,
     enabled: !isNaN(numericId),
   })
 
@@ -50,7 +50,8 @@ export function useTeamMembers(teamId: number | string): UseTeamMembersReturn {
   })
 
   return {
-    members: data || [],
+    members: data?.members || [],
+    teamName: data?.team_name || '',
     isLoading,
     error: error instanceof Error ? error.message : null,
     add: addMutation.mutateAsync,

@@ -107,7 +107,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
     try {
       if (useMockData) {
         await new Promise(r => setTimeout(r, 500))
-        showToast(`Enrolled ${selectedStudent.full_name} in ${selectedGroup.group_name}`, 'success')
+        showToast(`Enrolled ${selectedStudent.full_name} in ${selectedGroup.name}`, 'success')
       } else {
         await createEnrollment({
           student_id: selectedStudent.id,
@@ -208,14 +208,14 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
                     <Users className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-on-surface text-sm truncate">{selectedGroup.group_name}</p>
+                    <p className="font-semibold text-on-surface text-sm truncate">{selectedGroup.name}</p>
                     <p className="text-xs text-on-surface-variant flex items-center gap-1">
                       <MapPin className="w-3 h-3" />
                       {selectedGroup.course_name}
                     </p>
                     <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
                       <Calendar className="w-3 h-3" />
-                      Level {selectedGroup.level_number}
+                      Level {selectedGroup.current_level}
                     </p>
                   </div>
                 </div>

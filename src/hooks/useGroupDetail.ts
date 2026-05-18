@@ -38,7 +38,7 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
 
   const { data: levelsData, isLoading: isLoadingLevels } = useQuery({
     queryKey: queryKeys.groupLevels(groupId),
-    queryFn: () => getDetailedLevels(groupId, -1).then(r => r.levels),
+    queryFn: () => getDetailedLevels(groupId).then(r => r.levels),
     enabled: groupId > 0,
     staleTime: 5 * 60 * 1000,
   })

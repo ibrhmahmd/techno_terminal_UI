@@ -11,7 +11,7 @@ interface UseCompetitionSummaryReturn {
 
 export function useCompetitionSummary(id: number | null): UseCompetitionSummaryReturn {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: id ? queryKeys.competitionSummary(id) : ['competitions', 'summary', 'empty'],
+    queryKey: queryKeys.competitionSummary(id ?? 0),
     queryFn: async () => {
       if (!id) return null
       const response = await getCompetitionSummary(id)

@@ -3,7 +3,6 @@ import {
   getCompetition, 
   updateCompetition,
   deleteCompetition,
-  restoreCompetition,
   type Competition,
   type UpdateCompetitionInput 
 } from '../../api/competitions'
@@ -16,8 +15,7 @@ interface UseCompetitionReturn {
   error: string | null
   refresh: () => Promise<void>
   update: (data: UpdateCompetitionInput) => Promise<void>
-  remove: () => Promise<void>
-  restore: () => Promise<void>
+  remove: () => Promise<boolean>
 }
 
 export function useCompetition(id: number | string): UseCompetitionReturn {
@@ -27,47 +25,25 @@ export function useCompetition(id: number | string): UseCompetitionReturn {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.competition(numericId),
-    queryFn: async () => {
-      const result = await getCompetition(numericId)
-      return result
-    },
+    queryFn: async () => getCompetition(numericId),
     enabled: isEnabled,
     staleTime: 5 * 60 * 1000,
   })
 
   const invalidateRelated = async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.competitions })
-    await queryClient.invalidateQueries({ queryKey: queryKeys.competitionDeleted })
     await queryClient.invalidateQueries({ queryKey: queryKeys.competition(numericId) })
   }
 
   const updateMutation = useMutation({
-    mutationFn: async (data: UpdateCompetitionInput) => {
-      return updateCompetition(numericId, data)
-    },
-    onSuccess: async () => {
-      await invalidateRelated()
-    },
+    mutationFn: async (data: UpdateCompetitionInput) => updateCompetition(numericId, data),
+    onSuccess: async () => { invalidateRelated() },
     retry: 0,
   })
 
   const removeMutation = useMutation({
-    mutationFn: async () => {
-      await deleteCompetition(numericId)
-    },
-    onSuccess: async () => {
-      await invalidateRelated()
-    },
-    retry: 0,
-  })
-
-  const restoreMutation = useMutation({
-    mutationFn: async () => {
-      await restoreCompetition(numericId)
-    },
-    onSuccess: async () => {
-      await invalidateRelated()
-    },
+    mutationFn: async () => deleteCompetition(numericId),
+    onSuccess: async () => { invalidateRelated() },
     retry: 0,
   })
 
@@ -78,7 +54,6 @@ export function useCompetition(id: number | string): UseCompetitionReturn {
     refresh: async () => { await refetch() },
     update: async (data: UpdateCompetitionInput) => { await updateMutation.mutateAsync(data) },
     remove: removeMutation.mutateAsync,
-    restore: restoreMutation.mutateAsync,
-    isMutating: updateMutation.isPending || removeMutation.isPending || restoreMutation.isPending,
+    isMutating: updateMutation.isPending || removeMutation.isPending,
   }
 }

@@ -11,11 +11,11 @@ export const queryKeys = {
   groupStudents: (id: number) => ['groups', id, 'students'] as const,
   groupPayments: (id: number) => ['groups', id, 'payments'] as const,
   groupEnrollments: (id: number) => ['groups', id, 'enrollments'] as const,
-  groupCompetitions: (id: number) => ['groups', id, 'competitions'] as const,
   groupAttendance: (id: number, levelNumber: number) => ['groups', id, 'attendance', levelNumber] as const,
-  groupTeams: (id: number) => ['groups', id, 'teams'] as const,
-  groupAvailableTeams: (id: number) => ['groups', id, 'available-teams'] as const,
-  groupCompetitionAnalytics: (id: number) => ['groups', id, 'competition-analytics'] as const,
+  groupsArchived: ['groups', 'archived'] as const,
+  groupsByCourse: (courseId: number) => ['groups', 'by-course', courseId] as const,
+  groupsByType: (groupType: string) => ['groups', 'by-type', groupType] as const,
+  groupSearch: (query: string, status?: string) => ['groups', 'search', query, status] as const,
   
   // Students
   students: ['students'] as const,
@@ -31,20 +31,22 @@ export const queryKeys = {
   // Competitions
   competitions: ['competitions'] as const,
   competition: (id: number) => ['competitions', id] as const,
-  competitionDeleted: ['competitions', 'deleted'] as const,
   competitionSummary: (id: number) => ['competitions', id, 'summary'] as const,
   competitionCategories: (id: number) => ['competitions', id, 'categories'] as const,
+  studentCompetitions: (studentId: number) => ['students', studentId, 'competitions'] as const,
 
   // Teams
   teams: ['teams'] as const,
   team: (id: number) => ['teams', id] as const,
-  teamDeleted: ['teams', 'deleted'] as const,
   teamMembers: (id: number) => ['teams', id, 'members'] as const,
   teamPayments: (id: number) => ['teams', id, 'payments'] as const,
+  teamsByCompetition: (competitionId: number, filters?: { category?: string; subcategory?: string }) => ['teams', 'by-competition', competitionId, filters] as const,
+  teamsWithMembers: (competitionId: number, filters?: { category?: string; subcategory?: string }) => ['teams', 'with-members', competitionId, filters] as const,
 
   // Finance
   receipts: ['finance', 'receipts'] as const,
   refunds: ['finance', 'refunds'] as const,
+  competitionFees: (studentId: number) => ['finance', 'competition-fees', studentId] as const,
   
   // Dashboard
   dashboard: ['dashboard'] as const,

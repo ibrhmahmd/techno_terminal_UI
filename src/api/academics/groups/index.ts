@@ -7,7 +7,8 @@
  *     getGroups, 
  *     createGroup, 
  *     getDetailedLevels,
- *     getGroupCompetitions 
+ *     searchGroups,
+ *     getArchivedGroups
  *   } from '../api/academics/groups'
  */
 
@@ -25,6 +26,10 @@ export {
   progressGroupLevel,
   listSessionsForGroup,
   getGroupsGrouped,
+  searchGroups,
+  getArchivedGroups,
+  getGroupsByCourse,
+  getGroupsByType,
 } from './core';
 
 // Lifecycle router functions
@@ -37,17 +42,6 @@ export {
   cancelGroupLevel,
   getGroupEnrollmentAnalytics,
 } from './lifecycle';
-
-// Competitions router functions
-export {
-  getGroupCompetitions,
-  getGroupTeams,
-  linkTeamToGroup,
-  registerForCompetition,
-  completeCompetitionParticipation,
-  withdrawFromCompetition,
-  getGroupCompetitionAnalytics,
-} from './competitions';
 
 // New endpoints (Group Details API v2)
 export {
@@ -78,8 +72,3 @@ export {
   type LevelEnrollmentGroupDTO,
   type TransferOptionDTO,
 } from './newEndpoints';
-
-// Utility functions
-export {
-  getGroupsWithCompetitions,
-} from './utils';
