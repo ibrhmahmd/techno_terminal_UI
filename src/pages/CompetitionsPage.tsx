@@ -10,7 +10,7 @@ import { CardGrid } from '../components/directory/CardGrid'
 import { ViewToggle } from '../components/groups/ViewToggle'
 import { useCompetitions } from '../hooks/competitions'
 import { createCompetition, deleteCompetition } from '../api/competitions'
-import type { CreateCompetitionInput } from '../api/competitions'
+import type { CreateCompetitionInput, UpdateCompetitionInput } from '../api/competitions'
 
 export function CompetitionsPage() {
   const navigate = useNavigate()
@@ -31,11 +31,11 @@ export function CompetitionsPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
-  const handleCreateCompetition = async (data: CreateCompetitionInput) => {
+  const handleCreateCompetition = async (data: CreateCompetitionInput | UpdateCompetitionInput) => {
     setIsProcessing(true)
     setActionError(null)
     try {
-      await createCompetition(data)
+      await createCompetition(data as CreateCompetitionInput)
       await refresh()
       setIsCreateModalOpen(false)
     } catch {

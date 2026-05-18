@@ -34,7 +34,7 @@ interface UseActivityHistoryOptions {
 export function useActivityHistory(
   studentId: number,
   options: UseActivityHistoryOptions = {}
-): UseQueryResult {
+) {
   const { enabled = true, ...params } = options
 
   return useQuery({
@@ -50,7 +50,7 @@ export function useActivitySummary(
   studentId: number,
   params?: { date_from?: string; date_to?: string },
   enabled: boolean = true
-): UseQueryResult {
+) {
   return useQuery({
     queryKey: activityKeys.summary(studentId, params),
     queryFn: () => getActivitySummary(studentId, params),
@@ -88,7 +88,7 @@ export function useCompetitionHistory(
 }
 
 // Log manual activity
-export function useLogActivity(): UseMutationResult<void, Error, { studentId: number; data: ActivityLogRequest }> {
+export function useLogActivity() {
   const queryClient = useQueryClient()
 
   return useMutation({

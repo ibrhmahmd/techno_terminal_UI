@@ -24,7 +24,7 @@ type GroupsView = 'active' | 'completed'
 
 export function GroupsPage() {
   const navigate = useNavigate()
-  const [activeView, setActiveView] = useState<GroupsView>('active')
+  const [activeView] = useState<GroupsView>('active')
   const {
     totalGroups,
     isLoading,

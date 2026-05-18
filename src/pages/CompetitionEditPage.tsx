@@ -4,7 +4,7 @@ import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { CompetitionForm } from '../components/competitions/CompetitionForm'
 import { useCompetition } from '../hooks/competitions'
-import { updateCompetition, type UpdateCompetitionInput } from '../api/competitions'
+import { updateCompetition, type UpdateCompetitionInput, type CreateCompetitionInput } from '../api/competitions'
 
 export function CompetitionEditPage() {
   const { id } = useParams<{ id: string }>()
@@ -14,12 +14,12 @@ export function CompetitionEditPage() {
   const { competition, isLoading, error } = useCompetition(competitionId)
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  const handleSubmit = async (data: UpdateCompetitionInput) => {
+  const handleSubmit = async (data: UpdateCompetitionInput | CreateCompetitionInput) => {
     setSaveError(null)
     try {
       const numericId = parseInt(competitionId, 10)
       if (isNaN(numericId)) { setSaveError('Invalid competition ID'); return }
-      await updateCompetition(numericId, data)
+      await updateCompetition(numericId, data as UpdateCompetitionInput)
       navigate(`/competitions/${competitionId}`)
     } catch (err: unknown) {
       setSaveError(err instanceof Error ? err.message : 'Failed to update competition')

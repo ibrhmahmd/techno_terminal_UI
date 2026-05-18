@@ -117,31 +117,3 @@ export interface CategoryWithTeamsDTO {
   teams: TeamWithMembersDTO[]
 }
 
-export interface TeamWithMembersDTO {
-  team: TeamDTO
-  members: TeamMemberDTO[]
-}
-
-export interface TeamDTO {
-  id: number
-  competition_id: number
-  team_name: string
-  category: string
-  subcategory?: string | null
-  group_id?: number | null
-  coach_id?: number | null
-  project_name: string | null
-  project_description: string | null
-  placement_rank?: number | null
-  placement_label?: string | null
-  notes?: string | null
-  created_at: string | null
-}
-
-export interface TeamMemberDTO {
-  id: number
-  team_id: number
-  student_id: number
-  amount_due: number
-  amount_paid: number
-}
