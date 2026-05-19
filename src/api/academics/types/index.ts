@@ -10,7 +10,6 @@
 // Common/shared types
 export type {
   PaginatedGroupsResponse,
-  EnrollmentHistoryFilters,
 } from './common';
 
 // Re-export from sub-modules

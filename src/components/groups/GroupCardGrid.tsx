@@ -33,7 +33,7 @@ export function GroupCardGrid({
   if (!hasContent) {
     return (
       <div className="flex flex-col items-center justify-center py-28 gap-3 text-center">
-        <span className="material-symbols-outlined text-6xl text-slate-200">{emptyIcon}</span>
+        <span className="material-symbols-outlined text-6xl text-slate-200" aria-hidden="true">{emptyIcon}</span>
         <p className="text-slate-400 text-sm font-medium">{emptyMessage}</p>
       </div>
     )

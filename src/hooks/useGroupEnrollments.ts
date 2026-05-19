@@ -18,11 +18,11 @@ interface UseGroupEnrollmentsReturn {
   refetch: () => void
 }
 
-export function useGroupEnrollments(groupId: number): UseGroupEnrollmentsReturn {
+export function useGroupEnrollments(groupId: number, enabled = true): UseGroupEnrollmentsReturn {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.groupEnrollments(groupId),
     queryFn: () => getGroupEnrollmentsAll(groupId),
-    enabled: groupId > 0,
+    enabled: groupId > 0 && enabled,
     staleTime: 3 * 60 * 1000,
   })
 

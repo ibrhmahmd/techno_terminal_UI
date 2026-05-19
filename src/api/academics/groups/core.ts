@@ -104,7 +104,7 @@ function normalizeEnrichedGroup(raw: RawEnrichedGroupPublic): EnrichedGroupPubli
         : undefined
     ),
     current_level: raw.current_level ?? raw.level_number ?? 0,
-    current_student_count: raw.current_student_count,
+    current_student_count: raw.current_student_count ?? 0,
   };
 }
 

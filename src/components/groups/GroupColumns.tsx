@@ -48,7 +48,7 @@ export const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
     align: 'center',
     cell: (group) => (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700">
-        <span className="material-symbols-outlined text-xs">group</span>
+        <span className="material-symbols-outlined text-xs" aria-hidden="true">group</span>
         {group.capacity}
       </span>
     )
@@ -60,6 +60,7 @@ export const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
       const statusConfig = {
         active: { label: 'Active', className: 'bg-green-100 text-green-700' },
         inactive: { label: 'Inactive', className: 'bg-slate-100 text-slate-600' },
+        archived: { label: 'Archived', className: 'bg-amber-100 text-amber-700' },
         completed: { label: 'Completed', className: 'bg-blue-100 text-blue-700' },
       }
       const config = statusConfig[group.status] || statusConfig.inactive

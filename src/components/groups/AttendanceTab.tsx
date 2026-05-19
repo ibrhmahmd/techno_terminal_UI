@@ -3,13 +3,12 @@ import { AttendanceGrid } from '../attendance/AttendanceGrid'
 import { LevelSelector } from './detail/LevelSelector'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useGroupAttendance } from '../../hooks/useGroupAttendance'
-import type { LevelDetailDTO, Session, AttendanceRosterDTO, AttendanceSessionDTO } from '../../api/academics'
+import type { LevelDetailDTO, AttendanceRosterDTO, AttendanceSessionDTO } from '../../api/academics'
 import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashboard'
 
 interface AttendanceTabProps {
   groupId: number
   levels: LevelDetailDTO[]
-  sessions: Session[] // Kept for backward compatibility with old API
   activeLevelId: number | null
   currentLevelNumber: number
   instructorName?: string
@@ -23,9 +22,9 @@ function transformRoster(roster: AttendanceRosterDTO[]): StudentRosterDTO[] {
   return roster.map(r => ({
     student_id: r.student_id,
     student_name: r.student_name,
-    gender: 'male' as const, // Default gender since new API doesn't provide it
+    gender: 'male' as const,
     billing_status: r.billing_status === 'paid' ? 'paid' : 'due',
-    balance: r.billing_status === 'paid' ? 0 : -1, // Approximate balance
+    balance: r.billing_status === 'paid' ? 0 : -1,
   }))
 }
 

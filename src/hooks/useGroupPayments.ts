@@ -18,11 +18,11 @@ interface UseGroupPaymentsReturn {
   refetch: () => void
 }
 
-export function useGroupPayments(groupId: number): UseGroupPaymentsReturn {
+export function useGroupPayments(groupId: number, enabled = true): UseGroupPaymentsReturn {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.groupPayments(groupId),
     queryFn: () => getGroupPayments(groupId),
-    enabled: groupId > 0,
+    enabled: groupId > 0 && enabled,
     staleTime: 5 * 60 * 1000,
   })
 

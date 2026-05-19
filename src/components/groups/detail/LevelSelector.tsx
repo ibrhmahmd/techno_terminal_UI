@@ -24,6 +24,7 @@ export function LevelSelector({
   }
 
   const activeIndex = levels.findIndex((l) => l.level_id === activeLevelId)
+  const currentLevelIndex = levels.findIndex((l) => l.level_number === currentLevelNumber)
 
   const navigate = (direction: 'prev' | 'next') => {
     const newIndex = direction === 'prev' ? activeIndex - 1 : activeIndex + 1
@@ -72,7 +73,7 @@ export function LevelSelector({
             >
               <LevelBadge level={level.level_number} isActive={isCurrent} size="md" />
               <span className={`text-xs ${isActive ? 'text-blue-700 font-medium' : 'text-slate-500'}`}>
-                {isCurrent ? 'Current' : index < levels.findIndex((l) => l.level_number === currentLevelNumber) ? 'Completed' : 'Upcoming'}
+                {isCurrent ? 'Current' : index < currentLevelIndex ? 'Completed' : 'Upcoming'}
               </span>
             </button>
           )

@@ -3,7 +3,6 @@ import { DollarSign, CheckCircle, AlertCircle, TrendingUp, CreditCard, ChevronDo
 import type { GroupPaymentsSummaryDTO, LevelPaymentsDTO } from '../../api/academics'
 
 interface PaymentsTabProps {
-  groupId: number
   paymentSummary: GroupPaymentsSummaryDTO | null
   paymentsByLevel: LevelPaymentsDTO[]
   totalExpected: number
@@ -113,8 +112,11 @@ export function PaymentsTab({
           <div className="divide-y divide-slate-100">
             {paymentsByLevel.map((level) => (
               <div key={level.level_number}>
-                <div
-                  className={`p-4 hover:bg-slate-50 transition-colors cursor-pointer ${
+                <button
+                  type="button"
+                  aria-expanded={selectedLevel === level.level_number}
+                  aria-label={`Level ${level.level_number} payment details`}
+                  className={`w-full p-4 hover:bg-slate-50 transition-colors text-left ${
                     selectedLevel === level.level_number ? 'bg-blue-50' : ''
                   }`}
                   onClick={() => setSelectedLevel(
@@ -144,6 +146,8 @@ export function PaymentsTab({
                         e.stopPropagation()
                         setExpandedLevel(expandedLevel === level.level_number ? null : level.level_number)
                       }}
+                      aria-expanded={expandedLevel === level.level_number}
+                      aria-label={expandedLevel === level.level_number ? `Collapse level ${level.level_number} details` : `Expand level ${level.level_number} details`}
                       className="p-2 hover:bg-slate-100 rounded-lg"
                     >
                       {expandedLevel === level.level_number ? (
@@ -153,7 +157,7 @@ export function PaymentsTab({
                       )}
                     </button>
                   </div>
-                </div>
+                </button>
 
                 {/* Expanded Payment Details */}
                 {expandedLevel === level.level_number && level.payments.length > 0 && (

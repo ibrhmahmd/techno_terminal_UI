@@ -5,7 +5,6 @@ import {
   searchGroups,
   getArchivedGroups,
   getGroupsByCourse,
-  getGroupsByType,
   createGroup,
   updateGroup,
   deleteGroup,
@@ -23,7 +22,6 @@ export const groupKeys = {
   grouped: (by: GroupByField) => ['groups', 'grouped', by] as const,
   archived: ['groups', 'archived'] as const,
   byCourse: (courseId: number) => ['groups', 'by-course', courseId] as const,
-  byType: (groupType: string) => ['groups', 'by-type', groupType] as const,
   search: (query: string, status?: string) => ['groups', 'search', query, status] as const,
 }
 
@@ -53,10 +51,10 @@ export function useGroupsGrouped(groupBy: Exclude<GroupByField, null>, enabled: 
 }
 
 /** Search groups by name (server-side) */
-export function useSearchGroups(query: string, status?: string, enabled: boolean = true) {
+export function useSearchGroups(query: string, status?: 'active' | 'inactive' | 'completed', enabled: boolean = true) {
   return useQuery({
     queryKey: groupKeys.search(query, status),
-    queryFn: () => searchGroups(query, status as any),
+    queryFn: () => searchGroups(query, status),
     enabled: enabled && query.length > 0,
     staleTime: 1 * 60 * 1000,
   })
@@ -78,16 +76,6 @@ export function useGroupsByCourse(courseId: number, enabled: boolean = true) {
     queryKey: groupKeys.byCourse(courseId),
     queryFn: () => getGroupsByCourse(courseId),
     enabled: enabled && courseId > 0,
-    staleTime: 5 * 60 * 1000,
-  })
-}
-
-/** Get groups by type */
-export function useGroupsByType(groupType: string, enabled: boolean = true) {
-  return useQuery({
-    queryKey: groupKeys.byType(groupType),
-    queryFn: () => getGroupsByType(groupType),
-    enabled: enabled && groupType.length > 0,
     staleTime: 5 * 60 * 1000,
   })
 }

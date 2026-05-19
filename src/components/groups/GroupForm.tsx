@@ -1,6 +1,6 @@
 import { useState, type FormEvent, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import type { ScheduleGroupInput, Course, Schedule } from '../../api/academics'
+import type { ScheduleGroupInput, Course } from '../../api/academics'
 import { getCourses } from '../../api/academics'
 import { useAllEmployees } from '../../hooks/useAllEmployees'
 import { formToSchedule } from '../../utils/scheduleTransform'
@@ -38,10 +38,13 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
   const [instructorId, setInstructorId] = useState(initialData?.instructor_id || '')
   const [capacity, setCapacity] = useState(initialData?.capacity || 12)
   const [startDate, setStartDate] = useState(initialData?.start_date || '')
-  const schedule = initialData?.schedule as Schedule | undefined
-  const [defaultDay, setDefaultDay] = useState(schedule?.day || 'Saturday')
-  const [startTime, setStartTime] = useState<TimeState>(parseTime(schedule?.start_time || (schedule as { time_start?: string } | undefined)?.time_start))
-  const [endTime, setEndTime] = useState<TimeState>(parseTime(schedule?.end_time || (schedule as { time_end?: string } | undefined)?.time_end))
+  const schedule = initialData?.schedule
+  const day = schedule?.day || 'Saturday'
+  const startTimeStr = (schedule as Record<string, unknown> | undefined)?.start_time as string | undefined || (schedule as Record<string, unknown> | undefined)?.time_start as string | undefined
+  const endTimeStr = (schedule as Record<string, unknown> | undefined)?.end_time as string | undefined || (schedule as Record<string, unknown> | undefined)?.time_end as string | undefined
+  const [defaultDay, setDefaultDay] = useState(day)
+  const [startTime, setStartTime] = useState<TimeState>(parseTime(startTimeStr))
+  const [endTime, setEndTime] = useState<TimeState>(parseTime(endTimeStr))
   const [courses, setCourses] = useState<Course[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
@@ -64,6 +67,16 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
     }
     fetchCourses()
   }, [])
+
+  useEffect(() => {
+    const s = initialData?.schedule
+    const d = s?.day || 'Saturday'
+    const st = (s as Record<string, unknown> | undefined)?.start_time as string | undefined || (s as Record<string, unknown> | undefined)?.time_start as string | undefined
+    const et = (s as Record<string, unknown> | undefined)?.end_time as string | undefined || (s as Record<string, unknown> | undefined)?.time_end as string | undefined
+    setDefaultDay(d)
+    setStartTime(parseTime(st))
+    setEndTime(parseTime(et))
+  }, [initialData])
 
   const to24h = (time: TimeState): string => {
     let h = time.hour
@@ -114,7 +127,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
         <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
-          <span className="material-symbols-outlined text-lg">error</span>
+          <span className="material-symbols-outlined text-lg" aria-hidden="true">error</span>
           <span>{error}</span>
         </div>
       )}
@@ -235,6 +248,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           <select
             value={startTime.hour}
             onChange={(e) => setStartTime(prev => ({ ...prev, hour: parseInt(e.target.value) }))}
+            aria-label="Start time hour"
             className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
           >
             {HOURS.map(h => <option key={h} value={h}>{String(h).padStart(2, '0')}</option>)}
@@ -242,6 +256,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           <select
             value={startTime.minute}
             onChange={(e) => setStartTime(prev => ({ ...prev, minute: e.target.value }))}
+            aria-label="Start time minute"
             className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
           >
             {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
@@ -249,6 +264,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           <select
             value={startTime.period}
             onChange={(e) => setStartTime(prev => ({ ...prev, period: e.target.value as 'AM' | 'PM' }))}
+            aria-label="Start time period"
             className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
           >
             <option value="AM">AM</option>
@@ -264,6 +280,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           <select
             value={endTime.hour}
             onChange={(e) => setEndTime(prev => ({ ...prev, hour: parseInt(e.target.value) }))}
+            aria-label="End time hour"
             className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
           >
             {HOURS.map(h => <option key={h} value={h}>{String(h).padStart(2, '0')}</option>)}
@@ -271,6 +288,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           <select
             value={endTime.minute}
             onChange={(e) => setEndTime(prev => ({ ...prev, minute: e.target.value }))}
+            aria-label="End time minute"
             className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
           >
             {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
@@ -278,6 +296,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           <select
             value={endTime.period}
             onChange={(e) => setEndTime(prev => ({ ...prev, period: e.target.value as 'AM' | 'PM' }))}
+            aria-label="End time period"
             className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
           >
             <option value="AM">AM</option>

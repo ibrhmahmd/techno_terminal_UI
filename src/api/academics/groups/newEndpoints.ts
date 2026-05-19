@@ -197,21 +197,6 @@ export interface GroupEnrollmentsAllResponse {
 // ============================================================================
 
 /**
- * Delete a level from a group
- * Only works if level has no sessions or enrollments
- * Auth: require_admin
- */
-export async function deleteGroupLevel(
-  groupId: number,
-  levelNumber: number
-): Promise<DeleteLevelResponse> {
-  const response = await client.delete<ApiResponse<DeleteLevelResponse>>(
-    `/academics/groups/${groupId}/levels/${levelNumber}`
-  )
-  return response.data.data
-}
-
-/**
  * Get detailed levels with sessions for a group
  * Uses lookup table pattern for courses and instructors
  * Auth: require_any

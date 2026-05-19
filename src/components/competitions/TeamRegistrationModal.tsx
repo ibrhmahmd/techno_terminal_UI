@@ -2,6 +2,9 @@ import { useState, useEffect, useMemo, type FormEvent } from 'react'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { StudentMultiSelector, type StudentSelection } from '../common/StudentMultiSelector'
+import { GroupCombobox } from '../common/combobox/GroupCombobox'
+import { useGroupsFlat } from '../../hooks/useGroupQueries'
+import type { EnrichedGroupPublic } from '../../api/academics'
 import type { RegisterTeamInput } from '../../api/teams'
 import { extractErrorMessage, getErrorStatus } from '../../utils/apiErrors'
 
@@ -21,13 +24,21 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
   const [selectedStudents, setSelectedStudents] = useState<StudentSelection[]>([])
   const [projectName, setProjectName] = useState('')
   const [projectDescription, setProjectDescription] = useState('')
+  const [selectionMode, setSelectionMode] = useState<'individual' | 'group'>('individual')
+  const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
+  const [groupSearch, setGroupSearch] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const { data: groups, isLoading: groupsLoading } = useGroupsFlat(selectionMode === 'group' && isOpen)
 
   useEffect(() => {
     if (isOpen) {
       setSelectedCategory(categoryName)
       setSelectedSubcategory('')
+      setSelectionMode('individual')
+      setSelectedGroup(null)
+      setGroupSearch('')
     }
   }, [isOpen, categoryName])
 
@@ -57,18 +68,28 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
       return
     }
 
-    if (selectedStudents.length === 0) {
+    if (selectionMode === 'individual' && selectedStudents.length === 0) {
       setError('At least one student is required')
       return
     }
 
-    const student_ids = selectedStudents.map(s => s.student.id)
+    if (selectionMode === 'group' && !selectedGroup) {
+      setError('Please select a group')
+      return
+    }
+
+    const student_ids = selectionMode === 'individual'
+      ? selectedStudents.map(s => s.student.id)
+      : []
+
     const student_fees: Record<string, number> = {}
-    selectedStudents.forEach(s => {
-      if (s.fee !== undefined) {
-        student_fees[s.student.id.toString()] = s.fee
-      }
-    })
+    if (selectionMode === 'individual') {
+      selectedStudents.forEach(s => {
+        if (s.fee !== undefined) {
+          student_fees[s.student.id.toString()] = s.fee
+        }
+      })
+    }
 
     setIsLoading(true)
     try {
@@ -79,6 +100,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
         subcategory: selectedSubcategory.trim() || undefined,
         student_ids,
         student_fees: Object.keys(student_fees).length > 0 ? student_fees : undefined,
+        group_id: selectionMode === 'group' ? selectedGroup?.id : undefined,
         project_name: projectName.trim() || undefined,
         project_description: projectDescription.trim() || undefined,
       })
@@ -86,6 +108,8 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
       setSelectedCategory('')
       setSelectedSubcategory('')
       setSelectedStudents([])
+      setSelectedGroup(null)
+      setGroupSearch('')
       setProjectName('')
       setProjectDescription('')
       onClose()
@@ -232,11 +256,50 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
         </div>
 
         <div>
-          <h4 className="text-sm font-medium text-on-surface mb-2">Students</h4>
-          <StudentMultiSelector
-            selected={selectedStudents}
-            onChange={setSelectedStudents}
-          />
+          <div className="flex items-center gap-4 mb-4">
+            <h4 className="text-sm font-medium text-on-surface">Students</h4>
+            <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-0.5">
+              <button
+                type="button"
+                onClick={() => setSelectionMode('individual')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  selectionMode === 'individual'
+                    ? 'bg-white text-on-surface shadow-sm'
+                    : 'text-slate-500 hover:text-on-surface'
+                }`}
+              >
+                Select Students
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectionMode('group')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  selectionMode === 'group'
+                    ? 'bg-white text-on-surface shadow-sm'
+                    : 'text-slate-500 hover:text-on-surface'
+                }`}
+              >
+                From Group
+              </button>
+            </div>
+          </div>
+
+          {selectionMode === 'individual' ? (
+            <StudentMultiSelector
+              selected={selectedStudents}
+              onChange={setSelectedStudents}
+            />
+          ) : (
+            <GroupCombobox
+              value={selectedGroup}
+              onChange={setSelectedGroup}
+              search={groupSearch}
+              setSearch={setGroupSearch}
+              groups={groups ?? []}
+              isLoading={groupsLoading}
+              recentGroupIds={[]}
+            />
+          )}
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">

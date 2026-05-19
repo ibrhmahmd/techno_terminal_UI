@@ -32,6 +32,10 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
   const invalidateGroups = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.groups })
     await queryClient.invalidateQueries({ queryKey: queryKeys.group(groupId) })
+    await queryClient.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+    await queryClient.invalidateQueries({ queryKey: queryKeys.groupSessions(groupId) })
+    await queryClient.invalidateQueries({ queryKey: queryKeys.groupEnrollments(groupId) })
+    await queryClient.invalidateQueries({ queryKey: queryKeys.groupPayments(groupId) })
   }, [queryClient, groupId])
 
   // Update group mutation
@@ -89,12 +93,17 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
   else if (updateMutation.isError || deleteMutation.isError || archiveMutation.isError || levelUpMutation.isError || createLevelMutation.isError) status = 'error'
 
   // Combine all errors
-  const error = 
-    (updateMutation.error as Error)?.message ||
-    (deleteMutation.error as Error)?.message ||
-    (archiveMutation.error as Error)?.message ||
-    (levelUpMutation.error as Error)?.message ||
-    (createLevelMutation.error as Error)?.message ||
+  const getErrorMessage = (err: unknown): string | null => {
+    if (err instanceof Error) return err.message
+    if (typeof err === 'string') return err
+    return null
+  }
+  const error =
+    getErrorMessage(updateMutation.error) ||
+    getErrorMessage(deleteMutation.error) ||
+    getErrorMessage(archiveMutation.error) ||
+    getErrorMessage(levelUpMutation.error) ||
+    getErrorMessage(createLevelMutation.error) ||
     null
 
   // Clear all mutations
