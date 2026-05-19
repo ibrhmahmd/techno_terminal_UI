@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
 import { type EnrichedGroupPublic, type UpdateGroupDTO } from '../../../api/academics'
@@ -11,11 +11,12 @@ interface EditGroupDialogProps {
   group: EnrichedGroupPublic
   onClose: () => void
   onSave: (data: UpdateGroupDTO & { name?: string; notes?: string; status?: 'active' | 'inactive' | 'completed' }) => Promise<void>
+  triggerRef?: React.RefObject<HTMLElement | null>
 }
 
 const DAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 
-export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDialogProps) {
+export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: EditGroupDialogProps) {
   const [name, setName] = useState(group.name || '')
   const [instructorId, setInstructorId] = useState(String(group.instructor_id ?? ''))
   const [day, setDay] = useState(group.schedule?.day || '')
@@ -25,6 +26,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
   const [status, setStatus] = useState<'active' | 'inactive' | 'completed'>(group.status || 'inactive')
   const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const dialogRef = useRef<HTMLDivElement>(null)
 
   const { data: instructors = [], isLoading: isLoadingEmployees } = useAllEmployees()
 
@@ -40,16 +42,49 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
     }
   }, [isOpen, group])
 
+  // Focus trap and focus return
+  useEffect(() => {
+    if (!isOpen || !dialogRef.current) return
+    const dialog = dialogRef.current
+    const focusable = dialog.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    first?.focus()
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last?.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first?.focus()
+      }
+    }
+    dialog.addEventListener('keydown', handleTab)
+    return () => {
+      dialog.removeEventListener('keydown', handleTab)
+      triggerRef?.current?.focus()
+    }
+  }, [isOpen, triggerRef])
+
   if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     try {
+      const formattedStart = formatTimeInput(startTime)
+      const formattedEnd = formatTimeInput(endTime)
+      const scheduleData = formattedStart && formattedEnd
+        ? formToSchedule(day, formattedStart, formattedEnd)
+        : undefined
       await onSave({
         name,
         instructor_id: Number(instructorId),
-        schedule: formToSchedule(day, formatTimeInput(startTime) ?? '', formatTimeInput(endTime) ?? ''),
+        schedule: scheduleData,
         capacity,
         status,
         notes: notes || undefined,
@@ -65,18 +100,19 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Edit group" className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-slate-200">
           <h2 className="text-lg font-semibold text-slate-900">Edit Group</h2>
-          <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg">
+          <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg" aria-label="Close dialog">
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Group Name</label>
+            <label htmlFor="edit-group-name" className="block text-sm font-medium text-slate-700 mb-1">Group Name</label>
             <input
+              id="edit-group-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -86,13 +122,15 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Instructor</label>
+            <label htmlFor="edit-instructor" className="block text-sm font-medium text-slate-700 mb-1">Instructor</label>
             <select
+              id="edit-instructor"
               value={instructorId}
               onChange={(e) => setInstructorId(e.target.value)}
               disabled={isLoadingEmployees}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50"
             >
+              <option value="">Select an instructor...</option>
               {instructors.map((i) => (
                 <option key={i.id} value={i.id}>{i.full_name}</option>
               ))}
@@ -101,8 +139,9 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Day</label>
+              <label htmlFor="edit-day" className="block text-sm font-medium text-slate-700 mb-1">Day</label>
               <select
+                id="edit-day"
                 value={day}
                 onChange={(e) => setDay(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -112,8 +151,9 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Capacity</label>
+              <label htmlFor="edit-capacity" className="block text-sm font-medium text-slate-700 mb-1">Capacity</label>
               <input
+                id="edit-capacity"
                 type="number"
                 value={capacity}
                 onChange={(e) => setCapacity(Number(e.target.value))}
@@ -125,8 +165,9 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Start Time</label>
+              <label htmlFor="edit-start-time" className="block text-sm font-medium text-slate-700 mb-1">Start Time</label>
               <input
+                id="edit-start-time"
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
@@ -134,8 +175,9 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">End Time</label>
+              <label htmlFor="edit-end-time" className="block text-sm font-medium text-slate-700 mb-1">End Time</label>
               <input
+                id="edit-end-time"
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
@@ -164,8 +206,9 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave }: EditGroupDia
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+            <label htmlFor="edit-notes" className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
             <textarea
+              id="edit-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}

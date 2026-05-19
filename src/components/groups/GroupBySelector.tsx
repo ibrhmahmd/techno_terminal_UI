@@ -16,16 +16,28 @@ const OPTIONS: Array<{ value: GroupByField; label: string; icon: string }> = [
 ]
 
 export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorProps) {
+  const handleKeyDown = (index: number) => (e: React.KeyboardEvent) => {
+    let next = index
+    if (e.key === 'ArrowRight') next = (index + 1) % OPTIONS.length
+    else if (e.key === 'ArrowLeft') next = (index - 1 + OPTIONS.length) % OPTIONS.length
+    else if (e.key === 'Home') next = 0
+    else if (e.key === 'End') next = OPTIONS.length - 1
+    else return
+    e.preventDefault()
+    onChange(OPTIONS[next].value)
+  }
+
   return (
     <section className="w-full pb-4">
       <div className="overflow-x-auto">
         <div className="flex min-w-[560px] items-center gap-1 rounded-lg bg-slate-100 p-1" role="tablist" aria-label="Group by">
-          {OPTIONS.map(({ value: optVal, label, icon }) => {
+          {OPTIONS.map(({ value: optVal, label, icon }, index) => {
             const isActive = value === optVal
             return (
               <button
                 key={String(optVal)}
                 onClick={() => onChange(optVal)}
+                onKeyDown={handleKeyDown(index)}
                 role="tab"
                 aria-selected={isActive}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all ${

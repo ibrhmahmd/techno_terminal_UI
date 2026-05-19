@@ -38,7 +38,7 @@ export function GroupStatusBadge({ status, size = 'md' }: GroupStatusBadgeProps)
     <span
       className={`inline-flex items-center gap-1.5 rounded-full font-medium ${bg} ${text} ${sizeClasses[size]}`}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${status === 'active' ? 'bg-green-500' : status === 'inactive' ? 'bg-slate-400' : 'bg-amber-500'}`} />
+      <span className={`w-1.5 h-1.5 rounded-full ${status === 'active' ? 'bg-green-500' : status === 'inactive' ? 'bg-slate-400' : 'bg-amber-500'}`} aria-hidden="true" />
       {label}
     </span>
   )

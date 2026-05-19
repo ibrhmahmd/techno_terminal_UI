@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
 import { useProgressLevelForm } from '../../../hooks/useProgressLevelForm'
@@ -15,6 +15,7 @@ interface ProgressLevelDialogProps {
   onClose: () => void
   onConfirm: (data: ProgressGroupLevelRequest) => Promise<void>
   isLoading: boolean
+  triggerRef?: React.RefObject<HTMLElement | null>
 }
 
 export function ProgressLevelDialog({
@@ -28,7 +29,9 @@ export function ProgressLevelDialog({
   onClose,
   onConfirm,
   isLoading,
+  triggerRef,
 }: ProgressLevelDialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null)
   const {
     formData,
     setTargetLevel,
@@ -67,6 +70,34 @@ export function ProgressLevelDialog({
     }
   }, [isOpen, currentLevelNumber, currentInstructorId, currentCourseId, currentGroupName, currentPriceOverride, resetForm])
 
+  // Focus trap and focus return
+  useEffect(() => {
+    if (!isOpen || !dialogRef.current) return
+    const dialog = dialogRef.current
+    const focusable = dialog.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    first?.focus()
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last?.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first?.focus()
+      }
+    }
+    dialog.addEventListener('keydown', handleTab)
+    return () => {
+      dialog.removeEventListener('keydown', handleTab)
+      triggerRef?.current?.focus()
+    }
+  }, [isOpen, triggerRef])
+
   if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,10 +110,10 @@ export function ProgressLevelDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Create new level" className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-slate-200">
           <h2 className="text-lg font-semibold text-slate-900">Create New Level</h2>
-          <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg">
+          <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg" aria-label="Close dialog">
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
@@ -90,10 +121,11 @@ export function ProgressLevelDialog({
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {/* Target Level */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="target-level" className="block text-sm font-medium text-slate-700 mb-1">
               Target Level <span className="text-red-500">*</span>
             </label>
             <input
+              id="target-level"
               type="number"
               min={currentLevelNumber + 1}
               value={formData.target_level}
@@ -108,10 +140,11 @@ export function ProgressLevelDialog({
 
           {/* Instructor Selector */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="progress-instructor" className="block text-sm font-medium text-slate-700 mb-1">
               Instructor
             </label>
             <select
+              id="progress-instructor"
               value={formData.instructor_id ?? ''}
               onChange={(e) => setInstructorId(e.target.value ? Number(e.target.value) : null)}
               disabled={isLoadingEmployees}
@@ -131,10 +164,11 @@ export function ProgressLevelDialog({
 
           {/* Course Selector */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="progress-course" className="block text-sm font-medium text-slate-700 mb-1">
               Course
             </label>
             <select
+              id="progress-course"
               value={formData.course_id ?? ''}
               onChange={(e) => setCourseId(e.target.value ? Number(e.target.value) : null)}
               disabled={isLoadingCourses}
@@ -154,10 +188,11 @@ export function ProgressLevelDialog({
 
           {/* Group Name */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="progress-group-name" className="block text-sm font-medium text-slate-700 mb-1">
               Group Name
             </label>
             <input
+              id="progress-group-name"
               type="text"
               value={formData.group_name}
               onChange={(e) => setGroupName(e.target.value)}
@@ -172,10 +207,11 @@ export function ProgressLevelDialog({
 
           {/* Session Start Date */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="progress-start-date" className="block text-sm font-medium text-slate-700 mb-1">
               Session Start Date
             </label>
             <input
+              id="progress-start-date"
               type="date"
               value={formData.session_start_date}
               onChange={(e) => setSessionStartDate(e.target.value)}
@@ -185,10 +221,11 @@ export function ProgressLevelDialog({
 
           {/* Price Override */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="progress-price" className="block text-sm font-medium text-slate-700 mb-1">
               Price Override
             </label>
             <input
+              id="progress-price"
               type="number"
               min={0}
               step={0.01}

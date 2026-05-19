@@ -60,11 +60,3 @@ export interface ProgressGroupLevelRequest {
   /** Override group name (max 255 chars) */
   group_name?: string;
 }
-
-/**
- * Input for cancelling a level
- * POST /academics/groups/{group_id}/levels/{level_id}/cancel
- */
-export interface CancelLevelInput {
-  reason?: string;
-}

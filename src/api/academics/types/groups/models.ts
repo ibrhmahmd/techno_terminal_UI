@@ -32,15 +32,6 @@ export interface Group {
   start_date: string;
 }
 
-// Simplified group list item (GroupListItem from API)
-export interface GroupListItem {
-  id: number;
-  name: string;
-  course_id: number;
-  level_number: number;
-  status: 'active' | 'inactive' | 'completed';
-}
-
 // Enriched group with related data
 export interface EnrichedGroupPublic {
   id: number;
@@ -69,14 +60,4 @@ export interface RawEnrichedGroupPublic extends EnrichedGroupPublic {
   default_time_start?: string;
   default_time_end?: string;
   level_number?: number;
-}
-
-// Progress tracking for levels
-export interface ProgressLevel {
-  current_module: string;
-  description: string;
-  group_score: number;
-  target_score: number;
-  is_completed: boolean;
-  ready_for_next_level: boolean;
 }

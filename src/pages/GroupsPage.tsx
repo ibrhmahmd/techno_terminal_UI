@@ -233,7 +233,7 @@ export function GroupsPage() {
 
           {groupBy === undefined && !isLoading && (
             <div className="flex flex-col items-center justify-center py-28 gap-3 text-center">
-              <span className="material-symbols-outlined text-6xl text-slate-200">grid_view</span>
+              <span className="material-symbols-outlined text-6xl text-slate-200" aria-hidden="true">grid_view</span>
               <p className="text-slate-400 text-sm font-medium">
                 Select a view above to load groups
               </p>
@@ -244,7 +244,7 @@ export function GroupsPage() {
             <>
               {mutationError && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg">error</span>
+                  <span className="material-symbols-outlined text-lg" aria-hidden="true">error</span>
                   {mutationError}
                 </div>
               )}
@@ -434,7 +434,18 @@ export function GroupsPage() {
         {selectedGroup && (
           <GroupForm
             mode="edit"
-            initialData={selectedGroup as any}
+            initialData={{
+              name: selectedGroup.name,
+              course_id: selectedGroup.course_id,
+              instructor_id: selectedGroup.instructor_id,
+              capacity: selectedGroup.capacity,
+              schedule: selectedGroup.schedule ? {
+                day: selectedGroup.schedule.day,
+                time_start: selectedGroup.schedule.start_time,
+                time_end: selectedGroup.schedule.end_time,
+              } : undefined,
+              start_date: selectedGroup.start_date,
+            }}
             onSubmit={handleUpdateGroup}
             onCancel={() => { setIsEditModalOpen(false); setSelectedGroup(null) }}
           />

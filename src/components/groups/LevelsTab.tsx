@@ -3,7 +3,6 @@ import { Calendar, Users, BookOpen, GraduationCap, Clock, CheckCircle, XCircle, 
 import type { LevelDetailDTO } from '../../api/academics'
 
 interface LevelsTabProps {
-  groupId: number
   levels: LevelDetailDTO[]
   currentLevelNumber: number
 }
@@ -11,13 +10,13 @@ interface LevelsTabProps {
 export function LevelsTab({
   levels,
   currentLevelNumber,
-}: Omit<LevelsTabProps, 'groupId'>) {
+}: LevelsTabProps) {
   const [expandedLevel, setExpandedLevel] = useState<number | null>(null)
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'active':
-        return <AlertCircle className="w-5 h-5 text-amber-500" />
+        return <CheckCircle className="w-5 h-5 text-green-500" />
       case 'completed':
         return <CheckCircle className="w-5 h-5 text-green-500" />
       case 'cancelled':
@@ -82,8 +81,11 @@ export function LevelsTab({
             } ${level.level_number === currentLevelNumber ? 'ring-2 ring-blue-100' : ''}`}
           >
             {/* Card Header */}
-            <div
-              className="p-4 cursor-pointer"
+            <button
+              type="button"
+              aria-expanded={expandedLevel === level.level_id}
+              aria-label={`Level ${level.level_number} details`}
+              className="w-full p-4 text-left"
               onClick={() => setExpandedLevel(expandedLevel === level.level_id ? null : level.level_id)}
             >
               <div className="flex items-start justify-between">
@@ -133,7 +135,7 @@ export function LevelsTab({
                   </span>
                 </div>
               </div>
-            </div>
+            </button>
 
             {/* Expanded Details - Payment Summary */}
             {expandedLevel === level.level_id && level.payment_summary && (

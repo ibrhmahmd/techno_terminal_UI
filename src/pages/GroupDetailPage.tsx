@@ -39,7 +39,6 @@ export function GroupDetailPage() {
     group,
     levels,
     currentLevel,
-    sessions,
     isLoading,
     error,
     refetch,
@@ -50,7 +49,7 @@ export function GroupDetailPage() {
   // Consolidated enrollments data
   const {
     error: enrollmentsError,
-  } = useGroupEnrollments(groupId)
+  } = useGroupEnrollments(groupId, activeTab === 'students')
 
   // Real payment data (replaces enrollmentAnalytics estimates)
   const {
@@ -62,7 +61,7 @@ export function GroupDetailPage() {
     collectionRate,
     isLoading: isLoadingPayments,
     error: paymentsError,
-  } = useGroupPayments(groupId)
+  } = useGroupPayments(groupId, activeTab === 'payments')
 
   // Show toast notifications for hook errors
   useEffect(() => {
@@ -172,7 +171,7 @@ export function GroupDetailPage() {
         <TopNavbar activePage="Groups" />
         <div className="p-8 max-w-[1400px] mx-auto">
           <div className="p-12 bg-amber-50 border border-amber-100 rounded-xl text-center">
-            <span className="material-symbols-outlined text-4xl text-amber-500 mb-2">warning</span>
+            <span className="material-symbols-outlined text-4xl text-amber-500 mb-2" aria-hidden="true">warning</span>
             <h2 className="text-xl font-bold text-amber-800 mb-2">Invalid Group ID</h2>
             <p className="text-amber-600 mb-4">The group ID in the URL is not valid.</p>
             <button
@@ -204,7 +203,7 @@ export function GroupDetailPage() {
         <TopNavbar activePage="Groups" />
         <div className="p-8 max-w-[1400px] mx-auto">
           <div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center">
-            <span className="material-symbols-outlined text-4xl text-red-500 mb-2">error</span>
+            <span className="material-symbols-outlined text-4xl text-red-500 mb-2" aria-hidden="true">error</span>
             <h2 className="text-xl font-bold text-red-800 mb-2">Error</h2>
             <p className="text-red-600">{error}</p>
           </div>
@@ -254,7 +253,6 @@ export function GroupDetailPage() {
             <AttendanceTab
               groupId={groupId}
               levels={levels}
-              sessions={sessions}
               activeLevelId={activeLevelId}
               currentLevelNumber={group.current_level}
               instructorName={group.instructor_name}
@@ -281,7 +279,6 @@ export function GroupDetailPage() {
 
           {activeTab === 'payments' && (
             <PaymentsTab
-              groupId={groupId}
               paymentSummary={paymentSummary}
               paymentsByLevel={paymentsByLevel}
               totalExpected={totalExpected}
@@ -294,7 +291,7 @@ export function GroupDetailPage() {
 
           {activeTab === 'history' && (
             <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">
-              <span className="material-symbols-outlined text-4xl mb-2">history</span>
+              <span className="material-symbols-outlined text-4xl mb-2" aria-hidden="true">history</span>
               <p className="font-medium">Competition history has been moved to the Competitions section.</p>
             </div>
           )}
@@ -333,7 +330,7 @@ export function GroupDetailPage() {
             currentInstructorId={group?.instructor_id ?? 0}
             currentCourseId={group?.course_id ?? 0}
             currentGroupName={group?.name ?? ''}
-            currentPriceOverride={undefined}
+            currentPriceOverride={null}
             onClose={() => setIsProgressLevelDialogOpen(false)}
             onConfirm={handleProgressLevelConfirm}
             isLoading={false}

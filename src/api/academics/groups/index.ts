@@ -14,9 +14,6 @@
 
 // Core router functions
 export {
-  getGroupDetails,
-  getGroups,
-  getGroupsPaginated,
   getEnrichedGroups,
   getEnrichedGroup,
   createGroup,
@@ -35,23 +32,15 @@ export {
 // Lifecycle router functions
 export {
   generateLevelSessions,
-  getGroupEnrollmentHistory,
-  getGroupInstructorHistory,
-  getGroupLevel,
-  completeGroupLevel,
-  cancelGroupLevel,
-  getGroupEnrollmentAnalytics,
 } from './lifecycle';
 
 // New endpoints (Group Details API v2)
 export {
-  deleteGroupLevel,
   getDetailedLevels,
   getAttendanceForLevel,
   getGroupPayments,
   getGroupEnrollmentsAll,
   // Types
-  type DeleteLevelResponse,
   type DetailedLevelsResponse,
   type LevelDetailDTO,
   type CourseInfoDTO,

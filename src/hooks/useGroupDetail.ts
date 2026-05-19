@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from './queryKeys'
 import {
   getEnrichedGroup,
@@ -79,10 +79,16 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
     qc.invalidateQueries({ queryKey: queryKeys.group(groupId) })
   }
 
+  const generateSessionsMutation = useMutation({
+    mutationFn: (data: GenerateLevelSessionsRequest) => generateLevelSessions(groupId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.groupSessions(groupId) })
+      qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+    },
+  })
+
   const generateSessions = async (data: GenerateLevelSessionsRequest): Promise<Session[]> => {
-    const result = await generateLevelSessions(groupId, data)
-    refetch()
-    return result
+    return generateSessionsMutation.mutateAsync(data)
   }
 
   return {

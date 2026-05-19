@@ -159,11 +159,12 @@ export function GroupInfoCard({
 
       {/* Notes Section */}
       <div className="mt-6">
-        <label className="block text-sm font-medium text-slate-700 mb-2">
+        <label htmlFor="group-notes" className="block text-sm font-medium text-slate-700 mb-2">
           Group Notes
           {isSavingNotes && <span className="ml-2 text-xs text-slate-400">Saving...</span>}
         </label>
         <textarea
+          id="group-notes"
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
           placeholder="Add notes about this group..."

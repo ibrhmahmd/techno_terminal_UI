@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { LevelSelector } from './detail/LevelSelector'
 import { DataTable } from '../common/datatable'
@@ -6,7 +6,19 @@ import { ConfirmDialog } from '../common/ConfirmDialog'
 import { useToast } from '../common/Toast'
 import { useGroupEnrollments } from '../../hooks/useGroupEnrollments'
 import { deleteEnrollment } from '../../api/enrollments/enrollments'
+import { queryClient } from '../../lib/queryClient'
+import { queryKeys } from '../../hooks/queryKeys'
 import type { LevelDetailDTO } from '../../api/academics'
+
+type StudentWithEnrollment = {
+  enrollment_id: number
+  student_id: number
+  status: 'active' | 'completed' | 'dropped'
+  payment_status: 'paid' | 'due' | 'partial'
+  student_name: string
+  phone: string | null
+  parent_name: string | null
+}
 
 interface StudentsTabProps {
   groupId: number
@@ -39,6 +51,10 @@ export function StudentsTab({
   const [isDropDialogOpen, setIsDropDialogOpen] = useState(false)
   const [droppingEnrollmentId, setDroppingEnrollmentId] = useState<number | null>(null)
   const { showToast, ToastComponent } = useToast()
+
+  useEffect(() => {
+    setSelectedLevelId(activeLevelId)
+  }, [activeLevelId])
   const selectedLevel = useMemo(() =>
     levels.find(l => l.level_id === selectedLevelId) || null
   , [levels, selectedLevelId])
@@ -83,6 +99,7 @@ export function StudentsTab({
     try {
       await deleteEnrollment(droppingEnrollmentId)
       showToast('Student removed from group', 'success')
+      queryClient.invalidateQueries({ queryKey: queryKeys.groupEnrollments(groupId) })
     } catch {
       showToast('Failed to remove student', 'error')
     } finally {
@@ -94,17 +111,6 @@ export function StudentsTab({
   const handleCancelDrop = () => {
     setIsDropDialogOpen(false)
     setDroppingEnrollmentId(null)
-  }
-
-  // Combined student type with enrollment data
-  type StudentWithEnrollment = {
-    enrollment_id: number
-    student_id: number
-    status: 'active' | 'completed' | 'dropped'
-    payment_status: 'paid' | 'due' | 'partial'
-    student_name: string
-    phone: string | null
-    parent_name: string | null
   }
 
   const columns = [

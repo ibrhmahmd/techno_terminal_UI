@@ -12,13 +12,26 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
     { id: 'history' as const, label: 'History' },
   ]
 
+  const handleKeyDown = (index: number) => (e: React.KeyboardEvent) => {
+    let next = index
+    if (e.key === 'ArrowRight') next = (index + 1) % tabs.length
+    else if (e.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length
+    else if (e.key === 'Home') next = 0
+    else if (e.key === 'End') next = tabs.length - 1
+    else return
+    e.preventDefault()
+    onTabChange(tabs[next].id)
+  }
+
   return (
     <div className="flex justify-between items-center border-b border-outline-variant/10" role="tablist" aria-label="Group detail sections">
       <div className="flex space-x-8">
-        {tabs.map((tab) => (
+        {tabs.map((tab, index) => (
           <button
             key={tab.id}
+            id={`tab-${tab.id}`}
             onClick={() => onTabChange(tab.id)}
+            onKeyDown={handleKeyDown(index)}
             role="tab"
             aria-selected={activeTab === tab.id}
             aria-controls={`panel-${tab.id}`}

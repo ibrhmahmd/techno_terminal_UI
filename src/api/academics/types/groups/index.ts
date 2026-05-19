@@ -6,10 +6,8 @@
 // Group models
 export type {
   Group,
-  GroupListItem,
   EnrichedGroupPublic,
   RawEnrichedGroupPublic,
-  ProgressLevel,
   Schedule,
   ScheduleInput,
 } from './models';
@@ -20,7 +18,6 @@ export type {
   UpdateGroupDTO,
   GenerateLevelSessionsRequest,
   ProgressGroupLevelRequest,
-  CancelLevelInput,
 } from './inputs';
 
 // Grouping types
@@ -32,13 +29,5 @@ export type {
 
 // Lifecycle types
 export type {
-  GroupLevelPublic,
-  EnrollmentHistoryDTO,
-  InstructorAssignmentDTO,
-  CreateNewLevelInput,
   ProgressGroupLevelResult,
-  CompleteLevelResponse,
-  CancelLevelResponse,
-  GroupEnrollmentAnalyticsDTO,
-  AnalyticsFilters,
 } from './lifecycle';
