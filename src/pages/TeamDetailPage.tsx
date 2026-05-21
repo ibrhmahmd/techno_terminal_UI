@@ -1,10 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
+import { TeamEditModal } from '../components/teams/TeamEditModal'
 import { useTeam, useTeamMembers, useTeamPayments, useTeamPlacement } from '../hooks/teams'
-import type { TeamMemberRosterDTO } from '../api/teams'
+import { useEmployee } from '../hooks/useStaff'
+import { useStudentsSearch } from '../hooks/useDirectory'
+import { StudentCombobox } from '../components/common/combobox/StudentCombobox'
+import { searchParents } from '../api/crm'
+import type { ParentListItem, StudentListItem } from '../api/crm'
+import type { TeamMemberRosterDTO, UpdateTeamInput } from '../api/teams'
 import { extractErrorMessage, getErrorStatus } from '../utils/apiErrors'
 
 export function TeamDetailPage() {
@@ -18,7 +24,11 @@ export function TeamDetailPage() {
     isLoading: teamLoading,
     error: teamError,
     remove,
+    update,
   } = useTeam(teamId)
+
+  // Instructor data
+  const { data: instructor } = useEmployee(team?.coach_id ?? null)
 
   // Members data
   const {
@@ -35,15 +45,29 @@ export function TeamDetailPage() {
   const { update: updatePlacement, isUpdating: placementUpdating } = useTeamPlacement(teamId)
 
   // Modal states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isPayModalOpen, setIsPayModalOpen] = useState(false)
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
-  const [newStudentId, setNewStudentId] = useState('')
+  const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(null)
+  const [studentSearch, setStudentSearch] = useState('')
+  const [debouncedStudentSearch, setDebouncedStudentSearch] = useState('')
   const [addMemberError, setAddMemberError] = useState<string | null>(null)
   const [isAddingMember, setIsAddingMember] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedStudentSearch(studentSearch), 300)
+    return () => clearTimeout(timer)
+  }, [studentSearch])
+
+  const { data: studentResults, isLoading: isSearchingStudents } = useStudentsSearch(debouncedStudentSearch)
   const [selectedMember, setSelectedMember] = useState<TeamMemberRosterDTO | null>(null)
   const [payAmount, setPayAmount] = useState('')
   const [payError, setPayError] = useState<string | null>(null)
+  const [parentSearch, setParentSearch] = useState('')
+  const [parentResults, setParentResults] = useState<ParentListItem[]>([])
+  const [selectedParent, setSelectedParent] = useState<ParentListItem | null>(null)
+  const [isSearchingParents, setIsSearchingParents] = useState(false)
   const [removeError, setRemoveError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
@@ -61,6 +85,10 @@ export function TeamDetailPage() {
       day: 'numeric',
       year: 'numeric',
     })
+  }
+
+  const handleEditTeam = async (data: UpdateTeamInput) => {
+    await update(data)
   }
 
   const handleDelete = async () => {
@@ -86,10 +114,17 @@ export function TeamDetailPage() {
 
     setPayError(null)
     try {
-      await pay(selectedMember.student_id, { amount })
+      const payload: { amount: number; parent_id?: number } = { amount }
+      if (selectedParent) {
+        payload.parent_id = selectedParent.id
+      }
+      await pay(selectedMember.student_id, payload)
       setIsPayModalOpen(false)
       setSelectedMember(null)
       setPayAmount('')
+      setSelectedParent(null)
+      setParentSearch('')
+      setParentResults([])
     } catch {
       setPayError('Payment failed. Please try again.')
     }
@@ -127,14 +162,14 @@ export function TeamDetailPage() {
   }
 
   const handleAddMember = async () => {
-    const sid = parseInt(newStudentId, 10)
-    if (isNaN(sid) || sid <= 0) { setAddMemberError('Valid student ID required'); return }
+    if (!selectedStudent) { setAddMemberError('Select a student to add'); return }
     setIsAddingMember(true)
     setAddMemberError(null)
     try {
-      await addMember({ student_id: sid })
+      await addMember({ student_id: selectedStudent.id })
       setIsAddMemberModalOpen(false)
-      setNewStudentId('')
+      setSelectedStudent(null)
+      setStudentSearch('')
     } catch (err: unknown) {
       setAddMemberError(extractErrorMessage(err) || 'Failed to add member')
     } finally {
@@ -166,7 +201,7 @@ export function TeamDetailPage() {
         <TopNavbar activePage="Competitions" />
         <div className="text-center py-12">
           <span className="material-symbols-outlined text-4xl text-slate-300 mb-4" aria-hidden="true">error</span>
-          <p className="text-slate-500">Team not found</p>
+          <p className="text-slate-500">{teamError || 'Team not found'}</p>
           <button
             onClick={() => navigate(-1)}
             className="mt-4 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
@@ -207,6 +242,13 @@ export function TeamDetailPage() {
             </div>
             <div className="flex items-center gap-2">
               <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
+                Edit
+              </button>
+              <button
                 onClick={() => setIsDeleteModalOpen(true)}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
               >
@@ -246,6 +288,12 @@ export function TeamDetailPage() {
                   <span className="material-symbols-outlined text-slate-400" aria-hidden="true">schedule</span>
                   <span>Created {formatDate(team.created_at)}</span>
                 </div>
+                {instructor && (
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="material-symbols-outlined text-slate-400" aria-hidden="true">school</span>
+                    <span>Instructor: {instructor.full_name}</span>
+                  </div>
+                )}
               </div>
               {team.project_name && (
                 <div className="mt-4 pt-4 border-t border-slate-100">
@@ -269,7 +317,7 @@ export function TeamDetailPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-slate-500">{members.length} members</span>
                   <button
-                    onClick={() => { setNewStudentId(''); setAddMemberError(null); setIsAddMemberModalOpen(true) }}
+                    onClick={() => { setSelectedStudent(null); setStudentSearch(''); setAddMemberError(null); setIsAddMemberModalOpen(true) }}
                     className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
                   >
                     <span className="material-symbols-outlined text-sm" aria-hidden="true">add</span>
@@ -484,28 +532,27 @@ export function TeamDetailPage() {
           </div>
         }
       >
-        <div className="space-y-4">
-          {addMemberError && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
-              <span className="material-symbols-outlined text-lg" aria-hidden="true">error</span>
-              <span>{addMemberError}</span>
+          <div className="space-y-4">
+            {addMemberError && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+                <span className="material-symbols-outlined text-lg" aria-hidden="true">error</span>
+                <span>{addMemberError}</span>
+              </div>
+            )}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-on-surface mb-1">
+                Select Student <span className="text-red-500">*</span>
+              </label>
+              <StudentCombobox
+                value={selectedStudent}
+                onChange={setSelectedStudent}
+                search={studentSearch}
+                setSearch={setStudentSearch}
+                students={studentResults || []}
+                isLoading={isSearchingStudents}
+              />
             </div>
-          )}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="new_student_id" className="text-sm font-medium text-on-surface">
-              Student ID <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="new_student_id"
-              type="number"
-              value={newStudentId}
-              onChange={(e) => setNewStudentId(e.target.value)}
-              placeholder="Enter student ID..."
-              disabled={isAddingMember}
-              className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-            />
           </div>
-        </div>
       </Modal>
 
       {/* Pay Fee Modal */}
@@ -516,6 +563,9 @@ export function TeamDetailPage() {
           setSelectedMember(null)
           setPayAmount('')
           setPayError(null)
+          setSelectedParent(null)
+          setParentSearch('')
+          setParentResults([])
         }}
         title="Pay Competition Fee"
         size="sm"
@@ -527,6 +577,9 @@ export function TeamDetailPage() {
                 setSelectedMember(null)
                 setPayAmount('')
                 setPayError(null)
+                setSelectedParent(null)
+                setParentSearch('')
+                setParentResults([])
               }}
               disabled={isPaying}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
@@ -554,6 +607,80 @@ export function TeamDetailPage() {
             <p className="text-sm text-slate-600">
               Payment for <strong>{selectedMember.student_name}</strong>
             </p>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="parent_search" className="text-sm font-medium text-on-surface">
+                Parent <span className="text-slate-400 font-normal">(optional)</span>
+              </label>
+              <div className="relative">
+                <input
+                  id="parent_search"
+                  type="text"
+                  value={parentSearch}
+                  onChange={async (e) => {
+                    const val = e.target.value
+                    setParentSearch(val)
+                    setSelectedParent(null)
+                    if (val.trim().length < 2) {
+                      setParentResults([])
+                      return
+                    }
+                    setIsSearchingParents(true)
+                    try {
+                      const results = await searchParents(val.trim())
+                      setParentResults(results)
+                    } catch {
+                      setParentResults([])
+                    } finally {
+                      setIsSearchingParents(false)
+                    }
+                  }}
+                  placeholder="Search parent by name..."
+                  className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
+                />
+                {isSearchingParents && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <LoadingSpinner size="sm" />
+                  </div>
+                )}
+                {!selectedParent && parentResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {parentResults.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedParent(p)
+                          setParentSearch(p.full_name)
+                          setParentResults([])
+                        }}
+                        className="w-full px-4 py-2 text-sm text-left text-slate-700 hover:bg-slate-50 transition-colors"
+                      >
+                        <span className="font-medium">{p.full_name}</span>
+                        <span className="text-slate-400 ml-2">{p.phone_primary}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {selectedParent && (
+                  <div className="mt-1 flex items-center gap-2 px-3 py-1.5 bg-secondary/5 rounded-lg text-sm text-secondary">
+                    <span className="material-symbols-outlined text-base" aria-hidden="true">check_circle</span>
+                    <span>{selectedParent.full_name} — {selectedParent.phone_primary}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedParent(null)
+                        setParentSearch('')
+                        setParentResults([])
+                      }}
+                      className="ml-auto text-slate-400 hover:text-red-500 transition-colors"
+                      aria-label="Clear parent selection"
+                    >
+                      <span className="material-symbols-outlined text-base">close</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
             <div className="p-4 bg-slate-50 rounded-lg space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-600">Amount Due</span>
@@ -587,6 +714,14 @@ export function TeamDetailPage() {
           </div>
         )}
       </Modal>
+
+      {/* Edit Team Modal */}
+      <TeamEditModal
+        team={team}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSubmit={handleEditTeam}
+      />
     </div>
   )
 }

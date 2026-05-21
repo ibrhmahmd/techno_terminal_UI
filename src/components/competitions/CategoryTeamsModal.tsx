@@ -43,6 +43,11 @@ export function CategoryTeamsModal({ category, isOpen, onClose }: CategoryTeamsM
                     {members.length} member{members.length !== 1 ? 's' : ''}
                     {team.placement_rank ? ` · Rank #${team.placement_rank}` : ''}
                   </p>
+                  {(members.some(m => m.amount_due > 0)) && (
+                    <p className={`text-xs mt-0.5 ${members.every(m => m.amount_paid >= m.amount_due) ? 'text-green-600' : members.some(m => m.amount_paid > 0) ? 'text-amber-600' : 'text-slate-400'}`}>
+                      {members.filter(m => m.amount_paid > 0).length} of {members.length} paid
+                    </p>
+                  )}
                 </div>
               </div>
               <span className="material-symbols-outlined text-slate-400" aria-hidden="true">chevron_right</span>

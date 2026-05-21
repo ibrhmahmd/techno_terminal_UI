@@ -6,11 +6,12 @@ import { Modal } from '../components/common/Modal'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { TeamRegistrationModal } from '../components/competitions/TeamRegistrationModal'
 import { CategoryTeamsModal } from '../components/competitions/CategoryTeamsModal'
-import { CategoryList } from '../components/competitions/CategoryList'
+import type { CategoryResponse } from '../api/competitions'
 import { useCompetition, useCompetitionCategories, useCompetitionSummary } from '../hooks/competitions'
 import { useTeams } from '../hooks/teams'
 import { registerTeam, type RegisterTeamInput } from '../api/teams'
 import type { CategoryWithTeamsDTO } from '../api/competitions'
+import { TeamsTab } from '../components/competitions/TeamsTab'
 import { queryClient } from '../lib/queryClient'
 import { queryKeys } from '../hooks/queryKeys'
 import { extractErrorMessage, getErrorStatus } from '../utils/apiErrors'
@@ -38,7 +39,7 @@ export function CompetitionDetailPage() {
 
   const { teams, isLoading: teamsLoading } = useTeams(numericId)
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'teams' | 'summary'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'teams'>('overview')
 
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false)
   const [isCategoryTeamsModalOpen, setIsCategoryTeamsModalOpen] = useState(false)
@@ -173,9 +174,7 @@ export function CompetitionDetailPage() {
           <nav role="tablist" aria-label="Competition details" className="flex gap-6">
             {[
               { id: 'overview', label: 'Overview', icon: 'info' },
-              { id: 'categories', label: 'Categories', icon: 'category' },
               { id: 'teams', label: 'Teams', icon: 'groups' },
-              { id: 'summary', label: 'Summary', icon: 'dashboard' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -204,223 +203,132 @@ export function CompetitionDetailPage() {
             role="tabpanel"
             id="panel-overview"
             aria-labelledby="tab-overview"
-            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+            className="space-y-6"
           >
-            <div className="lg:col-span-2 space-y-6">
-              {/* Competition Info */}
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">About This Competition</h2>
-                {competition.notes && <p className="text-slate-600 mb-4">{competition.notes}</p>}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="material-symbols-outlined text-slate-400" aria-hidden="true">location_on</span>
-                    <span>{competition.location ?? 'N/A'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="material-symbols-outlined text-slate-400" aria-hidden="true">payments</span>
-                    <span>{competition.fee_per_student} EGP per student</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="material-symbols-outlined text-slate-400" aria-hidden="true">event</span>
-                    <span>{competition.competition_date ? formatDate(competition.competition_date) : 'Date TBD'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="material-symbols-outlined text-slate-400" aria-hidden="true">schedule</span>
-                    <span>Created {formatDate(competition.created_at)}</span>
-                  </div>
+            {/* Competition Info */}
+            <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">About This Competition</h2>
+              {competition.notes && <p className="text-slate-600 mb-4">{competition.notes}</p>}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <span className="material-symbols-outlined text-slate-400" aria-hidden="true">location_on</span>
+                  <span>{competition.location ?? 'N/A'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <span className="material-symbols-outlined text-slate-400" aria-hidden="true">payments</span>
+                  <span>{competition.fee_per_student} EGP per student</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <span className="material-symbols-outlined text-slate-400" aria-hidden="true">event</span>
+                  <span>{competition.competition_date ? formatDate(competition.competition_date) : 'Date TBD'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <span className="material-symbols-outlined text-slate-400" aria-hidden="true">schedule</span>
+                  <span>Created {formatDate(competition.created_at)}</span>
                 </div>
               </div>
-
-              {/* Stats Cards */}
-              {summary && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white rounded-xl border border-slate-200 p-4">
-                    <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
-                      <span className="material-symbols-outlined" aria-hidden="true">groups</span>
-                      Total Teams
-                    </div>
-                    <p className="text-2xl font-bold text-on-surface">{summary.total_teams ?? 0}</p>
-                  </div>
-                  <div className="bg-white rounded-xl border border-slate-200 p-4">
-                    <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
-                      <span className="material-symbols-outlined" aria-hidden="true">person</span>
-                      Participants
-                    </div>
-                    <p className="text-2xl font-bold text-on-surface">{summary.total_participants ?? 0}</p>
-                  </div>
+              {competition.edition && (
+                <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+                  <span className="font-semibold">Edition:</span> {competition.edition}
+                  {competition.edition_year && <span>({competition.edition_year})</span>}
                 </div>
               )}
             </div>
 
-            {/* Sidebar */}
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h3 className="font-semibold text-on-surface mb-4">Competition Details</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Location</span>
-                    <span className="font-semibold text-on-surface">{competition.location ?? 'N/A'}</span>
+            {/* Stats Row */}
+            {summary && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
+                    <span className="material-symbols-outlined" aria-hidden="true">groups</span>
+                    Total Teams
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Fee per Student</span>
-                    <span className="font-semibold text-on-surface">{competition.fee_per_student} EGP</span>
+                  <p className="text-2xl font-bold text-on-surface">{summary.total_teams ?? 0}</p>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
+                    <span className="material-symbols-outlined" aria-hidden="true">person</span>
+                    Participants
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Competition Date</span>
-                    <span className="font-semibold text-on-surface">
-                      {competition.competition_date ? formatDate(competition.competition_date) : 'TBD'}
-                    </span>
-                  </div>
-                  {competition.edition && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">Edition</span>
-                      <span className="font-semibold text-on-surface">{competition.edition}</span>
-                    </div>
-                  )}
-                  {competition.edition_year && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">Year</span>
-                      <span className="font-semibold text-on-surface">{competition.edition_year}</span>
-                    </div>
-                  )}
-                  <div className="pt-4 border-t border-slate-100">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">Created</span>
-                      <span className="font-semibold text-slate-500">{formatDate(competition.created_at)}</span>
-                    </div>
-                  </div>
+                  <p className="text-2xl font-bold text-on-surface">{summary.total_participants ?? 0}</p>
                 </div>
               </div>
-            </div>
-          </div>
-          </ErrorBoundary>
-        )}
+            )}
 
-        {activeTab === 'categories' && (
-          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load categories</p></div>}>
-          <div role="tabpanel" id="panel-categories" aria-labelledby="tab-categories">
-          <CategoryList
-            categories={categories}
-            onRegisterTeam={(categoryName) => {
-              setSelectedCategory(categoryName)
-              setIsRegistrationModalOpen(true)
-            }}
-            onViewTeams={(categoryName) => {
-              const match = summary?.categories.find(c => c.category === categoryName)
-              if (match) {
-                setSelectedCategoryTeams(match)
-                setIsCategoryTeamsModalOpen(true)
-              }
-            }}
-            onRegisterFirstTeam={() => {
-              setSelectedCategory(null)
-              setIsRegistrationModalOpen(true)
-            }}
-          />
+            {/* Categories Grid */}
+            <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <h3 className="font-headline text-lg font-semibold text-on-surface mb-4">
+                Categories {categories.length > 0 && `(${categories.length})`}
+              </h3>
+              {categories.length === 0 ? (
+                <div className="text-center py-8">
+                  <span className="material-symbols-outlined text-4xl text-slate-300 mb-2" aria-hidden="true">category</span>
+                  <p className="text-slate-500 mb-4">No categories yet. Categories are generated from team registrations.</p>
+                  <button
+                    onClick={() => { setSelectedCategory(null); setIsRegistrationModalOpen(true) }}
+                    className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
+                  >
+                    Register First Team
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {categories.map((cat: CategoryResponse) => (
+                    <div
+                      key={cat.category}
+                      className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h4 className="font-semibold text-on-surface">{cat.category}</h4>
+                        </div>
+                      </div>
+
+                      {cat.subcategories && cat.subcategories.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-4">
+                          {cat.subcategories.map((sub) => (
+                            <span key={sub} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs">
+                              {sub}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            const match = summary?.categories.find(c => c.category === cat.category)
+                            if (match) { setSelectedCategoryTeams(match); setIsCategoryTeamsModalOpen(true) }
+                          }}
+                          className="flex-1 px-3 py-2 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
+                        >
+                          View Teams
+                        </button>
+                        <button
+                          onClick={() => { setSelectedCategory(cat.category); setIsRegistrationModalOpen(true) }}
+                          className="flex-1 px-3 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
+                        >
+                          Register Team
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           </ErrorBoundary>
         )}
 
         {activeTab === 'teams' && (
           <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load teams</p></div>}>
-          <div role="tabpanel" id="panel-teams" aria-labelledby="tab-teams" className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-headline text-lg font-semibold text-on-surface">Registered Teams</h2>
-              <span className="text-sm text-slate-500">{teams?.length ?? 0} teams</span>
-            </div>
-
-            {teamsLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <LoadingSpinner />
-              </div>
-            ) : !Array.isArray(teams) || teams.length === 0 ? (
-              <div className="text-center py-12">
-                <span className="material-symbols-outlined text-4xl text-slate-300 mb-4" aria-hidden="true">groups</span>
-                <p className="text-slate-500 mb-4">No teams registered yet</p>
-                <button
-                  onClick={() => setIsRegistrationModalOpen(true)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
-                >
-                  Register First Team
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {teams.map((team) => (
-                  <div
-                    key={team.id}
-                    onClick={() => navigate(`/teams/${team.id}`)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/teams/${team.id}`) } }}
-                    role="button"
-                    tabIndex={0}
-                    className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-secondary-container rounded-full flex items-center justify-center">
-                        <span className="material-symbols-outlined text-secondary" aria-hidden="true">groups</span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-on-surface">{team.team_name}</p>
-                        <p className="text-sm text-slate-500">
-                          {team.category}{team.subcategory ? ` - ${team.subcategory}` : ''}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="material-symbols-outlined text-slate-400" aria-hidden="true">chevron_right</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          </ErrorBoundary>
-        )}
-
-        {activeTab === 'summary' && summary && (
-          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load summary</p></div>}>
-          <div role="tabpanel" id="panel-summary" aria-labelledby="tab-summary" className="space-y-6">
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Competition Summary</h2>
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="text-center p-4 bg-slate-50 rounded-lg">
-                  <p className="text-3xl font-bold text-secondary">{summary.total_teams ?? 0}</p>
-                  <p className="text-sm text-slate-600">Total Teams</p>
-                </div>
-                <div className="text-center p-4 bg-slate-50 rounded-lg">
-                  <p className="text-3xl font-bold text-secondary">{summary.total_participants ?? 0}</p>
-                  <p className="text-sm text-slate-600">Students</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Categories breakdown */}
-            <div className="space-y-4">
-              {(summary.categories ?? []).map((cat, idx) => (
-                <div key={`${cat.category}-${cat.subcategory ?? 'none'}-${idx}`} className="bg-white rounded-xl border border-slate-200 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-on-surface">
-                      {cat.category}{cat.subcategory ? ` — ${cat.subcategory}` : ''}
-                    </h3>
-                    <span className="px-3 py-1 bg-secondary-container text-secondary text-xs rounded-full font-medium">
-                      {(cat.teams ?? []).length} Teams
-                    </span>
-                  </div>
-                  {(cat.teams ?? []).length === 0 ? (
-                    <p className="text-sm text-slate-500">No teams registered yet</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {(cat.teams ?? []).map((team) => (
-                        <div key={team.team.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-on-surface">{team.team.team_name}</p>
-                            <p className="text-xs text-slate-500">{team.members.length} members</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+          <div role="tabpanel" id="panel-teams" aria-labelledby="tab-teams">
+            <TeamsTab
+              teams={teams}
+              categories={categories.map(c => c.category)}
+              isLoading={teamsLoading}
+              onRegisterTeam={() => { setSelectedCategory(null); setIsRegistrationModalOpen(true) }}
+            />
           </div>
           </ErrorBoundary>
         )}

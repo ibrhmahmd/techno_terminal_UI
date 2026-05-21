@@ -1,800 +1,385 @@
 # Competitions API Documentation
 
-**Base URL**: `/api/v1`  
-**Auth**: Bearer JWT (Supabase)  
-**Response Envelope**: All responses follow `ApiResponse<T>` format.
-
----
-
-## Response Envelope
-
-### Success
-```json
-{
-  "success": true,
-  "data": { ... },
-  "message": "Optional message"
-}
-```
-
-### Error
-```json
-{
-  "success": false,
-  "error": "NotFoundError",
-  "message": "Human-readable detail"
-}
-```
-
-### Error Codes
-| Code | HTTP Status | Meaning |
-|------|-------------|---------|
-| `NotFoundError` | 404 | Resource not found |
-| `ValidationError` | 422 | Invalid request body |
-| `BusinessRuleError` | 409 | Business rule violation |
-| `ConflictError` | 409 | Duplicate/conflicting data |
-| `AuthError` | 401 | Missing or invalid JWT |
-
----
-
-## Authentication
-
-| Role | Access |
-|------|--------|
-| `admin` / `system_admin` | Full read + write |
-| `coach` | Read-only (own teams only) |
-| Any authenticated user | Read competitions, categories, student competitions |
-
-Include JWT in header: `Authorization: Bearer <token>`
+**Base URL**: `/api/v1`
+**Auth**: Bearer JWT token in `Authorization` header
+**Response Envelope**: All responses wrapped in `{"success": bool, "data": ..., "message": "..."}`
 
 ---
 
 ## Competitions
 
-### 1. List All Competitions
-
+### List Competitions
 ```
 GET /competitions
+Auth: any
 ```
+**Response**: `CompetitionDTO[]`
 
-**Auth**: Any authenticated user
-
-**Response**: `ApiResponse<CompetitionDTO[]>`
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 1,
-      "name": "FIRST LEGO League",
-      "edition": null,
-      "edition_year": 2025,
-      "competition_date": "2025-06-15",
-      "location": "Cairo",
-      "notes": null,
-      "fee_per_student": 500.0,
-      "created_at": "2025-01-10T10:00:00"
-    }
-  ]
-}
-```
-
----
-
-### 2. Create Competition
-
+### Create Competition
 ```
 POST /competitions
+Auth: admin
 ```
-
-**Auth**: Admin only
-
-**Body**: `CreateCompetitionInput`
-
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| `name` | string | Yes | 1-200 chars, non-empty |
-| `edition` | string | No | Max 100 chars (deprecated) |
-| `competition_date` | date | No | ISO 8601 (`YYYY-MM-DD`) |
-| `location` | string | No | Max 200 chars |
-| `notes` | string | No | Max 1000 chars |
-| `fee_per_student` | number | No | Default `0.0`, >= 0 |
-
-**Request**:
+**Body**:
 ```json
 {
-  "name": "WRO 2025",
-  "competition_date": "2025-09-20",
-  "location": "Alexandria",
-  "fee_per_student": 750.00
+  "name": "string (required)",
+  "edition_year": 2024,
+  "competition_date": "2024-06-01",
+  "location": "string",
+  "fee_per_student": 0.0,
+  "notes": "string"
+}
+```
+**Response**: `CompetitionDTO` (201)
+
+### Get Competition
+```
+GET /competitions/{id}
+Auth: any
+```
+**Response**: `CompetitionDTO`
+
+### Update Competition
+```
+PUT|PATCH /competitions/{id}
+Auth: admin
+```
+**Body** (all fields optional):
+```json
+{
+  "name": "string",
+  "edition_year": 2024,
+  "competition_date": "2024-06-01",
+  "location": "string",
+  "fee_per_student": 0.0,
+  "notes": "string"
+}
+```
+**Response**: `CompetitionDTO`
+
+### Delete Competition
+```
+DELETE /competitions/{id}
+Auth: admin
+```
+**Response**: `true`
+**Errors**: 409 if teams exist
+
+### Get Competition Summary
+```
+GET /competitions/{id}/summary
+Auth: any
+```
+**Response**:
+```json
+{
+  "competition": "CompetitionDTO",
+  "categories": "CategoryWithTeamsDTO[]",
+  "total_teams": 0,
+  "total_participants": 0
 }
 ```
 
-**Response**: `ApiResponse<CompetitionDTO>` (201)
-
----
-
-### 3. Get Competition by ID
-
+### List Categories
 ```
-GET /competitions/{competition_id}
+GET /competitions/{id}/categories
+Auth: any
 ```
-
-**Auth**: Any authenticated user
-
-**Response**: `ApiResponse<CompetitionDTO>`
-
-**Errors**: 404 if not found
-
----
-
-### 4. Update Competition (Full)
-
-```
-PUT /competitions/{competition_id}
-```
-
-**Auth**: Admin only
-
-**Body**: `UpdateCompetitionInput` — all fields optional, but at least one required.
-
-| Field | Type | Constraints |
-|-------|------|-------------|
-| `name` | string | 1-200 chars |
-| `edition` | string | Max 100 chars |
-| `edition_year` | int | 2000-2100 |
-| `competition_date` | date | ISO 8601 |
-| `location` | string | Max 200 chars |
-| `fee_per_student` | number | >= 0, 2 decimal places |
-| `notes` | string | Max 1000 chars |
-
-**Response**: `ApiResponse<CompetitionDTO>`
-
-**Errors**: 404 if not found, 400 if no fields provided
-
----
-
-### 5. Update Competition (Partial)
-
-```
-PATCH /competitions/{competition_id}
-```
-
-Same as PUT. Only provided fields are updated.
-
----
-
-### 6. Delete Competition (Hard Delete)
-
-```
-DELETE /competitions/{competition_id}
-```
-
-**Auth**: Admin only
-
-**Response**: `ApiResponse<boolean>`
-
-**Business Rules**:
-- Cannot delete if teams are registered (409)
-
-**Errors**: 404 if not found, 409 if has teams
-
----
-
-### 7. Get Competition Summary
-
-```
-GET /competitions/{competition_id}/summary
-```
-
-**Auth**: Any authenticated user
-
-**Response**: `ApiResponse<CompetitionSummaryResponse>`
-
+**Response**:
 ```json
-{
-  "success": true,
-  "data": {
-    "competition": { "id": 1, "name": "...", ... },
-    "categories": [
-      {
-        "category": "Robotics",
-        "subcategory": "Advanced",
-        "teams": [
-          {
-            "team": { "id": 5, "team_name": "Team Alpha", ... },
-            "members": [
-              { "id": 10, "team_id": 5, "student_id": 42, "amount_due": 500.0, "amount_paid": 500.0 }
-            ]
-          }
-        ]
-      }
-    ],
-    "total_teams": 12,
-    "total_participants": 48
-  }
-}
+[
+  {"category": "Robotics", "subcategories": ["Sumo", "Line Follower"]}
+]
 ```
-
-**Errors**: 404 if competition not found
-
----
-
-### 8. List Competition Categories
-
-```
-GET /competitions/{competition_id}/categories
-```
-
-**Auth**: Any authenticated user
-
-**Response**: `ApiResponse<CategoryResponse[]>`
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "category": "Robotics",
-      "subcategories": ["Advanced", "Beginner"]
-    },
-    {
-      "category": "Programming",
-      "subcategories": []
-    }
-  ]
-}
-```
-
-**Errors**: 404 if competition not found
 
 ---
 
 ## Teams
 
-### 9. List Teams
-
+### List Teams
 ```
-GET /teams?competition_id={id}&category={cat}&subcategory={sub}&include_members=true
+GET /teams?competition_id=1&category=&subcategory=&include_members=true
+Auth: any (coaches see only their teams)
 ```
+**Query Params**:
+- `competition_id` (required)
+- `category` (optional)
+- `subcategory` (optional)
+- `include_members` (default: true)
 
-**Auth**: Any authenticated user  
-**Coach**: Only sees their own teams
+**Response**: `TeamWithMembersDTO[]` or `TeamDTO[]`
 
-**Query Parameters**:
-
-| Param | Type | Required | Description |
-|-------|------|----------|-------------|
-| `competition_id` | int | Yes | Filter by competition |
-| `category` | string | No | Filter by category |
-| `subcategory` | string | No | Filter by subcategory |
-| `include_members` | bool | No | Default `true`. Include team members in response |
-
-**Response**: `ApiResponse<TeamWithMembersDTO[]>` (if `include_members=true`) or `ApiResponse<TeamDTO[]>`
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "team": {
-        "id": 5,
-        "competition_id": 1,
-        "category": "Robotics",
-        "subcategory": "Advanced",
-        "group_id": null,
-        "team_name": "Team Alpha",
-        "coach_id": 3,
-        "project_name": "Mars Rover",
-        "project_description": "Autonomous rover for Mars terrain",
-        "placement_rank": 1,
-        "placement_label": "Gold",
-        "notes": null,
-        "created_at": "2025-02-01T10:00:00"
-      },
-      "members": [
-        {
-          "id": 10,
-          "team_id": 5,
-          "student_id": 42,
-          "amount_due": 500.0,
-          "amount_paid": 500.0
-        }
-      ]
-    }
-  ]
-}
-```
-
----
-
-### 10. Register Team
-
+### Register Team
 ```
 POST /teams
+Auth: admin
 ```
-
-**Auth**: Admin only
-
-**Body**: `RegisterTeamInput`
-
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| `competition_id` | int | Yes | Must exist |
-| `team_name` | string | Yes | 1-200 chars, unique within competition |
-| `category` | string | Yes | Non-empty |
-| `subcategory` | string | No | Required if category has subcategories |
-| `project_name` | string | No | Max 500 chars |
-| `project_description` | string | No | Max 5000 chars |
-| `student_ids` | int[] | Yes | At least 1 student |
-| `student_fees` | `{student_id: fee}` | No | Per-student fees, missing defaults to 0 |
-| `coach_id` | int | No | Must be valid employee |
-| `group_id` | int | No | Must be valid group |
-| `notes` | string | No | Max 1000 chars |
-
-**Request**:
+**Body**:
 ```json
 {
   "competition_id": 1,
-  "team_name": "Team Alpha",
-  "category": "Robotics",
-  "subcategory": "Advanced",
-  "student_ids": [42, 43, 44],
-  "student_fees": { "42": 500.0, "43": 500.0 },
-  "project_name": "Mars Rover",
-  "coach_id": 3
+  "team_name": "string (required)",
+  "category": "string (required)",
+  "subcategory": "string",
+  "student_ids": [1, 2, 3],
+  "student_fees": {"1": 50.0, "2": 0.0},
+  "coach_id": 1,
+  "group_id": 1,
+  "project_name": "string",
+  "project_description": "string",
+  "notes": "string"
 }
 ```
+**Response**: `TeamRegistrationResultDTO` (201)
+**Note**: Duplicate students return warning in `message` field, not error.
 
-**Response**: `ApiResponse<TeamRegistrationResultDTO>` (201)
+### Get Team
+```
+GET /teams/{id}
+Auth: admin or team coach
+```
+**Response**: `TeamDTO`
 
+### Update Team
+```
+PUT|PATCH /teams/{id}
+Auth: admin
+```
+**Body** (all fields optional):
 ```json
 {
-  "success": true,
-  "data": {
-    "team": { "id": 5, "team_name": "Team Alpha", ... },
-    "members_added": 3
-  },
-  "message": "Team registered successfully."
+  "team_name": "string",
+  "category": "string",
+  "subcategory": "string",
+  "project_name": "string",
+  "project_description": "string",
+  "coach_id": 1,
+  "group_id": 1,
+  "notes": "string"
 }
 ```
+**Response**: `TeamDTO`
 
-**Business Rules**:
-- One student can only be in one team per competition (409)
-- Team name must be unique within the competition (409)
-- If category has subcategories, subcategory must be specified (400)
-
-**Errors**: 400 for validation, 404 for missing competition/student, 409 for duplicates
-
----
-
-### 11. Get Team by ID
-
+### Delete Team
 ```
-GET /teams/{team_id}
+DELETE /teams/{id}
+Auth: admin
 ```
-
-**Auth**: Admin or team coach (via `require_coach_or_admin`)
-
-**Response**: `ApiResponse<TeamDTO>`
-
-**Errors**: 404 if not found, 403 if not admin/coach of this team
-
----
-
-### 12. Update Team (Full)
-
-```
-PUT /teams/{team_id}
-```
-
-**Auth**: Admin only
-
-**Body**: `UpdateTeamInput` — all fields optional, at least one required.
-
-| Field | Type | Constraints |
-|-------|------|-------------|
-| `team_name` | string | 1-200 chars |
-| `category` | string | Max 100 chars |
-| `subcategory` | string | Max 100 chars |
-| `project_name` | string | Max 500 chars |
-| `project_description` | string | Max 5000 chars |
-| `group_id` | int | Must be valid |
-| `coach_id` | int | Must be valid employee |
-| `notes` | string | Max 1000 chars |
-
-**Response**: `ApiResponse<TeamDTO>`
-
----
-
-### 13. Update Team (Partial)
-
-```
-PATCH /teams/{team_id}
-```
-
-Same as PUT. Only provided fields are updated.
-
----
-
-### 14. Delete Team (Hard Delete)
-
-```
-DELETE /teams/{team_id}
-```
-
-**Auth**: Admin only
-
-**Response**: `ApiResponse<boolean>`
-
-**Business Rules**:
-- Cannot delete team with paid members (409)
-
-**Errors**: 404 if not found, 409 if has paid members
+**Response**: `true`
+**Errors**: 409 if members have paid
 
 ---
 
 ## Team Members
 
-### 15. List Team Members
-
+### List Members
 ```
-GET /teams/{team_id}/members
+GET /teams/{id}/members
+Auth: admin or team coach
 ```
-
-**Auth**: Admin or team coach
-
-**Response**: `ApiResponse<TeamMemberListResponse>`
-
+**Response**:
 ```json
 {
-  "success": true,
-  "data": {
-    "team_id": 5,
-    "team_name": "Team Alpha",
-    "members": [
-      {
-        "team_member_id": 10,
-        "team_id": 5,
-        "team_name": "Team Alpha",
-        "student_id": 42,
-        "student_name": "Ahmed Hassan",
-        "amount_due": 500.0,
-        "amount_paid": 500.0
-      }
-    ]
-  }
+  "team_id": 1,
+  "team_name": "string",
+  "members": [
+    {
+      "team_member_id": 1,
+      "team_id": 1,
+      "team_name": "string",
+      "student_id": 1,
+      "student_name": "string",
+      "amount_due": 50.0,
+      "amount_paid": 25.0
+    }
+  ]
 }
 ```
 
-**Errors**: 404 if team not found, 403 if not authorized
-
----
-
-### 16. Add Team Member
-
+### Add Member
 ```
-POST /teams/{team_id}/members
+POST /teams/{id}/members
+Auth: admin
 ```
-
-**Auth**: Admin only
-
-**Body**: `AddTeamMemberInput`
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `student_id` | int | Yes | Must be active student |
-| `amount_due` | number | No | Default `0.0` |
-
-**Request**:
+**Body**:
 ```json
 {
-  "student_id": 45,
-  "amount_due": 500.0
+  "student_id": 1,
+  "amount_due": 50.0
 }
 ```
+**Response**: `AddTeamMemberResultDTO` (201)
 
-**Response**: `ApiResponse<AddTeamMemberResultDTO>` (201)
+### Remove Member
+```
+DELETE /teams/{id}/members/{student_id}
+Auth: admin
+```
+**Response**: `true`
+**Errors**: 400 if member has paid
 
+### Pay Fee
+```
+POST /teams/{id}/members/{student_id}/pay
+Auth: admin
+```
+**Body**:
 ```json
 {
-  "success": true,
-  "data": {
-    "team_member_id": 11,
-    "student_id": 45,
-    "student_name": "Sara Ali"
-  },
-  "message": "Member added successfully."
+  "amount": 25.0,
+  "parent_id": 1
 }
 ```
-
-**Business Rules**:
-- Student cannot already be in another team for this competition (409)
-- Student must be active (400)
-
----
-
-### 17. Remove Team Member
-
-```
-DELETE /teams/{team_id}/members/{student_id}
-```
-
-**Auth**: Admin only
-
-**Response**: `ApiResponse<boolean>`
-
-**Business Rules**:
-- Cannot remove a member who has already paid (`amount_paid > 0`) (400)
-
-**Errors**: 400 if paid member, 404 if team/member not found
-
----
-
-### 18. Pay Competition Fee
-
-```
-POST /teams/{team_id}/members/{student_id}/pay
-```
-
-**Auth**: Admin only
-
-**Body**: `PayCompetitionFeeInput`
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `amount` | number | Yes | Payment amount (> 0). Supports partial payments |
-| `parent_id` | int | No | Parent ID for receipt |
-
-**Request**:
+**Response**:
 ```json
 {
-  "amount": 250.0,
-  "parent_id": 10
+  "receipt_number": "REC-2024-001",
+  "payment_id": 1,
+  "amount": 25.0,
+  "amount_paid": 25.0,
+  "amount_due": 50.0
 }
 ```
+**Note**: Supports partial payments. Atomic transaction.
 
-**Response**: `ApiResponse<PayCompetitionFeeResponseDTO>`
-
+### Refund Fee
+```
+POST /teams/{id}/members/{student_id}/refund
+Auth: admin
+```
+**Body**:
 ```json
 {
-  "success": true,
-  "data": {
-    "receipt_number": "REC-2025-0042",
-    "payment_id": 15,
-    "amount": 250.0,
-    "amount_paid": 250.0,
-    "amount_due": 500.0
-  },
-  "message": "Payment processed successfully."
+  "amount": 25.0
 }
 ```
+**Response**: `true`
+**Errors**: 400 if amount > amount_paid
 
-**Business Rules**:
-- Payment amount must be > 0 (400)
-- Payment is atomic (receipt + fee recording)
-- On failure, payment is automatically rolled back (no orphan receipts)
-
-**Errors**: 400 for invalid amount, 404 if team/member not found
-
----
-
-### 19. Update Team Placement
-
+### Update Placement
 ```
-PATCH /teams/{team_id}/placement
+PATCH /teams/{id}/placement
+Auth: admin
 ```
-
-**Auth**: Admin only
-
-**Body**: `PlacementUpdateInput`
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `placement_rank` | int | Yes | >= 1 (1 = 1st place) |
-| `placement_label` | string | No | Max 100 chars (e.g., "Gold", "3rd Place") |
-
-**Request**:
+**Body**:
 ```json
 {
   "placement_rank": 1,
   "placement_label": "Gold"
 }
 ```
-
-**Response**: `ApiResponse<TeamDTO>`
-
-**Business Rules**:
-- Cannot set placement before competition date has passed (400)
+**Response**: `TeamDTO`
+**Errors**: 409 if competition date is future or >30 days past
 
 ---
 
 ## Student Competitions
 
-### 20. Get Student's Competitions
-
+### Get Student's Competitions
 ```
-GET /students/{student_id}/competitions
+GET /students/{id}/competitions
+Auth: any
 ```
-
-**Auth**: Any authenticated user
-
-**Response**: `ApiResponse<StudentCompetitionsResponse>`
-
+**Response**:
 ```json
 {
-  "success": true,
-  "data": {
-    "student_id": 42,
-    "competitions": [
-      {
-        "membership": {
-          "id": 10,
-          "team_id": 5,
-          "student_id": 42,
-          "amount_due": 500.0,
-          "amount_paid": 500.0
-        },
-        "team": {
-          "id": 5,
-          "team_name": "Team Alpha",
-          "category": "Robotics",
-          "subcategory": "Advanced",
-          ...
-        },
-        "category": "Robotics",
-        "subcategory": "Advanced",
-        "competition": {
-          "id": 1,
-          "name": "FIRST LEGO League",
-          "edition_year": 2025,
-          ...
-        }
-      }
-    ]
-  }
+  "student_id": 1,
+  "competitions": [
+    {
+      "membership": "TeamMemberDTO",
+      "team": "TeamDTO",
+      "category": "Robotics",
+      "subcategory": "Sumo",
+      "competition": "CompetitionDTO"
+    }
+  ]
 }
 ```
 
-**Errors**: 404 if student not found
-
 ---
 
-## DTO Reference
+## Data Models
 
 ### CompetitionDTO
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | int | Primary key |
-| `name` | string | Competition name |
-| `edition` | string \| null | Deprecated |
-| `edition_year` | int | Year of this edition |
-| `competition_date` | date \| null | Competition date |
-| `location` | string \| null | Venue |
-| `notes` | string \| null | Additional notes |
-| `fee_per_student` | number | Default fee per student |
-| `created_at` | datetime \| null | Creation timestamp |
+```json
+{
+  "id": 1,
+  "name": "string",
+  "edition_year": 2024,
+  "competition_date": "2024-06-01",
+  "location": "string",
+  "fee_per_student": 0.0,
+  "notes": "string",
+  "created_at": "2024-01-01T00:00:00"
+}
+```
 
 ### TeamDTO
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | int | Primary key |
-| `competition_id` | int | FK to competition |
-| `category` | string | Category name |
-| `subcategory` | string \| null | Optional subcategory |
-| `group_id` | int \| null | FK to group |
-| `team_name` | string | Team name |
-| `coach_id` | int \| null | FK to employee (coach) |
-| `project_name` | string \| null | Project name |
-| `project_description` | string \| null | Project description |
-| `placement_rank` | int \| null | Competition placement (1 = 1st) |
-| `placement_label` | string \| null | Label like "Gold" |
-| `notes` | string \| null | Additional notes |
-| `created_at` | datetime \| null | Creation timestamp |
+```json
+{
+  "id": 1,
+  "competition_id": 1,
+  "category": "Robotics",
+  "subcategory": "Sumo",
+  "team_name": "string",
+  "coach_id": 1,
+  "project_name": "string",
+  "project_description": "string",
+  "placement_rank": 1,
+  "placement_label": "Gold",
+  "notes": "string",
+  "created_at": "2024-01-01T00:00:00"
+}
+```
 
 ### TeamMemberDTO
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | int | Primary key (team_member_id) |
-| `team_id` | int | FK to team |
-| `student_id` | int | FK to student |
-| `amount_due` | number | Fee amount due |
-| `amount_paid` | number | Fee amount paid (running total) |
-
-### TeamMemberRosterDTO
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `team_member_id` | int | Team member ID |
-| `team_id` | int | Team ID |
-| `team_name` | string | Team name |
-| `student_id` | int | Student ID |
-| `student_name` | string | Student full name |
-| `amount_due` | number | Fee amount due |
-| `amount_paid` | number | Fee amount paid |
-
-### PayCompetitionFeeResponseDTO
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `receipt_number` | string | Receipt reference |
-| `payment_id` | int | Payment record ID |
-| `amount` | number | Amount paid in this transaction |
-| `amount_paid` | number | Running total after this payment |
-| `amount_due` | number | Original amount due |
-
-### TeamRegistrationResultDTO
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `team` | TeamDTO | Created team |
-| `members_added` | int | Number of members added |
-
-### AddTeamMemberResultDTO
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `team_member_id` | int | New member ID |
-| `student_id` | int | Student ID |
-| `student_name` | string | Student full name |
-
-### CategoryResponse
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `category` | string | Category name |
-| `subcategories` | string[] | List of subcategory names |
-
-### CompetitionSummaryResponse
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `competition` | CompetitionDTO | Competition details |
-| `categories` | CategoryWithTeamsDTO[] | Categories with nested teams and members |
-| `total_teams` | int | Total team count |
-| `total_participants` | int | Total participant count |
-
-### CategoryWithTeamsDTO
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `category` | string | Category name |
-| `subcategory` | string \| null | Subcategory name |
-| `teams` | TeamWithMembersDTO[] | Teams in this category |
+```json
+{
+  "id": 1,
+  "team_id": 1,
+  "student_id": 1,
+  "amount_due": 50.0,
+  "amount_paid": 25.0
+}
+```
 
 ### TeamWithMembersDTO
+```json
+{
+  "team": "TeamDTO",
+  "members": ["TeamMemberDTO"]
+}
+```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `team` | TeamDTO | Team details |
-| `members` | TeamMemberDTO[] | Team members |
-
-### StudentCompetitionDTO
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `membership` | TeamMemberDTO | Student's team membership |
-| `team` | TeamDTO | Team details |
-| `category` | string | Category name |
-| `subcategory` | string \| null | Subcategory name |
-| `competition` | CompetitionDTO \| null | Competition details |
+### CategoryWithTeamsDTO
+```json
+{
+  "category": "Robotics",
+  "subcategory": "Sumo",
+  "teams": ["TeamWithMembersDTO"]
+}
+```
 
 ---
 
-## Key Changes from Previous Version
+## Auth Roles
 
-1. **Hard Delete**: Competitions and teams are permanently deleted (no `deleted_at`/`deleted_by` fields). Delete endpoints return `ApiResponse<boolean>`.
+| Role | Access |
+|------|--------|
+| `admin` | Full read/write |
+| `coach` | Read-only for their teams |
+| `any` | Read competitions, categories, summaries |
 
-2. **Payment Model**: `team_members` now uses `amount_due` (decimal) and `amount_paid` (decimal) instead of boolean `fee_paid`/`member_share`. Payments support partial amounts and atomic receipt creation.
+---
 
-3. **Project Tracking**: Teams now have `project_name` (string, max 500) and `project_description` (string, max 5000) fields.
+## Error Codes
 
-4. **Coach Read-Only**: Coaches can only read their own teams. `GET /teams` filters by coach's `employee_id`. `GET /teams/{team_id}` and `GET /teams/{team_id}/members` require admin or team coach.
-
-5. **Removed**: `GroupCompetitionParticipation` table and all related endpoints. Teams now directly reference `competition_id`.
-
-6. **Category/Subcategory Filter**: `GET /teams` supports `category` and `subcategory` query parameters for filtering.
+| Code | Meaning |
+|------|---------|
+| 400 | Invalid input / business rule violation |
+| 401 | Missing or invalid JWT |
+| 403 | Insufficient permissions |
+| 404 | Resource not found |
+| 409 | Conflict (duplicate, placement window closed, has paid members) |
+| 422 | Validation error |

@@ -104,6 +104,29 @@ export interface TeamWithMembersDTO {
   members: TeamMemberDTO[]
 }
 
+export type TeamGroupByField = 'instructor' | 'category' | 'subcategory' | 'payment_status' | 'placement' | 'alphabetical'
+
+export interface TeamCardData {
+  id: number
+  team_name: string
+  category: string
+  subcategory: string | null
+  project_name: string | null
+  coach_id: number | null
+  placement_rank: number | null
+  placement_label: string | null
+  members: TeamMemberDTO[]
+  memberCount: number
+  paidCount: number
+}
+
+export interface TeamGroup {
+  key: string
+  label: string
+  count: number
+  teams: TeamCardData[]
+}
+
 export interface TeamMemberDTO {
   id: number
   team_id: number

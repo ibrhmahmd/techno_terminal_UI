@@ -1,16 +1,25 @@
 import { useQuery } from '@tanstack/react-query'
-import { getTeams, getTeamsWithMembers, type TeamDTO, type TeamListFilters, type TeamWithMembersDTO } from '../../api/teams'
+import { getTeams, type TeamWithMembersDTO, type TeamCardData, type TeamListFilters } from '../../api/teams'
 import { queryKeys } from '../queryKeys'
 
-interface UseTeamsReturn {
-  teams: TeamDTO[]
-  isLoading: boolean
-  error: string | null
-  refresh: () => Promise<void>
+function toTeamCardData(item: TeamWithMembersDTO): TeamCardData {
+  return {
+    id: item.team.id,
+    team_name: item.team.team_name,
+    category: item.team.category,
+    subcategory: item.team.subcategory ?? null,
+    project_name: item.team.project_name,
+    coach_id: item.team.coach_id ?? null,
+    placement_rank: item.team.placement_rank ?? null,
+    placement_label: item.team.placement_label ?? null,
+    members: item.members,
+    memberCount: item.members.length,
+    paidCount: item.members.filter(m => m.amount_paid > 0).length,
+  }
 }
 
-interface UseTeamsWithMembersReturn {
-  teams: TeamWithMembersDTO[]
+interface UseTeamsReturn {
+  teams: TeamCardData[]
   isLoading: boolean
   error: string | null
   refresh: () => Promise<void>
@@ -30,29 +39,7 @@ export function useTeams(competitionId: number, filters?: Omit<TeamListFilters, 
   })
 
   return {
-    teams: data || [],
-    isLoading,
-    error: error instanceof Error ? error.message : null,
-    refresh: async () => { await refetch() },
-  }
-}
-
-export function useTeamsWithMembers(competitionId: number, filters?: Omit<TeamListFilters, 'competition_id' | 'include_members'>): UseTeamsWithMembersReturn {
-  const queryFilters: TeamListFilters = {
-    competition_id: competitionId,
-    include_members: true,
-    ...filters,
-  }
-
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: queryKeys.teamsWithMembers(competitionId, filters),
-    queryFn: async () => getTeamsWithMembers(queryFilters),
-    enabled: !!competitionId,
-    staleTime: 3 * 60 * 1000,
-  })
-
-  return {
-    teams: data || [],
+    teams: (data || []).map(toTeamCardData),
     isLoading,
     error: error instanceof Error ? error.message : null,
     refresh: async () => { await refetch() },

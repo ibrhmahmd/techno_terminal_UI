@@ -17,17 +17,17 @@ import type {
 
 const TEAMS_BASE = '/teams'
 
-export async function getTeams(filters: TeamListFilters): Promise<TeamDTO[]> {
+export async function getTeams(filters: TeamListFilters): Promise<TeamWithMembersDTO[]> {
   const params = new URLSearchParams()
   params.append('competition_id', filters.competition_id.toString())
   if (filters.category) params.append('category', filters.category)
   if (filters.subcategory) params.append('subcategory', filters.subcategory)
-  if (filters.include_members !== undefined) params.append('include_members', filters.include_members.toString())
+  params.append('include_members', 'true')
 
   const query = params.toString()
   const url = `${TEAMS_BASE}?${query}`
 
-  const response = await client.get<ApiResponse<TeamDTO[]>>(url)
+  const response = await client.get<ApiResponse<TeamWithMembersDTO[]>>(url)
   return response.data.data || []
 }
 
