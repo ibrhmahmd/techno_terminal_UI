@@ -63,11 +63,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   }
 
   // Filter sections based on user role
+  const allowedPaths = user?.role === 'instructor'
+    ? ['/dashboard', '/groups', '/courses', '/competitions', '/students', '/parents', '/attendance']
+    : null
   const filteredSections = navSections.map(section => ({
     ...section,
     items: section.items.filter(item => {
       if (item.path === '/notifications') {
         return user?.role === 'admin' || user?.role === 'system_admin'
+      }
+      if (allowedPaths && !allowedPaths.includes(item.path)) {
+        return false
       }
       return true
     })
