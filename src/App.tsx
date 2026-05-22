@@ -4,6 +4,8 @@ import { useAuthStore } from './store/authStore'
 import { useEffect, useState } from 'react'
 import { AppLayout } from './components/layout/AppLayout'
 import { LoginPage } from './pages/LoginPage'
+import { RegisterPage } from './pages/RegisterPage'
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { GroupsPage } from './pages/GroupsPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
@@ -23,6 +25,7 @@ import { StaffPage } from './pages/StaffPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { NotificationsPage } from './pages/NotificationsPage'
 import { RoleBasedRoute } from './components/common/RoleBasedRoute'
+import { InstructorBlockedRoute } from './components/common/InstructorBlockedRoute'
 
 function useHasHydrated() {
   const [hasHydrated, setHasHydrated] = useState(
@@ -58,6 +61,8 @@ function App() {
         {/* Public Routes */}
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         </Route>
 
         {/* Protected Routes */}
@@ -68,21 +73,27 @@ function App() {
             <Route path="/courses/:id" element={<CourseDetailPage />} />
             <Route path="/groups" element={<GroupsPage />} />
             <Route path="/groups/:id" element={<GroupDetailPage />} />
-            <Route path="/directory" element={<DirectoryPage />} />
             <Route path="/students/:id" element={<StudentDetailPage />} />
             <Route path="/parents/:id" element={<ParentDetailPage />} />
-            <Route path="/enrollments" element={<EnrollmentsPage />} />
-            <Route path="/finance" element={<FinancePage />} />
             <Route path="/attendance" element={<div>Attendance</div>} />
             <Route path="/competitions" element={<CompetitionsPage />} />
             <Route path="/competitions/:id/edit" element={<CompetitionEditPage />} />
             <Route path="/competitions/:id" element={<CompetitionDetailPage />} />
             <Route path="/teams/:id" element={<TeamDetailPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/staff" element={<StaffPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
           </Route>
-          
+
+          {/* Instructor-restricted Routes */}
+          <Route element={<InstructorBlockedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route path="/directory" element={<DirectoryPage />} />
+              <Route path="/enrollments" element={<EnrollmentsPage />} />
+              <Route path="/finance" element={<FinancePage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/staff" element={<StaffPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+            </Route>
+          </Route>
+
           {/* Admin-only Routes */}
           <Route element={<RoleBasedRoute allowedRoles={['admin', 'system_admin']} />}>
             <Route element={<AppLayout />}>

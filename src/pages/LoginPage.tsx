@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react'
-import { useNavigate, Navigate } from 'react-router-dom'
+import { useNavigate, Navigate, Link } from 'react-router-dom'
+import { isAxiosError } from 'axios'
 import { useAuthStore } from '../store/authStore'
 import { login } from '../api/auth'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
@@ -52,9 +53,8 @@ export function LoginPage() {
         setError('Login failed. Please check your credentials.')
       }
     } catch (err) {
-      const axiosError = err as { response?: { status?: number; headers?: Record<string, string> } }
-      if (axiosError.response?.status === 429) {
-        const retryAfterValue = axiosError.response.headers?.['retry-after']
+      if (isAxiosError(err) && err.response?.status === 429) {
+        const retryAfterValue = err.response.headers?.['retry-after']
         if (retryAfterValue) {
           const seconds = parseInt(retryAfterValue, 10)
           if (!isNaN(seconds)) {
@@ -155,6 +155,15 @@ export function LoginPage() {
               'Sign In'
             )}
           </button>
+
+          <div className="mt-4 text-center">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-secondary font-medium hover:underline"
+            >
+              Forgot Password?
+            </Link>
+          </div>
         </form>
       </div>
     </div>

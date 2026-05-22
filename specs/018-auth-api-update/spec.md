@@ -5,6 +5,15 @@
 **Status**: Draft  
 **Input**: User description: "backend updated auth API with new endpoints and features per auth-api.md"
 
+## Clarifications
+
+### Session 2026-05-21
+
+- Q: Should admin-role users retain the ability to create users and reset passwords under the new API, or should all user management move to system_admin only? → A: `admin` retains create + reset password only; `system_admin` exclusively gets new admin CRUD, invite, and audit endpoints.
+- Q: What routes/features should instructor users have access to? → A: Instructor gets teaching scope (courses, groups, students, attendance, competitions, teams) but NOT finance, staff, settings, notifications, or directory.
+- Q: What data volumes should the system expect for users, audit entries, and sessions? → A: Small institution scale — up to 500 users, up to 10K audit entries/month, sessions per user rarely exceed 5.
+- Q: What user lifecycle states should the UI represent? → A: Three states: Active / Invited (pending registration) / Deactivated (was active, soft-deleted). Each state has distinct visual treatment and action availability.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Self-Service Profile & Password Management (Priority: P1)
@@ -99,6 +108,8 @@ An unauthenticated user can request a password reset email and reset their passw
 - Concurrent session revocation race conditions
 - Invite token expiry during registration
 - Creating a user with a role that doesn't exist in the hierarchy
+- Invited user never completes registration before token expiry
+- Reactivating a previously deactivated user (POST /admin/users/invite should resend invite)
 
 ## Requirements
 
@@ -112,21 +123,22 @@ An unauthenticated user can request a password reset email and reset their passw
 - **FR-006**: System MUST provide a way to check MFA enrollment status (stub returning false)
 - **FR-007**: Users MUST be able to change their password by providing current password and a new one
 - **FR-008**: Unauthenticated users MUST be able to request a password reset email
-- **FR-009**: System administrators MUST be able to list users with filtering by role, active status, and username search
-- **FR-010**: System administrators MUST be able to view a single user's details
-- **FR-011**: System administrators MUST be able to update a user's role and active status
-- **FR-012**: System administrators MUST be able to soft-deactivate a user
-- **FR-013**: System MUST prevent an admin from deactivating their own account
-- **FR-014**: System administrators MUST be able to invite new users via email with a role and employee ID
-- **FR-015**: System administrators MUST be able to view paginated login audit logs with optional user and date filters
-- **FR-016**: System administrators MUST be able to view paginated password change audit logs
-- **FR-017**: System administrators MUST be able to view paginated failed authentication attempt logs with a required start date
-- **FR-018**: System MUST enforce role hierarchy: `system_admin` > `admin` > `instructor` when authorizing admin endpoints
-- **FR-019**: System MUST handle 401 errors for expired/invalid tokens and 403 errors for role violations with distinct user-visible messages
+- **FR-009**: Users with `admin` or `system_admin` roles MUST be able to create new users and reset other users' passwords
+- **FR-010**: System administrators (`system_admin` role) MUST be able to list users with filtering by role, active status, and username search
+- **FR-011**: System administrators (`system_admin` role) MUST be able to view a single user's details
+- **FR-012**: System administrators (`system_admin` role) MUST be able to update a user's role and active status
+- **FR-013**: System administrators (`system_admin` role) MUST be able to soft-deactivate a user (except their own account)
+- **FR-014**: System MUST prevent a user from deactivating their own account
+- **FR-015**: System administrators (`system_admin` role) MUST be able to invite new users via email with a role and employee ID
+- **FR-016**: System administrators (`system_admin` role) MUST be able to view paginated login audit logs with optional user and date filters
+- **FR-017**: System administrators (`system_admin` role) MUST be able to view paginated password change audit logs
+- **FR-018**: System administrators (`system_admin` role) MUST be able to view paginated failed authentication attempt logs with a required start date
+- **FR-019**: System MUST enforce role hierarchy: `system_admin` > `admin` > `instructor` when authorizing endpoints. `admin` can create users and reset passwords. `system_admin` additionally manages users (list/view/update/deactivate/invite) and views audit logs.
+- **FR-020**: System MUST handle 401 errors for expired/invalid tokens and 403 errors for role violations with distinct user-visible messages
 
 ### Key Entities
 
-- **User**: A person with access to the system. Has id, employee_id, username, email, role (system_admin/admin/instructor), active status, timestamps.
+- **User**: A person with access to the system. Has id, employee_id, username, email, role (system_admin/admin/instructor), lifecycle state (Active / Invited / Deactivated), timestamps.
 - **Session**: An authentication session tied to a user. Has id, creation timestamp, last activity, IP, user agent.
 - **Audit Log Entry**: A record of a security-relevant event. Has id, user_id, event_type, IP, user agent, details, timestamp. Event types include login_success, login_failure, password_change, account_deactivated/reactivated, user_created/invited, invite_completed, email_changed, role_changed.
 - **Invite Token**: A one-time token generated when an admin invites a user. Has an expiration timestamp, associated email, role, and employee_id.
@@ -145,9 +157,10 @@ An unauthenticated user can request a password reset email and reset their passw
 ## Assumptions
 
 - Users have stable internet connectivity and a modern browser
+- Data volume assumes small institution scale: up to 500 users, up to 10K audit entries per month, average sessions per user ≤ 5
 - The existing API communication layer and token refresh mechanism will be reused
 - The invite flow includes an external email delivery mechanism (out of scope for this spec)
 - MFA features are stubs — actual MFA enrollment is out of scope
 - The existing pagination patterns (skip/limit) used elsewhere in the app will be followed for admin lists and audit logs
-- The `instructor` role is read-only and does not have access to admin endpoints
+- The `instructor` role has teaching scope: access to courses, groups, students, attendance, competitions, and teams. Does NOT access finance, staff, settings, notifications, or directory
 - Session management UI will display session info (created date, last active, IP, user agent) in a list format
