@@ -1,43 +1,25 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { getStudentProgress, type StudentProgressDTO } from '../../../api/analytics'
+import { queryKeys } from '../../../hooks/queryKeys'
 
 interface UseStudentProgressResult {
   progress: StudentProgressDTO[]
   isLoading: boolean
   error: Error | null
   refetch: () => void
-  isUsingMockData: boolean
 }
 
 export function useStudentProgress(): UseStudentProgressResult {
-  const [progress, setProgress] = useState<StudentProgressDTO[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-
-  const fetchData = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const data = await getStudentProgress()
-      setProgress(data)
-    } catch (err) {
-      const errorObj = err instanceof Error ? err : new Error('Failed to fetch student progress')
-      setError(errorObj)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+  const { data, isLoading, error, refetch } = useQuery<StudentProgressDTO[]>({
+    queryKey: queryKeys.reports.studentProgress,
+    queryFn: () => getStudentProgress(),
+    staleTime: 5 * 60 * 1000,
+  })
 
   return {
-    progress,
+    progress: data ?? [],
     isLoading,
-    error,
-    refetch: fetchData,
-    isUsingMockData: false
+    error: error instanceof Error ? error : error ? new Error(String(error)) : null,
+    refetch,
   }
 }

@@ -1,59 +1,30 @@
+import { useStudentProgress } from '../hooks/useStudentProgress'
 import { StudentProgressChart } from '../../reports/StudentProgressChart'
-import { LoadingSpinner } from '../../common/LoadingSpinner'
-import type { StudentProgressDTO } from '../../../api/analytics'
+import { LoadingState } from '../../common/LoadingState'
+import { ErrorState } from '../../common/ErrorState'
+import { EmptyState } from '../../common/EmptyState'
 
-interface ProgressTabProps {
-  progress: StudentProgressDTO[]
-  isLoading: boolean
-  error?: string
-  onRetry?: () => void
-  topStudentCount?: number
-}
+export function ProgressTab() {
+  const { progress, isLoading, error, refetch } = useStudentProgress()
 
-export function ProgressTab({ 
-  progress, 
-  isLoading, 
-  error, 
-  onRetry,
-  topStudentCount = 5 
-}: ProgressTabProps) {
   const completed = progress.filter(s => s.progress_status === 'on_track').length
   const inProgress = progress.filter(s => s.progress_status === 'at_risk').length
   const notStarted = progress.filter(s => s.progress_status === 'behind').length
 
   const topPerformers = [...progress]
     .sort((a, b) => b.attendance_pct - a.attendance_pct)
-    .slice(0, topStudentCount)
+    .slice(0, 5)
 
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-slate-200 p-6 h-80 flex items-center justify-center">
-          <LoadingSpinner />
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-6 h-80 flex items-center justify-center">
-          <LoadingSpinner />
-        </div>
-      </div>
-    )
+    return <LoadingState message="Loading progress data..." />
   }
 
   if (error) {
-    return (
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm">
-          <p className="mb-2">Failed to load progress data: {error}</p>
-          {onRetry && (
-            <button
-              onClick={onRetry}
-              className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
-            >
-              Retry
-            </button>
-          )}
-        </div>
-      </div>
-    )
+    return <ErrorState message={error?.message} onRetry={refetch} />
+  }
+
+  if (!progress || progress.length === 0) {
+    return <EmptyState title="No progress data" message="No student progress data available." icon="inbox" />
   }
 
   return (
@@ -70,12 +41,12 @@ export function ProgressTab({
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <h2 className="font-headline text-xl font-semibold text-on-surface mb-4">Top Performing Students</h2>
-        <div className="space-y-3">
-          {topPerformers.map((student, index) => (
-            <div key={student.student_id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary text-white text-sm font-medium">
-                {index + 1}
-              </div>
+        <ol className="space-y-3">
+          {topPerformers.map((student) => (
+            <li key={student.student_id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary text-white text-sm font-medium">
+                {topPerformers.indexOf(student) + 1}
+              </span>
               <div className="flex-1">
                 <p className="font-medium text-on-surface">{student.student_name}</p>
                 <p className="text-sm text-slate-500">{student.course_name} • Level {student.current_level}</p>
@@ -86,9 +57,9 @@ export function ProgressTab({
                   {student.sessions_attended}/{student.total_sessions} sessions
                 </p>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </div>
   )

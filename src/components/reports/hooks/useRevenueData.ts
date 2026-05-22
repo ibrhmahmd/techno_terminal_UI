@@ -1,48 +1,34 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { getRevenueMetrics, type RevenueMetricsDTO } from '../../../api/analytics'
+import { queryKeys } from '../../../hooks/queryKeys'
+import { useState } from 'react'
 
 interface UseRevenueDataResult {
   metrics: RevenueMetricsDTO | null
   isLoading: boolean
   error: Error | null
   refetch: (months?: number) => void
-  isUsingMockData: boolean
 }
 
-export function useRevenueData(): UseRevenueDataResult {
-  const [metrics, setMetrics] = useState<RevenueMetricsDTO | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+export function useRevenueData(initialMonths?: number): UseRevenueDataResult {
+  const [months, setMonths] = useState<number | undefined>(initialMonths)
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      // New analytics API doesn't take months parameter
-      const data = await getRevenueMetrics()
-      setMetrics(data)
-    } catch (err) {
-      const errorObj = err instanceof Error ? err : new Error('Failed to fetch revenue metrics')
-      setError(errorObj)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
-
-  const refetch = useCallback(() => {
-    fetchData()
-  }, [fetchData])
+  const { data, isLoading, error, refetch } = useQuery<RevenueMetricsDTO>({
+    queryKey: queryKeys.reports.revenue(months),
+    queryFn: () => getRevenueMetrics(months),
+    staleTime: 5 * 60 * 1000,
+  })
 
   return {
-    metrics,
+    metrics: data ?? null,
     isLoading,
-    error,
-    refetch,
-    isUsingMockData: false
+    error: error instanceof Error ? error : error ? new Error(String(error)) : null,
+    refetch: (newMonths?: number) => {
+      if (newMonths !== undefined && newMonths !== months) {
+        setMonths(newMonths)
+      } else {
+        refetch()
+      }
+    },
   }
 }

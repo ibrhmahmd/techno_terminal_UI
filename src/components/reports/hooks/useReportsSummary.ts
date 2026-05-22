@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getDashboardOverview, type DashboardDailyOverviewDTO } from '../../../api/dashboard'
 import type { DashboardSummaryPublic } from '../../../api/analytics'
+import { queryKeys } from '../../../hooks/queryKeys'
 
 // Transform new dashboard data to legacy format for Reports page compatibility
 function transformToLegacySummary(data: DashboardDailyOverviewDTO | undefined): DashboardSummaryPublic | null {
@@ -57,7 +58,7 @@ export function useReportsSummary(): UseReportsSummaryResult {
   const today = new Date().toISOString().split('T')[0]
 
   const { data, isLoading, error, refetch } = useQuery<DashboardDailyOverviewDTO>({
-    queryKey: ['reports', 'summary', today],
+    queryKey: queryKeys.reports.summary(today),
     queryFn: () => getDashboardOverview({ date: today, include_attendance: false }),
     staleTime: 5 * 60 * 1000, // 5 minutes
   })

@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { getDailyCollections, getDailyReceipts } from '../../../api/finance'
 import type { DailyCollectionItem, DailyReceiptItem } from '../../../api/finance/types'
 import { getTodayISO } from '../../../utils/formatting'
+import { queryKeys } from '../../../hooks/queryKeys'
+import { useState } from 'react'
 
 interface UseDailyCollectionsResult {
   collections: DailyCollectionItem[]
@@ -14,48 +16,30 @@ interface UseDailyCollectionsResult {
 }
 
 export function useDailyCollections(): UseDailyCollectionsResult {
-  const [collections, setCollections] = useState<DailyCollectionItem[]>([])
-  const [receipts, setReceipts] = useState<DailyReceiptItem[]>([])
   const [date, setDate] = useState<string>(getTodayISO())
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
 
-  const fetchData = useCallback(async (targetDate: string) => {
-    setIsLoading(true)
-    setError(null)
+  const collectionsQuery = useQuery<DailyCollectionItem[]>({
+    queryKey: queryKeys.reports.dailyCollections(date),
+    queryFn: () => getDailyCollections(date),
+    staleTime: 1 * 60 * 1000,
+  })
 
-    try {
-      const [collectionsData, receiptsData] = await Promise.all([
-        getDailyCollections(targetDate),
-        getDailyReceipts(targetDate)
-      ])
-      setCollections(collectionsData)
-      setReceipts(receiptsData)
-    } catch (err) {
-      const errorObj = err instanceof Error ? err : new Error('Failed to fetch daily collections')
-      setError(errorObj)
-      setCollections([])
-      setReceipts([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchData(date)
-  }, [date, fetchData])
-
-  const refetch = useCallback(() => {
-    fetchData(date)
-  }, [date, fetchData])
+  const receiptsQuery = useQuery<DailyReceiptItem[]>({
+    queryKey: queryKeys.reports.dailyCollections(`${date}-receipts`),
+    queryFn: () => getDailyReceipts(date),
+    staleTime: 1 * 60 * 1000,
+  })
 
   return {
-    collections,
-    receipts,
+    collections: collectionsQuery.data ?? [],
+    receipts: receiptsQuery.data ?? [],
     date,
     setDate,
-    isLoading,
-    error,
-    refetch
+    isLoading: collectionsQuery.isLoading || receiptsQuery.isLoading,
+    error: collectionsQuery.error instanceof Error ? collectionsQuery.error : receiptsQuery.error instanceof Error ? receiptsQuery.error : null,
+    refetch: () => {
+      collectionsQuery.refetch()
+      receiptsQuery.refetch()
+    },
   }
 }

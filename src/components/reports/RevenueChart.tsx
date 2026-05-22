@@ -17,7 +17,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-slate-500">
-        <span className="material-symbols-outlined text-4xl mb-2">payments</span>
+        <span className="material-symbols-outlined text-4xl mb-2" aria-hidden="true">payments</span>
         <p>No revenue data available</p>
       </div>
     )
@@ -33,8 +33,8 @@ export function RevenueChart({ data }: RevenueChartProps) {
       <AreaChart data={formattedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
         <defs>
           <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
-            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+            <stop offset="5%" stopColor="#006a61" stopOpacity={0.3}/>
+            <stop offset="95%" stopColor="#006a61" stopOpacity={0}/>
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -59,17 +59,16 @@ export function RevenueChart({ data }: RevenueChartProps) {
             borderRadius: '8px',
             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
           }}
-          formatter={(value, entry: any) => {
-            const numValue = Number(entry?.payload?.value || 0)
-            const percentage = ((numValue / 1000000) * 100).toFixed(1)
-            return `${value}: ${numValue} (${percentage}%)`
+          formatter={(value) => {
+            const numValue = Number(value)
+            return `${numValue.toLocaleString()} EGP`
           }}
         />
         <Area 
           type="monotone" 
           dataKey="net_revenue" 
           name="Revenue"
-          stroke="#f59e0b" 
+          stroke="#006a61" 
           strokeWidth={2}
           fillOpacity={1} 
           fill="url(#colorRevenue)" 

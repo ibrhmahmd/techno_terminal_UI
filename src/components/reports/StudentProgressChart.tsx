@@ -15,7 +15,7 @@ interface StudentProgressChartProps {
 
 export function StudentProgressChart({ completed, inProgress, notStarted }: StudentProgressChartProps) {
   const data = [
-    { name: 'Completed', value: completed, color: '#10b981' },
+    { name: 'Completed', value: completed, color: '#006a61' },
     { name: 'In Progress', value: inProgress, color: '#3b82f6' },
     { name: 'Not Started', value: notStarted, color: '#e2e8f0' },
   ]
@@ -25,7 +25,7 @@ export function StudentProgressChart({ completed, inProgress, notStarted }: Stud
   if (total === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-slate-500">
-        <span className="material-symbols-outlined text-4xl mb-2">military_tech</span>
+        <span className="material-symbols-outlined text-4xl mb-2" aria-hidden="true">military_tech</span>
         <p>No progress data available</p>
       </div>
     )
@@ -63,8 +63,9 @@ export function StudentProgressChart({ completed, inProgress, notStarted }: Stud
         <Legend 
           verticalAlign="bottom" 
           height={36}
-          formatter={(value, entry: any) => {
-            const numValue = Number(entry?.payload?.value || 0)
+          formatter={(value, entry) => {
+            const payload = (entry as unknown as Record<string, unknown>)?.payload as Record<string, unknown> | undefined
+            const numValue = Number(payload?.value || 0)
             const percentage = ((numValue / total) * 100).toFixed(1)
             return `${value}: ${numValue} (${percentage}%)`
           }}

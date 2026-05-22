@@ -51,4 +51,32 @@ export const queryKeys = {
   dashboard: ['dashboard'] as const,
   stats: ['dashboard', 'stats'] as const,
   attendance: ['dashboard', 'attendance'] as const,
+  dashboardOverview: (date: string) => ['dashboard', 'overview', date] as const,
+
+  // Reports
+  reports: {
+    all: ['reports'] as const,
+    summary: (today: string) => ['reports', 'summary', today] as const,
+    revenue: (months?: number) => ['reports', 'revenue', months] as const,
+    enrollmentTrends: (months: number) => ['reports', 'enrollment-trends', months] as const,
+    instructorPerformance: ['reports', 'instructor-performance'] as const,
+    studentProgress: ['reports', 'student-progress'] as const,
+    dailyCollections: (date: string) => ['reports', 'daily-collections', date] as const,
+    dailyReport: {
+      data: (date: string) => ['reports', 'daily-report', 'data', date] as const,
+      pdf: (date: string) => ['reports', 'daily-report', 'pdf', date] as const,
+    },
+  },
+
+  // Auth
+  auth: {
+    all: ['auth'] as const,
+    sessions: ['auth', 'sessions'] as const,
+    activity: ['auth', 'activity'] as const,
+    users: ['auth', 'admin', 'users'] as const,
+    user: (id: number) => ['auth', 'admin', 'users', id] as const,
+    auditLogins: ['auth', 'admin', 'audit', 'logins'] as const,
+    auditPasswordChanges: ['auth', 'admin', 'audit', 'password-changes'] as const,
+    auditFailedAttempts: ['auth', 'admin', 'audit', 'failed-attempts'] as const,
+  },
 } as const
