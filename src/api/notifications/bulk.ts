@@ -1,7 +1,7 @@
 // Bulk Messaging API
 // Endpoints for bulk messaging operations
 
-import client from '../client'
+import { client } from '../client'
 import type {
   BulkMessageRequest,
   BulkMessagePreviewDTO,
@@ -71,3 +71,4 @@ export async function getActiveJobs(): Promise<BulkMessageJobDTO[]> {
   )
   return response.data.data
 }
+

@@ -1,7 +1,7 @@
 // Student Sibling Operations
 // Endpoints: get siblings, link sibling, unlink sibling
 
-import client from '../../client'
+import { client } from '../../client'
 import type { ApiResponse } from '../../../types/api'
 import type { SiblingInfo } from './types/models'
 import type { LinkSiblingDTO } from './types/inputs'
@@ -27,3 +27,4 @@ export async function unlinkSibling(
 ): Promise<void> {
   await client.delete(`/students/${studentId}/siblings/${siblingStudentId}`)
 }
+

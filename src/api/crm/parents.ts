@@ -1,4 +1,4 @@
-import client from '../client'
+import { client } from '../client'
 import type { PaginationParams, PaginationResult } from '../../types/pagination'
 import type { PaginatedApiResponse, ApiResponse } from '../../types/api'
 import type { Parent, ParentListItem } from './students/types/models'

@@ -6,7 +6,7 @@
  * - POST /academics/groups/{group_id}/generate-sessions - Generate level sessions
  */
 
-import client from "../../client";
+import { client } from "../../client";
 import type { ApiResponse } from "../../../types/api";
 import type { GenerateLevelSessionsRequest } from "../types/groups";
 import type { Session } from "../types/sessions";
@@ -22,3 +22,4 @@ export async function generateLevelSessions(
   );
   return response.data.data || [];
 }
+

@@ -1,7 +1,7 @@
 // Templates API
 // Endpoints for notification template CRUD operations
 
-import client from '../client'
+import { client } from '../client'
 import type {
   NotificationTemplateDTO,
   CreateTemplateRequest,
@@ -77,3 +77,4 @@ export async function testTemplate(
   )
   return response.data.data
 }
+

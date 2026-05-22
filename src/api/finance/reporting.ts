@@ -6,7 +6,7 @@
  * @see docs/api/finance/reporting.md
  */
 
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type { DailyCollectionItem, DailyReceiptItem } from './types'
 
@@ -41,3 +41,4 @@ export async function getDailyReceipts(targetDate?: string): Promise<DailyReceip
   )
   return response.data.data || []
 }
+

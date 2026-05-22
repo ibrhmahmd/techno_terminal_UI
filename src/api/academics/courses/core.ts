@@ -13,7 +13,7 @@
  * - GET /academics/courses/{course_id}/groups - Get course groups
  */
 
-import client from "../../client";
+import { client } from "../../client";
 import type { ApiResponse, PaginatedApiResponse } from "../../../types/api";
 import type { PaginationParams, PaginationResult } from "../../../types/pagination";
 import type {
@@ -122,3 +122,4 @@ export async function getCourseGroups(
   );
   return response.data.data;
 }
+

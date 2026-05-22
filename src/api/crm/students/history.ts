@@ -2,7 +2,7 @@
 // Endpoints: status history
 // @see docs/api/crm/student_history.md
 
-import client from '../../client'
+import { client } from '../../client'
 import type { PaginationParams, PaginationResult } from '../../../types/pagination'
 import type { PaginatedApiResponse } from '../../../types/api'
 import type { StatusHistoryEntry, StatusHistoryRecord, AttendanceHistoryRecord } from './types/history'
@@ -58,3 +58,4 @@ export async function getAttendanceHistory(
 
 // Re-export types for backward compatibility
 export type { StatusHistoryEntry, StatusHistoryRecord, AttendanceHistoryRecord }
+

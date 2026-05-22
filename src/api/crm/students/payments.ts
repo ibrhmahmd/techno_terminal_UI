@@ -1,6 +1,6 @@
 // Student Payments API - CRM Student Payment Endpoints
 
-import client from '../../client'
+import { client } from '../../client'
 import type {
   PaymentListItem,
   PaymentDetailsResponse,
@@ -46,4 +46,5 @@ export async function sendReceiptToStudent(
   )
   return response.data.data
 }
+
 

@@ -6,7 +6,7 @@
  * @see docs/api/analytics/academic.md
  */
 
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type {
   UnpaidAttendeeDTO,
@@ -81,3 +81,4 @@ export async function getCourseCompletion(): Promise<CourseCompletionDTO[]> {
   const response = await client.get<ApiResponse<CourseCompletionDTO[]>>('/analytics/academics/course-completion')
   return response.data.data || []
 }
+

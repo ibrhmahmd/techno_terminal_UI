@@ -1,4 +1,4 @@
-import client from '../../client'
+import { client } from '../../client'
 import type { ApiResponse } from '../../../types/api'
 
 // ============================================================================
@@ -264,3 +264,4 @@ export async function getGroupEnrollmentsAll(
   )
   return response.data.data
 }
+

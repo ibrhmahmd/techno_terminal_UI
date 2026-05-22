@@ -6,7 +6,7 @@
  * @see docs/api/finance/refunds.md
  */
 
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type {
   RefundRequest,
@@ -45,3 +45,4 @@ export async function previewRefundRisk(request: RefundRequest): Promise<RiskAss
   const response = await client.post<ApiResponse<RiskAssessment>>('/finance/refunds/preview-risk', request)
   return response.data.data
 }
+

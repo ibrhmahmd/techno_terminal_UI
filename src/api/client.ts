@@ -152,5 +152,4 @@ export const createApiClient = () => {
   return client;
 };
 
-const client = createApiClient();
-export default client;
+export const client = createApiClient();

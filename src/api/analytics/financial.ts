@@ -6,7 +6,7 @@
  * @see docs/api/analytics/financial.md
  */
 
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type {
   RevenueByDateDTO,
@@ -93,3 +93,4 @@ export async function getRevenueForecast(monthsAhead?: number): Promise<RevenueF
   )
   return response.data.data || []
 }
+

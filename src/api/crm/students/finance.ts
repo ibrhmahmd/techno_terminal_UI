@@ -1,7 +1,7 @@
 // Student Finance & Balance Operations
 // Endpoints: balance, enrollment balance, unpaid enrollments, adjust balance
 
-import client from '../../client'
+import { client } from '../../client'
 import type { PaginationParams, PaginationResult } from '../../../types/pagination'
 import type { PaginatedApiResponse, ApiResponse } from '../../../types/api'
 import type { StudentBalance, EnrollmentBalance, BalanceAdjustmentResult, UnpaidEnrollment } from './types/finance'
@@ -63,3 +63,4 @@ export async function adjustStudentBalance(
   )
   return response.data.data
 }
+

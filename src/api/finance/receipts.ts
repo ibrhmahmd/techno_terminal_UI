@@ -6,7 +6,7 @@
  * @see docs/api/finance/receipts.md
  */
 
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type {
   ReceiptDetail,
@@ -92,3 +92,4 @@ export async function batchGenerateReceipts(params: BatchGenerateRequest): Promi
   const response = await client.post<ApiResponse<ReceiptListItem[]>>('/finance/receipts/batch-generate', params)
   return response.data.data || []
 }
+

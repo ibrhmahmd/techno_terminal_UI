@@ -1,4 +1,4 @@
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type { 
   Competition, CreateCompetitionInput, UpdateCompetitionInput,
@@ -41,3 +41,4 @@ export async function getCompetitionSummary(id: number): Promise<CompetitionSumm
   if (!response.data.data) throw new Error('Competition summary not found')
   return response.data.data
 }
+

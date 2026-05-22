@@ -2,7 +2,7 @@
 // Endpoints: activity tracking, history, search, enrollment, competition
 // @see docs/api/crm/student_history.md
 
-import client from '../../client'
+import { client } from '../../client'
 import type { ApiResponse } from '../../../types/api'
 import type {
   ActivityLogResponseDTO,
@@ -119,3 +119,4 @@ export async function searchActivities(
   )
   return response.data.data || []
 }
+

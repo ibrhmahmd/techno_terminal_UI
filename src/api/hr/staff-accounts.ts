@@ -1,4 +1,4 @@
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type { StaffAccountPublic, CreateEmployeeAccountRequest, EmployeeAccountResponse } from './types'
 
@@ -28,3 +28,4 @@ export async function createEmployeeAccount(
   )
   return response.data
 }
+

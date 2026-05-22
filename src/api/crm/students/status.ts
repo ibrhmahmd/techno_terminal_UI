@@ -1,7 +1,7 @@
 // Student Status Operations
 // Endpoints: update status, set waiting priority, status summary
 
-import client from '../../client'
+import { client } from '../../client'
 import type { ApiResponse } from '../../../types/api'
 import type { StudentStatusSummary, StudentStatus } from './types/models'
 import type { UpdateStudentStatusDTO, SetWaitingPriorityDTO } from './types/inputs'
@@ -52,3 +52,4 @@ export async function getStudentsByStatus(
     hasMore: total > skip + items.length
   }
 }
+

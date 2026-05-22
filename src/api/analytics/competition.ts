@@ -6,7 +6,7 @@
  * @see docs/api/analytics/competition.md
  */
 
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type { CompetitionFeeSummaryDTO } from './types'
 
@@ -18,3 +18,4 @@ export async function getCompetitionFeeSummary(): Promise<CompetitionFeeSummaryD
   const response = await client.get<ApiResponse<CompetitionFeeSummaryDTO[]>>('/analytics/competitions/fee-summary')
   return response.data.data || []
 }
+

@@ -1,7 +1,7 @@
 // Student Search Operations
 // Endpoints: search by name, advanced filtering
 
-import client from '../../client'
+import { client } from '../../client'
 import type { PaginationParams, PaginationResult } from '../../../types/pagination'
 import type { PaginatedApiResponse, ApiResponse } from '../../../types/api'
 import type { Student, StudentListItem, StudentStatus, StudentFilterResult } from './types/models'
@@ -148,3 +148,4 @@ export async function filterStudents(
   )
   return response.data.data
 }
+

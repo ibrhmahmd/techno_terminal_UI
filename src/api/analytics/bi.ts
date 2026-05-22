@@ -6,7 +6,7 @@
  * @see docs/api/analytics/bi.md
  */
 
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type {
   EnrollmentTrendDTO,
@@ -104,3 +104,4 @@ export async function getRetentionAnalysis(months?: number): Promise<RetentionAn
   )
   return response.data.data || []
 }
+

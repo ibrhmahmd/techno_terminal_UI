@@ -1,7 +1,7 @@
 // Logs API
 // Endpoints for notification history and audit logs
 
-import client from '../client'
+import { client } from '../client'
 import type {
   NotificationLogDTO,
   NotificationLogDetailDTO,
@@ -60,3 +60,4 @@ export async function retryFailed(logId: number): Promise<{ message: string }> {
   )
   return response.data.data
 }
+

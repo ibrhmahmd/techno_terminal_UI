@@ -13,7 +13,7 @@
  * - POST /academics/sessions/{session_id}/substitute - Mark substitute
  */
 
-import client from "../../client";
+import { client } from "../../client";
 import type { ApiResponse } from "../../../types/api";
 import type {
   Session,
@@ -81,3 +81,4 @@ export async function addExtraSession(data: AddExtraSessionInput): Promise<Sessi
   )
   return response.data.data
 }
+

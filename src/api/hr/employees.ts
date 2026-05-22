@@ -1,4 +1,4 @@
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type { EmployeePublic, EmployeeListItem, EmployeeCreateInput } from './types'
 
@@ -52,3 +52,4 @@ export async function updateEmployee(id: number, data: Partial<EmployeeCreateInp
   const response = await client.put<ApiResponse<EmployeePublic>>(`/hr/employees/${id}`, data)
   return response.data
 }
+

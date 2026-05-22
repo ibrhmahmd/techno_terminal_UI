@@ -1,7 +1,7 @@
 // Admin Settings API
 // Endpoints for managing admin notification preferences and additional recipients
 
-import client from '../client'
+import { client } from '../client'
 import type {
   AdminSettingsResponse,
   AdminNotificationSettingDTO,
@@ -113,3 +113,4 @@ export async function deleteRecipient(recipientId: number): Promise<{ message: s
   )
   return response.data.data
 }
+

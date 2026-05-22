@@ -6,7 +6,7 @@
  * @see docs/api/dashboard-api.md
  */
 
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type { DashboardDailyOverviewDTO } from './types'
 
@@ -36,3 +36,4 @@ export async function getDashboardOverview(
   )
   return response.data.data
 }
+

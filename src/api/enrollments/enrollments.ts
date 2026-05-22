@@ -1,4 +1,4 @@
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type { 
   Enrollment, CreateEnrollmentRequest, CreateEnrollmentResponse,
@@ -61,3 +61,4 @@ export async function getStudentEnrollments(studentId: number): Promise<Enrollme
   const response = await client.get<ApiResponse<Enrollment[]>>(`/enrollments/student/${studentId}`)
   return response.data.data || []
 }
+

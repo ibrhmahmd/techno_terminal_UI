@@ -19,7 +19,7 @@
  * - GET /academics/groups/by-type/{group_type} - Groups by type
  */
 
-import client from "../../client";
+import { client } from "../../client";
 import type { PaginationParams, PaginationResult } from "../../../types/pagination";
 import type { ApiResponse, PaginatedApiResponse } from "../../../types/api";
 import type {
@@ -242,3 +242,4 @@ export async function getGroupsByType(
   );
   return (response.data.data || []).map(normalizeEnrichedGroup);
 }
+

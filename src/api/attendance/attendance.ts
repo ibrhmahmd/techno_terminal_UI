@@ -1,4 +1,4 @@
-import client from '../client'
+import { client } from '../client'
 import type { SessionAttendanceRowDTO, MarkAttendanceRequest } from './types'
 
 export async function getSessionAttendance(sessionId: number): Promise<SessionAttendanceRowDTO[]> {
@@ -21,3 +21,4 @@ export async function markAttendance(
 
   await client.post(`/attendance/session/${sessionId}/mark`, payload)
 }
+

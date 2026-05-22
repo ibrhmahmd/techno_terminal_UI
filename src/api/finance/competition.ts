@@ -6,7 +6,7 @@
  * @see docs/api/finance/competition.md
  */
 
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type { UnpaidCompFeeItem } from './types'
 
@@ -22,3 +22,4 @@ export async function getUnpaidCompetitionFees(studentId: number): Promise<Unpai
   )
   return response.data.data || []
 }
+

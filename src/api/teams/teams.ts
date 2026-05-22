@@ -1,4 +1,4 @@
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type {
   TeamDTO,
@@ -100,3 +100,4 @@ export async function updatePlacement(teamId: number, data: PlacementUpdateInput
   const response = await client.patch<ApiResponse<TeamDTO>>(`${TEAMS_BASE}/${teamId}/placement`, data)
   return response.data.data
 }
+

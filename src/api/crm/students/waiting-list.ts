@@ -1,4 +1,4 @@
-import client from '../../client'
+import { client } from '../../client'
 import type { StudentWithDetails } from './types/models'
 
 export interface WaitingListParams {
@@ -33,3 +33,4 @@ export async function getWaitingList(
   )
   return response.data.data
 }
+

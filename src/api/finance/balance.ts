@@ -6,7 +6,7 @@
  * @see docs/api/finance/balance.md
  */
 
-import client from '../client'
+import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type { StudentBalance, EnrollmentBalance, BalanceAdjustmentResult, UnpaidEnrollment } from '../crm/students/types/finance'
 import type { BalanceAdjustmentDTO } from '../crm/students/types/inputs'
@@ -88,4 +88,5 @@ export async function adjustStudentBalance(
   )
   return response.data.data
 }
+
 
