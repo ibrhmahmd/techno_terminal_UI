@@ -20,10 +20,10 @@ export function useGroupAttendance(
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.groupAttendance(groupId, levelNumber ?? 0),
     queryFn: async () => {
-      if (!levelNumber) throw new Error('Level number is required')
+      if (levelNumber === null || levelNumber === undefined) throw new Error('Level number is required')
       return getAttendanceForLevel(groupId, levelNumber)
     },
-    enabled: !!groupId && !!levelNumber && enabled,
+    enabled: !!groupId && levelNumber !== null && levelNumber !== undefined && enabled,
     staleTime: 60 * 1000, // 1 minute - attendance changes frequently
     gcTime: 5 * 60 * 1000, // 5 minutes garbage collection
   })

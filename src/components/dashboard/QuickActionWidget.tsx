@@ -31,7 +31,7 @@ export function QuickActionWidget({
       className={`w-full bg-white rounded-lg border border-slate-200 shadow-sm p-5 text-left transition-all hover:shadow-md ${variantStyles[variant]}`}
     >
       <div className="flex items-start gap-4">
-        <span className={`material-symbols-outlined text-3xl ${iconColors[variant]}`}>
+        <span className={`material-symbols-outlined text-3xl ${iconColors[variant]}`} aria-hidden="true">
           {icon}
         </span>
         <div className="flex-1">
@@ -44,7 +44,7 @@ export function QuickActionWidget({
             </p>
           )}
         </div>
-        <span className="material-symbols-outlined text-slate-300 text-xl">
+        <span className="material-symbols-outlined text-slate-300 text-xl" aria-hidden="true">
           arrow_forward
         </span>
       </div>

@@ -35,6 +35,7 @@ export function SessionNotesRow({ sessions, notes, onNoteChange, disabled }: Ses
               placeholder={cancelled ? 'Session cancelled' : 'Add session notes...'}
               disabled={disabled || cancelled}
               rows={3}
+              aria-label={`Notes for session ${sessions.findIndex(s => s.session_id === session.session_id) + 1}`}
               className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed resize-none"
             />
           </td>

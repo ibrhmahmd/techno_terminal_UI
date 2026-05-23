@@ -48,7 +48,7 @@ export function QuickActionsGrid({ todaySessionCount }: QuickActionsGridProps) {
   }
 
   return (
-    <section className="w-full">
+    <section className="w-full" aria-label="Quick actions">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <QuickActionWidget
           icon="person_add"

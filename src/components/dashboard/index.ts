@@ -1,7 +1,6 @@
 // Dashboard components barrel export
 
 export { TopNavbar } from './TopNavbar'
-export { DashboardHeader } from './DashboardHeader'
 export { DaySelectorBar } from './DaySelectorBar'
 export { InstructorSelectorBar } from './InstructorSelectorBar'
 export { GroupSessionCard } from './GroupSessionCard'

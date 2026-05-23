@@ -44,12 +44,13 @@ export function StatWidget({
           </p>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <span className="material-symbols-outlined text-2xl text-secondary">
+          <span className="material-symbols-outlined text-2xl text-secondary" aria-hidden="true">
             {icon}
           </span>
-          <span className={`material-symbols-outlined text-sm ${trendColors[trend]}`}>
+          <span className={`material-symbols-outlined text-sm ${trendColors[trend]}`} aria-hidden="true">
             {trendIcons[trend]}
           </span>
+          <span className="sr-only">{trend === 'up' ? 'Upward trend' : trend === 'down' ? 'Downward trend' : 'No change'}</span>
         </div>
       </div>
     </Component>

@@ -21,10 +21,12 @@ export function InstructorSelectorBar({
   return (
     <section className="w-full pb-6">
       <div className="overflow-x-auto">
-        <div className="flex min-w-[300px] items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-100 p-1">
+        <div role="tablist" aria-label="Filter by instructor" className="flex min-w-[300px] items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-100 p-1">
           {/* All Instructors button */}
           <button
             key="all"
+            role="tab"
+            aria-selected={selectedInstructor === null}
             disabled={disabled}
             className={`flex-1 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all whitespace-nowrap ${
               selectedInstructor === null
@@ -40,6 +42,8 @@ export function InstructorSelectorBar({
           {sortedInstructors.map((instructorName) => (
             <button
               key={instructorName}
+              role="tab"
+              aria-selected={selectedInstructor === instructorName}
               disabled={disabled}
               className={`flex-1 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all whitespace-nowrap ${
                 selectedInstructor === instructorName

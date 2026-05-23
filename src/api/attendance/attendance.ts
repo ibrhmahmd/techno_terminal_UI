@@ -1,22 +1,19 @@
 import { client } from '../client'
-import type { SessionAttendanceRowDTO, MarkAttendanceRequest } from './types'
-
-export async function getSessionAttendance(sessionId: number): Promise<SessionAttendanceRowDTO[]> {
-  const response = await client.get<{ data: SessionAttendanceRowDTO[] }>(`/attendance/session/${sessionId}`)
-  return response.data.data || []
-}
 
 export async function markAttendance(
   sessionId: number,
   entries: { student_id: string; status: 'present' | 'absent' | 'cancelled' | null }[]
 ): Promise<void> {
-  const payload: MarkAttendanceRequest = {
-    entries: entries
-      .filter(e => e.status !== null)
-      .map(e => ({
-        student_id: parseInt(e.student_id),
-        status: e.status as 'present' | 'absent' | 'cancelled'
-      }))
+  const entries_filtered = entries.filter(
+    (e): e is typeof e & { status: 'present' | 'absent' | 'cancelled' } => e.status !== null
+  )
+  const payload: {
+    entries: { student_id: number; status: 'present' | 'absent' | 'cancelled' }[]
+  } = {
+    entries: entries_filtered.map(e => ({
+      student_id: parseInt(e.student_id),
+      status: e.status,
+    }))
   }
 
   await client.post(`/attendance/session/${sessionId}/mark`, payload)

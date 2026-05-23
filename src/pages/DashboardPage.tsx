@@ -57,7 +57,7 @@ export function DashboardPage() {
     <div className="min-h-screen bg-surface">
       <TopNavbar activePage="Dashboard" />
       
-      <div className="p-10 flex-1 space-y-8">
+      <main className="p-10 flex-1 space-y-8">
         <QuickActionsGrid todaySessionCount={scheduleItems.length} />
         <DaySelectorBar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
         <InstructorSelectorBar
@@ -68,29 +68,31 @@ export function DashboardPage() {
         />
 
         {isLoading ? (
-          <LoadingSpinner />
+          <div role="status" aria-live="polite">
+            <LoadingSpinner />
+          </div>
         ) : error ? (
           <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            <span className="material-symbols-outlined">error</span>
+            <span className="material-symbols-outlined" aria-hidden="true">error</span>
             <span>{error}</span>
           </div>
         ) : (
-          <div className="flex flex-col gap-8 pb-20">
+          <section aria-label="Scheduled groups" className="flex flex-col gap-8 pb-20">
             {filteredScheduleItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-16 text-on-surface-variant bg-white rounded-lg border border-slate-200">
-                <span className="material-symbols-outlined text-5xl mb-4 opacity-50">event_busy</span>
+                <span className="material-symbols-outlined text-5xl mb-4 opacity-50" aria-hidden="true">event_busy</span>
                 <p>No groups scheduled for this day</p>
               </div>
-            ) : (
-              filteredScheduleItems.map((item, index) => {
-                const group = getGroupInfo(item.group_id)
-                const groupData = getGroupData(item.group_id)
-                const isLast = index === filteredScheduleItems.length - 1
-                return (
-                  <div
-                    key={`group-${item.group_id}-${index}`}
-                    className={`relative ${!isLast ? 'pb-8 border-b-2 border-slate-200' : ''}`}
-                  >
+          ) : (
+            filteredScheduleItems.map((item, index) => {
+              const group = getGroupInfo(item.group_id)
+              const groupData = getGroupData(item.group_id)
+              const isLast = index === filteredScheduleItems.length - 1
+              return (
+                <article
+                  key={`group-${item.group_id}-${index}`}
+                  className={`relative ${!isLast ? 'pb-8 border-b-2 border-slate-200' : ''}`}
+                >
                     <GroupSessionCard
                       groupName={group?.name || 'Unknown Group'}
                       courseName={group?.course_name || 'Unknown Course'}
@@ -101,13 +103,13 @@ export function DashboardPage() {
                       level={item.current_level.level_number}
                       selectedDate={selectedDate}
                     />
-                  </div>
+                  </article>
                 )
               })
             )}
-          </div>
+          </section>
         )}
-      </div>
+      </main>
     </div>
   )
 }

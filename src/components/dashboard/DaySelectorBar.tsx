@@ -41,10 +41,12 @@ export function DaySelectorBar({ selectedDate, onSelectDate }: DaySelectorBarPro
     <section className="w-full pb-4">
       
       <div className="overflow-x-auto">
-        <div className="flex min-w-[680px] items-center gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1">
+        <div role="tablist" aria-label="Select day" className="flex min-w-[680px] items-center gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1">
           {weekDates.map(({ dayName, date }) => (
             <button
               key={date}
+              role="tab"
+              aria-selected={date === selectedDate}
               className={`flex-1 px-5 py-2 rounded-md font-headline text-sm font-medium transition-all ${
                 date === selectedDate
                   ? 'bg-white text-secondary shadow-sm font-bold border border-blue-200'

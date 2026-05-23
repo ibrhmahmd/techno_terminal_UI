@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { dashboardKeys } from '../../hooks/dashboard/useDashboard'
+import { queryKeys } from '../../hooks/queryKeys'
 import type { UpdateSessionDTO } from '../../api/academics'
 import { cancelSession, updateSession } from '../../api/academics'
 import { markAttendance, type AttendanceStatus } from '../../api/attendance'
@@ -45,8 +46,7 @@ interface StudentRow {
   attendance: Map<number, AttendanceStatus>
 }
 
-export function AttendanceGrid({ sessions, roster, groupId, level: _level, groupInstructorName, groupName, courseName, selectedDate }: AttendanceGridProps) {
-  void _level // Level is passed for future use but currently not needed
+export function AttendanceGrid({ sessions, roster, groupId, level, groupInstructorName, groupName, courseName, selectedDate }: AttendanceGridProps) {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [students, setStudents] = useState<StudentRow[]>([])
@@ -78,14 +78,15 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
 
   const { showToast, ToastComponent } = useToast()
 
-  // Initialize session notes when sessions change
+  // Initialize session notes when sessions change (preserve dirty notes)
   useEffect(() => {
-    const initialNotes: Record<number, string> = {}
-    sessions.forEach(s => {
-      initialNotes[s.session_id] = s.notes || ''
-    })
-    setSessionNotes(initialNotes)
-    setDirtyNotes(new Set())
+    if (dirtyNotes.size === 0) {
+      const initialNotes: Record<number, string> = {}
+      sessions.forEach(s => {
+        initialNotes[s.session_id] = s.notes || ''
+      })
+      setSessionNotes(initialNotes)
+    }
   }, [sessions])
 
   // Cleanup timeout on unmount
@@ -172,18 +173,19 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
 
   // Handle cancel session
   const handleCancelSession = useCallback(async (sessionId: number) => {
-    if (!confirm('Are you sure you want to cancel this session?')) return
-    
     try {
       await cancelSession(sessionId)
       setHasChanges(true)
       showToast('Session cancelled successfully', 'success')
+      if (selectedDate) {
+        await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+      }
       await refetchData()
     } catch (err) {
       console.error('Failed to cancel session:', err)
       showToast('Failed to cancel session', 'error')
     }
-  }, [refetchData, showToast])
+  }, [refetchData, showToast, selectedDate, qc])
 
   // Handle save edited session
   const handleSaveEditedSession = useCallback(async (sessionId: number, data: UpdateSessionDTO) => {
@@ -192,12 +194,15 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
       setIsEditModalOpen(false)
       setEditingSession(null)
       showToast('Session updated successfully', 'success')
+      if (selectedDate) {
+        await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+      }
       await refetchData()
     } catch (err) {
       console.error('Failed to update session:', err)
       showToast('Failed to update session', 'error')
     }
-  }, [refetchData, showToast])
+  }, [refetchData, showToast, selectedDate, qc])
 
   const handleToggle = useCallback((studentId: string, sessionId: number) => {
     const student = students.find(s => s.student_id === studentId)
@@ -340,12 +345,13 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
         setHasChanges(false)
       }
       
-      // 9. Invalidate dashboard cache if date provided
+      // 9. Invalidate caches after save
       if (selectedDate) {
         await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
       }
+      await qc.invalidateQueries({ queryKey: queryKeys.groupAttendance(groupId, level) })
 
-      // 5. REFETCH data (soft refresh - no page reload)
+      // 10. REFETCH data (soft refresh - no page reload)
       await refetchData()
       // 11. Show appropriate toast message
       if (failedSessions.length === 0) {
@@ -362,7 +368,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
     } finally {
       setIsSaving(false)
     }
-  }, [pendingChanges, dirtyNotes, sessionNotes, refetchData, showToast, selectedDate, qc])
+  }, [pendingChanges, dirtyNotes, sessionNotes, refetchData, showToast, selectedDate, qc, groupId, level])
 
   const handleRetrySession = useCallback(async (sessionId: number) => {
     const entries = pendingChanges.get(sessionId)
@@ -446,7 +452,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
   return (
     <div className="bg-white border border-outline-variant/10 shadow-sm overflow-hidden">
       {error && (
-        <div className="p-3 bg-red-50 border-b border-red-100 text-red-700 text-sm">
+        <div role="alert" className="p-3 bg-red-50 border-b border-red-100 text-red-700 text-sm">
           {error}
         </div>
       )}
@@ -469,8 +475,9 @@ export function AttendanceGrid({ sessions, roster, groupId, level: _level, group
                         <button
                           onClick={handleCardClick}
                           className="p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-secondary transition-colors"
+                          aria-label="View group details"
                         >
-                          <span className="material-symbols-outlined text-[18px]">info</span>
+                          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">info</span>
                         </button>
                       </div>
                     </div>

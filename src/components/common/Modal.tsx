@@ -92,6 +92,7 @@ export function Modal({ isOpen, onClose, title, children, footer, size = 'md' }:
           <button
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 transition-colors"
+            aria-label="Close dialog"
           >
             <span className="material-symbols-outlined" aria-hidden="true">close</span>
           </button>

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import { type UpdateSessionDTO } from '../../api/academics'
+import type { UpdateSessionDTO } from '../../api/academics'
 import { getEmployees } from '../../api/hr'
-import type { EmployeePublic } from '../../api/hr'
+import type { EmployeeListItem } from '../../api/hr'
 import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 
 interface EditSessionPopupProps {
@@ -23,20 +24,15 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
   const [status, setStatus] = useState<'scheduled' | 'completed' | 'cancelled'>('scheduled')
   const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [instructors, setInstructors] = useState<EmployeePublic[]>([])
 
-  // Load instructors on mount
-  useEffect(() => {
-    async function loadInstructors() {
-      try {
-        const result = await getEmployees({ page: 1, page_size: 100 })
-        setInstructors(result.data as EmployeePublic[])
-      } catch {
-        setInstructors([])
-      }
-    }
-    loadInstructors()
-  }, [])
+  // Load instructors via React Query
+  const { data: instructorsData } = useQuery({
+    queryKey: ['employees', 'list'],
+    queryFn: () => getEmployees({ page: 1, page_size: 100 }),
+    staleTime: 10 * 60 * 1000,
+    enabled: isOpen,
+  })
+  const instructors: EmployeeListItem[] = instructorsData?.data ?? []
 
   // Reset form when session changes
   useEffect(() => {
@@ -44,9 +40,9 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
       // Handle both old Session type and new SessionWithAttendanceDTO
       // New API uses: date, time_start, time_end, session_id
       // Old API uses: session_date, start_time, end_time, id
-      setDate(session.session_date || (session as any).date || '')
-      setStartTime(session.start_time || (session as any).time_start || '')
-      setEndTime(session.end_time || (session as any).time_end || '')
+      setDate(session.date || session.session_date || '')
+      setStartTime(session.time_start || session.start_time || '')
+      setEndTime(session.time_end || session.end_time || '')
       setSelectedInstructorId(session.actual_instructor_id || 0)
       setOriginalInstructorId(session.actual_instructor_id || 0)
       setIsSubstitute(session.is_substitute || false)
@@ -68,7 +64,7 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
     setIsLoading(true)
     try {
       // Use session_id if available, otherwise fall back to id
-      const sessionId = session.session_id || (session as SessionWithAttendanceDTO).id
+      const sessionId = session.session_id || session.id
       await onSave(sessionId, {
         session_date: date,
         start_time: startTime,

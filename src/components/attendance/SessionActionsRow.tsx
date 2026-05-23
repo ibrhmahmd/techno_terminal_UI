@@ -61,9 +61,9 @@ export function SessionActionsRow({ sessions, onEdit, onCancel, disabled }: Sess
                       onClick={() => onEdit(session)}
                       disabled={disabled || cancelled}
                       className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-secondary bg-secondary/10 rounded-lg hover:bg-secondary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Edit session details"
+                      aria-label="Edit session details"
                     >
-                      <span className="material-symbols-outlined text-sm">edit</span>
+                      <span className="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
                       Edit
                     </button>
 
@@ -72,9 +72,9 @@ export function SessionActionsRow({ sessions, onEdit, onCancel, disabled }: Sess
                         onClick={() => handleCancelClick(session.session_id)}
                         disabled={disabled}
                         className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Cancel this session"
+                        aria-label="Cancel this session"
                       >
-                        <span className="material-symbols-outlined text-sm">block</span>
+                        <span className="material-symbols-outlined text-sm" aria-hidden="true">block</span>
                         Cancel
                       </button>
                     )}

@@ -8,17 +8,17 @@ interface AttendanceCellProps {
 
 const ICONS = {
   present: (
-    <span className="material-symbols-outlined text-green-600 text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+    <span className="material-symbols-outlined text-green-600 text-2xl" aria-hidden="true" style={{ fontVariationSettings: "'FILL' 1" }}>
       check_circle
     </span>
   ),
   absent: (
-    <span className="material-symbols-outlined text-red-600 text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+    <span className="material-symbols-outlined text-red-600 text-2xl" aria-hidden="true" style={{ fontVariationSettings: "'FILL' 1" }}>
       cancel
     </span>
   ),
   cancelled: (
-    <span className="material-symbols-outlined text-slate-500 text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+    <span className="material-symbols-outlined text-slate-500 text-2xl" aria-hidden="true" style={{ fontVariationSettings: "'FILL' 1" }}>
       block
     </span>
   ),

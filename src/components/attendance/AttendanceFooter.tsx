@@ -15,21 +15,16 @@ export function AttendanceFooter({
   isSaving, 
   onCancel, 
   onSave, 
-  hasError, 
   hasChanges = false,
   saveStatus = new Map(),
   onRetrySession,
   dirtySessions = new Set()
 }: AttendanceFooterProps) {
   const handleSaveClick = () => {
-    console.log('[Footer] Save button clicked!')
-    console.log('[Footer] Save button clicked with props:', { isSaving, onCancel, onSave, hasError })
     onSave()
   }
 
   const handleCancelClick = () => {
-    console.log('[Footer] Cancel button clicked!')
-    console.log('[Footer] Cancel button clicked with props:', { isSaving, onCancel, onSave, hasError })
     onCancel()
   }
 
@@ -53,7 +48,7 @@ export function AttendanceFooter({
               disabled={isSaving}
               className="px-2 py-1 rounded bg-error-container text-on-error-container text-xs font-semibold hover:opacity-80 transition-opacity disabled:opacity-50 flex items-center gap-1"
             >
-              <span className="material-symbols-outlined text-xs">refresh</span>
+              <span className="material-symbols-outlined text-xs" aria-hidden="true">refresh</span>
               Session {sessionId}
             </button>
           ))}
@@ -82,7 +77,7 @@ export function AttendanceFooter({
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-sm">save</span>
+                <span className="material-symbols-outlined text-sm" aria-hidden="true">save</span>
                 <span>Save Changes</span>
               </>
             )}

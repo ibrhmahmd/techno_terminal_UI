@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -21,15 +21,36 @@ export function ConfirmDialog({
   onCancel,
   variant = 'info'
 }: ConfirmDialogProps) {
-  // Handle escape key
+  const dialogRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+    if (!isOpen) return
+    dialogRef.current?.focus()
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
         onCancel()
+        return
+      }
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        if (focusable.length === 0) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
       }
     }
-    window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onCancel])
 
   if (!isOpen) return null
@@ -66,22 +87,22 @@ export function ConfirmDialog({
       />
       
       {/* Dialog */}
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div ref={dialogRef} role="alertdialog" aria-modal="true" aria-labelledby="confirm-dialog-title" aria-describedby="confirm-dialog-message" tabIndex={-1} className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-lg ${styles.iconBg} flex items-center justify-center`}>
-              <span className={`material-symbols-outlined ${styles.iconColor} text-xl`}>
+              <span className={`material-symbols-outlined ${styles.iconColor} text-xl`} aria-hidden="true">
                 {styles.icon}
               </span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <h3 id="confirm-dialog-title" className="text-lg font-semibold text-gray-900">{title}</h3>
           </div>
         </div>
 
         {/* Body */}
         <div className="px-6 py-4">
-          <p className="text-gray-600 leading-relaxed">{message}</p>
+          <p id="confirm-dialog-message" className="text-gray-600 leading-relaxed">{message}</p>
         </div>
 
         {/* Footer */}
