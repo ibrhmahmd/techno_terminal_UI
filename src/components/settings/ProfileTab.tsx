@@ -100,12 +100,8 @@ export function ProfileTab() {
 
   const profileFields = [
     { label: 'Username', value: displayUser.username || 'N/A' },
-    { label: 'Email', value: displayUser.email || 'N/A' },
-    { label: 'Employee ID', value: displayUser.employee_id?.toString() || 'N/A' },
     { label: 'Role', value: displayUser.role?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'N/A' },
-    { label: 'Account Status', value: displayUser.is_active ? 'Active' : 'Inactive' },
     { label: 'Last Login', value: displayUser.last_login ? formatDate(displayUser.last_login) : 'N/A' },
-    { label: 'Account Created', value: displayUser.created_at ? formatDate(displayUser.created_at) : 'N/A' },
   ]
 
   return (

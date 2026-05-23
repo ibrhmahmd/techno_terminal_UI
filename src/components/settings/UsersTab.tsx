@@ -200,14 +200,21 @@ function InviteModal({ onClose }: InviteModalProps) {
     return () => document.removeEventListener('keydown', handler)
   }, [onClose])
   const [email, setEmail] = useState('')
-  const [role, setRole] = useState<'instructor' | 'admin' | 'system_admin'>('instructor')
+  const [role, setRole] = useState<'admin' | 'system_admin'>('admin')
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeListItem | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<{ id: number; invite_expires_at: string } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedEmployee) return
+    if (!selectedEmployee) {
+      setError('Please select an employee')
+      return
+    }
+    if (!selectedEmployee.is_active) {
+      setError('Cannot send invite to inactive employee')
+      return
+    }
     setError(null)
     try {
       const res = await inviteUserMutation.mutateAsync({
@@ -216,8 +223,13 @@ function InviteModal({ onClose }: InviteModalProps) {
         employee_id: selectedEmployee.id,
       })
       setResult(res)
-    } catch {
-      setError('Failed to send invite. Please check the email and try again.')
+    } catch (err: unknown) {
+      // Show server validation error if available
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('Failed to create user. Please try again.')
+      }
     }
   }
 
@@ -260,18 +272,17 @@ function InviteModal({ onClose }: InviteModalProps) {
           </div>
           <div>
             <label className="block text-sm font-medium text-on-surface mb-1">Role *</label>
-            <select value={role} onChange={(e) => { const v = e.target.value; if (v === 'instructor' || v === 'admin' || v === 'system_admin') setRole(v) }} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20">
-              <option value="instructor">Instructor</option>
+            <select value={role} onChange={(e) => { const v = e.target.value; if (v === 'admin' || v === 'system_admin') setRole(v as 'admin' | 'system_admin') }} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20">
               <option value="admin">Admin</option>
               <option value="system_admin">System Admin</option>
             </select>
           </div>
           <div className="flex gap-3 pt-4">
             <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
-            <button type="submit" disabled={inviteUserMutation.isPending || !selectedEmployee} className="flex-1 px-4 py-2 bg-secondary text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
-              {inviteUserMutation.isPending && <LoadingSpinner size="sm" variant="light" />}
-              Send Invite
-            </button>
+                <button type="submit" disabled={inviteUserMutation.isPending || !selectedEmployee || !selectedEmployee?.is_active} className="flex-1 px-4 py-2 bg-secondary text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
+                  {inviteUserMutation.isPending && <LoadingSpinner size="sm" variant="light" />}
+                  Send Invite
+                </button>
           </div>
         </form>
       </div>
@@ -335,6 +346,14 @@ export function UsersTab() {
     e.preventDefault()
     setCreateError(null)
     setCreateSuccess(null)
+    if (!newUser.selectedEmployee) {
+      setCreateError('Please select an employee')
+      return
+    }
+    if (!newUser.selectedEmployee.is_active) {
+      setCreateError('Cannot create account for inactive employee')
+      return
+    }
     try {
       const created = await createUserMutation.mutateAsync({
         employee_id: newUser.employee_id,
@@ -345,8 +364,13 @@ export function UsersTab() {
       setCreateSuccess(`User ${created.username} created successfully!`)
       setNewUser({ selectedEmployee: null, employee_id: 0, username: '', password: '', role: 'admin' })
       setTimeout(() => setShowCreateModal(false), 1500)
-    } catch {
-      setCreateError('Failed to create user. Please try again.')
+    } catch (err: unknown) {
+      // Show server validation error if available
+      if (err instanceof Error) {
+        setCreateError(err.message)
+      } else {
+        setCreateError('Failed to create user. Please try again.')
+      }
     }
   }
 
@@ -360,8 +384,13 @@ export function UsersTab() {
       setResetSuccess(`Password reset successfully for ${selectedUser.username}!`)
       setNewPassword('')
       setTimeout(() => { setShowResetModal(false); setSelectedUser(null) }, 2000)
-    } catch {
-      setResetError('Failed to reset password. Please try again.')
+    } catch (err: unknown) {
+      // Show server validation error if available
+      if (err instanceof Error) {
+        setResetError(err.message)
+      } else {
+        setResetError('Failed to reset password. Please try again.')
+      }
     }
   }
 
@@ -539,11 +568,13 @@ export function UsersTab() {
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
-                <button type="submit" disabled={createUserMutation.isPending || !newUser.selectedEmployee} className="flex-1 px-4 py-2 bg-secondary text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
+                <button type="submit" disabled={createUserMutation.isPending || !newUser.selectedEmployee || !newUser.selectedEmployee?.is_active} className="flex-1 px-4 py-2 bg-secondary text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
                   {createUserMutation.isPending && <LoadingSpinner size="sm" variant="light" />}
                   Create User
                 </button>
               </div>
+              {!newUser.selectedEmployee && <p className="text-xs text-slate-500 mt-1">Search and select an employee</p>}
+              {newUser.selectedEmployee && !newUser.selectedEmployee.is_active && <p className="text-xs text-red-500 mt-1">Cannot create account for inactive employee</p>}
             </form>
           </div>
         </div>
