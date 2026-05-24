@@ -8,19 +8,19 @@ import {
 } from 'recharts'
 
 interface StudentProgressChartProps {
-  completed: number
-  inProgress: number
-  notStarted: number
+  onTrack: number
+  atRisk: number
+  behind: number
 }
 
-export function StudentProgressChart({ completed, inProgress, notStarted }: StudentProgressChartProps) {
+export function StudentProgressChart({ onTrack, atRisk, behind }: StudentProgressChartProps) {
   const data = [
-    { name: 'Completed', value: completed, color: '#006a61' },
-    { name: 'In Progress', value: inProgress, color: '#3b82f6' },
-    { name: 'Not Started', value: notStarted, color: '#e2e8f0' },
+    { name: 'On Track', value: onTrack, color: '#006a61' },
+    { name: 'At Risk', value: atRisk, color: '#f59e0b' },
+    { name: 'Behind', value: behind, color: '#ef4444' },
   ]
 
-  const total = completed + inProgress + notStarted
+  const total = onTrack + atRisk + behind
 
   if (total === 0) {
     return (
@@ -32,6 +32,7 @@ export function StudentProgressChart({ completed, inProgress, notStarted }: Stud
   }
 
   return (
+    <div role="img" aria-label="Student progress distribution chart showing on track, at risk, and behind counts">
     <ResponsiveContainer width="100%" height={300}>
       <PieChart>
         <Pie
@@ -63,14 +64,15 @@ export function StudentProgressChart({ completed, inProgress, notStarted }: Stud
         <Legend 
           verticalAlign="bottom" 
           height={36}
-          formatter={(value, entry) => {
-            const payload = (entry as unknown as Record<string, unknown>)?.payload as Record<string, unknown> | undefined
-            const numValue = Number(payload?.value || 0)
-            const percentage = ((numValue / total) * 100).toFixed(1)
+          formatter={(value: string, entry) => {
+            const payload = entry?.payload as { value?: number } | undefined
+            const numValue = Number(payload?.value ?? 0)
+            const percentage = total > 0 ? ((numValue / total) * 100).toFixed(1) : '0.0'
             return `${value}: ${numValue} (${percentage}%)`
           }}
         />
       </PieChart>
     </ResponsiveContainer>
+    </div>
   )
 }

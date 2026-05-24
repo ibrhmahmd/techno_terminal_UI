@@ -5,10 +5,10 @@ import { queryKeys } from '../../../hooks/queryKeys'
 export function useDailyReportData(date: string | undefined) {
   return useQuery({
     queryKey: queryKeys.reports.dailyReport.data(date ?? ''),
-    queryFn: () => getDailyReportData(date as string),
+    queryFn: () => getDailyReportData(date!),
     staleTime: 0,
     enabled: !!date,
-    select: (response) => response.data,
+    select: (response) => response.data ?? null,
   })
 }
 

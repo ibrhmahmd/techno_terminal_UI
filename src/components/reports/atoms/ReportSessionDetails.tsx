@@ -29,13 +29,13 @@ export function ReportSessionDetails({ sessions }: ReportSessionDetailsProps) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200">
-              <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Instructor</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Time</th>
-              <th className="text-right py-3 px-4 text-sm font-medium text-slate-500">Present</th>
-              <th className="text-right py-3 px-4 text-sm font-medium text-slate-500">Absent</th>
-              <th className="text-right py-3 px-4 text-sm font-medium text-slate-500">Cancelled</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Students Present</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Students Absent</th>
+              <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Instructor</th>
+              <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Time</th>
+              <th scope="col" className="text-right py-3 px-4 text-sm font-medium text-slate-500">Present</th>
+              <th scope="col" className="text-right py-3 px-4 text-sm font-medium text-slate-500">Absent</th>
+              <th scope="col" className="text-right py-3 px-4 text-sm font-medium text-slate-500">Cancelled</th>
+              <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Students Present</th>
+              <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Students Absent</th>
             </tr>
           </thead>
           <tbody>

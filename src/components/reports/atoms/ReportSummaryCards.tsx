@@ -42,6 +42,7 @@ export function ReportSummaryCards({ data, isLoading }: ReportSummaryCardsProps)
       />
       <MetricSummaryCard
         label="Attendance Rate"
+        // ASSUMES API returns decimal 0.0–1.0; if API returns percentage (0–100), remove *100
         value={`${(data.attendance_rate * 100).toFixed(1)}%`}
         status="neutral"
         breakdown={[

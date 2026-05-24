@@ -7,9 +7,9 @@ import { EmptyState } from '../../common/EmptyState'
 export function ProgressTab() {
   const { progress, isLoading, error, refetch } = useStudentProgress()
 
-  const completed = progress.filter(s => s.progress_status === 'on_track').length
-  const inProgress = progress.filter(s => s.progress_status === 'at_risk').length
-  const notStarted = progress.filter(s => s.progress_status === 'behind').length
+  const onTrack = progress.filter(s => s.progress_status === 'on_track').length
+  const atRisk = progress.filter(s => s.progress_status === 'at_risk').length
+  const behind = progress.filter(s => s.progress_status === 'behind').length
 
   const topPerformers = [...progress]
     .sort((a, b) => b.attendance_pct - a.attendance_pct)
@@ -33,9 +33,9 @@ export function ProgressTab() {
         <h2 className="font-headline text-xl font-semibold text-on-surface mb-2">Student Progress Distribution</h2>
         <p className="text-sm text-slate-500 mb-6">Completion status across all students</p>
         <StudentProgressChart
-          completed={completed}
-          inProgress={inProgress}
-          notStarted={notStarted}
+          onTrack={onTrack}
+          atRisk={atRisk}
+          behind={behind}
         />
       </div>
 

@@ -69,9 +69,9 @@ export function ReportPaymentDetails({ payments }: ReportPaymentDetailsProps) {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-slate-100 bg-slate-50/50">
-                        <th className="text-left py-2 px-4 text-xs font-medium text-slate-500">Student</th>
-                        <th className="text-left py-2 px-4 text-xs font-medium text-slate-500">Group</th>
-                        <th className="text-right py-2 px-4 text-xs font-medium text-slate-500">Amount</th>
+                        <th scope="col" className="text-left py-2 px-4 text-xs font-medium text-slate-500">Student</th>
+                        <th scope="col" className="text-left py-2 px-4 text-xs font-medium text-slate-500">Group</th>
+                        <th scope="col" className="text-right py-2 px-4 text-xs font-medium text-slate-500">Amount</th>
                       </tr>
                     </thead>
                     <tbody>

@@ -23,11 +23,11 @@ export function useRevenueData(initialMonths?: number): UseRevenueDataResult {
     metrics: data ?? null,
     isLoading,
     error: error instanceof Error ? error : error ? new Error(String(error)) : null,
-    refetch: (newMonths?: number) => {
+    refetch: async (newMonths?: number) => {
       if (newMonths !== undefined && newMonths !== months) {
         setMonths(newMonths)
       } else {
-        refetch()
+        await refetch()
       }
     },
   }

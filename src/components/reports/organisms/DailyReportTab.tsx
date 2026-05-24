@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { isAxiosError } from 'axios'
 import { useDailyReportData, useDailyReportPdf } from '../hooks/useDailyReport'
 import { useReportsSummary } from '../hooks/useReportsSummary'
 import { useRevenueData } from '../hooks/useRevenueData'
@@ -51,7 +52,7 @@ export function DailyReportTab() {
     }
   }
 
-  const is404 = isError && error instanceof Error && error.message.includes('404')
+  const is404 = isError && error instanceof Error && (isAxiosError(error) ? error.response?.status === 404 : error.message.includes('404'))
 
   return (
     <div className="space-y-6">

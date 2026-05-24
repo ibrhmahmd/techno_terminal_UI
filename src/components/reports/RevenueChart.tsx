@@ -23,12 +23,10 @@ export function RevenueChart({ data }: RevenueChartProps) {
     )
   }
 
-  const formattedData = data.map(item => ({
-    ...item,
-    formattedAmount: `${item.net_revenue.toLocaleString()} EGP`
-  }))
+  const formattedData = data
 
   return (
+    <div role="img" aria-label="Revenue chart showing monthly revenue trends">
     <ResponsiveContainer width="100%" height={300}>
       <AreaChart data={formattedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
         <defs>
@@ -75,5 +73,6 @@ export function RevenueChart({ data }: RevenueChartProps) {
         />
       </AreaChart>
     </ResponsiveContainer>
+    </div>
   )
 }

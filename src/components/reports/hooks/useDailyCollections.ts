@@ -25,7 +25,7 @@ export function useDailyCollections(): UseDailyCollectionsResult {
   })
 
   const receiptsQuery = useQuery<DailyReceiptItem[]>({
-    queryKey: queryKeys.reports.dailyCollections(`${date}-receipts`),
+    queryKey: queryKeys.reports.dailyReceipts(date),
     queryFn: () => getDailyReceipts(date),
     staleTime: 1 * 60 * 1000,
   })
@@ -36,7 +36,13 @@ export function useDailyCollections(): UseDailyCollectionsResult {
     date,
     setDate,
     isLoading: collectionsQuery.isLoading || receiptsQuery.isLoading,
-    error: collectionsQuery.error instanceof Error ? collectionsQuery.error : receiptsQuery.error instanceof Error ? receiptsQuery.error : null,
+    error: collectionsQuery.error && receiptsQuery.error
+      ? new Error(`Collections: ${collectionsQuery.error.message}; Receipts: ${receiptsQuery.error.message}`)
+      : collectionsQuery.error instanceof Error
+        ? collectionsQuery.error
+        : receiptsQuery.error instanceof Error
+          ? receiptsQuery.error
+          : null,
     refetch: () => {
       collectionsQuery.refetch()
       receiptsQuery.refetch()

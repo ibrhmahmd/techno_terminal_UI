@@ -22,8 +22,8 @@ export function ReportsPage() {
       <PageSection>
         <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {activeTab === 'revenue_collections' && <RevenueAndCollectionsTab />}
-        {activeTab === 'progress' && <ProgressTab />}
+        {activeTab === 'revenue_collections' && <ErrorBoundary><RevenueAndCollectionsTab /></ErrorBoundary>}
+        {activeTab === 'progress' && <ErrorBoundary><ProgressTab /></ErrorBoundary>}
         {activeTab === 'daily_report' && <ErrorBoundary><DailyReportTab /></ErrorBoundary>}
       </PageSection>
     </div>
