@@ -16,6 +16,7 @@ export function useTeamPlacement(teamId: number | string): UseTeamPlacementRetur
     mutationFn: (data: PlacementUpdateInput) => updatePlacement(numericId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.team(numericId) })
+      queryClient.invalidateQueries({ queryKey: ['teams', 'by-competition'] })
     },
   })
 

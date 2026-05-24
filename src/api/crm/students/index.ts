@@ -52,8 +52,6 @@ export {
   getEnrollmentHistory,
   getCompetitionHistory,
   logActivity,
-  getRecentActivities,
-  searchActivities,
   type PaginatedEnrollmentHistory,
   type PaginatedCompetitionHistory,
 } from './activity'
@@ -151,9 +149,6 @@ export {
   type CompetitionHistoryEntry,
   type ActivityLogRequest,
   type ManualActivityResponseDTO,
-  type RecentActivityItemDTO,
-  type ActivitySearchParams,
-  type ActivitySearchResultItemDTO,
 } from './types'
 
 // Additional type exports from search

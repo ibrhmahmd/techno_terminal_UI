@@ -9,6 +9,8 @@ import { CompetitionsTable } from '../components/competitions'
 import { CardGrid } from '../components/directory/CardGrid'
 import { ViewToggle } from '../components/groups/ViewToggle'
 import { useCompetitions } from '../hooks/competitions'
+import { queryClient } from '../lib/queryClient'
+import { queryKeys } from '../hooks/queryKeys'
 import { createCompetition, deleteCompetition } from '../api/competitions'
 import type { CreateCompetitionInput, UpdateCompetitionInput } from '../api/competitions'
 
@@ -18,7 +20,6 @@ export function CompetitionsPage() {
     competitions,
     isLoading,
     error: hookError,
-    refresh,
   } = useCompetitions()
 
   // View states
@@ -36,7 +37,7 @@ export function CompetitionsPage() {
     setActionError(null)
     try {
       await createCompetition(data as CreateCompetitionInput)
-      await refresh()
+      queryClient.invalidateQueries({ queryKey: queryKeys.competitions })
       setIsCreateModalOpen(false)
     } catch {
       setActionError('Failed to create competition')
@@ -50,7 +51,7 @@ export function CompetitionsPage() {
     setDeleteError(null)
     try {
       await deleteCompetition(id)
-      await refresh()
+      queryClient.invalidateQueries({ queryKey: queryKeys.competitions })
       setDeletingCompetition(null)
     } catch (err: unknown) {
       const axiosErr = err as { response?: { status?: number; data?: { message?: string } } }

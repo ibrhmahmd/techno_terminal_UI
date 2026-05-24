@@ -18,6 +18,7 @@ export function useTeamPayments(teamId: number | string): UseTeamPaymentsReturn 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.teamMembers(numericId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.team(numericId) })
+      queryClient.invalidateQueries({ queryKey: ['teams', 'by-competition'] })
     },
   })
 

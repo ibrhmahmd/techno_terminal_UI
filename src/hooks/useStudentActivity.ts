@@ -7,19 +7,16 @@ import {
   getStudentActivityHistory,
   getActivitySummary,
   getEnrollmentHistory,
-  getCompetitionHistory,
   logActivity,
   type ActivityLogRequest,
-  type PaginatedEnrollmentHistory,
-  type PaginatedCompetitionHistory,
 } from '../api/crm'
+import type { PaginatedEnrollmentHistory } from '../api/crm'
 
 export const activityKeys = {
   all: ['student-activity'] as const,
   history: (studentId: number, filters?: Record<string, unknown>) => ['student-activity', 'history', studentId, filters] as const,
   summary: (studentId: number, params?: Record<string, unknown>) => ['student-activity', 'summary', studentId, params] as const,
   enrollments: (studentId: number, params?: Record<string, unknown>) => ['student-activity', 'enrollments', studentId, params] as const,
-  competitions: (studentId: number, params?: Record<string, unknown>) => ['student-activity', 'competitions', studentId, params] as const,
 }
 
 interface UseActivityHistoryOptions {
@@ -68,20 +65,6 @@ export function useEnrollmentHistory(
   return useQuery<PaginatedEnrollmentHistory>({
     queryKey: activityKeys.enrollments(studentId, params),
     queryFn: () => getEnrollmentHistory(studentId, params),
-    staleTime: 3 * 60 * 1000,
-    enabled: enabled && studentId > 0,
-  })
-}
-
-// Get competition participation history with pagination
-export function useCompetitionHistory(
-  studentId: number,
-  params?: { skip?: number; limit?: number },
-  enabled: boolean = true
-): UseQueryResult<PaginatedCompetitionHistory> {
-  return useQuery<PaginatedCompetitionHistory>({
-    queryKey: activityKeys.competitions(studentId, params),
-    queryFn: () => getCompetitionHistory(studentId, params),
     staleTime: 3 * 60 * 1000,
     enabled: enabled && studentId > 0,
   })

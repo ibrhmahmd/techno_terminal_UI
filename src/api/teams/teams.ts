@@ -31,20 +31,6 @@ export async function getTeams(filters: TeamListFilters): Promise<TeamWithMember
   return response.data.data || []
 }
 
-export async function getTeamsWithMembers(filters: TeamListFilters): Promise<TeamWithMembersDTO[]> {
-  const params = new URLSearchParams()
-  params.append('competition_id', filters.competition_id.toString())
-  if (filters.category) params.append('category', filters.category)
-  if (filters.subcategory) params.append('subcategory', filters.subcategory)
-  params.append('include_members', 'true')
-
-  const query = params.toString()
-  const url = `${TEAMS_BASE}?${query}`
-
-  const response = await client.get<ApiResponse<TeamWithMembersDTO[]>>(url)
-  return response.data.data || []
-}
-
 export async function registerTeam(data: RegisterTeamInput): Promise<TeamRegistrationResultDTO> {
   const response = await client.post<ApiResponse<TeamRegistrationResultDTO>>(TEAMS_BASE, data)
   return response.data.data

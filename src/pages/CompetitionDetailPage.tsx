@@ -51,16 +51,12 @@ export function CompetitionDetailPage() {
   const isLoading = competitionLoading || categoriesLoading || summaryLoading
 
   const handleRegisterTeam = async (data: RegisterTeamInput) => {
-    try {
-      await registerTeam(data)
-      setIsRegistrationModalOpen(false)
-      setSelectedCategory(null)
-      await queryClient.invalidateQueries({ queryKey: queryKeys.competitionSummary(numericId) })
-      await queryClient.invalidateQueries({ queryKey: queryKeys.competitionCategories(numericId) })
-      await queryClient.invalidateQueries({ queryKey: queryKeys.teams })
-    } catch {
-      // Error handled by hook
-    }
+    await registerTeam(data)
+    setIsRegistrationModalOpen(false)
+    setSelectedCategory(null)
+    queryClient.invalidateQueries({ queryKey: queryKeys.competitionSummary(numericId) })
+    queryClient.invalidateQueries({ queryKey: queryKeys.competitionCategories(numericId) })
+    queryClient.invalidateQueries({ queryKey: queryKeys.teamsByCompetition(numericId) })
   }
 
   const handleDeleteCompetition = async () => {
@@ -216,7 +212,7 @@ export function CompetitionDetailPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="material-symbols-outlined text-slate-400" aria-hidden="true">payments</span>
-                  <span>{competition.fee_per_student} EGP per student</span>
+                  <span>{competition.fee_per_student != null ? `${competition.fee_per_student} EGP per student` : 'No fee set'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="material-symbols-outlined text-slate-400" aria-hidden="true">event</span>
@@ -297,7 +293,7 @@ export function CompetitionDetailPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => {
-                            const match = summary?.categories.find(c => c.category === cat.category)
+                            const match = summary?.categories?.find(c => c.category === cat.category)
                             if (match) { setSelectedCategoryTeams(match); setIsCategoryTeamsModalOpen(true) }
                           }}
                           className="flex-1 px-3 py-2 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"

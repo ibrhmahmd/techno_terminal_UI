@@ -12,6 +12,7 @@ import { EnrollmentsTab, EnrollDialog } from '../components/student/EnrollmentsT
 import { CoursesTab } from '../components/student/CoursesTab'
 import { CompetitionsTab } from '../components/student/CompetitionsTab'
 import { TeamsTab } from '../components/student/TeamsTab'
+import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { PaymentsTab } from '../components/student/PaymentsTab'
 import { ActivityHistoryTab } from '../components/student/ActivityHistoryTab'
 import { 
@@ -223,9 +224,17 @@ export function StudentDetailPage() {
       case 'courses':
         return <CoursesTab courses={courses || []} />
       case 'competitions':
-        return <CompetitionsTab competitions={competitions || []} />
+        return (
+          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load competitions</p></div>}>
+            <CompetitionsTab competitions={competitions || []} />
+          </ErrorBoundary>
+        )
       case 'teams':
-        return <TeamsTab teams={teams || []} />
+        return (
+          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load teams</p></div>}>
+            <TeamsTab teams={teams || []} />
+          </ErrorBoundary>
+        )
       case 'payments':
         return (
           <PaymentsTab 

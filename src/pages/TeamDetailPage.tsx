@@ -55,19 +55,47 @@ export function TeamDetailPage() {
   const [addMemberError, setAddMemberError] = useState<string | null>(null)
   const [isAddingMember, setIsAddingMember] = useState(false)
 
+  const [parentSearch, setParentSearch] = useState('')
+  const [debouncedParentSearch, setDebouncedParentSearch] = useState('')
+  const [parentResults, setParentResults] = useState<ParentListItem[]>([])
+  const [selectedParent, setSelectedParent] = useState<ParentListItem | null>(null)
+  const [isSearchingParents, setIsSearchingParents] = useState(false)
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedStudentSearch(studentSearch), 300)
     return () => clearTimeout(timer)
   }, [studentSearch])
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedParentSearch(parentSearch), 300)
+    return () => clearTimeout(timer)
+  }, [parentSearch])
+
+  useEffect(() => {
+    if (debouncedParentSearch.trim().length < 2) {
+      setParentResults([])
+      return
+    }
+    let cancelled = false
+    setIsSearchingParents(true)
+    searchParents(debouncedParentSearch.trim()).then(results => {
+      if (!cancelled) {
+        setParentResults(results)
+        setIsSearchingParents(false)
+      }
+    }).catch(() => {
+      if (!cancelled) {
+        setParentResults([])
+        setIsSearchingParents(false)
+      }
+    })
+    return () => { cancelled = true }
+  }, [debouncedParentSearch])
+
   const { data: studentResults, isLoading: isSearchingStudents } = useStudentsSearch(debouncedStudentSearch)
   const [selectedMember, setSelectedMember] = useState<TeamMemberRosterDTO | null>(null)
   const [payAmount, setPayAmount] = useState('')
   const [payError, setPayError] = useState<string | null>(null)
-  const [parentSearch, setParentSearch] = useState('')
-  const [parentResults, setParentResults] = useState<ParentListItem[]>([])
-  const [selectedParent, setSelectedParent] = useState<ParentListItem | null>(null)
-  const [isSearchingParents, setIsSearchingParents] = useState(false)
   const [removeError, setRemoveError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
@@ -616,23 +644,9 @@ export function TeamDetailPage() {
                   id="parent_search"
                   type="text"
                   value={parentSearch}
-                  onChange={async (e) => {
-                    const val = e.target.value
-                    setParentSearch(val)
+                  onChange={(e) => {
+                    setParentSearch(e.target.value)
                     setSelectedParent(null)
-                    if (val.trim().length < 2) {
-                      setParentResults([])
-                      return
-                    }
-                    setIsSearchingParents(true)
-                    try {
-                      const results = await searchParents(val.trim())
-                      setParentResults(results)
-                    } catch {
-                      setParentResults([])
-                    } finally {
-                      setIsSearchingParents(false)
-                    }
                   }}
                   placeholder="Search parent by name..."
                   className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"

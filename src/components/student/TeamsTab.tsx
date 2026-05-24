@@ -21,15 +21,15 @@ export function TeamsTab({ teams }: TeamsTabProps) {
   const formerTeams = teams.filter(t => t.status === 'former')
 
   const getRoleIcon = (role?: string | null) => {
-    if (!role) return <UsersRound className="w-5 h-5 text-slate-500" />
+    if (!role) return <UsersRound className="w-5 h-5 text-slate-500" aria-hidden="true" />
     const lower = role.toLowerCase()
     if (lower.includes('captain') || lower.includes('lead')) {
-      return <Shield className="w-5 h-5 text-amber-600" />
+      return <Shield className="w-5 h-5 text-amber-600" aria-hidden="true" />
     }
     if (lower.includes('coach')) {
-      return <UserCog className="w-5 h-5 text-blue-600" />
+      return <UserCog className="w-5 h-5 text-blue-600" aria-hidden="true" />
     }
-    return <UsersRound className="w-5 h-5 text-slate-500" />
+    return <UsersRound className="w-5 h-5 text-slate-500" aria-hidden="true" />
   }
 
   const renderTeamCard = (team: TeamRecord) => (
@@ -46,7 +46,7 @@ export function TeamsTab({ teams }: TeamsTabProps) {
             )}
             <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
               <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
+                <Calendar className="w-3 h-3" aria-hidden="true" />
                 {team.start_date}
                 {team.end_date && ` - ${team.end_date}`}
               </span>
@@ -93,7 +93,7 @@ export function TeamsTab({ teams }: TeamsTabProps) {
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-100 bg-green-50">
             <div className="flex items-center gap-2">
-              <UsersRound className="w-5 h-5 text-green-600" />
+              <UsersRound className="w-5 h-5 text-green-600" aria-hidden="true" />
               <h3 className="font-semibold text-on-surface">Active Teams</h3>
               <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                 {activeTeams.length}
@@ -111,7 +111,7 @@ export function TeamsTab({ teams }: TeamsTabProps) {
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
             <div className="flex items-center gap-2">
-              <UsersRound className="w-5 h-5 text-slate-500" />
+              <UsersRound className="w-5 h-5 text-slate-500" aria-hidden="true" />
               <h3 className="font-semibold text-on-surface">Past Teams</h3>
               <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-600">
                 {formerTeams.length}
@@ -127,4 +127,4 @@ export function TeamsTab({ teams }: TeamsTabProps) {
   )
 }
 
-export default TeamsTab
+

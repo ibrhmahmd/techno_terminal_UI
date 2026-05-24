@@ -107,7 +107,7 @@ export function groupTeams(
         subMap.set(subKey, subGroup)
       }
       group.teams = sortTeams(group.teams, groupBy)
-      ;(group as TeamGroup & { subgroups?: TeamGroup[] }).subgroups = Array.from(subMap.entries())
+      group.subgroups = Array.from(subMap.entries())
         .map(([key, subTeams]) => ({
           key,
           label: getGroupLabel(subgroupBy, key),

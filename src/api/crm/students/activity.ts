@@ -11,9 +11,6 @@ import type {
   CompetitionHistoryEntry,
   ActivityLogRequest,
   ManualActivityResponseDTO,
-  RecentActivityItemDTO,
-  ActivitySearchParams,
-  ActivitySearchResultItemDTO,
 } from './types/activity'
 
 // Get student activity history
@@ -97,26 +94,4 @@ export async function logActivity(
   return response.data.data
 }
 
-// Get recent activities (global)
-export async function getRecentActivities(
-  limit: number = 20,
-  activity_types?: string
-): Promise<RecentActivityItemDTO[]> {
-  const response = await client.get<ApiResponse<RecentActivityItemDTO[]>>(
-    '/crm/history/recent',
-    { params: { limit, activity_types } }
-  )
-  return response.data.data || []
-}
-
-// Search activities
-export async function searchActivities(
-  params: ActivitySearchParams
-): Promise<ActivitySearchResultItemDTO[]> {
-  const response = await client.post<ApiResponse<ActivitySearchResultItemDTO[]>>(
-    '/crm/history/search',
-    params
-  )
-  return response.data.data || []
-}
 

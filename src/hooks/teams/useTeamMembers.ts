@@ -35,18 +35,20 @@ export function useTeamMembers(teamId: number | string): UseTeamMembersReturn {
     enabled: !isNaN(numericId),
   })
 
+  const invalidateRelated = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.teamMembers(numericId) })
+    queryClient.invalidateQueries({ queryKey: queryKeys.team(numericId) })
+    queryClient.invalidateQueries({ queryKey: ['teams', 'by-competition'] })
+  }
+
   const addMutation = useMutation({
     mutationFn: (data: AddTeamMemberInput) => addTeamMember(numericId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.teamMembers(numericId) })
-    },
+    onSuccess: () => { invalidateRelated() },
   })
 
   const removeMutation = useMutation({
     mutationFn: (studentId: number) => removeTeamMember(numericId, studentId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.teamMembers(numericId) })
-    },
+    onSuccess: () => { invalidateRelated() },
   })
 
   return {

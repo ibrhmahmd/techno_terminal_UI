@@ -1,6 +1,5 @@
 export { CompetitionsTable } from './CompetitionsTable'
 export { CompetitionForm } from './CompetitionForm'
 export { CompetitionCard } from './CompetitionCard'
-export { CategoryList } from './CategoryList'
 export { TeamRegistrationModal } from './TeamRegistrationModal'
 export { CategoryTeamsModal } from './CategoryTeamsModal'

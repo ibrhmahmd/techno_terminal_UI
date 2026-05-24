@@ -61,9 +61,6 @@ export {
   type CompetitionHistoryEntry,
   type ActivityLogRequest,
   type ManualActivityResponseDTO,
-  type RecentActivityItemDTO,
-  type ActivitySearchParams,
-  type ActivitySearchResultItemDTO,
 } from './activity'
 
 // Payments

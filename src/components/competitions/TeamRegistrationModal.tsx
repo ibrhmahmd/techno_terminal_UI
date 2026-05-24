@@ -96,19 +96,17 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
 
     setIsLoading(true)
     try {
-      const payload: Partial<RegisterTeamInput> = {
+      const payload: RegisterTeamInput = {
         competition_id: competitionId,
         team_name: teamName,
         category: selectedCategory.trim(),
         subcategory: selectedSubcategory.trim() || undefined,
         project_name: projectName.trim() || undefined,
         project_description: projectDescription.trim() || undefined,
+        student_ids: selectionMode === 'individual' ? student_ids : [],
       }
-      if (selectionMode === 'individual') {
-        payload.student_ids = student_ids
-        if (Object.keys(student_fees).length > 0) {
-          payload.student_fees = student_fees
-        }
+      if (selectionMode === 'individual' && Object.keys(student_fees).length > 0) {
+        payload.student_fees = student_fees
       }
       if (selectionMode === 'group' && selectedGroup) {
         payload.group_id = selectedGroup.id
@@ -116,7 +114,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
       if (selectedInstructor) {
         payload.coach_id = selectedInstructor.id
       }
-      await onSubmit(payload as RegisterTeamInput)
+      await onSubmit(payload)
       setTeamName('')
       setSelectedCategory('')
       setSelectedSubcategory('')

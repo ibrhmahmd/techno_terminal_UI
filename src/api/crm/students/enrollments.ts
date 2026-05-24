@@ -7,8 +7,8 @@ import type { CourseRecord, CompetitionRecord, TeamRecord } from './types/models
  * TODO: Backend endpoint GET /crm/students/{student_id}/courses
  * Returns student's course history with progress and grades
  */
-export async function getStudentCourses(_studentId: number): Promise<CourseRecord[]> {
-  console.warn('API not implemented: getStudentCourses - TODO: Backend endpoint GET /crm/students/{student_id}/courses')
+export async function getStudentCourses(studentId: number): Promise<CourseRecord[]> {
+  console.warn(`API not implemented: getStudentCourses(${studentId}) - TODO: Backend endpoint GET /crm/students/{student_id}/courses`)
   return []
 }
 
@@ -19,8 +19,8 @@ export async function getStudentCourses(_studentId: number): Promise<CourseRecor
  * StudentCompetitionDTO: { membership: TeamMemberDTO, team: TeamDTO, category: CompetitionCategoryDTO, competition: CompetitionDTO }
  * Note: Full-team endpoint, not per-group scoped
  */
-export async function getStudentCompetitions(_studentId: number): Promise<CompetitionRecord[]> {
-  console.warn('API not implemented: getStudentCompetitions - TODO: Backend endpoint GET /crm/students/{student_id}/competitions')
+export async function getStudentCompetitions(studentId: number): Promise<CompetitionRecord[]> {
+  console.warn(`API not implemented: getStudentCompetitions(${studentId}) - TODO: Backend endpoint GET /crm/students/{student_id}/competitions`)
   return []
 }
 
@@ -28,7 +28,7 @@ export async function getStudentCompetitions(_studentId: number): Promise<Compet
  * TODO: Backend endpoint GET /crm/students/{student_id}/teams
  * Returns student's team memberships
  */
-export async function getStudentTeams(_studentId: number): Promise<TeamRecord[]> {
-  console.warn('API not implemented: getStudentTeams - TODO: Backend endpoint GET /crm/students/{student_id}/teams')
+export async function getStudentTeams(studentId: number): Promise<TeamRecord[]> {
+  console.warn(`API not implemented: getStudentTeams(${studentId}) - TODO: Backend endpoint GET /crm/students/{student_id}/teams`)
   return []
 }

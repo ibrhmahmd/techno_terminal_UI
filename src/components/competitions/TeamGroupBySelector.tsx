@@ -1,5 +1,11 @@
 import type { TeamGroupByField } from '../../api/teams/types'
 
+const VALID_GROUP_BY_VALUES: readonly TeamGroupByField[] = ['instructor', 'category', 'subcategory', 'payment_status', 'placement', 'alphabetical']
+
+function isValidGroupByField(value: string): value is TeamGroupByField {
+  return (VALID_GROUP_BY_VALUES as readonly string[]).includes(value)
+}
+
 interface TeamGroupBySelectorProps {
   groupBy: TeamGroupByField | null
   onGroupByChange: (field: TeamGroupByField | null) => void
@@ -60,7 +66,10 @@ export function TeamGroupBySelector({
           <span className="text-xs text-slate-500">Sub-group:</span>
           <select
             value={subgroupBy ?? ''}
-            onChange={(e) => onSubgroupByChange(e.target.value ? (e.target.value as TeamGroupByField) : null)}
+            onChange={(e) => {
+              const val = e.target.value
+              onSubgroupByChange(val && isValidGroupByField(val) ? val : null)
+            }}
             className="text-sm border border-slate-300 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-secondary/30"
             aria-label="Sub-group by"
           >

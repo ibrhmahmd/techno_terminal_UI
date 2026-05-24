@@ -16,12 +16,19 @@ interface TeamsTabProps {
 const GROUP_BY_KEY = 'tt:competitions:groupBy'
 const SUBGROUP_BY_KEY = 'tt:competitions:subgroupBy'
 
+const VALID_GROUP_BY_VALUES: readonly TeamGroupByField[] = ['instructor', 'category', 'subcategory', 'payment_status', 'placement', 'alphabetical']
+
+function isValidGroupByField(value: string | null): value is TeamGroupByField {
+  return value !== null && (VALID_GROUP_BY_VALUES as readonly string[]).includes(value)
+}
+
 function loadPreference(key: string): TeamGroupByField | null | undefined {
   try {
     const stored = localStorage.getItem(key)
     if (stored === null) return undefined
     if (stored === 'null') return null
-    return stored as TeamGroupByField
+    if (isValidGroupByField(stored)) return stored
+    return undefined
   } catch {
     return undefined
   }
@@ -118,9 +125,9 @@ export function TeamsTab({ teams, categories, isLoading, onRegisterTeam }: Teams
                 {group.label}
                 <span className="text-sm font-normal text-slate-400">({group.count})</span>
               </h3>
-              {'subgroups' in group && (group as { subgroups?: Array<{ key: string; label: string; count: number; teams: TeamCardData[] }> }).subgroups ? (
+              {group.subgroups ? (
                 <div className="space-y-4">
-                  {(group as { subgroups: Array<{ key: string; label: string; count: number; teams: TeamCardData[] }> }).subgroups.map((sub) => (
+                  {group.subgroups.map((sub) => (
                     <div key={sub.key}>
                       <h4 className="text-sm font-medium text-slate-500 mb-2 flex items-center gap-1">
                         {sub.label}

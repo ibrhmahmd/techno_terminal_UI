@@ -125,6 +125,7 @@ export interface TeamGroup {
   label: string
   count: number
   teams: TeamCardData[]
+  subgroups?: TeamGroup[]
 }
 
 export interface TeamMemberDTO {

@@ -30,9 +30,6 @@ export const queryKeys = {
   teamMembers: (id: number) => ['teams', id, 'members'] as const,
   teamsByCompetition: (competitionId: number, filters?: { category?: string; subcategory?: string }) => ['teams', 'by-competition', competitionId, filters] as const,
 
-  // Finance
-  competitionFees: (studentId: number) => ['finance', 'competition-fees', studentId] as const,
-  
   // Reports
   reports: {
     summary: (today: string) => ['reports', 'summary', today] as const,
