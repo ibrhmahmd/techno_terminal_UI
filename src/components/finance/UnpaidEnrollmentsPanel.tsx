@@ -10,6 +10,7 @@ import type { EnrichedGroupPublic } from '../../api/academics'
 interface UnpaidEnrollmentsPanelProps {
   onError: (message: string) => void
   onPay: (enrollment: UnpaidEnrollment) => void
+  onNavigateToCreate?: () => void
 }
 
 interface GroupedEnrollments {
@@ -21,7 +22,7 @@ interface GroupedEnrollments {
 
 const PAGE_SIZE = 12
 
-export function UnpaidEnrollmentsPanel({ onError, onPay }: UnpaidEnrollmentsPanelProps) {
+export function UnpaidEnrollmentsPanel({ onError, onPay, onNavigateToCreate }: UnpaidEnrollmentsPanelProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
   const [minBalance, setMinBalance] = useState<number | ''>('')
@@ -225,9 +226,21 @@ export function UnpaidEnrollmentsPanel({ onError, onPay }: UnpaidEnrollmentsPane
       )}
 
       {/* Results Count */}
-      <div className="text-sm text-slate-600">
-        Found <span className="font-semibold text-secondary">{currentItems.length}</span> unpaid enrollment
-        {currentItems.length !== 1 ? 's' : ''}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-slate-600">
+          Found <span className="font-semibold text-secondary">{currentItems.length}</span> unpaid enrollment
+          {currentItems.length !== 1 ? 's' : ''}
+        </div>
+        {onNavigateToCreate && (
+          <button
+            type="button"
+            onClick={onNavigateToCreate}
+            className="text-sm text-secondary hover:text-secondary/80 font-medium flex items-center gap-1 transition-colors"
+          >
+            <span className="material-symbols-outlined text-base">add_circle</span>
+            Create Receipt
+          </button>
+        )}
       </div>
 
       {/* Cards Grid */}

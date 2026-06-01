@@ -42,6 +42,16 @@ export const queryKeys = {
     },
   },
 
+  // Finance
+  finance: {
+    metrics: (date: string) => ['finance', 'metrics', date] as const,
+    dailyReceipts: (date: string) => ['finance', 'daily-receipts', date] as const,
+    receipts: {
+      search: (params: Record<string, unknown>) => ['finance', 'receipts', 'search', params] as const,
+      detail: (id: number) => ['finance', 'receipts', id] as const,
+    },
+  },
+
   // Auth
   auth: {
     all: ['auth'] as const,
