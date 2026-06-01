@@ -154,5 +154,13 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/023-dashboard-attendance-audit/plan.md`
+`specs/025-finance-ui-ux/plan.md`
 <!-- SPECKIT END -->
+
+## Active Plan (2026-06-01 Update)
+
+This feature branch (`025-finance-ui-ux`) is being modified with:
+- **Metrics-as-navigation**: No tab bar — 4 metric cards open 4 panels (Today's Receipts / Create Receipt / Unpaid / Refunds)
+- **Payment pills**: Both payment method AND payment type use pill selectors (not dropdowns)
+- **Default view**: Today's Receipts panel is open on page load
+- **Contracts**: See `specs/025-finance-ui-ux/contracts/` for component prop contracts

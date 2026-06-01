@@ -1,0 +1,110 @@
+[
+  {
+    "severity": "critical",
+    "risk": "breaking",
+    "file": "src/pages/CompetitionDetailPage.tsx",
+    "line": 300,
+    "finding": "summary?.categories.find(...) throws TypeError when summary is null. Optional chaining covers only summary but not the .find() call — if the summary query hasn't loaded or failed, clicking 'View Teams' crashes the page.",
+    "before": "const match = summary?.categories.find(c => c.category === cat.category)",
+    "after": "const match = summary?.categories?.find(c => c.category === cat.category) ?? null"
+  },
+  {
+    "severity": "high",
+    "risk": "moderate",
+    "file": "src/pages/CompetitionEditPage.tsx",
+    "line": 22,
+    "finding": "Calls updateCompetition() (raw API function) directly instead of using useCompetition().update mutation. Cache invalidation in the hook is bypassed, so navigating back to the competition detail page shows stale data for up to 5 minutes (staleTime).",
+    "before": "await updateCompetition(numericId, data as UpdateCompetitionInput)",
+    "after": "await ctx.update(data as UpdateCompetitionInput) [using the hook's mutation]"
+  },
+  {
+    "severity": "high",
+    "risk": "moderate",
+    "file": "src/pages/TeamDetailPage.tsx",
+    "line": 619,
+    "finding": "Parent search fires on every keystroke with no debounce, causing excessive API calls on each character typed. The student search above (line 54) correctly uses a 300ms debounce.",
+    "before": "onChange={async (e) => {\n  const val = e.target.value\n  setParentSearch(val)\n  setSelectedParent(null)\n  if (val.trim().length < 2) {\n    setParentResults([])\n    return\n  }\n  setIsSearchingParents(true)\n  try {\n    const results = await searchParents(val.trim())\n    setParentResults(results)\n  } catch {\n    setParentResults([])\n  } finally {\n    setIsSearchingParents(false)\n  }\n}}",
+    "after": "Add a debounced state for parentSearch similar to debouncedStudentSearch, then fire search only on the debounced value"
+  },
+  {
+    "severity": "medium",
+    "risk": "moderate",
+    "file": "src/components/teams/TeamEditModal.tsx",
+    "line": 23,
+    "finding": "Instructor combobox starts as null and is never pre-populated from team.coach_id. User must re-select the instructor every time they edit. If user saves without touching the instructor field, the lack of coach_id in the PATCH body may overwrite the existing coach_id depending on server merge semantics.",
+    "before": "const [selectedInstructor, setSelectedInstructor] = useState<EmployeeListItem | null>(null)",
+    "after": "const [selectedInstructor, setSelectedInstructor] = useState<EmployeeListItem | null>(\n  team.coach_id ? { id: team.coach_id } as EmployeeListItem : null\n)"
+  },
+  {
+    "severity": "medium",
+    "risk": "moderate",
+    "file": "src/hooks/students/useStudentTeams.ts",
+    "line": 7,
+    "finding": "Uses an inline query key ['student', studentId, 'teams'] instead of the centralized queryKeys system. Cross-module cache invalidation (e.g., from other hooks or components) cannot target this query via the centralized keys.",
+    "before": "queryKey: ['student', studentId, 'teams']",
+    "after": "queryKey: queryKeys.studentTeams(studentId)"
+  },
+  {
+    "severity": "medium",
+    "risk": "safe",
+    "file": "src/api/teams/teams.ts",
+    "line": 34,
+    "finding": "getTeamsWithMembers is an exact duplicate of getTeams (same implementation, same URL, same params) and is never imported or called anywhere in the codebase.",
+    "before": "export async function getTeamsWithMembers(filters: TeamListFilters): Promise<TeamWithMembersDTO[]> {\n  // ... duplicate of getTeams\n}",
+    "after": "[Remove the function entirely]"
+  },
+  {
+    "severity": "medium",
+    "risk": "safe",
+    "file": "src/pages/CompetitionDetailPage.tsx",
+    "line": 59,
+    "finding": "Three sequential await queryClient.invalidateQueries() calls that could run in parallel for better performance.",
+    "before": "await queryClient.invalidateQueries({ queryKey: queryKeys.competitionSummary(numericId) })\nawait queryClient.invalidateQueries({ queryKey: queryKeys.competitionCategories(numericId) })\nawait queryClient.invalidateQueries({ queryKey: queryKeys.teams })",
+    "after": "await Promise.all([\n  queryClient.invalidateQueries({ queryKey: queryKeys.competitionSummary(numericId) }),\n  queryClient.invalidateQueries({ queryKey: queryKeys.competitionCategories(numericId) }),\n  queryClient.invalidateQueries({ queryKey: queryKeys.teams }),\n])"
+  },
+  {
+    "severity": "medium",
+    "risk": "safe",
+    "file": "src/hooks/competitions/useCompetition.ts",
+    "line": 55,
+    "finding": "The update mutation (line 38-42) is defined but never called by any component. CompetitionEditPage uses the raw updateCompetition() API function directly, bypassing the mutation's cache invalidation logic. Either the hook's update should be used, or the mutation should be removed.",
+    "before": "update: async (data: UpdateCompetitionInput) => { await updateMutation.mutateAsync(data) },",
+    "after": "[Either wire CompetitionEditPage to use this, or remove the mutation]"
+  },
+  {
+    "severity": "low",
+    "risk": "moderate",
+    "file": "src/components/competitions/CompetitionForm.tsx",
+    "line": 158,
+    "finding": "parseInt(e.target.value, 10) || 0 silently coerces empty or invalid inputs to 0. If the user clears the fee field, it resets to 0 instead of allowing the field to be empty.",
+    "before": "onChange={(e) => handleChange('fee_per_student', parseInt(e.target.value, 10) || 0)}",
+    "after": "onChange={(e) => handleChange('fee_per_student', e.target.value === '' ? '' : parseInt(e.target.value, 10) || 0)}"
+  },
+  {
+    "severity": "low",
+    "risk": "moderate",
+    "file": "src/components/competitions/utils/groupTeams.ts",
+    "line": 109,
+    "finding": "Redundant sortTeams(group.teams, groupBy) call has no visible effect when subgroups exist. The teams array has already been iterated to build subgroups (lines 103-108), so sorting the parent group's teams doesn't affect subgroup display.",
+    "before": "group.teams = sortTeams(group.teams, groupBy)",
+    "after": "[Remove line — no effect when subgroups are present]"
+  },
+  {
+    "severity": "low",
+    "risk": "moderate",
+    "file": "src/pages/CompetitionDetailPage.tsx",
+    "line": 22,
+    "finding": "parseInt(competitionId, 10) on potentially empty string yields NaN. While all consuming hooks guard with enabled: !!id (false for NaN), this is a latent hazard that should use a validated numeric ID.",
+    "before": "const competitionId = id || ''\nconst numericId = parseInt(competitionId, 10)",
+    "after": "const competitionId = id || ''\nconst numericId = competitionId ? parseInt(competitionId, 10) : 0"
+  },
+  {
+    "severity": "low",
+    "risk": "moderate",
+    "file": "src/components/competitions/TeamRegistrationModal.tsx",
+    "line": 84,
+    "finding": "student_ids is set to [] when selectionMode is 'group'. If the API validates that student_ids must be non-empty (even when group_id is supplied), this registration will fail with an unclear error.",
+    "before": "const student_ids = selectionMode === 'individual'\n  ? selectedStudents.map(s => s.student.id)\n  : []",
+    "after": "const student_ids = selectionMode === 'individual'\n  ? selectedStudents.map(s => s.student.id)\n  : undefined"
+  }
+]

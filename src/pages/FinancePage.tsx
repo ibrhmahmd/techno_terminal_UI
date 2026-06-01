@@ -1,22 +1,96 @@
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { CreateReceiptPanel } from '../components/finance/CreateReceiptPanel'
-import { SearchReceiptsPanel } from '../components/finance/SearchReceiptsPanel'
 import { UnpaidEnrollmentsPanel } from '../components/finance/UnpaidEnrollmentsPanel'
-import { useReceipts } from '../hooks/finance'
+import { TodayReceiptsList } from '../components/finance/TodayReceiptsList'
+import { ComingSoonPlaceholder } from '../components/finance/ComingSoonPlaceholder'
+import { MetricsStripCards } from '../components/common/MetricsStripCards'
+import { useReceipts, useDailyMetrics } from '../hooks/finance'
 import type { UnpaidEnrollment } from '../api/crm/students/types/finance'
 
-type PanelType = 'create' | 'search' | 'unpaid'
+type PanelType = 'receipts' | 'create' | 'unpaid' | 'refunds'
+
+const PANEL_ORDER: PanelType[] = ['receipts', 'create', 'unpaid', 'refunds']
 
 export function FinancePage() {
-  const [activePanel, setActivePanel] = useState<PanelType>('create')
+  const [activePanel, setActivePanel] = useState<PanelType>('receipts')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [createdReceiptId, setCreatedReceiptId] = useState<number | null>(null)
   const [initialReceiptData, setInitialReceiptData] = useState<UnpaidEnrollment | null>(null)
   const { isSearching, downloadPdf } = useReceipts()
 
-  const handleDownloadPdf = async (receiptId: number) => {
+  const today = useMemo(() => new Date().toISOString().split('T')[0], [])
+  const { totalCollected, totalReceipts, unpaidCount, unpaidAmount, isLoading: metricsLoading } = useDailyMetrics(today)
+
+  const activeIndex = PANEL_ORDER.indexOf(activePanel)
+
+  const handleTabChange = useCallback((panel: PanelType) => {
+    setActivePanel(panel)
+    setError(null)
+    setSuccess(null)
+    setCreatedReceiptId(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (panel !== 'create') {
+      setInitialReceiptData(null)
+    }
+  }, [])
+
+  const handlePayFromUnpaid = useCallback((enrollment: UnpaidEnrollment) => {
+    setInitialReceiptData(enrollment)
+    setActivePanel('create')
+    setError(null)
+    setSuccess(null)
+  }, [])
+
+  const metricItems = useMemo(() => [
+    {
+      label: 'Collected Today',
+      value: metricsLoading ? '...' : `EGP ${totalCollected.toLocaleString()}`,
+      icon: 'payments',
+      color: 'secondary' as const,
+      isLoading: metricsLoading,
+      onClick: () => handleTabChange('receipts'),
+    },
+    {
+      label: 'Receipts Today',
+      value: metricsLoading ? '...' : totalReceipts.toLocaleString(),
+      icon: 'receipt_long',
+      color: 'blue' as const,
+      isLoading: metricsLoading,
+      onClick: () => handleTabChange('create'),
+    },
+    {
+      label: 'Unpaid Enrollments',
+      value: metricsLoading ? '...' : unpaidCount.toLocaleString(),
+      icon: 'warning',
+      color: 'amber' as const,
+      isLoading: metricsLoading,
+      onClick: () => handleTabChange('unpaid'),
+    },
+    {
+      label: 'Unpaid Amount',
+      value: metricsLoading ? '...' : `EGP ${unpaidAmount.toLocaleString()}`,
+      icon: 'account_balance',
+      color: 'emerald' as const,
+      isLoading: metricsLoading,
+      onClick: () => handleTabChange('refunds'),
+    },
+  ], [totalCollected, totalReceipts, unpaidCount, unpaidAmount, metricsLoading, handleTabChange])
+
+  const handleError = useCallback((message: string) => {
+    setError(message)
+    setSuccess(null)
+  }, [])
+
+  const handleSuccess = useCallback((message: string, receiptId?: number) => {
+    setSuccess(message)
+    setError(null)
+    setCreatedReceiptId(receiptId || null)
+    setTimeout(() => setSuccess(null), 5000)
+  }, [])
+
+  const handleDownloadPdf = useCallback(async (receiptId: number) => {
     try {
       const blob = await downloadPdf(receiptId)
       const url = window.URL.createObjectURL(blob)
@@ -30,43 +104,12 @@ export function FinancePage() {
     } catch {
       handleError('Failed to download PDF')
     }
-  }
-
-  const handleSuccess = (message: string, receiptId?: number) => {
-    setSuccess(message)
-    setError(null)
-    setCreatedReceiptId(receiptId || null)
-    setTimeout(() => setSuccess(null), 5000)
-  }
-
-  const handleError = (message: string) => {
-    setError(message)
-    setSuccess(null)
-  }
-
-  const handleTabChange = (panel: PanelType) => {
-    setActivePanel(panel)
-    setError(null)
-    setSuccess(null)
-    setCreatedReceiptId(null)
-    // Clear initial data after switching away from create panel
-    if (panel !== 'create') {
-      setInitialReceiptData(null)
-    }
-  }
-
-  const handlePayFromUnpaid = (enrollment: UnpaidEnrollment) => {
-    setInitialReceiptData(enrollment)
-    setActivePanel('create')
-    setError(null)
-    setSuccess(null)
-  }
+  }, [downloadPdf, handleError])
 
   return (
     <div className="min-h-screen bg-surface">
       <TopNavbar activePage="Finance" />
 
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-6">
         <div className="max-w-[1400px] mx-auto">
           <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">Finance</h1>
@@ -74,75 +117,65 @@ export function FinancePage() {
         </div>
       </header>
 
-      {/* Panel Tabs */}
-      <div className="px-8 pt-4 border-b border-slate-200">
+      <section className="px-8 pt-6">
         <div className="max-w-[1400px] mx-auto">
-          <div className="flex space-x-1">
-            {(['create', 'search', 'unpaid'] as PanelType[]).map((panel) => (
-              <button
-                key={panel}
-                onClick={() => handleTabChange(panel)}
-                className={`px-6 py-3 text-sm font-medium transition-colors relative capitalize ${
-                  activePanel === panel
-                    ? 'text-on-surface'
-                    : 'text-slate-400 hover:text-on-surface'
-                }`}
-              >
-                <span className="material-symbols-outlined inline-block mr-2 align-text-bottom">
-                  {panel === 'create' ? 'add_circle' : panel === 'search' ? 'search' : 'warning'}
-                </span>
-                {panel === 'create' ? 'Create Receipt' : panel === 'search' ? 'Search Receipts' : 'Unpaid Enrollments'}
-                {activePanel === panel && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-t"></span>
-                )}
-              </button>
-            ))}
-          </div>
+          <MetricsStripCards items={metricItems} activeIndex={activeIndex} />
         </div>
-      </div>
+      </section>
 
-      {/* Alerts */}
-      <section className="p-8 max-w-[1400px] mx-auto">
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-100 rounded-lg text-green-700 text-sm flex items-center justify-between">
-            <span>{success}</span>
-            {createdReceiptId && (
-              <button
-                onClick={() => handleDownloadPdf(createdReceiptId!)}
-                className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-              >
-                Download PDF
-              </button>
+      <section className="px-8 py-6">
+        <div className="max-w-[1400px] mx-auto">
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-100 rounded-lg text-green-700 text-sm flex items-center justify-between">
+              <span>{success}</span>
+              {createdReceiptId && (
+                <button
+                  onClick={() => handleDownloadPdf(createdReceiptId!)}
+                  className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                >
+                  Download PDF
+                </button>
+              )}
+            </div>
+          )}
+          <div key={activePanel} className="animate-fadeIn">
+            {activePanel === 'create' && (
+              <CreateReceiptPanel
+                isLoading={isSearching}
+                onSuccess={handleSuccess}
+                onError={handleError}
+                initialData={initialReceiptData}
+                onClearInitialData={() => setInitialReceiptData(null)}
+                onNavigateToUnpaid={() => handleTabChange('unpaid')}
+              />
+            )}
+            {activePanel === 'receipts' && (
+              <TodayReceiptsList
+                onDownloadPdf={handleDownloadPdf}
+                onNavigateToCreate={() => handleTabChange('create')}
+              />
+            )}
+            {activePanel === 'unpaid' && (
+              <UnpaidEnrollmentsPanel
+                onError={handleError}
+                onPay={handlePayFromUnpaid}
+                onNavigateToCreate={() => handleTabChange('create')}
+              />
+            )}
+            {activePanel === 'refunds' && (
+              <ComingSoonPlaceholder
+                title="Refunds"
+                description="Refund processing and management will be available soon."
+                icon="undo"
+              />
             )}
           </div>
-        )}
-        {/* Panel Content */}
-        {activePanel === 'create' && (
-          <CreateReceiptPanel
-            isLoading={isSearching}
-            onSuccess={handleSuccess}
-            onError={handleError}
-            initialData={initialReceiptData}
-            onClearInitialData={() => setInitialReceiptData(null)}
-          />
-        )}
-        {activePanel === 'search' && (
-          <SearchReceiptsPanel
-            isLoading={isSearching}
-            onError={handleError}
-          />
-        )}
-        {activePanel === 'unpaid' && (
-          <UnpaidEnrollmentsPanel
-            onError={handleError}
-            onPay={handlePayFromUnpaid}
-          />
-        )}
+        </div>
       </section>
     </div>
   )
