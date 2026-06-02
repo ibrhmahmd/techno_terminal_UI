@@ -1,6 +1,6 @@
 interface MetricItem {
   label: string
-  value: string
+  value?: string
   icon: string
   color: 'secondary' | 'emerald' | 'amber' | 'blue'
   isLoading?: boolean
@@ -44,7 +44,7 @@ function MetricCard({ label, value, icon, color, isLoading, isActive, onClick }:
         </span>
         <span className="text-xs font-medium text-slate-500 uppercase tracking-wider truncate">{label}</span>
       </div>
-      <p className={`text-2xl font-bold font-headline ${isActive ? 'text-secondary' : styles.text}`}>{value}</p>
+      {value && <p className={`text-2xl font-bold font-headline ${isActive ? 'text-secondary' : styles.text}`}>{value}</p>}
     </button>
   )
 }

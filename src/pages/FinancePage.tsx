@@ -21,7 +21,7 @@ export function FinancePage() {
   const { isSearching, downloadPdf } = useReceipts()
 
   const today = useMemo(() => new Date().toISOString().split('T')[0], [])
-  const { totalCollected, totalReceipts, unpaidCount, unpaidAmount, isLoading: metricsLoading } = useDailyMetrics(today)
+  const { isLoading: metricsLoading } = useDailyMetrics(today)
 
   const activeIndex = PANEL_ORDER.indexOf(activePanel)
 
@@ -39,7 +39,6 @@ export function FinancePage() {
   const metricItems = useMemo(() => [
     {
       label: "Today's Receipts",
-      value: metricsLoading ? '...' : `EGP ${totalCollected.toLocaleString()}`,
       icon: 'payments',
       color: 'secondary' as const,
       isLoading: metricsLoading,
@@ -47,7 +46,6 @@ export function FinancePage() {
     },
     {
       label: 'Create Receipt',
-      value: metricsLoading ? '...' : totalReceipts.toLocaleString(),
       icon: 'receipt_long',
       color: 'blue' as const,
       isLoading: metricsLoading,
@@ -55,7 +53,6 @@ export function FinancePage() {
     },
     {
       label: 'Unpaid',
-      value: metricsLoading ? '...' : unpaidCount.toLocaleString(),
       icon: 'warning',
       color: 'amber' as const,
       isLoading: metricsLoading,
@@ -63,13 +60,12 @@ export function FinancePage() {
     },
     {
       label: 'Refunds',
-      value: metricsLoading ? '...' : `EGP ${unpaidAmount.toLocaleString()}`,
       icon: 'account_balance',
       color: 'emerald' as const,
       isLoading: metricsLoading,
       onClick: () => handleTabChange('refunds'),
     },
-  ], [totalCollected, totalReceipts, unpaidCount, unpaidAmount, metricsLoading, handleTabChange])
+  ], [metricsLoading, handleTabChange])
 
   const handlePayFromUnpaid = useCallback((enrollment: UnpaidEnrollment) => {
     setInitialReceiptData(enrollment)
