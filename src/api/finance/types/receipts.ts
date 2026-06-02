@@ -20,7 +20,7 @@ export interface ReceiptHeader {
   id: number
   receipt_number: string
   payer_name: string
-  payment_method: 'cash' | 'card' | 'transfer' | 'other'
+  payment_method: 'cash' | 'e_wallet' | 'instapay' | 'other'
   paid_at: string
   notes?: string
 }
@@ -61,7 +61,7 @@ export type ReceiptLineInput = ReceiptLinePublic
 
 export interface CreateReceiptRequest {
   payer_name?: string | null   // Optional, default null
-  method?: 'cash' | 'card' | 'transfer' | 'other'  // Optional, default "cash"
+  method?: 'cash' | 'e_wallet' | 'instapay' | 'other'  // Optional, default "cash"
   notes?: string | null        // General receipt notes
   allow_credit?: boolean      // Optional, default true
   lines: ReceiptLinePublic[]   // REQUIRED: Payment line items (min 1)
@@ -91,7 +91,7 @@ export interface Receipt {
   receipt_number: string
   payer_name: string
   total_amount: number
-  payment_method: 'cash' | 'card' | 'transfer' | 'other'
+  payment_method: 'cash' | 'e_wallet' | 'instapay' | 'other'
   notes?: string
   created_at: string
   items: ReceiptItem[]

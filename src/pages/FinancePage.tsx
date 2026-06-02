@@ -1,11 +1,10 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { CreateReceiptPanel } from '../components/finance/CreateReceiptPanel'
 import { UnpaidEnrollmentsPanel } from '../components/finance/UnpaidEnrollmentsPanel'
 import { TodayReceiptsList } from '../components/finance/TodayReceiptsList'
 import { ComingSoonPlaceholder } from '../components/finance/ComingSoonPlaceholder'
-import { MetricsStripCards } from '../components/common/MetricsStripCards'
-import { useReceipts, useDailyMetrics } from '../hooks/finance'
+import { useReceipts } from '../hooks/finance'
 import type { UnpaidEnrollment } from '../api/crm/students/types/finance'
 
 type PanelType = 'receipts' | 'create' | 'unpaid' | 'refunds'
@@ -19,11 +18,6 @@ export function FinancePage() {
   const [createdReceiptId, setCreatedReceiptId] = useState<number | null>(null)
   const [initialReceiptData, setInitialReceiptData] = useState<UnpaidEnrollment | null>(null)
   const { isSearching, downloadPdf } = useReceipts()
-
-  const today = useMemo(() => new Date().toISOString().split('T')[0], [])
-  const { totalCollected, totalReceipts, unpaidCount, unpaidAmount, isLoading: metricsLoading } = useDailyMetrics(today)
-
-  const activeIndex = PANEL_ORDER.indexOf(activePanel)
 
   const handleTabChange = useCallback((panel: PanelType) => {
     setActivePanel(panel)
@@ -42,41 +36,6 @@ export function FinancePage() {
     setError(null)
     setSuccess(null)
   }, [])
-
-  const metricItems = useMemo(() => [
-    {
-      label: 'Collected Today',
-      value: metricsLoading ? '...' : `EGP ${totalCollected.toLocaleString()}`,
-      icon: 'payments',
-      color: 'secondary' as const,
-      isLoading: metricsLoading,
-      onClick: () => handleTabChange('receipts'),
-    },
-    {
-      label: 'Receipts Today',
-      value: metricsLoading ? '...' : totalReceipts.toLocaleString(),
-      icon: 'receipt_long',
-      color: 'blue' as const,
-      isLoading: metricsLoading,
-      onClick: () => handleTabChange('create'),
-    },
-    {
-      label: 'Unpaid Enrollments',
-      value: metricsLoading ? '...' : unpaidCount.toLocaleString(),
-      icon: 'warning',
-      color: 'amber' as const,
-      isLoading: metricsLoading,
-      onClick: () => handleTabChange('unpaid'),
-    },
-    {
-      label: 'Unpaid Amount',
-      value: metricsLoading ? '...' : `EGP ${unpaidAmount.toLocaleString()}`,
-      icon: 'account_balance',
-      color: 'emerald' as const,
-      isLoading: metricsLoading,
-      onClick: () => handleTabChange('refunds'),
-    },
-  ], [totalCollected, totalReceipts, unpaidCount, unpaidAmount, metricsLoading, handleTabChange])
 
   const handleError = useCallback((message: string) => {
     setError(message)
@@ -119,7 +78,30 @@ export function FinancePage() {
 
       <section className="px-8 pt-6">
         <div className="max-w-[1400px] mx-auto">
-          <MetricsStripCards items={metricItems} activeIndex={activeIndex} />
+          <div className="flex overflow-x-auto gap-1 border-b border-slate-200">
+            {(PANEL_ORDER satisfies PanelType[]).map((panel) => {
+              const tabLabels: Record<PanelType, string> = {
+                receipts: "Today's Receipts",
+                create: 'Create Receipt',
+                unpaid: 'Unpaid',
+                refunds: 'Refunds',
+              }
+              const isActive = activePanel === panel
+              return (
+                <button
+                  key={panel}
+                  onClick={() => handleTabChange(panel)}
+                  className={`whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
+                    isActive
+                      ? 'border-secondary text-secondary'
+                      : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  {tabLabels[panel]}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </section>
 

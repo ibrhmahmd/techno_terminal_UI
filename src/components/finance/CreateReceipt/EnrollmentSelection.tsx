@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useStudentEnrollments } from '../../../hooks/finance/useStudentEnrollments'
 import type { StudentEnrollmentInfo } from '../../../hooks/finance/useStudentEnrollments'
 
@@ -11,22 +12,11 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
   const { enrollments, loading, error } = useStudentEnrollments(studentId)
 
   // Auto-select if only one enrollment
-  if (enrollments.length === 1 && !selectedEnrollment) {
-    onSelect(enrollments[0])
-    return (
-      <div className="lg:col-span-2">
-        <label className="block text-xs font-medium text-slate-600 mb-1">Enrollment</label>
-        <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded text-green-800">
-          <span className="text-sm">
-            {enrollments[0].group_name} (Level {enrollments[0].level_number})
-          </span>
-          <span className="text-xs text-green-600">
-            Balance: {enrollments[0].remaining_balance.toFixed(2)} EGP
-          </span>
-        </div>
-      </div>
-    )
-  }
+  useEffect(() => {
+    if (enrollments.length === 1 && !selectedEnrollment) {
+      onSelect(enrollments[0])
+    }
+  }, [enrollments, selectedEnrollment, onSelect])
 
   if (loading) {
     return (
@@ -45,6 +35,24 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
         <label className="block text-xs font-medium text-slate-600 mb-1">Enrollment</label>
         <div className="p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
           {error}
+        </div>
+      </div>
+    )
+  }
+
+  // Single enrollment (auto-selected by useEffect, show selected state)
+  if (enrollments.length === 1) {
+    const enrollment = selectedEnrollment || enrollments[0]
+    return (
+      <div className="lg:col-span-2">
+        <label className="block text-xs font-medium text-slate-600 mb-1">Enrollment</label>
+        <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded text-green-800">
+          <span className="text-sm">
+            {enrollment.group_name} (Level {enrollment.level_number})
+          </span>
+          <span className="text-xs text-green-600">
+            Balance: {enrollment.remaining_balance.toFixed(2)} EGP
+          </span>
         </div>
       </div>
     )

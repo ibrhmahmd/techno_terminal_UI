@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, startTransition } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { PaymentMethodPills } from './PaymentMethodPills'
+import type { PillOption } from './PaymentMethodPills'
 import { useStudentsSearch } from '../../hooks/useDirectory'
 import { useReceipts } from '../../hooks/finance'
 import type { CreateReceiptRequest } from '../../api/finance'
@@ -9,11 +10,11 @@ import type { Student } from '../../api/crm'
 import { ReceiptLineItemRow } from './CreateReceipt/ReceiptLineItemRow'
 import type { ReceiptLineItem } from './CreateReceipt/ReceiptLineItemRow'
 
-const PAYMENT_METHOD_OPTIONS = [
-  { value: 'cash', label: 'Cash' },
-  { value: 'card', label: 'Card' },
-  { value: 'transfer', label: 'Transfer' },
-  { value: 'other', label: 'Other' },
+const PAYMENT_METHODS: PillOption[] = [
+  { value: 'cash', label: 'Cash', color: 'emerald', icon: 'payments' },
+  { value: 'e_wallet', label: 'E-Wallet', color: 'red', icon: 'account_balance_wallet' },
+  { value: 'instapay', label: 'instaPay', color: 'purple', icon: 'bolt' },
+  { value: 'other', label: 'Other', color: 'slate', icon: 'more_horiz' },
 ]
 
 const DRAFT_KEY = 'receipt-draft'
@@ -235,7 +236,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
 
     const request: CreateReceiptRequest = {
       payer_name: payerName || null,
-      method: (paymentMethod || 'cash') as 'cash' | 'card' | 'transfer' | 'other',
+      method: (paymentMethod || 'cash') as 'cash' | 'e_wallet' | 'instapay' | 'other',
       notes: notes || null,
       allow_credit: true,
       lines: validItems.map((item, index) => ({
@@ -273,7 +274,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
     try {
       const request: CreateReceiptRequest = {
         payer_name: payerName || null,
-        method: paymentMethod as 'cash' | 'card' | 'transfer' | 'other',
+        method: paymentMethod as 'cash' | 'e_wallet' | 'instapay' | 'other',
         notes: notes || null,
         allow_credit: true,
         lines: validItems.map((item, index) => ({
@@ -346,7 +347,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
         <div>
           <PaymentMethodPills
             label="Payment Method"
-            options={PAYMENT_METHOD_OPTIONS}
+            options={PAYMENT_METHODS}
             selected={paymentMethod}
             onChange={(value) => { setPaymentMethod(value); setPaymentMethodError(undefined) }}
             error={paymentMethodError}

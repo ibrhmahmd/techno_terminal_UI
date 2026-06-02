@@ -154,13 +154,13 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/025-finance-ui-ux/plan.md`
+`specs/026-finance-ui-tweaks/plan.md`
 <!-- SPECKIT END -->
 
-## Active Plan (2026-06-01 Update)
+## Active Plan (2026-06-02 Update)
 
-This feature branch (`025-finance-ui-ux`) is being modified with:
-- **Metrics-as-navigation**: No tab bar — 4 metric cards open 4 panels (Today's Receipts / Create Receipt / Unpaid / Refunds)
-- **Payment pills**: Both payment method AND payment type use pill selectors (not dropdowns)
-- **Default view**: Today's Receipts panel is open on page load
-- **Contracts**: See `specs/025-finance-ui-ux/contracts/` for component prop contracts
+This feature branch (`026-finance-ui-tweaks`) modifies the previous `025-finance-ui-ux` implementation with:
+- **Tab labels replace metrics**: Remove metrics strip cards, use labeled tab bar as primary navigation
+- **Payment pills updated**: 4 options (Cash, E-Wallet, instaPay, Other) each with unique color and icon; payment method is now required
+- **Line item layout**: Two-column layout — Student + Enrollment left, Amount + Discount + Payment Type right
+- **Contracts**: See `specs/026-finance-ui-tweaks/contracts/` for component prop contracts
