@@ -1,6 +1,8 @@
-interface PillOption {
+export interface PillOption {
   value: string
   label: string
+  color?: 'emerald' | 'red' | 'purple' | 'slate'
+  icon?: string
 }
 
 interface PaymentMethodPillsProps {
@@ -22,17 +24,23 @@ export function PaymentMethodPills({ options, selected, onChange, error, label }
       >
         {options.map((opt) => {
           const isSelected = selected === opt.value
+          const styles: Record<string, { selected: string; unselected: string }> = {
+            emerald: { selected: 'bg-emerald-600 text-white shadow-sm border-transparent', unselected: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
+            red: { selected: 'bg-red-600 text-white shadow-sm border-transparent', unselected: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' },
+            purple: { selected: 'bg-purple-600 text-white shadow-sm border-transparent', unselected: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' },
+            slate: { selected: 'bg-slate-600 text-white shadow-sm border-transparent', unselected: 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100' },
+          }
+          const s = styles[opt.color || 'slate']
           return (
             <button
               key={opt.value}
               type="button"
               onClick={() => onChange(opt.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                isSelected
-                  ? 'bg-secondary text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
+                isSelected ? s.selected : s.unselected
               }`}
             >
+              {opt.icon && <span className="material-symbols-outlined text-base" aria-hidden="true">{opt.icon}</span>}
               {opt.label}
             </button>
           )

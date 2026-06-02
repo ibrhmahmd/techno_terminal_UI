@@ -31,7 +31,7 @@ export function UnpaidEnrollmentCard({ enrollment, onPay, onRemind }: UnpaidEnro
           </p>
           {daysUnpaid > 0 && (
             <span className="inline-flex items-center gap-1 text-xs text-amber-600 mt-1 bg-amber-50 px-2 py-0.5 rounded">
-              <span className="material-symbols-outlined text-[12px]">schedule</span>
+              <span className="material-symbols-outlined text-[12px]" aria-hidden="true">schedule</span>
               {daysUnpaid} days unpaid
             </span>
           )}
@@ -77,15 +77,15 @@ export function UnpaidEnrollmentCard({ enrollment, onPay, onRemind }: UnpaidEnro
           onClick={onPay}
           className="flex-1 px-4 py-2.5 bg-secondary text-white rounded-lg font-medium hover:bg-secondary/90 transition-colors flex items-center justify-center gap-2"
         >
-          <span className="material-symbols-outlined text-[18px]">payments</span>
+          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">payments</span>
           Pay Now
         </button>
         <button
           onClick={onRemind}
+          aria-label="Send reminder"
           className="px-3 py-2.5 bg-slate-100 text-slate-600 rounded-lg font-medium hover:bg-slate-200 transition-colors flex items-center justify-center"
-          title="Send reminder"
         >
-          <span className="material-symbols-outlined text-[18px]">chat</span>
+          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">chat</span>
         </button>
       </div>
     </div>

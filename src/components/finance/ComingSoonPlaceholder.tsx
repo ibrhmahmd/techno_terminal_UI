@@ -11,7 +11,7 @@ export function ComingSoonPlaceholder({
 }: ComingSoonPlaceholderProps) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">{icon}</span>
+      <span className="material-symbols-outlined text-6xl text-slate-300 mb-4" aria-hidden="true">{icon}</span>
       <h3 className="font-headline text-xl font-semibold text-on-surface mb-2">{title}</h3>
       <p className="text-slate-500 max-w-md">{description}</p>
     </div>

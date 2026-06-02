@@ -1,9 +1,10 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { CreateReceiptPanel } from '../components/finance/CreateReceiptPanel'
 import { UnpaidEnrollmentsPanel } from '../components/finance/UnpaidEnrollmentsPanel'
 import { TodayReceiptsList } from '../components/finance/TodayReceiptsList'
 import { ComingSoonPlaceholder } from '../components/finance/ComingSoonPlaceholder'
+import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { MetricsStripCards } from '../components/common/MetricsStripCards'
 import { useReceipts, useDailyMetrics } from '../hooks/finance'
 import type { UnpaidEnrollment } from '../api/crm/students/types/finance'
@@ -18,10 +19,15 @@ export function FinancePage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [createdReceiptId, setCreatedReceiptId] = useState<number | null>(null)
   const [initialReceiptData, setInitialReceiptData] = useState<UnpaidEnrollment | null>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const { isSearching, downloadPdf } = useReceipts()
 
   const today = useMemo(() => new Date().toISOString().split('T')[0], [])
-  const { totalCollected, totalReceipts, unpaidCount, unpaidAmount, isLoading: metricsLoading } = useDailyMetrics(today)
+  const { isLoading: metricsLoading } = useDailyMetrics(today)
+
+  useEffect(() => {
+    panelRef.current?.focus()
+  }, [activePanel])
 
   const activeIndex = PANEL_ORDER.indexOf(activePanel)
 
@@ -36,47 +42,43 @@ export function FinancePage() {
     }
   }, [])
 
-  const handlePayFromUnpaid = useCallback((enrollment: UnpaidEnrollment) => {
-    setInitialReceiptData(enrollment)
-    setActivePanel('create')
-    setError(null)
-    setSuccess(null)
-  }, [])
-
   const metricItems = useMemo(() => [
     {
-      label: 'Collected Today',
-      value: metricsLoading ? '...' : `EGP ${totalCollected.toLocaleString()}`,
+      label: "Today's Receipts",
       icon: 'payments',
       color: 'secondary' as const,
       isLoading: metricsLoading,
       onClick: () => handleTabChange('receipts'),
     },
     {
-      label: 'Receipts Today',
-      value: metricsLoading ? '...' : totalReceipts.toLocaleString(),
+      label: 'Create Receipt',
       icon: 'receipt_long',
       color: 'blue' as const,
       isLoading: metricsLoading,
       onClick: () => handleTabChange('create'),
     },
     {
-      label: 'Unpaid Enrollments',
-      value: metricsLoading ? '...' : unpaidCount.toLocaleString(),
+      label: 'Unpaid',
       icon: 'warning',
       color: 'amber' as const,
       isLoading: metricsLoading,
       onClick: () => handleTabChange('unpaid'),
     },
     {
-      label: 'Unpaid Amount',
-      value: metricsLoading ? '...' : `EGP ${unpaidAmount.toLocaleString()}`,
+      label: 'Refunds',
       icon: 'account_balance',
       color: 'emerald' as const,
       isLoading: metricsLoading,
       onClick: () => handleTabChange('refunds'),
     },
-  ], [totalCollected, totalReceipts, unpaidCount, unpaidAmount, metricsLoading, handleTabChange])
+  ], [metricsLoading, handleTabChange])
+
+  const handlePayFromUnpaid = useCallback((enrollment: UnpaidEnrollment) => {
+    setInitialReceiptData(enrollment)
+    setActivePanel('create')
+    setError(null)
+    setSuccess(null)
+  }, [])
 
   const handleError = useCallback((message: string) => {
     setError(message)
@@ -143,37 +145,45 @@ export function FinancePage() {
               )}
             </div>
           )}
-          <div key={activePanel} className="animate-fadeIn">
-            {activePanel === 'create' && (
-              <CreateReceiptPanel
-                isLoading={isSearching}
-                onSuccess={handleSuccess}
-                onError={handleError}
-                initialData={initialReceiptData}
-                onClearInitialData={() => setInitialReceiptData(null)}
-                onNavigateToUnpaid={() => handleTabChange('unpaid')}
-              />
-            )}
-            {activePanel === 'receipts' && (
-              <TodayReceiptsList
-                onDownloadPdf={handleDownloadPdf}
-                onNavigateToCreate={() => handleTabChange('create')}
-              />
-            )}
-            {activePanel === 'unpaid' && (
-              <UnpaidEnrollmentsPanel
-                onError={handleError}
-                onPay={handlePayFromUnpaid}
-                onNavigateToCreate={() => handleTabChange('create')}
-              />
-            )}
-            {activePanel === 'refunds' && (
-              <ComingSoonPlaceholder
-                title="Refunds"
-                description="Refund processing and management will be available soon."
-                icon="undo"
-              />
-            )}
+          <div key={activePanel} ref={panelRef} tabIndex={-1} className="animate-fadeIn outline-none">
+            <ErrorBoundary>
+              {activePanel === 'create' && (
+                <CreateReceiptPanel
+                  isLoading={isSearching}
+                  onSuccess={handleSuccess}
+                  onError={handleError}
+                  initialData={initialReceiptData}
+                  onClearInitialData={() => setInitialReceiptData(null)}
+                  onNavigateToUnpaid={() => handleTabChange('unpaid')}
+                />
+              )}
+            </ErrorBoundary>
+            <ErrorBoundary>
+              {activePanel === 'receipts' && (
+                <TodayReceiptsList
+                  onDownloadPdf={handleDownloadPdf}
+                  onNavigateToCreate={() => handleTabChange('create')}
+                />
+              )}
+            </ErrorBoundary>
+            <ErrorBoundary>
+              {activePanel === 'unpaid' && (
+                <UnpaidEnrollmentsPanel
+                  onError={handleError}
+                  onPay={handlePayFromUnpaid}
+                  onNavigateToCreate={() => handleTabChange('create')}
+                />
+              )}
+            </ErrorBoundary>
+            <ErrorBoundary>
+              {activePanel === 'refunds' && (
+                <ComingSoonPlaceholder
+                  title="Refunds"
+                  description="Refund processing and management will be available soon."
+                  icon="undo"
+                />
+              )}
+            </ErrorBoundary>
           </div>
         </div>
       </section>

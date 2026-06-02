@@ -48,12 +48,12 @@ export function ReceiptLineItemRow({
           className="text-red-500 hover:text-red-700 transition-colors"
           title="Remove item"
         >
-          <span className="material-symbols-outlined text-sm">delete</span>
+          <span className="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
         </button>
       </div>
 
       <div className="flex flex-col md:flex-row gap-3">
-        {/* Student + Enrollment — 2/3 width on desktop */}
+        {/* Left: Student + Enrollment */}
         <div className="flex-1 min-w-0 space-y-3">
           <StudentCombobox
             value={item.selectedStudent}
@@ -77,33 +77,32 @@ export function ReceiptLineItemRow({
           )}
         </div>
 
-        {/* Amount, Type, Discount — fixed width on desktop */}
-        <div className="flex flex-row flex-wrap md:flex-col gap-2 md:min-w-[200px]">
-          <div className="flex-1 md:w-full">
-            <label className="block text-xs font-medium text-slate-600 mb-1">Amount (EGP)</label>
-            <input
-              type="number"
-              min={0}
-              value={item.amount || ''}
-              onChange={(e) => onUpdate({ amount: parseFloat(e.target.value) || 0 })}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
-            />
+        {/* Right: Amount + Discount + Payment Type */}
+        <div className="flex-1 space-y-3">
+          <div className="flex flex-row gap-2">
+            <div className="flex-1">
+              <label htmlFor={`amount-${item.id}`} className="block text-xs font-medium text-slate-600 mb-1">Amount (EGP)</label>
+              <input
+                id={`amount-${item.id}`}
+                type="number"
+                min={0}
+                value={item.amount || ''}
+                onChange={(e) => onUpdate({ amount: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
+              />
+            </div>
+            <div className="flex-1">
+              <label htmlFor={`discount-${item.id}`} className="block text-xs font-medium text-slate-600 mb-1">Discount</label>
+              <input
+                id={`discount-${item.id}`}
+                type="number"
+                min={0}
+                value={item.discount || ''}
+                onChange={(e) => onUpdate({ discount: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
+              />
+            </div>
           </div>
-
-          <div className="flex-1 md:w-full">
-            <label className="block text-xs font-medium text-slate-600 mb-1">Discount</label>
-            <input
-              type="number"
-              min={0}
-              value={item.discount || ''}
-              onChange={(e) => onUpdate({ discount: parseFloat(e.target.value) || 0 })}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
-            />
-          </div>
-        </div>
-
-        {/* Payment Type — full width below */}
-        <div className="w-full md:w-auto md:min-w-[240px]">
           <PaymentMethodPills
             label="Payment Type"
             options={ITEM_TYPE_OPTIONS}
@@ -115,8 +114,9 @@ export function ReceiptLineItemRow({
       </div>
 
       <div className="mt-3">
-        <label className="block text-xs font-medium text-slate-600 mb-1">Notes (Optional)</label>
+        <label htmlFor={`notes-${item.id}`} className="block text-xs font-medium text-slate-600 mb-1">Notes (Optional)</label>
         <input
+          id={`notes-${item.id}`}
           type="text"
           value={item.notes}
           onChange={(e) => onUpdate({ notes: e.target.value })}

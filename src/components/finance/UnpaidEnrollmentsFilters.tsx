@@ -54,9 +54,10 @@ export function UnpaidEnrollmentsFilters({
 
         {/* Minimum Balance Filter */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-600">Min balance:</span>
+          <label htmlFor="min-balance" className="text-sm font-medium text-slate-600">Min balance:</label>
           <div className="relative">
             <input
+              id="min-balance"
               type="number"
               min={0}
               placeholder="0"
@@ -70,11 +71,13 @@ export function UnpaidEnrollmentsFilters({
 
         {/* Age Filter */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-600">Unpaid for:</span>
-          <div className="flex bg-white rounded-lg border border-slate-200 p-0.5">
+          <span id="age-filter-label" className="text-sm font-medium text-slate-600">Unpaid for:</span>
+          <div className="flex bg-white rounded-lg border border-slate-200 p-0.5" role="radiogroup" aria-labelledby="age-filter-label">
             {AGE_FILTER_OPTIONS.map((option) => (
               <button
                 key={option.value}
+                role="radio"
+                aria-checked={ageFilter === option.value}
                 onClick={() => onAgeFilterChange(option.value)}
                 className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
                   ageFilter === option.value

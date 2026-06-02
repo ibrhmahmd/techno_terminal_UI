@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { queryClient } from '../../lib/queryClient'
 import {
   getStudentBalance,
   getEnrollmentBalance,
@@ -70,7 +71,7 @@ export function useBalance(): UseBalanceResult {
       const data = await getStudentBalance(studentId, useMaterialized)
       setBalance(data)
       return data
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to fetch balance')
       setBalanceError(error)
       throw error
@@ -86,7 +87,7 @@ export function useBalance(): UseBalanceResult {
       const data = await getEnrollmentBalance(studentId, enrollmentId)
       setEnrollmentBalance(data)
       return data
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to fetch enrollment balance')
       setEnrollmentBalanceError(error)
       throw error
@@ -102,7 +103,7 @@ export function useBalance(): UseBalanceResult {
       const data = await getUnpaidEnrollments(params)
       setUnpaidEnrollments(data)
       return data
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to fetch unpaid enrollments')
       setUnpaidEnrollmentsError(error)
       throw error
@@ -117,8 +118,9 @@ export function useBalance(): UseBalanceResult {
     try {
       const result = await adjustStudentBalance(studentId, data)
       setAdjustmentResult(result)
+      queryClient.invalidateQueries({ queryKey: ['finance', 'metrics'] })
       return result
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to adjust balance')
       setAdjustError(error)
       throw error
