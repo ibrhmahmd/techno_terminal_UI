@@ -154,13 +154,17 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/026-finance-ui-tweaks/plan.md`
+`specs/027-finance-audit-fixes/plan.md`
 <!-- SPECKIT END -->
 
 ## Active Plan (2026-06-02 Update)
 
-This feature branch (`026-finance-ui-tweaks`) modifies the previous `025-finance-ui-ux` implementation with:
-- **Metrics strip cards kept, labels updated**: Keep `MetricsStripCards` component, update card labels to "Today's Receipts", "Create Receipt", "Unpaid", "Refunds"
-- **Payment pills updated**: 4 options (Cash, E-Wallet, instaPay, Other) each with unique color and icon; payment method is now required
-- **Line item layout**: Two-column layout — Student + Enrollment left, Amount + Discount + Payment Type right
-- **Contracts**: See `specs/026-finance-ui-tweaks/contracts/` for component prop contracts
+This feature branch (`027-finance-audit-fixes`) fixes 33 issues from a comprehensive finance audit:
+- **US1 (P1)**: 4 breaking bugs — stale error display, zero-amount search results, broken ReceiptDetailPanel fetch, incorrect unpaid totals with >200 enrollments
+- **US2 (P1)**: Missing cache invalidation after create receipt, adjust balance, and issue refund mutations
+- **US3 (P2)**: Dead code removal — `SearchReceiptsPanel.tsx` and `finance/index.ts`
+- **US4 (P2)**: Update `METHOD_LABELS`/`METHOD_COLORS` to match current payment options (cash, e_wallet, instapay, other)
+- **US5 (P2)**: TypeScript hardening — runtime type guards for payment method/type, narrow `PillOption.color` type
+- **US6 (P3)**: 14 accessibility fixes — ARIA roles, `aria-hidden`, `htmlFor`/`id`, ErrorBoundary per panel, focus management
+- **US7 (P3)**: Migrate `useStudentEnrollments` from `useEffect`+`useState` to `useQuery`
+- **Plan**: See `specs/027-finance-audit-fixes/plan.md`

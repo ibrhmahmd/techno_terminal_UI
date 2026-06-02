@@ -50,6 +50,7 @@ export const queryKeys = {
       search: (params: Record<string, unknown>) => ['finance', 'receipts', 'search', params] as const,
       detail: (id: number) => ['finance', 'receipts', id] as const,
     },
+    studentEnrollments: (studentId: number) => ['finance', 'student-enrollments', studentId] as const,
   },
 
   // Auth

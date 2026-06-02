@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { getReceiptDetails } from '../../api/finance'
+import { queryKeys } from '../../hooks/queryKeys'
 import type { ReceiptDetail } from '../../api/finance/types'
 
 interface ReceiptDetailPanelProps {
@@ -10,14 +11,14 @@ interface ReceiptDetailPanelProps {
 
 const METHOD_LABELS: Record<string, string> = {
   cash: 'Cash',
-  card: 'Card',
-  transfer: 'Transfer',
+  e_wallet: 'E-Wallet',
+  instapay: 'instaPay',
   other: 'Other',
 }
 
 export function ReceiptDetailPanel({ receiptId, onClose, onDownloadPdf }: ReceiptDetailPanelProps) {
   const { data: detail, isLoading, error, refetch } = useQuery<ReceiptDetail>({
-    queryKey: ['receipt-detail', receiptId],
+    queryKey: queryKeys.finance.receipts.detail(receiptId),
     queryFn: () => getReceiptDetails(receiptId),
     enabled: true,
   })
@@ -26,19 +27,23 @@ export function ReceiptDetailPanel({ receiptId, onClose, onDownloadPdf }: Receip
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
       <div
         className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 max-h-[85vh] overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="receipt-detail-title"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-          <h3 className="font-headline text-lg font-semibold text-on-surface">
+          <h3 id="receipt-detail-title" className="font-headline text-lg font-semibold text-on-surface">
             {isLoading ? 'Loading...' : detail ? `Receipt ${detail.receipt.receipt_number}` : 'Receipt Details'}
           </h3>
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close receipt details"
             className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
           >
-            <span className="material-symbols-outlined">close</span>
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
 
@@ -62,7 +67,7 @@ export function ReceiptDetailPanel({ receiptId, onClose, onDownloadPdf }: Receip
 
           {error && (
             <div className="text-center py-6">
-              <span className="material-symbols-outlined text-3xl text-red-400 mb-2">error</span>
+              <span className="material-symbols-outlined text-3xl text-red-400 mb-2" aria-hidden="true">error</span>
               <p className="text-red-600 text-sm mb-3">Failed to load receipt details</p>
               <button
                 type="button"
@@ -140,7 +145,7 @@ export function ReceiptDetailPanel({ receiptId, onClose, onDownloadPdf }: Receip
               onClick={() => onDownloadPdf(receiptId)}
               className="px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-secondary/90 transition-colors flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-sm">download</span>
+              <span className="material-symbols-outlined text-sm" aria-hidden="true">download</span>
               Download PDF
             </button>
           </div>

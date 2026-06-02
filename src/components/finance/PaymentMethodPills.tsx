@@ -1,7 +1,7 @@
 export interface PillOption {
   value: string
   label: string
-  color?: string
+  color?: 'emerald' | 'red' | 'purple' | 'slate'
   icon?: string
 }
 
@@ -40,7 +40,7 @@ export function PaymentMethodPills({ options, selected, onChange, error, label }
                 isSelected ? s.selected : s.unselected
               }`}
             >
-              {opt.icon && <span className="material-symbols-outlined text-base">{opt.icon}</span>}
+              {opt.icon && <span className="material-symbols-outlined text-base" aria-hidden="true">{opt.icon}</span>}
               {opt.label}
             </button>
           )

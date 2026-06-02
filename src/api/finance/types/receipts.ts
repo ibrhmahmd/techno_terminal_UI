@@ -35,6 +35,7 @@ export interface ReceiptListItem {
   id: number
   receipt_number: string
   payer_name: string
+  total_amount: number
   payment_method: string
   paid_at: string
 }

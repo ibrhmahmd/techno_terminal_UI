@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { queryClient } from '../../lib/queryClient'
 import {
   searchReceipts,
   getReceiptDetails,
@@ -99,7 +100,7 @@ export function useReceipts(): UseReceiptsResult {
       const data = await searchReceipts(params)
       setReceipts(data)
       return data
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to search receipts')
       setSearchError(error)
       throw error
@@ -115,7 +116,7 @@ export function useReceipts(): UseReceiptsResult {
       const data = await getReceiptDetails(receiptId)
       setSelectedReceipt(data)
       return data
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to get receipt details')
       setDetailsError(error)
       throw error
@@ -130,8 +131,10 @@ export function useReceipts(): UseReceiptsResult {
     try {
       const result = await createReceipt(request)
       setCreatedReceipt(result)
+      queryClient.invalidateQueries({ queryKey: ['finance', 'metrics'] })
+      queryClient.invalidateQueries({ queryKey: ['finance', 'daily-receipts'] })
       return result
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to create receipt')
       setCreateError(error)
       throw error
@@ -147,7 +150,7 @@ export function useReceipts(): UseReceiptsResult {
       const data = await batchGenerateReceipts(params)
       setReceipts(data)
       return data
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to batch generate receipts')
       setBatchError(error)
       throw error
@@ -161,7 +164,7 @@ export function useReceipts(): UseReceiptsResult {
     setMarkSentError(null)
     try {
       await markReceiptAsSent(receiptId)
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to mark receipt as sent')
       setMarkSentError(error)
       throw error
@@ -177,7 +180,7 @@ export function useReceipts(): UseReceiptsResult {
       const text = await generateReceiptText(receiptId)
       setGeneratedText(text)
       return text
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to generate receipt text')
       setGenerateTextError(error)
       throw error
@@ -193,7 +196,7 @@ export function useReceipts(): UseReceiptsResult {
       const blob = await downloadReceiptPdf(receiptId)
       setPdfBlob(blob)
       return blob
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to download PDF')
       setDownloadPdfError(error)
       throw error
@@ -209,7 +212,7 @@ export function useReceipts(): UseReceiptsResult {
       const risk = await previewOverpaymentRisk(request)
       setOverpaymentRisk(risk)
       return risk
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to preview risk')
       setPreviewRiskError(error)
       throw error

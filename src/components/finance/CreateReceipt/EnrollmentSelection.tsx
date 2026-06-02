@@ -72,7 +72,7 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
   // Multiple enrollments - show dropdown
   return (
     <div className="lg:col-span-2">
-      <label className="block text-xs font-medium text-slate-600 mb-1">Enrollment *</label>
+      <label htmlFor={`enrollment-${studentId}`} className="block text-xs font-medium text-slate-600 mb-1">Enrollment *</label>
       {selectedEnrollment ? (
         <div className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
           <span className="text-sm">
@@ -90,6 +90,7 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
         </div>
       ) : (
         <select
+          id={`enrollment-${studentId}`}
           value=""
           onChange={(e) => {
             const enrollmentId = parseInt(e.target.value)

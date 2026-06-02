@@ -28,6 +28,19 @@ interface CreateReceiptPanelProps {
   onNavigateToUnpaid?: () => void
 }
 
+const VALID_METHODS = ['cash', 'e_wallet', 'instapay', 'other'] as const
+const VALID_TYPES = ['course_level', 'competition', 'other'] as const
+
+function narrowMethod(value: string | null | undefined): 'cash' | 'e_wallet' | 'instapay' | 'other' {
+  if (value && (VALID_METHODS as readonly string[]).includes(value)) return value as 'cash' | 'e_wallet' | 'instapay' | 'other'
+  return 'cash'
+}
+
+function narrowType(value: string | null | undefined): 'course_level' | 'competition' | 'other' {
+  if (value && (VALID_TYPES as readonly string[]).includes(value)) return value as 'course_level' | 'competition' | 'other'
+  return 'course_level'
+}
+
 function emptyLineItem(): ReceiptLineItem {
   return {
     id: Math.random().toString(36).substr(2, 9),
@@ -60,7 +73,7 @@ function initFromDraft<T>(key: string, fallback: T): T {
 }
 
 export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData, onClearInitialData, onNavigateToUnpaid }: CreateReceiptPanelProps) {
-  const { create, previewRisk, isCreating, createError, overpaymentRisk, clearOverpaymentRisk } = useReceipts()
+  const { create, previewRisk, isCreating, overpaymentRisk, clearOverpaymentRisk } = useReceipts()
   const [payerName, setPayerName] = useState(() => initFromDraft('payerName', ''))
   const [paymentMethod, setPaymentMethod] = useState<string | null>(() => initFromDraft<string | null>('paymentMethod', null))
   const [paymentMethodError, setPaymentMethodError] = useState<string | undefined>()
@@ -236,7 +249,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
 
     const request: CreateReceiptRequest = {
       payer_name: payerName || null,
-      method: (paymentMethod || 'cash') as 'cash' | 'e_wallet' | 'instapay' | 'other',
+      method: narrowMethod(paymentMethod),
       notes: notes || null,
       allow_credit: true,
       lines: validItems.map((item, index) => ({
@@ -245,7 +258,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
         enrollment_id: item.selectedEnrollment?.enrollment_id,
         amount: item.amount,
         transaction_type: 'charge',
-        payment_type: (item.payment_type || 'course_level') as 'course_level' | 'competition' | 'other',
+        payment_type: narrowType(item.payment_type),
         discount: item.discount || 0,
         notes: item.notes || undefined,
       })),
@@ -274,7 +287,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
     try {
       const request: CreateReceiptRequest = {
         payer_name: payerName || null,
-        method: paymentMethod as 'cash' | 'e_wallet' | 'instapay' | 'other',
+        method: narrowMethod(paymentMethod),
         notes: notes || null,
         allow_credit: true,
         lines: validItems.map((item, index) => ({
@@ -283,7 +296,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
           enrollment_id: item.selectedEnrollment?.enrollment_id,
           amount: item.amount,
           transaction_type: 'charge',
-          payment_type: item.payment_type as 'course_level' | 'competition' | 'other',
+          payment_type: narrowType(item.payment_type),
           discount: item.discount || 0,
           notes: item.notes || undefined,
         })),
@@ -304,8 +317,8 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
       setLineItemErrors({})
       setLocalOverpaymentRisk(null)
       clearOverpaymentRisk()
-    } catch {
-      onError(createError?.message || 'Failed to create receipt')
+    } catch (err) {
+      onError(err instanceof Error ? err.message : 'Failed to create receipt')
     }
   }
 
@@ -326,7 +339,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
             onClick={onNavigateToUnpaid}
             className="text-sm text-secondary hover:text-secondary/80 flex items-center gap-1.5 font-medium transition-colors"
           >
-            <span className="material-symbols-outlined text-base">warning</span>
+            <span className="material-symbols-outlined text-base" aria-hidden="true">warning</span>
             Pay from Unpaid
           </button>
         )}
@@ -363,7 +376,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
             onClick={handleAddLineItem}
             className="text-sm font-semibold text-secondary hover:text-secondary/80 flex items-center gap-1 transition-colors"
           >
-            <span className="material-symbols-outlined text-sm">add</span>
+            <span className="material-symbols-outlined text-sm" aria-hidden="true">add</span>
             Add Item
           </button>
         </div>
@@ -387,7 +400,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
       {(overpaymentRisk?.has_risk || localOverpaymentRisk?.has_risk) && (
         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg animate-pulse">
           <p className="text-sm text-yellow-800 flex items-center gap-2">
-            <span className="material-symbols-outlined">warning</span>
+            <span className="material-symbols-outlined" aria-hidden="true">warning</span>
             {overpaymentRisk?.message || localOverpaymentRisk?.message || 'This payment may exceed the amount due'}
           </p>
         </div>
@@ -412,7 +425,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
             className="px-6 py-2 bg-secondary text-white rounded-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/90 transition-all flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
           >
             {(isLoading || isCreating) ? <LoadingSpinner size="sm" /> : null}
-            <span className="material-symbols-outlined">receipt</span>
+            <span className="material-symbols-outlined" aria-hidden="true">receipt</span>
             Create Receipt
           </button>
         </div>

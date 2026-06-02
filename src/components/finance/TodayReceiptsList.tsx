@@ -12,15 +12,15 @@ interface TodayReceiptsListProps {
 
 const METHOD_LABELS: Record<string, string> = {
   cash: 'Cash',
-  card: 'Card',
-  transfer: 'Transfer',
+  e_wallet: 'E-Wallet',
+  instapay: 'instaPay',
   other: 'Other',
 }
 
 const METHOD_COLORS: Record<string, string> = {
   cash: 'bg-emerald-100 text-emerald-700',
-  card: 'bg-blue-100 text-blue-700',
-  transfer: 'bg-purple-100 text-purple-700',
+  e_wallet: 'bg-red-100 text-red-700',
+  instapay: 'bg-purple-100 text-purple-700',
   other: 'bg-slate-100 text-slate-600',
 }
 
@@ -101,7 +101,7 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
           receipt_id: r.id,
           receipt_number: r.receipt_number,
           payer_name: r.payer_name,
-          total_amount: 0,
+          total_amount: r.total_amount,
           payment_method: r.payment_method,
           issued_at: r.paid_at,
         }))
@@ -127,7 +127,7 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
   if (error) {
     return (
       <div className="bg-red-50 border border-red-100 rounded-xl p-6 text-center">
-        <span className="material-symbols-outlined text-3xl text-red-400 mb-2">error</span>
+        <span className="material-symbols-outlined text-3xl text-red-400 mb-2" aria-hidden="true">error</span>
         <p className="text-red-700 text-sm">Failed to load receipts</p>
       </div>
     )
@@ -151,7 +151,7 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
         onClick={() => setShowAdvanced(!showAdvanced)}
         className="flex items-center gap-1 text-sm text-secondary hover:text-secondary/80 font-medium transition-colors"
       >
-        <span className="material-symbols-outlined text-base">{showAdvanced ? 'expand_less' : 'expand_more'}</span>
+        <span className="material-symbols-outlined text-base" aria-hidden="true">{showAdvanced ? 'expand_less' : 'expand_more'}</span>
         Advanced Search
       </button>
 
@@ -159,8 +159,9 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-on-surface mb-1">From Date</label>
+              <label htmlFor="search-from-date" className="block text-sm font-medium text-on-surface mb-1">From Date</label>
               <input
+                id="search-from-date"
                 type="date"
                 value={searchFromDate}
                 onChange={(e) => setSearchFromDate(e.target.value)}
@@ -168,8 +169,9 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-on-surface mb-1">To Date</label>
+              <label htmlFor="search-to-date" className="block text-sm font-medium text-on-surface mb-1">To Date</label>
               <input
+                id="search-to-date"
                 type="date"
                 value={searchToDate}
                 onChange={(e) => setSearchToDate(e.target.value)}
@@ -177,8 +179,9 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-on-surface mb-1">Payer Name</label>
+              <label htmlFor="search-payer-name" className="block text-sm font-medium text-on-surface mb-1">Payer Name</label>
               <input
+                id="search-payer-name"
                 type="text"
                 value={searchPayerName}
                 onChange={(e) => setSearchPayerName(e.target.value)}
@@ -220,7 +223,7 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
               onClick={onNavigateToCreate}
               className="text-sm text-secondary hover:text-secondary/80 font-medium flex items-center gap-1 transition-colors"
             >
-              <span className="material-symbols-outlined text-base">add_circle</span>
+              <span className="material-symbols-outlined text-base" aria-hidden="true">add_circle</span>
               Create Receipt
             </button>
           )}
@@ -245,7 +248,7 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
       {/* Empty state */}
       {!isLoading && filteredReceipts.length === 0 && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
-          <span className="material-symbols-outlined text-5xl text-slate-300 mb-3">receipt_long</span>
+          <span className="material-symbols-outlined text-5xl text-slate-300 mb-3" aria-hidden="true">receipt_long</span>
           <h3 className="font-headline text-lg font-semibold text-on-surface mb-1">No receipts found</h3>
           <p className="text-sm text-slate-500">
             {searchResults

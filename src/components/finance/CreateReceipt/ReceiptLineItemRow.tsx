@@ -48,7 +48,7 @@ export function ReceiptLineItemRow({
           className="text-red-500 hover:text-red-700 transition-colors"
           title="Remove item"
         >
-          <span className="material-symbols-outlined text-sm">delete</span>
+          <span className="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
         </button>
       </div>
 
@@ -81,8 +81,9 @@ export function ReceiptLineItemRow({
         <div className="flex-1 space-y-3">
           <div className="flex flex-row gap-2">
             <div className="flex-1">
-              <label className="block text-xs font-medium text-slate-600 mb-1">Amount (EGP)</label>
+              <label htmlFor={`amount-${item.id}`} className="block text-xs font-medium text-slate-600 mb-1">Amount (EGP)</label>
               <input
+                id={`amount-${item.id}`}
                 type="number"
                 min={0}
                 value={item.amount || ''}
@@ -91,8 +92,9 @@ export function ReceiptLineItemRow({
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium text-slate-600 mb-1">Discount</label>
+              <label htmlFor={`discount-${item.id}`} className="block text-xs font-medium text-slate-600 mb-1">Discount</label>
               <input
+                id={`discount-${item.id}`}
                 type="number"
                 min={0}
                 value={item.discount || ''}
@@ -112,8 +114,9 @@ export function ReceiptLineItemRow({
       </div>
 
       <div className="mt-3">
-        <label className="block text-xs font-medium text-slate-600 mb-1">Notes (Optional)</label>
+        <label htmlFor={`notes-${item.id}`} className="block text-xs font-medium text-slate-600 mb-1">Notes (Optional)</label>
         <input
+          id={`notes-${item.id}`}
           type="text"
           value={item.notes}
           onChange={(e) => onUpdate({ notes: e.target.value })}

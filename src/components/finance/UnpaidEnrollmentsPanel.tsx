@@ -142,16 +142,11 @@ export function UnpaidEnrollmentsPanel({ onError, onPay, onNavigateToCreate }: U
   const handlePay = (enrollment: UnpaidEnrollment) => {
     if (onPay) {
       onPay(enrollment)
-    } else {
-      // Navigate to create receipt with pre-filled data
-      console.log('Pay clicked for:', enrollment)
     }
   }
 
   const handleRemind = (enrollment: UnpaidEnrollment) => {
-    // TODO: Implement WhatsApp reminder
-    console.log('Remind clicked for:', enrollment)
-    alert(`WhatsApp reminder would be sent to ${enrollment.student_name}`)
+    onError(`WhatsApp reminder would be sent to ${enrollment.student_name}`)
   }
 
   return (
@@ -171,7 +166,7 @@ export function UnpaidEnrollmentsPanel({ onError, onPay, onNavigateToCreate }: U
       {/* Group By Selector */}
       <div className="flex items-center gap-4">
         <span className="text-sm font-medium text-slate-600">Group by:</span>
-        <div className="flex bg-slate-100 rounded-lg p-1 gap-1">
+        <div className="flex bg-slate-100 rounded-lg p-1 gap-1" role="radiogroup">
           {[
             { value: 'none', label: 'All', icon: 'grid_view' },
             { value: 'student', label: 'Student', icon: 'person' },
@@ -180,6 +175,8 @@ export function UnpaidEnrollmentsPanel({ onError, onPay, onNavigateToCreate }: U
           ].map((option) => (
             <button
               key={option.value}
+              role="radio"
+              aria-checked={groupBy === option.value}
               onClick={() => setGroupBy(option.value as typeof groupBy)}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
                 groupBy === option.value
@@ -187,7 +184,7 @@ export function UnpaidEnrollmentsPanel({ onError, onPay, onNavigateToCreate }: U
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <span className="material-symbols-outlined text-[16px]">{option.icon}</span>
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">{option.icon}</span>
               {option.label}
             </button>
           ))}
@@ -237,7 +234,7 @@ export function UnpaidEnrollmentsPanel({ onError, onPay, onNavigateToCreate }: U
             onClick={onNavigateToCreate}
             className="text-sm text-secondary hover:text-secondary/80 font-medium flex items-center gap-1 transition-colors"
           >
-            <span className="material-symbols-outlined text-base">add_circle</span>
+            <span className="material-symbols-outlined text-base" aria-hidden="true">add_circle</span>
             Create Receipt
           </button>
         )}
@@ -256,7 +253,7 @@ export function UnpaidEnrollmentsPanel({ onError, onPay, onNavigateToCreate }: U
         </div>
       ) : currentItems.length === 0 ? (
         <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
-          <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">check_circle</span>
+          <span className="material-symbols-outlined text-6xl text-slate-300 mb-4" aria-hidden="true">check_circle</span>
           <h3 className="font-headline text-xl font-semibold text-on-surface mb-2">No unpaid enrollments</h3>
           <p className="text-slate-500">All students are up to date with their payments!</p>
         </div>

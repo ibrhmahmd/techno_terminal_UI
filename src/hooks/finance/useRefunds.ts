@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { queryClient } from '../../lib/queryClient'
 import {
   issueRefund,
   previewRefundRisk,
@@ -49,8 +50,9 @@ export function useRefunds(): UseRefundsResult {
     try {
       const result = await issueRefund(request)
       setRefundResult(result)
+      queryClient.invalidateQueries({ queryKey: ['finance', 'metrics'] })
       return result
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to issue refund')
       setIssueRefundError(error)
       throw error
@@ -66,7 +68,7 @@ export function useRefunds(): UseRefundsResult {
       const assessment = await previewRefundRisk(request)
       setRiskAssessment(assessment)
       return assessment
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('Failed to preview refund risk')
       setPreviewRiskError(error)
       throw error

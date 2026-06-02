@@ -35,11 +35,13 @@ function MetricCard({ label, value, icon, color, isLoading, isActive, onClick }:
   return (
     <button
       type="button"
+      role="tab"
+      aria-selected={isActive || false}
       onClick={onClick}
       className={`bg-white rounded-xl border shadow-sm p-4 flex-1 min-w-[160px] text-left transition-all hover:shadow-md hover:border-slate-300 ${onClick ? 'cursor-pointer' : 'cursor-default'} ${isActive ? 'ring-2 ring-secondary bg-secondary/5 border-secondary/30' : 'border-slate-200'}`}
     >
       <div className="flex items-center gap-2 mb-2">
-        <span className={`material-symbols-outlined text-lg ${isActive ? 'bg-secondary text-white' : `${styles.iconBg} ${styles.text}`} rounded-lg p-1`}>
+        <span className={`material-symbols-outlined text-lg ${isActive ? 'bg-secondary text-white' : `${styles.iconBg} ${styles.text}`} rounded-lg p-1`} aria-hidden="true">
           {icon}
         </span>
         <span className="text-xs font-medium text-slate-500 uppercase tracking-wider truncate">{label}</span>
@@ -51,7 +53,7 @@ function MetricCard({ label, value, icon, color, isLoading, isActive, onClick }:
 
 export function MetricsStripCards({ items, activeIndex }: MetricsStripCardsProps) {
   return (
-    <div className="flex flex-wrap gap-4">
+    <div className="flex flex-wrap gap-4" role="tablist">
       {items.map((item, i) => (
         <MetricCard key={i} {...item} isActive={i === activeIndex} />
       ))}
