@@ -160,7 +160,7 @@ shell commands, and other important information, read the current plan at
 ## Active Plan (2026-06-02 Update)
 
 This feature branch (`026-finance-ui-tweaks`) modifies the previous `025-finance-ui-ux` implementation with:
-- **Tab labels replace metrics**: Remove metrics strip cards, use labeled tab bar as primary navigation
+- **Metrics strip cards kept, labels updated**: Keep `MetricsStripCards` component, update card labels to "Today's Receipts", "Create Receipt", "Unpaid", "Refunds"
 - **Payment pills updated**: 4 options (Cash, E-Wallet, instaPay, Other) each with unique color and icon; payment method is now required
 - **Line item layout**: Two-column layout — Student + Enrollment left, Amount + Discount + Payment Type right
 - **Contracts**: See `specs/026-finance-ui-tweaks/contracts/` for component prop contracts
