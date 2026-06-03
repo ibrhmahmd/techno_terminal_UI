@@ -4,6 +4,7 @@ import type { EnrichedGroupPublic, LevelDetailDTO } from '../../../api/academics
 import { LevelBadge } from '../shared/LevelBadge'
 import { GroupStatusBadge } from '../shared/GroupStatusBadge'
 import { useDebounce } from '../../../hooks/useDebounce'
+import { formatTime } from '../../../utils/formatting'
 
 interface GroupInfoCardProps {
   group: EnrichedGroupPublic
@@ -31,28 +32,26 @@ export function GroupInfoCard({
   isSavingNotes,
 }: GroupInfoCardProps) {
   const [notes, setNotes] = useState(group.notes || '')
-  const debouncedNotes = useDebounce(notes, 300)
-  const isInitialMount = useRef(true)
-  const formatTime = (time: string | null | undefined) => {
-    if (!time) return '--:--'
-    return time.slice(0, 5)
-  }
+  const debouncedNotes = useDebounce(notes, 500)
+  const lastSavedRef = useRef(group.notes || '')
 
-  // Sync notes when group data changes (e.g., after refetch)
+  // Sync from external changes (e.g. refetch) ONLY if what the server has
+  // is different from what we last saved. This breaks the loop.
   useEffect(() => {
-    setNotes(group.notes || '')
+    const serverNotes = group.notes || ''
+    if (serverNotes !== lastSavedRef.current) {
+      setNotes(serverNotes)
+      lastSavedRef.current = serverNotes
+    }
   }, [group.notes])
 
-  // Only trigger onNotesChange after initial mount and when notes actually change
+  // Trigger save when debounced notes change, and update our ref
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false
-      return
-    }
-    if (debouncedNotes !== (group.notes || '')) {
+    if (debouncedNotes !== lastSavedRef.current) {
+      lastSavedRef.current = debouncedNotes
       onNotesChange?.(debouncedNotes)
     }
-  }, [debouncedNotes, onNotesChange, group.notes])
+  }, [debouncedNotes, onNotesChange])
 
   const handleNotesChange = (value: string) => {
     setNotes(value)
@@ -138,7 +137,7 @@ export function GroupInfoCard({
             <p className="font-medium text-slate-900 flex items-center gap-1">
               {group.schedule?.day || 'No day'}
               <Clock className="w-3 h-3" aria-hidden="true" />
-              {formatTime(group.schedule?.start_time)} - {formatTime(group.schedule?.end_time)}
+              {formatTime(group.schedule?.start_time || '')} - {formatTime(group.schedule?.end_time || '')}
             </p>
           </div>
         </div>

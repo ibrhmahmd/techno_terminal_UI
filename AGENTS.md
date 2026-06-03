@@ -147,5 +147,5 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 - **Specs**: `specs/<NNN>-<name>/plan.md` for active feature plans. Current highest: `031-*`. Active branch: `030-groups-ui-redesign`.
 
 <!-- SPECKIT START -->
-Active plan: `specs/032-group-detail-features/plan.md`
+Active plan: `specs/033-group-detail-backend-fixes/plan.md`
 <!-- SPECKIT END -->
