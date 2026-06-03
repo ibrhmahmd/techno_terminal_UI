@@ -46,3 +46,4 @@ export { FloatingActionBar } from './FloatingActionBar'
 
 // Pill Selector
 export { PillSelector, type PillOption, type PillSelectorProps } from './PillSelector'
+export { SearchablePillSelector, type SelectorOption } from './SearchablePillSelector'

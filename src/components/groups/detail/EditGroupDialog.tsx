@@ -1,44 +1,50 @@
 import { useState, useEffect, useRef } from 'react'
-import { X } from 'lucide-react'
+import { X, Calendar as CalendarIcon, BookOpen, Clock, FileText } from 'lucide-react'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
 import { type EnrichedGroupPublic, type UpdateGroupDTO } from '../../../api/academics'
 import { useAllEmployees } from '../../../hooks/useAllEmployees'
+import { useCourses } from '../../../hooks/useCourses'
 import { formatTimeInput } from '../../../utils/formatting'
-import { formToSchedule } from '../../../utils/scheduleTransform'
+import { SearchablePillSelector } from '../../common/SearchablePillSelector'
 
 interface EditGroupDialogProps {
   isOpen: boolean
   group: EnrichedGroupPublic
   onClose: () => void
-  onSave: (data: UpdateGroupDTO & { name?: string; notes?: string; status?: 'active' | 'inactive' | 'completed' }) => Promise<void>
+  onSave: (data: UpdateGroupDTO) => Promise<void>
   triggerRef?: React.RefObject<HTMLElement | null>
 }
 
 const DAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+const STATUSES = ['active', 'completed', 'cancelled']
 
 export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: EditGroupDialogProps) {
   const [name, setName] = useState(group.name || '')
-  const [instructorId, setInstructorId] = useState(String(group.instructor_id ?? ''))
+  const [courseId, setCourseId] = useState<string | number | null>(group.course_id ?? null)
+  const [instructorId, setInstructorId] = useState<string | number | null>(group.instructor_id ?? null)
   const [day, setDay] = useState(group.schedule?.day || '')
   const [startTime, setStartTime] = useState(group.schedule?.start_time?.slice(0, 5) || '')
   const [endTime, setEndTime] = useState(group.schedule?.end_time?.slice(0, 5) || '')
   const [capacity, setCapacity] = useState(group.capacity ?? 12)
-  const [status, setStatus] = useState<'active' | 'inactive' | 'completed'>(group.status || 'inactive')
-  const [notes, setNotes] = useState('')
+  const [status, setStatus] = useState(group.status || 'active')
+  const [notes, setNotes] = useState(group.notes || '')
   const [isLoading, setIsLoading] = useState(false)
   const dialogRef = useRef<HTMLDivElement>(null)
 
   const { data: instructors = [], isLoading: isLoadingEmployees } = useAllEmployees()
+  const { courses, isLoading: isLoadingCourses } = useCourses()
 
   useEffect(() => {
     if (isOpen) {
       setName(group.name || '')
-      setInstructorId(String(group.instructor_id ?? ''))
+      setCourseId(group.course_id ?? null)
+      setInstructorId(group.instructor_id ?? null)
       setDay(group.schedule?.day || '')
       setStartTime(group.schedule?.start_time?.slice(0, 5) || '')
       setEndTime(group.schedule?.end_time?.slice(0, 5) || '')
       setCapacity(group.capacity ?? 12)
-      setStatus(group.status || 'inactive')
+      setStatus(group.status || 'active')
+      setNotes(group.notes || '')
     }
   }, [isOpen, group])
 
@@ -78,16 +84,21 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
     try {
       const formattedStart = formatTimeInput(startTime)
       const formattedEnd = formatTimeInput(endTime)
-      const scheduleData = day && formattedStart && formattedEnd
-        ? formToSchedule(day, formattedStart, formattedEnd)
-        : undefined
-      await onSave({
+      
+      const updateData: UpdateGroupDTO = {
         name,
+        max_capacity: capacity,
+        status,
         ...(instructorId ? { instructor_id: Number(instructorId) } : {}),
-        schedule: scheduleData,
-        capacity,
-        notes: notes || undefined,
-      })
+        ...(courseId ? { course_id: Number(courseId) } : {}),
+      }
+
+      if (day) updateData.default_day = day
+      if (formattedStart) updateData.default_time_start = formattedStart
+      if (formattedEnd) updateData.default_time_end = formattedEnd
+      if (notes) updateData.notes = notes
+
+      await onSave(updateData)
       onClose()
     } catch {
       // Error handled by parent
@@ -98,143 +109,221 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Edit group" className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">Edit Group</h2>
-          <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg" aria-label="Close dialog">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
+      <div 
+        ref={dialogRef} 
+        role="dialog" 
+        aria-modal="true" 
+        aria-labelledby="edit-group-title" 
+        className="relative bg-surface rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col"
+      >
+        <div className="flex items-center justify-between p-6 bg-surface-container-lowest border-b border-surface-container-low">
+          <div>
+            <h2 id="edit-group-title" className="text-xl font-headline font-bold text-slate-900">
+              Edit Group Settings
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Modify configuration and scheduling for this group.
+            </p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-lg transition-colors" aria-label="Close dialog">
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div>
-            <label htmlFor="edit-group-name" className="block text-sm font-medium text-slate-700 mb-1">Group Name</label>
-            <input
-              id="edit-group-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="edit-instructor" className="block text-sm font-medium text-slate-700 mb-1">Instructor</label>
-            <select
-              id="edit-instructor"
-              value={instructorId}
-              onChange={(e) => setInstructorId(e.target.value)}
-              disabled={isLoadingEmployees}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50"
-            >
-              <option value="">Select an instructor...</option>
-              {instructors.map((i) => (
-                <option key={i.id} value={i.id}>{i.full_name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="edit-day" className="block text-sm font-medium text-slate-700 mb-1">Day</label>
-              <select
-                id="edit-day"
-                value={day}
-                onChange={(e) => setDay(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select day</option>
-                {DAYS.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="edit-capacity" className="block text-sm font-medium text-slate-700 mb-1">Capacity</label>
-              <input
-                id="edit-capacity"
-                type="number"
-                value={capacity}
-                onChange={(e) => setCapacity(Number(e.target.value))}
-                min={1}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="edit-start-time" className="block text-sm font-medium text-slate-700 mb-1">Start Time</label>
-              <input
-                id="edit-start-time"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label htmlFor="edit-end-time" className="block text-sm font-medium text-slate-700 mb-1">End Time</label>
-              <input
-                id="edit-end-time"
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          <fieldset>
-            <legend className="block text-sm font-medium text-slate-700 mb-2">Status</legend>
-            <div className="flex gap-4">
-              {(['active', 'inactive', 'completed'] as const).map((s) => (
-                <label key={s} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="status"
-                    value={s}
-                    checked={status === s}
-                    onChange={(e) => setStatus(e.target.value as typeof status)}
-                    className="text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-slate-700 capitalize">{s}</span>
+        <form id="edit-group-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-8 bg-surface">
+          
+          {/* General Settings */}
+          <section>
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-secondary" />
+              General Configuration
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-surface-container-lowest p-4 rounded-lg border border-surface-container-low">
+              <div className="col-span-1 md:col-span-2">
+                <label htmlFor="group-name" className="block text-sm font-medium text-slate-700 mb-1">
+                  Group Name
                 </label>
-              ))}
+                <input
+                  id="group-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
+                  required
+                />
+              </div>
+
+              <div className="col-span-1 md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Course
+                </label>
+                <SearchablePillSelector
+                  options={courses.map(c => ({ id: c.id, label: c.name, subLabel: c.category }))}
+                  value={courseId}
+                  onChange={setCourseId}
+                  placeholder="Search courses..."
+                  disabled={isLoadingCourses}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Instructor
+                </label>
+                <SearchablePillSelector
+                  options={instructors.map(emp => ({ id: emp.id, label: emp.full_name, subLabel: emp.job_title }))}
+                  value={instructorId}
+                  onChange={setInstructorId}
+                  placeholder="Search instructors..."
+                  disabled={isLoadingEmployees}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="capacity-input" className="block text-sm font-medium text-slate-700 mb-1">
+                  Max Capacity
+                </label>
+                <input
+                  id="capacity-input"
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={capacity}
+                  onChange={(e) => setCapacity(Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
+                  required
+                />
+              </div>
+
+              <div className="col-span-1 md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Group Status
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {STATUSES.map(s => {
+                    const isSelected = status === s
+                    let colorClasses = ''
+                    
+                    if (isSelected) {
+                      if (s === 'active') colorClasses = 'bg-teal-100 text-teal-800 ring-1 ring-teal-500 font-semibold'
+                      else if (s === 'completed') colorClasses = 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-500 font-semibold'
+                      else colorClasses = 'bg-red-100 text-red-800 ring-1 ring-red-500 font-semibold'
+                    } else {
+                      colorClasses = 'bg-white text-slate-500 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-700'
+                    }
+
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setStatus(s as 'active' | 'inactive' | 'completed')}
+                        className={`px-4 py-1.5 rounded-full text-sm transition-all ${colorClasses} capitalize flex items-center gap-1.5`}
+                      >
+                        {s === 'active' && isSelected && <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />}
+                        {s === 'completed' && isSelected && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+                        {s === 'cancelled' && isSelected && <span className="w-1.5 h-1.5 rounded-full bg-red-500" />}
+                        {s}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
-          </fieldset>
+          </section>
 
-          <div>
-            <label htmlFor="edit-notes" className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+          {/* Schedule Settings */}
+          <section>
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <CalendarIcon className="w-4 h-4 text-secondary" />
+              Default Schedule
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-surface-container-lowest p-4 rounded-lg border border-surface-container-low">
+              <div>
+                <label htmlFor="schedule-day" className="block text-sm font-medium text-slate-700 mb-1">
+                  Day
+                </label>
+                <select
+                  id="schedule-day"
+                  value={day}
+                  onChange={(e) => setDay(e.target.value)}
+                  className="w-full px-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
+                >
+                  <option value="">No default day</option>
+                  {DAYS.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor="start-time" className="block text-sm font-medium text-slate-700 mb-1">
+                  Start Time
+                </label>
+                <div className="relative">
+                  <input
+                    id="start-time"
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
+                  />
+                  <Clock className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="end-time" className="block text-sm font-medium text-slate-700 mb-1">
+                  End Time
+                </label>
+                <div className="relative">
+                  <input
+                    id="end-time"
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
+                  />
+                  <Clock className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Notes */}
+          <section>
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-secondary" />
+              Additional Notes
+            </h3>
             <textarea
-              id="edit-notes"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Optional notes about this group..."
+              onChange={e => setNotes(e.target.value)}
+              placeholder="Add any internal notes about this group..."
+              className="w-full px-3 py-3 bg-surface-container-lowest border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none min-h-[100px] resize-y transition-all rounded-none"
             />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-            >
-              {isLoading && <LoadingSpinner size="sm" />}
-              Save Changes
-            </button>
-          </div>
+          </section>
         </form>
+
+        <div className="p-6 bg-surface-container-lowest border-t border-surface-container-low flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-surface-container rounded-lg transition-colors"
+            disabled={isLoading}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="edit-group-form"
+            disabled={isLoading}
+            className="px-6 py-2 bg-secondary text-white text-sm font-bold rounded-lg hover:bg-secondary/90 disabled:opacity-50 flex items-center gap-2 transition-colors shadow-sm"
+          >
+            {isLoading && <LoadingSpinner size="sm" />}
+            Save Changes
+          </button>
+        </div>
       </div>
     </div>
   )

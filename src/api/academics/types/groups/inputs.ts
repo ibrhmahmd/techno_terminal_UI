@@ -24,10 +24,15 @@ export interface ScheduleGroupInput {
  */
 export interface UpdateGroupDTO {
   name?: string;
-  capacity?: number;
-  schedule?: ScheduleInput;
+  course_id?: number;
+  level_number?: number;
+  max_capacity?: number;
   instructor_id?: number;
+  default_day?: string;
+  default_time_start?: string;
+  default_time_end?: string;
   notes?: string;
+  status?: string;
 }
 
 /**

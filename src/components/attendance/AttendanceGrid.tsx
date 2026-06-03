@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { dashboardKeys } from '../../hooks/dashboard/useDashboard'
 import { queryKeys } from '../../hooks/queryKeys'
 import type { UpdateSessionDTO } from '../../api/academics'
-import { cancelSession, updateSession } from '../../api/academics'
+import { cancelSession, updateSession, deleteSession, reactivateSession } from '../../api/academics'
 import { markAttendance, type AttendanceStatus } from '../../api/attendance'
 import { getInitials } from '../../utils/formatting'
 import { LoadingSpinner } from '../common/LoadingSpinner'
@@ -15,6 +15,7 @@ import { AttendanceFooter } from './AttendanceFooter'
 import { SessionActionsRow } from './SessionActionsRow'
 import { SessionNotesRow } from './SessionNotesRow'
 import { EditSessionPopup } from './EditSessionPopup'
+import { AddSessionDialog } from '../groups/detail/AddSessionDialog'
 import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashboard'
 
 // Toggle cycle: null -> present -> absent -> cancelled -> null
@@ -64,6 +65,9 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   // Edit session modal state
   const [editingSession, setEditingSession] = useState<SessionWithAttendanceDTO | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  
+  // Add session modal state
+  const [isAddSessionOpen, setIsAddSessionOpen] = useState(false)
 
   // EPIC-4: Batch save state
   const [pendingChanges, setPendingChanges] = useState<Map<number, { student_id: string; status: AttendanceStatus }[]>>(new Map())
@@ -180,12 +184,47 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       if (selectedDate) {
         await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
       }
+      await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
       await refetchData()
     } catch (err) {
       console.error('Failed to cancel session:', err)
       showToast('Failed to cancel session', 'error')
     }
-  }, [refetchData, showToast, selectedDate, qc])
+  }, [refetchData, showToast, selectedDate, qc, groupId])
+
+  // Handle delete session
+  const handleDeleteSession = useCallback(async (sessionId: number) => {
+    try {
+      await deleteSession(sessionId)
+      setHasChanges(true)
+      showToast('Session deleted successfully', 'success')
+      if (selectedDate) {
+        await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+      }
+      await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+      await refetchData()
+    } catch (err) {
+      console.error('Failed to delete session:', err)
+      showToast('Failed to delete session', 'error')
+    }
+  }, [refetchData, showToast, selectedDate, qc, groupId])
+
+  // Handle reactivate session
+  const handleReactivateSession = useCallback(async (sessionId: number) => {
+    try {
+      await reactivateSession(sessionId)
+      setHasChanges(true)
+      showToast('Session reactivated successfully', 'success')
+      if (selectedDate) {
+        await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+      }
+      await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+      await refetchData()
+    } catch (err) {
+      console.error('Failed to reactivate session:', err)
+      showToast('Failed to reactivate session', 'error')
+    }
+  }, [refetchData, showToast, selectedDate, qc, groupId])
 
   // Handle save edited session
   const handleSaveEditedSession = useCallback(async (sessionId: number, data: UpdateSessionDTO) => {
@@ -197,12 +236,13 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       if (selectedDate) {
         await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
       }
+      await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
       await refetchData()
     } catch (err) {
       console.error('Failed to update session:', err)
       showToast('Failed to update session', 'error')
     }
-  }, [refetchData, showToast, selectedDate, qc])
+  }, [refetchData, showToast, selectedDate, qc, groupId])
 
   const handleToggle = useCallback((studentId: string, sessionId: number) => {
     const student = students.find(s => s.student_id === studentId)
@@ -481,16 +521,28 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
                         </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
-                          Instructor
-                        </p>
-                        <p className="font-bold text-sm text-slate-900">{currentInstructorName}</p>
+                    <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+                            Instructor
+                          </p>
+                          <p className="font-bold text-sm text-slate-900">{currentInstructorName}</p>
+                        </div>
+                        <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 border border-slate-300">
+                          {instructorInitials}
+                        </div>
                       </div>
-                      <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 border border-slate-300">
-                        {instructorInitials}
-                      </div>
+                      
+                      <div className="h-8 w-px bg-slate-300"></div>
+                      
+                      <button
+                        onClick={() => setIsAddSessionOpen(true)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors shadow-sm"
+                      >
+                        <span className="material-symbols-outlined text-sm">add</span>
+                        Add Node
+                      </button>
                     </div>
                   </div>
                 </th>
@@ -506,6 +558,8 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
               sessions={sessions} 
               onEdit={handleEditSession}
               onCancel={handleCancelSession}
+              onDelete={handleDeleteSession}
+              onReactivate={handleReactivateSession}
               disabled={isSaving}
             />
           </tbody>
@@ -548,6 +602,20 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         }}
         onSave={handleSaveEditedSession}
       />
+      
+      {/* Add Session Modal */}
+      <AddSessionDialog
+        isOpen={isAddSessionOpen}
+        groupId={groupId}
+        levelNumber={level}
+        onClose={() => {
+          setIsAddSessionOpen(false)
+          // We need to invalidate queries after adding to make the new session appear immediately
+          qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+          refetchData()
+        }}
+      />
+      
       {ToastComponent}
     </div>
   )

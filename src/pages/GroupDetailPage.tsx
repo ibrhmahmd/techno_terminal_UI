@@ -4,7 +4,6 @@ import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import { MetricsStripCards } from '../components/common/MetricsStripCards'
-import { AttendanceTab } from '../components/groups/AttendanceTab'
 import { LevelsTab } from '../components/groups/LevelsTab'
 import { HistoryTab } from '../components/groups/HistoryTab'
 import { GroupInfoCard, ProgressLevelDialog } from '../components/groups/detail'
@@ -24,7 +23,7 @@ export function GroupDetailPage() {
 
   const isValidGroupId = !isNaN(groupId) && groupId > 0
 
-  const [activeTab, setActiveTab] = useState<'attendance' | 'levels' | 'history'>('attendance')
+  const [activeTab, setActiveTab] = useState<'levels' | 'history'>('levels')
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false)
@@ -37,8 +36,6 @@ export function GroupDetailPage() {
     currentLevel,
     isLoading,
     error,
-    setActiveLevel,
-    activeLevelId,
     coursesMap,
     instructorsMap,
   } = useGroupDetail(groupId)
@@ -65,7 +62,7 @@ export function GroupDetailPage() {
 
   // Current level enrollment count from consolidated data
 
-  const handleUpdateGroup = async (data: UpdateGroupDTO & { notes?: string; status?: 'active' | 'inactive' | 'archived' | 'completed' }) => {
+  const handleUpdateGroup = async (data: UpdateGroupDTO) => {
     try {
       await updateGroup(data)
       showToast('Group updated successfully', 'success')
@@ -219,14 +216,7 @@ export function GroupDetailPage() {
           <MetricsStripCards
             items={[
               {
-                label: 'Attendance',
-                icon: 'calendar_today',
-                color: 'blue',
-                isActive: activeTab === 'attendance',
-                onClick: () => setActiveTab('attendance'),
-              },
-              {
-                label: 'Levels',
+                label: 'Levels & Sessions',
                 icon: 'school',
                 color: 'emerald',
                 isActive: activeTab === 'levels',
@@ -242,19 +232,7 @@ export function GroupDetailPage() {
             ]}
           />
 
-          {activeTab === 'attendance' && (
-            <div role="tabpanel" id="panel-attendance" aria-labelledby="tab-attendance">
-              <AttendanceTab
-                groupId={groupId}
-                levels={levels}
-                activeLevelId={activeLevelId}
-                currentLevelNumber={group.current_level}
-                instructorName={group.instructor_name}
-                onLevelChange={setActiveLevel}
-              />
-            </div>
-          )}
-
+          <div className="mt-8">
           {activeTab === 'levels' && (
             <div role="tabpanel" id="panel-levels" aria-labelledby="tab-levels">
               <LevelsTab
@@ -273,6 +251,7 @@ export function GroupDetailPage() {
               <HistoryTab groupId={groupId} />
             </div>
           )}
+          </div>
 
           <EditGroupDialog
             isOpen={isEditDialogOpen}

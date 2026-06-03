@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Calendar, Users, BookOpen, GraduationCap, Clock, CheckCircle, XCircle, AlertCircle, Edit3 } from 'lucide-react'
 import type { LevelDetailDTO, LevelPaymentsDTO, CourseInfoDTO, InstructorInfoDTO } from '../../api/academics'
-import { SessionListPanel } from './detail/SessionListPanel'
-import { LevelStudentsPanel } from './detail/LevelStudentsPanel'
 import { LevelSelector } from './detail/LevelSelector'
 import { PillSelector } from '../common'
+import { useGroupAttendance } from '../../hooks/useGroupAttendance'
+import { AttendanceGrid } from '../attendance/AttendanceGrid'
+import { transformRoster, transformSessions } from '../../utils/attendanceTransforms'
+import { LoadingSpinner } from '../common/LoadingSpinner'
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString()} EGP`
@@ -79,7 +81,7 @@ export function LevelsTab({
 }: LevelsTabProps) {
   const initialLevelId = levels.find(l => l.level_number === currentLevelNumber)?.level_id || levels[0]?.level_id || null
   const [selectedLevelId, setSelectedLevelId] = useState<number | null>(initialLevelId)
-  const [viewMode, setViewMode] = useState<'sessions' | 'payments' | 'students'>('sessions')
+  const [viewMode, setViewMode] = useState<'attendance' | 'payments'>('attendance')
 
   const activeLevelId = selectedLevelId || levels[0]?.level_id || null
   const selectedLevel = levels.find(l => l.level_id === activeLevelId)
@@ -199,22 +201,17 @@ export function LevelsTab({
             <div className="flex justify-center mb-6">
               <PillSelector
                 options={[
-                  { value: 'sessions', label: 'Sessions', icon: 'schedule' },
+                  { value: 'attendance', label: 'Attendance & Sessions', icon: 'groups' },
                   { value: 'payments', label: 'Payments', icon: 'payments' },
-                  { value: 'students', label: 'Students', icon: 'groups' }
                 ]}
                 value={viewMode}
-                onChange={(val) => setViewMode(val as 'sessions' | 'payments' | 'students')}
+                onChange={(val) => setViewMode(val as 'attendance' | 'payments')}
               />
             </div>
             
-            {viewMode === 'sessions' ? (
+            {viewMode === 'attendance' ? (
               <div className="animate-fadeIn">
-                <SessionListPanel 
-                  sessions={selectedLevel.sessions}
-                  groupId={groupId}
-                  levelNumber={selectedLevel.level_number}
-                />
+                <LevelAttendancePanel groupId={groupId} levelNumber={selectedLevel.level_number} />
               </div>
             ) : viewMode === 'payments' ? (
               <div className="animate-fadeIn">
@@ -246,13 +243,6 @@ export function LevelsTab({
                 )}
                 <LevelPaymentsPanel payments={paymentsByLevel?.find(p => p.level_number === selectedLevel.level_number)?.payments || []} />
               </div>
-            ) : viewMode === 'students' ? (
-              <div className="animate-fadeIn">
-                <LevelStudentsPanel 
-                  groupId={groupId}
-                  selectedLevel={selectedLevel}
-                />
-              </div>
             ) : null}
           </div>
 
@@ -281,5 +271,24 @@ export function LevelsTab({
         </div>
       </div>
     </div>
+  )
+}
+
+function LevelAttendancePanel({ groupId, levelNumber }: { groupId: number, levelNumber: number }) {
+  const { roster, sessions, isLoading, error } = useGroupAttendance(groupId, levelNumber)
+
+  if (isLoading) return <div className="py-12 flex justify-center"><LoadingSpinner /></div>
+  if (error) return <div className="py-8 text-center text-red-500">Failed to load attendance: {error}</div>
+
+  const transformedRoster = transformRoster(roster)
+  const transformedSessions = transformSessions(sessions, roster, groupId, levelNumber)
+
+  return (
+    <AttendanceGrid 
+      roster={transformedRoster}
+      sessions={transformedSessions}
+      groupId={groupId}
+      level={levelNumber}
+    />
   )
 }
