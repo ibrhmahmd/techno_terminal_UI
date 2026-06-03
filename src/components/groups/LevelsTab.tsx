@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Calendar, Users, BookOpen, GraduationCap, Clock, CheckCircle, XCircle, AlertCircle, Edit3 } from 'lucide-react'
 import type { LevelDetailDTO, LevelPaymentsDTO } from '../../api/academics'
 import { SessionListPanel } from './detail/SessionListPanel'
+import { LevelStudentsPanel } from './detail/LevelStudentsPanel'
 import { LevelSelector } from './detail/LevelSelector'
 import { PillSelector } from '../common'
 
@@ -72,7 +73,7 @@ export function LevelsTab({
 }: LevelsTabProps) {
   const initialLevelId = levels.find(l => l.level_number === currentLevelNumber)?.level_id || levels[0]?.level_id || null
   const [selectedLevelId, setSelectedLevelId] = useState<number | null>(initialLevelId)
-  const [viewMode, setViewMode] = useState<'sessions' | 'payments'>('sessions')
+  const [viewMode, setViewMode] = useState<'sessions' | 'payments' | 'students'>('sessions')
 
   const activeLevelId = selectedLevelId || levels[0]?.level_id || null
   const selectedLevel = levels.find(l => l.level_id === activeLevelId)
@@ -192,10 +193,11 @@ export function LevelsTab({
               <PillSelector
                 options={[
                   { value: 'sessions', label: 'Sessions', icon: 'schedule' },
-                  { value: 'payments', label: 'Payments', icon: 'payments' }
+                  { value: 'payments', label: 'Payments', icon: 'payments' },
+                  { value: 'students', label: 'Students', icon: 'groups' }
                 ]}
                 value={viewMode}
-                onChange={(val) => setViewMode(val as 'sessions' | 'payments')}
+                onChange={(val) => setViewMode(val as 'sessions' | 'payments' | 'students')}
               />
             </div>
             
@@ -207,7 +209,7 @@ export function LevelsTab({
                   levelNumber={selectedLevel.level_number}
                 />
               </div>
-            ) : (
+            ) : viewMode === 'payments' ? (
               <div className="animate-fadeIn">
                 {selectedLevel.payment_summary && (
                   <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -237,7 +239,14 @@ export function LevelsTab({
                 )}
                 <LevelPaymentsPanel payments={paymentsByLevel?.find(p => p.level_number === selectedLevel.level_number)?.payments || []} />
               </div>
-            )}
+            ) : viewMode === 'students' ? (
+              <div className="animate-fadeIn">
+                <LevelStudentsPanel 
+                  groupId={groupId}
+                  selectedLevel={selectedLevel}
+                />
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600 flex items-center justify-between">

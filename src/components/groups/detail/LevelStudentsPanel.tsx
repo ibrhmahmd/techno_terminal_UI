@@ -1,16 +1,15 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CheckCircle2, XCircle, Clock } from 'lucide-react'
-import { TransferDialog } from './detail/TransferDialog'
-import { LevelSelector } from './detail/LevelSelector'
-import { ConfirmDialog } from '../common/ConfirmDialog'
-import { RowActions } from '../common/RowActions'
-import { useToast } from '../common/Toast'
-import { useGroupEnrollments } from '../../hooks/useGroupEnrollments'
-import { deleteEnrollment } from '../../api/enrollments/enrollments'
-import { queryClient } from '../../lib/queryClient'
-import { queryKeys } from '../../hooks/queryKeys'
-import type { LevelDetailDTO } from '../../api/academics'
+import { TransferDialog } from './TransferDialog'
+import { ConfirmDialog } from '../../common/ConfirmDialog'
+import { RowActions } from '../../common/RowActions'
+import { useToast } from '../../common/Toast'
+import { useGroupEnrollments } from '../../../hooks/useGroupEnrollments'
+import { deleteEnrollment } from '../../../api/enrollments/enrollments'
+import { queryClient } from '../../../lib/queryClient'
+import { queryKeys } from '../../../hooks/queryKeys'
+import type { LevelDetailDTO } from '../../../api/academics'
 
 type StudentWithEnrollment = {
   enrollment_id: number
@@ -22,12 +21,9 @@ type StudentWithEnrollment = {
   parent_name: string | null
 }
 
-interface StudentsTabProps {
+interface LevelStudentsPanelProps {
   groupId: number
-  levels: LevelDetailDTO[]
-  activeLevelId: number | null
-  currentLevelNumber: number
-  onLevelChange: (levelId: number) => void
+  selectedLevel: LevelDetailDTO
 }
 
 const getPaymentStatusBadge = (status: string) => {
@@ -108,14 +104,10 @@ function GroupStudentCard({
   )
 }
 
-export function StudentsTab({
+export function LevelStudentsPanel({
   groupId,
-  levels,
-  activeLevelId,
-  currentLevelNumber,
-  onLevelChange,
-}: StudentsTabProps) {
-  const [selectedLevelId, setSelectedLevelId] = useState<number | null>(activeLevelId)
+  selectedLevel,
+}: LevelStudentsPanelProps) {
   const [isDropDialogOpen, setIsDropDialogOpen] = useState(false)
   const [droppingEnrollmentId, setDroppingEnrollmentId] = useState<number | null>(null)
   
@@ -124,13 +116,6 @@ export function StudentsTab({
   
   const navigate = useNavigate()
   const { showToast, ToastComponent } = useToast()
-
-  useEffect(() => {
-    setSelectedLevelId(activeLevelId)
-  }, [activeLevelId])
-  const selectedLevel = useMemo(() =>
-    levels.find(l => l.level_id === selectedLevelId) || null
-  , [levels, selectedLevelId])
 
   const { 
     students: studentsRecord,
@@ -159,11 +144,6 @@ export function StudentsTab({
     })
   }, [enrollmentsByLevel, selectedLevel, studentsRecord])
 
-  const handleLevelChange = (levelId: number) => {
-    setSelectedLevelId(levelId)
-    onLevelChange(levelId)
-  }
-
   const handleDropClick = (enrollmentId: number) => {
     setDroppingEnrollmentId(enrollmentId)
     setIsDropDialogOpen(true)
@@ -190,13 +170,6 @@ export function StudentsTab({
 
   return (
     <div className="space-y-6">
-      <LevelSelector 
-        levels={levels}
-        activeLevelId={selectedLevelId}
-        onLevelChange={handleLevelChange}
-        currentLevelNumber={currentLevelNumber}
-      />
-      
       {error && (
         <div role="alert" className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
           {error}

@@ -6,13 +6,11 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import { MetricsStripCards } from '../components/common/MetricsStripCards'
 import { AttendanceTab } from '../components/groups/AttendanceTab'
 import { LevelsTab } from '../components/groups/LevelsTab'
-import { StudentsTab } from '../components/groups/StudentsTab'
 import { HistoryTab } from '../components/groups/HistoryTab'
 import { GroupInfoCard, ProgressLevelDialog } from '../components/groups/detail'
 import { EditGroupDialog } from '../components/groups/detail/EditGroupDialog'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { useGroupDetail } from '../hooks/useGroupDetail'
-import { useGroupEnrollments } from '../hooks/useGroupEnrollments'
 import { useGroupPayments } from '../hooks/useGroupPayments'
 import { useGroupMutations } from '../hooks/useGroupMutations'
 import { useToast } from '../components/common/Toast'
@@ -26,7 +24,7 @@ export function GroupDetailPage() {
 
   const isValidGroupId = !isNaN(groupId) && groupId > 0
 
-  const [activeTab, setActiveTab] = useState<'attendance' | 'levels' | 'students' | 'history'>('attendance')
+  const [activeTab, setActiveTab] = useState<'attendance' | 'levels' | 'history'>('attendance')
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false)
@@ -43,23 +41,11 @@ export function GroupDetailPage() {
     activeLevelId,
   } = useGroupDetail(groupId)
 
-  // Consolidated enrollments data
-  const {
-    error: enrollmentsError,
-  } = useGroupEnrollments(groupId, activeTab === 'students')
-
   // Real payment data
   const {
     paymentsByLevel,
     error: paymentsError,
   } = useGroupPayments(groupId, activeTab === 'levels')
-
-  // Show toast notifications for hook errors
-  useEffect(() => {
-    if (enrollmentsError) {
-      showToast(enrollmentsError, 'error')
-    }
-  }, [enrollmentsError, showToast])
 
   useEffect(() => {
     if (paymentsError) {
@@ -238,18 +224,11 @@ export function GroupDetailPage() {
                 onClick: () => setActiveTab('attendance'),
               },
               {
-                label: 'Levels & Payments',
+                label: 'Levels',
                 icon: 'school',
                 color: 'emerald',
                 isActive: activeTab === 'levels',
                 onClick: () => setActiveTab('levels'),
-              },
-              {
-                label: 'Students',
-                icon: 'groups',
-                color: 'amber',
-                isActive: activeTab === 'students',
-                onClick: () => setActiveTab('students'),
               },
               {
                 label: 'History',
@@ -284,20 +263,6 @@ export function GroupDetailPage() {
               />
             </div>
           )}
-
-          {activeTab === 'students' && (
-            <div role="tabpanel" id="panel-students" aria-labelledby="tab-students">
-              <StudentsTab
-                groupId={groupId}
-                levels={levels}
-                activeLevelId={activeLevelId}
-                currentLevelNumber={group.current_level}
-                onLevelChange={setActiveLevel}
-              />
-            </div>
-          )}
-
-
           {activeTab === 'history' && (
             <div role="tabpanel" id="panel-history" aria-labelledby="tab-history">
               <HistoryTab groupId={groupId} />
