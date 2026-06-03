@@ -3,6 +3,7 @@ import { useGroupsFlat, useGroupsGrouped } from './useGroupQueries'
 import {
   type EnrichedGroupPublic,
   type GroupByField,
+  type GroupFilterOptions,
 } from '../api/academics'
 
 export type SortField = 'name' | 'course_name' | 'instructor_name' | 'current_student_count'
@@ -12,8 +13,8 @@ const STORAGE_KEY = 'tt:groups:groupBy'
 
 /**
  * Custom hook for groups logic to reduce component complexity.
- * Implements local pagination/sorting/filtering, localStorage persistence,
- * and global module-level caching cache invalidation support.
+ * Implements server-side pagination/filtering and local sorting,
+ * localStorage persistence, and cache invalidation support.
  */
 export function useGroups() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -22,13 +23,18 @@ export function useGroups() {
   const [sortField, setSortField] = useState<SortField>('name')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
 
+  // Filter states
+  const [selectedCourses, setSelectedCourses] = useState<number[]>([])
+  const [selectedInstructors, setSelectedInstructors] = useState<number[]>([])
+  const [selectedDays, setSelectedDays] = useState<string[]>([])
+  const [selectedLevels, setSelectedLevels] = useState<number[]>([])
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['active'])
+
   // Read last choice from localStorage on first mount
   const [groupBy, setGroupBy] = useState<GroupByField | undefined>(() => {
     const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored === null) return undefined // Key doesn't exist, user never made a choice
-    
-    if (stored === 'null') return null // User specifically chose 'All'
-    
+    if (stored === null) return undefined
+    if (stored === 'null') return null
     const valid: Array<GroupByField> = ['day', 'course', 'instructor', 'status', null]
     if (valid.includes(stored as GroupByField)) {
         return stored as GroupByField
@@ -36,20 +42,32 @@ export function useGroups() {
     return undefined
   })
   
-  // React Query hooks handle fetching, caching, and loading states automatically
   const isAllView = groupBy === null
   const isGroupedView = groupBy !== undefined && groupBy !== null
 
+  // Build filter options
+  const filterOptions: GroupFilterOptions = useMemo(() => ({
+    q: searchTerm || undefined,
+    course_ids: selectedCourses.length > 0 ? selectedCourses : undefined,
+    instructor_id: selectedInstructors.length > 0 ? selectedInstructors[0] : undefined,
+    level_number: selectedLevels.length > 0 ? selectedLevels[0] : undefined,
+    day: selectedDays.length > 0 ? selectedDays : undefined,
+    status: selectedStatuses.length > 0 ? selectedStatuses : undefined,
+    skip: (currentPage - 1) * pageSize,
+    limit: pageSize,
+  }), [searchTerm, selectedCourses, selectedInstructors, selectedDays, selectedLevels, selectedStatuses, currentPage, pageSize])
+
   // Flat query runs if we chose "All"
-  const flatQuery = useGroupsFlat(groupBy !== undefined && isAllView)
+  const flatQuery = useGroupsFlat(filterOptions, isAllView)
   
   // Grouped query runs if we chose a grouping option
   const groupedQuery = useGroupsGrouped(
     groupBy as Exclude<GroupByField, null>, 
-    groupBy !== undefined && isGroupedView
+    isGroupedView
   )
 
-  const groups = flatQuery.data ?? []
+  const groups = flatQuery.data?.items ?? []
+  const totalGroups = flatQuery.data?.total ?? 0
   const groupedData = groupedQuery.data ?? []
   const isLoading = flatQuery.isLoading || groupedQuery.isLoading
   const error = flatQuery.error?.message || groupedQuery.error?.message || null
@@ -59,14 +77,9 @@ export function useGroups() {
     else if (isGroupedView) groupedQuery.refetch()
   }
 
+  // Keep frontend sorting on the returned items
   const processedGroups = useMemo(() => {
-    const filtered = groups.filter((group) =>
-      (group.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (group.course_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (group.instructor_name || '').toLowerCase().includes(searchTerm.toLowerCase())
-    )
-
-    return [...filtered].sort((a, b) => {
+    return [...groups].sort((a, b) => {
       const aRaw = a[sortField as keyof EnrichedGroupPublic]
       const bRaw = b[sortField as keyof EnrichedGroupPublic]
       
@@ -84,14 +97,10 @@ export function useGroups() {
       const cmp = aStr.localeCompare(bStr)
       return sortDirection === 'asc' ? cmp : -cmp
     })
-  }, [groups, searchTerm, sortField, sortDirection])
+  }, [groups, sortField, sortDirection])
 
-  const paginatedGroups = useMemo(() => {
-    const start = (currentPage - 1) * pageSize
-    return processedGroups.slice(start, start + pageSize)
-  }, [processedGroups, currentPage, pageSize])
-
-  const totalPages = Math.ceil(processedGroups.length / pageSize)
+  const paginatedGroups = processedGroups
+  const totalPages = Math.ceil(totalGroups / pageSize)
 
   const validSortFields: SortField[] = ['name', 'course_name', 'instructor_name', 'current_student_count']
 
@@ -103,12 +112,21 @@ export function useGroups() {
       setSortField(typedField)
       setSortDirection('asc')
     }
-    setCurrentPage(1)
+    // We intentionally do NOT reset currentPage here so they stay on the same page while sorting
+  }
+
+  // Expose filter setters
+  const filters = {
+    selectedCourses, setSelectedCourses,
+    selectedInstructors, setSelectedInstructors,
+    selectedDays, setSelectedDays,
+    selectedLevels, setSelectedLevels,
+    selectedStatuses, setSelectedStatuses,
   }
 
   return {
     groups,
-    totalGroups: groups.length,
+    totalGroups,
     isLoading,
     error,
     searchTerm,
@@ -128,5 +146,6 @@ export function useGroups() {
     groupedData,
     isGroupedView,
     refresh,
+    filters,
   }
 }

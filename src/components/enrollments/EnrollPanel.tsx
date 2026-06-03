@@ -71,11 +71,11 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
 
   // Hook into caches
   const { data: studentsData, isLoading: isSearchingStudents } = useStudentsSearch(debouncedStudentSearch)
-  const { data: groupsData, isLoading: isLoadingGroups } = useGroupsFlat(true)
+  const { data: groupsData, isLoading: isLoadingGroups } = useGroupsFlat(undefined, true)
   const { recentGroupIds, addRecentGroup } = useRecentGroups()
 
   const students = studentsData || []
-  const groups = groupsData || []
+  const groups = groupsData?.items || []
 
   const handleStudentChange = (student: StudentListItem | null) => {
     setSelectedStudent(student)

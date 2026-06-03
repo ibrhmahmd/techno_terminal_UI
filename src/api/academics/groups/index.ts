@@ -14,6 +14,9 @@
 
 // Core router functions
 export {
+  getGroupDetails,
+  getGroups,
+  getGroupsPaginated,
   getEnrichedGroups,
   getEnrichedGroup,
   createGroup,
@@ -26,7 +29,7 @@ export {
   searchGroups,
   getArchivedGroups,
   getGroupsByCourse,
-  getGroupsByType,
+  type GroupFilterOptions,
 } from './core';
 
 // Lifecycle router functions

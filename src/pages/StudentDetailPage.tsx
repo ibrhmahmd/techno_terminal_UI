@@ -89,14 +89,14 @@ export function StudentDetailPage() {
   const studentIsDeleted = student ? isStudentDeleted(student) : false
   
   // Available groups for enrollment
-  const { data: groups, isLoading: isLoadingGroups } = useGroupsFlat(isEnrollDialogOpen)
+  const { data: groups, isLoading: isLoadingGroups } = useGroupsFlat(undefined, isEnrollDialogOpen)
 
   // Filter out groups the student is already enrolled in
   const enrolledGroupIds = details?.enrollments
     ?.filter(e => e.status === 'active')
     .map(e => e.group_id) || []
     
-  const availableGroups = (groups || [])
+  const availableGroups = (groups?.items || [])
     .filter(g => !enrolledGroupIds.includes(g.id))
 
   // Refresh data after successful operations

@@ -10,7 +10,6 @@
  * - DELETE /academics/courses/{course_id} - Delete course
  * - GET /academics/courses/stats - Get all course stats
  * - GET /academics/courses/{course_id}/stats - Get course stats
- * - GET /academics/courses/{course_id}/groups - Get course groups
  */
 
 import { client } from "../../client";
@@ -22,7 +21,6 @@ import type {
   UpdateCourseDTO,
   CourseStats,
 } from "../types/courses";
-import type { EnrichedGroupPublic } from "../types/groups";
 
 export async function getCourses(): Promise<Course[]> {
   const response = await client.get<PaginatedApiResponse<Course>>("/academics/courses");
@@ -113,13 +111,3 @@ export async function getCourseStats(courseId: number): Promise<CourseStats> {
   );
   return response.data.data;
 }
-
-export async function getCourseGroups(
-  courseId: number,
-): Promise<EnrichedGroupPublic[]> {
-  const response = await client.get<ApiResponse<EnrichedGroupPublic[]>>(
-    `/academics/courses/${courseId}/groups`,
-  );
-  return response.data.data;
-}
-
