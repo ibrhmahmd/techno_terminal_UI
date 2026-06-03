@@ -1,6 +1,4 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { LevelDetailDTO } from '../../../api/academics'
-import { LevelBadge } from '../shared/LevelBadge'
 
 interface LevelSelectorProps {
   levels: LevelDetailDTO[]
@@ -16,69 +14,41 @@ export function LevelSelector({
   currentLevelNumber,
 }: LevelSelectorProps) {
   if (levels.length === 0) {
-    return (
-      <div className="bg-slate-50 rounded-lg p-4 text-center text-sm text-slate-500">
-        No level history available
-      </div>
-    )
+    return null
   }
 
-  const activeIndex = levels.findIndex((l) => l.level_id === activeLevelId)
   const currentLevelIndex = levels.findIndex((l) => l.level_number === currentLevelNumber)
 
-  const navigate = (direction: 'prev' | 'next') => {
-    const newIndex = direction === 'prev' ? activeIndex - 1 : activeIndex + 1
-    if (newIndex >= 0 && newIndex < levels.length) {
-      onLevelChange(levels[newIndex].level_id)
-    }
-  }
-
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-slate-900">Level Progression</h3>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => navigate('prev')}
-            disabled={activeIndex <= 0}
-            className="p-1 rounded hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
-            aria-label="Previous level"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => navigate('next')}
-            disabled={activeIndex >= levels.length - 1}
-            className="p-1 rounded hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
-            aria-label="Next level"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+    <section className="w-full pb-4">
+      <div className="overflow-x-auto">
+        <div role="tablist" aria-label="Select level" className="flex min-w-fit items-center gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1">
+          {levels.map((level, index) => {
+            const isActive = level.level_id === activeLevelId
+            const isCurrent = level.level_number === currentLevelNumber
+            const statusLabel = isCurrent ? 'Current' : index < currentLevelIndex ? 'Completed' : 'Upcoming'
+            
+            return (
+              <button
+                key={level.level_id}
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => onLevelChange(level.level_id)}
+                className={`flex flex-col items-center justify-center px-6 py-2 rounded-md transition-all whitespace-nowrap min-w-[120px] ${
+                  isActive
+                    ? 'bg-white text-secondary shadow-sm font-bold border border-blue-200'
+                    : 'text-slate-600 hover:text-secondary hover:bg-white/70'
+                }`}
+              >
+                <span className="font-headline text-sm">Level {level.level_number}</span>
+                <span className={`text-[10px] uppercase tracking-wider ${isActive ? 'text-secondary/70 font-bold' : 'text-slate-400 font-medium'}`}>
+                  {statusLabel}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </div>
-
-      <div className="flex items-center gap-2 overflow-x-auto pb-2" role="group" aria-label="Level selector">
-        {levels.map((level, index) => {
-          const isActive = level.level_id === activeLevelId
-          const isCurrent = level.level_number === currentLevelNumber
-
-          return (
-            <button
-              key={level.level_id}
-              onClick={() => onLevelChange(level.level_id)}
-              aria-pressed={isActive}
-              className={`flex flex-col items-center gap-1 p-2 rounded-lg min-w-[60px] transition-colors ${
-                isActive ? 'bg-blue-50 border-2 border-blue-200' : 'hover:bg-slate-50'
-              }`}
-            >
-              <LevelBadge level={level.level_number} isActive={isCurrent} size="md" />
-              <span className={`text-xs ${isActive ? 'text-blue-700 font-medium' : 'text-slate-500'}`}>
-                {isCurrent ? 'Current' : index < currentLevelIndex ? 'Completed' : 'Upcoming'}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
+    </section>
   )
 }

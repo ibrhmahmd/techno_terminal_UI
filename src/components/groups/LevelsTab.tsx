@@ -1,65 +1,58 @@
 import { useState } from 'react'
-import { Calendar, Users, BookOpen, GraduationCap, Clock, CheckCircle, XCircle, AlertCircle, Edit3, ChevronDown, ChevronUp } from 'lucide-react'
+import { Calendar, Users, BookOpen, GraduationCap, Clock, CheckCircle, XCircle, AlertCircle, Edit3 } from 'lucide-react'
 import type { LevelDetailDTO, LevelPaymentsDTO } from '../../api/academics'
 import { SessionListPanel } from './detail/SessionListPanel'
+import { LevelSelector } from './detail/LevelSelector'
+import { PillSelector } from '../common'
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString()} EGP`
 }
 
 function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments'] }) {
-  const [isExpanded, setIsExpanded] = useState(false)
-  if (!payments || payments.length === 0) return null
+  if (!payments || payments.length === 0) {
+    return (
+      <div className="py-8 text-center bg-slate-50 rounded-lg">
+        <p className="text-slate-500 text-sm">No recent payments found for this level.</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="mt-4 pt-4 border-t border-slate-100">
-      <div className="flex items-center justify-between mb-2">
-        <h5 className="text-sm font-medium text-slate-700">Recent Payments ({payments.length})</h5>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/30 rounded px-2 py-1"
-        >
-          {isExpanded ? 'Hide' : 'Show'}
-          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
+    <div className="mt-4 border border-slate-100 rounded-xl bg-white overflow-hidden">
+      <div className="bg-slate-50 px-4 py-3 border-b border-slate-100">
+        <h5 className="text-sm font-semibold text-slate-700">Recent Payments ({payments.length})</h5>
       </div>
-      {isExpanded && (
-        <div className="space-y-2 mt-3">
-          {payments.slice(0, 5).map((payment) => (
-            <div key={payment.payment_id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
-              <div>
-                <p className="text-sm font-medium text-slate-900">{payment.student_name}</p>
-                <p className="text-xs text-slate-500">
-                  {new Date(payment.payment_date).toLocaleDateString()} • {payment.payment_method}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className={`text-sm font-semibold ${
-                  payment.status === 'completed' ? 'text-green-600' :
-                  payment.status === 'pending' ? 'text-amber-600' :
-                  payment.status === 'failed' ? 'text-red-600' :
-                  'text-slate-600'
-                }`}>
-                  {formatCurrency(payment.amount)}
-                </p>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold ${
-                  payment.status === 'completed' ? 'bg-green-100 text-green-700' :
-                  payment.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                  payment.status === 'failed' ? 'bg-red-100 text-red-700' :
-                  'bg-slate-100 text-slate-600'
-                }`}>
-                  {payment.status}
-                </span>
-              </div>
+      <div className="divide-y divide-slate-100">
+        {payments.map((payment) => (
+          <div key={payment.payment_id} className="flex items-center justify-between px-4 py-3 hover:bg-slate-50/50 transition-colors">
+            <div>
+              <p className="text-sm font-medium text-slate-900">{payment.student_name}</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {new Date(payment.payment_date).toLocaleDateString()} • {payment.payment_method}
+              </p>
             </div>
-          ))}
-          {payments.length > 5 && (
-            <p className="text-xs text-slate-500 text-center py-2">
-              +{payments.length - 5} more payments
-            </p>
-          )}
-        </div>
-      )}
+            <div className="text-right">
+              <p className={`text-sm font-semibold ${
+                payment.status === 'completed' ? 'text-emerald-600' :
+                payment.status === 'pending' ? 'text-amber-600' :
+                payment.status === 'failed' ? 'text-red-600' :
+                'text-slate-600'
+              }`}>
+                {formatCurrency(payment.amount)}
+              </p>
+              <span className={`text-[10px] px-2 py-0.5 mt-1 inline-block rounded-full uppercase tracking-wider font-bold ${
+                payment.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                payment.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                payment.status === 'failed' ? 'bg-red-100 text-red-700' :
+                'bg-slate-100 text-slate-600'
+              }`}>
+                {payment.status}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -77,6 +70,12 @@ export function LevelsTab({
   groupId,
   paymentsByLevel,
 }: LevelsTabProps) {
+  const initialLevelId = levels.find(l => l.level_number === currentLevelNumber)?.level_id || levels[0]?.level_id || null
+  const [selectedLevelId, setSelectedLevelId] = useState<number | null>(initialLevelId)
+  const [viewMode, setViewMode] = useState<'sessions' | 'payments'>('sessions')
+
+  const activeLevelId = selectedLevelId || levels[0]?.level_id || null
+  const selectedLevel = levels.find(l => l.level_id === activeLevelId)
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -124,131 +123,139 @@ export function LevelsTab({
     )
   }
 
+  if (!selectedLevel) return null
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-slate-900">
-          Level Progression History ({levels.length} levels)
-        </h2>
-        <span className="text-sm text-slate-500">
-          Current: Level {currentLevelNumber}
-        </span>
-      </div>
+      <LevelSelector
+        levels={levels}
+        activeLevelId={activeLevelId}
+        onLevelChange={setSelectedLevelId}
+        currentLevelNumber={currentLevelNumber}
+      />
 
       <div className="grid gap-6">
-        {levels.map((level) => (
-          <div
-            key={level.level_id}
-            className={`bg-white rounded-xl border shadow-sm p-6 ${
-              level.level_number === currentLevelNumber ? 'border-blue-300 ring-1 ring-blue-100' : 'border-slate-200'
-            }`}
-          >
-            {/* Card Header */}
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">
-                  {level.level_number}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                    Level {level.level_number}
-                    {level.level_number === currentLevelNumber && (
-                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                        Current
-                      </span>
-                    )}
-                  </h3>
-                  <p className="text-sm text-slate-500 flex items-center gap-1">
-                    <BookOpen className="w-4 h-4" aria-hidden={true} />
-                    Course ID: {level.course_id}
-                  </p>
-                </div>
+        <div className={`bg-white rounded-xl border shadow-sm p-6 ${
+          selectedLevel.level_number === currentLevelNumber ? 'border-blue-300 ring-1 ring-blue-100' : 'border-slate-200'
+        }`}>
+          {/* Card Header */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+                {selectedLevel.level_number}
               </div>
-              <div className="flex items-center gap-2">
-                {getStatusBadge(level.status)}
-                {getStatusIcon(level.status)}
-              </div>
-            </div>
-
-            {/* Quick Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-4 border-t border-slate-100">
-              <div className="flex items-center gap-2 text-sm">
-                <Users className="w-4 h-4 text-slate-400" aria-hidden={true} />
-                <span className="text-slate-600 tabular-nums">
-                  {level.students_count} students ({level.students_completed} completed, {level.students_dropped} dropped)
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Calendar className="w-4 h-4 text-slate-400" aria-hidden={true} />
-                <span className="text-slate-600">
-                  {formatDate(level.start_date)} - {formatDate(level.end_date)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Clock className="w-4 h-4 text-slate-400" aria-hidden={true} />
-                <span className="text-slate-600">
-                  {level.sessions.length} sessions
-                </span>
-              </div>
-            </div>
-
-            {/* Expanded Details - Payment Summary */}
-            {level.payment_summary && (
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-slate-50 rounded-lg p-3">
-                    <p className="text-xs text-slate-500 mb-1">Expected</p>
-                    <p className="text-lg font-semibold text-slate-900">{level.payment_summary.total_expected} EGP</p>
-                  </div>
-                  <div className="bg-slate-50 rounded-lg p-3">
-                    <p className="text-xs text-slate-500 mb-1">Collected</p>
-                    <p className="text-lg font-semibold text-green-600">
-                      {level.payment_summary.total_collected} EGP
-                    </p>
-                  </div>
-                  <div className="bg-slate-50 rounded-lg p-3">
-                    <p className="text-xs text-slate-500 mb-1">Due</p>
-                    <p className="text-lg font-semibold text-amber-600">
-                      {level.payment_summary.total_due} EGP
-                    </p>
-                  </div>
-                  <div className="bg-slate-50 rounded-lg p-3">
-                    <p className="text-xs text-slate-500 mb-1">Collection Rate</p>
-                    <p className="text-lg font-semibold text-slate-900">
-                      {Math.round(level.payment_summary.collection_rate * 100)}%
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <LevelPaymentsPanel payments={paymentsByLevel?.find(p => p.level_number === level.level_number)?.payments || []} />
-
-            <div className="mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600 flex items-center justify-between">
               <div>
-                <span className="text-slate-500">Instructor ID:</span> {level.instructor_id}
+                <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                  Level {selectedLevel.level_number}
+                  {selectedLevel.level_number === currentLevelNumber && (
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                      Current
+                    </span>
+                  )}
+                </h3>
+                <p className="text-sm text-slate-500 flex items-center gap-1">
+                  <BookOpen className="w-4 h-4" aria-hidden={true} />
+                  Course ID: {selectedLevel.course_id}
+                </p>
               </div>
-              <button
-                disabled
-                title="Coming soon — level renumbering requires a database migration"
-                className="flex items-center gap-1.5 text-slate-500 opacity-50 cursor-not-allowed text-xs font-medium"
-              >
-                <Edit3 className="w-3.5 h-3.5" /> Edit Level Number
-                <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full ml-1 uppercase tracking-wider font-bold">
-                  Coming Soon
-                </span>
-              </button>
             </div>
-            
-            <div className="mt-6 pt-4 border-t border-slate-100">
-              <SessionListPanel 
-                sessions={level.sessions}
-                groupId={groupId}
-                levelNumber={level.level_number}
-              />
+            <div className="flex items-center gap-2">
+              {getStatusBadge(selectedLevel.status)}
+              {getStatusIcon(selectedLevel.status)}
             </div>
           </div>
-        ))}
+
+          {/* Quick Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-4 border-t border-slate-100">
+            <div className="flex items-center gap-2 text-sm">
+              <Users className="w-4 h-4 text-slate-400" aria-hidden={true} />
+              <span className="text-slate-600 tabular-nums">
+                {selectedLevel.students_count} students ({selectedLevel.students_completed} completed, {selectedLevel.students_dropped} dropped)
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="w-4 h-4 text-slate-400" aria-hidden={true} />
+              <span className="text-slate-600">
+                {formatDate(selectedLevel.start_date)} - {formatDate(selectedLevel.end_date)}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="w-4 h-4 text-slate-400" aria-hidden={true} />
+              <span className="text-slate-600">
+                {selectedLevel.sessions.length} sessions
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-slate-100 pt-6">
+            <div className="flex justify-center mb-6">
+              <PillSelector
+                options={[
+                  { value: 'sessions', label: 'Sessions', icon: 'schedule' },
+                  { value: 'payments', label: 'Payments', icon: 'payments' }
+                ]}
+                value={viewMode}
+                onChange={(val) => setViewMode(val as 'sessions' | 'payments')}
+              />
+            </div>
+            
+            {viewMode === 'sessions' ? (
+              <div className="animate-fadeIn">
+                <SessionListPanel 
+                  sessions={selectedLevel.sessions}
+                  groupId={groupId}
+                  levelNumber={selectedLevel.level_number}
+                />
+              </div>
+            ) : (
+              <div className="animate-fadeIn">
+                {selectedLevel.payment_summary && (
+                  <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                      <p className="text-xs text-slate-500 font-medium mb-1 uppercase tracking-wider">Expected</p>
+                      <p className="text-xl font-bold text-slate-900 font-headline">{selectedLevel.payment_summary.total_expected} EGP</p>
+                    </div>
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                      <p className="text-xs text-emerald-600 font-medium mb-1 uppercase tracking-wider">Collected</p>
+                      <p className="text-xl font-bold text-emerald-700 font-headline">
+                        {selectedLevel.payment_summary.total_collected} EGP
+                      </p>
+                    </div>
+                    <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                      <p className="text-xs text-amber-600 font-medium mb-1 uppercase tracking-wider">Due</p>
+                      <p className="text-xl font-bold text-amber-700 font-headline">
+                        {selectedLevel.payment_summary.total_due} EGP
+                      </p>
+                    </div>
+                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                      <p className="text-xs text-blue-600 font-medium mb-1 uppercase tracking-wider">Collection Rate</p>
+                      <p className="text-xl font-bold text-blue-700 font-headline">
+                        {Math.round(selectedLevel.payment_summary.collection_rate * 100)}%
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <LevelPaymentsPanel payments={paymentsByLevel?.find(p => p.level_number === selectedLevel.level_number)?.payments || []} />
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600 flex items-center justify-between">
+            <div>
+              <span className="text-slate-500">Instructor ID:</span> {selectedLevel.instructor_id}
+            </div>
+            <button
+              disabled
+              title="Coming soon — level renumbering requires a database migration"
+              className="flex items-center gap-1.5 text-slate-500 opacity-50 cursor-not-allowed text-xs font-medium"
+            >
+              <Edit3 className="w-3.5 h-3.5" /> Edit Level Number
+              <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full ml-1 uppercase tracking-wider font-bold">
+                Coming Soon
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
-import { TabNavigation } from '../components/groups/TabNavigation'
+import { MetricsStripCards } from '../components/common/MetricsStripCards'
 import { AttendanceTab } from '../components/groups/AttendanceTab'
 import { LevelsTab } from '../components/groups/LevelsTab'
 import { StudentsTab } from '../components/groups/StudentsTab'
@@ -228,9 +228,37 @@ export function GroupDetailPage() {
             isSavingNotes={isSavingNotes}
           />
 
-          <TabNavigation
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
+          <MetricsStripCards
+            items={[
+              {
+                label: 'Attendance',
+                icon: 'calendar_today',
+                color: 'blue',
+                isActive: activeTab === 'attendance',
+                onClick: () => setActiveTab('attendance'),
+              },
+              {
+                label: 'Levels & Payments',
+                icon: 'school',
+                color: 'emerald',
+                isActive: activeTab === 'levels',
+                onClick: () => setActiveTab('levels'),
+              },
+              {
+                label: 'Students',
+                icon: 'groups',
+                color: 'amber',
+                isActive: activeTab === 'students',
+                onClick: () => setActiveTab('students'),
+              },
+              {
+                label: 'History',
+                icon: 'history',
+                color: 'secondary',
+                isActive: activeTab === 'history',
+                onClick: () => setActiveTab('history'),
+              },
+            ]}
           />
 
           {activeTab === 'attendance' && (
