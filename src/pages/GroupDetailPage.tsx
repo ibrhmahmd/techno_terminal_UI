@@ -39,6 +39,8 @@ export function GroupDetailPage() {
     error,
     setActiveLevel,
     activeLevelId,
+    coursesMap,
+    instructorsMap,
   } = useGroupDetail(groupId)
 
   // Real payment data
@@ -260,6 +262,9 @@ export function GroupDetailPage() {
                 currentLevelNumber={group.current_level}
                 groupId={groupId}
                 paymentsByLevel={paymentsByLevel}
+                coursesMap={coursesMap}
+                instructorsMap={instructorsMap}
+                onAddLevel={() => setIsProgressLevelDialogOpen(true)}
               />
             </div>
           )}

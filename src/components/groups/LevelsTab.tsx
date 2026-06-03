@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Calendar, Users, BookOpen, GraduationCap, Clock, CheckCircle, XCircle, AlertCircle, Edit3 } from 'lucide-react'
-import type { LevelDetailDTO, LevelPaymentsDTO } from '../../api/academics'
+import type { LevelDetailDTO, LevelPaymentsDTO, CourseInfoDTO, InstructorInfoDTO } from '../../api/academics'
 import { SessionListPanel } from './detail/SessionListPanel'
 import { LevelStudentsPanel } from './detail/LevelStudentsPanel'
 import { LevelSelector } from './detail/LevelSelector'
@@ -63,6 +63,9 @@ interface LevelsTabProps {
   currentLevelNumber: number
   groupId: number
   paymentsByLevel?: LevelPaymentsDTO[]
+  coursesMap: Record<string, CourseInfoDTO>
+  instructorsMap: Record<string, InstructorInfoDTO>
+  onAddLevel?: () => void
 }
 
 export function LevelsTab({
@@ -70,6 +73,9 @@ export function LevelsTab({
   currentLevelNumber,
   groupId,
   paymentsByLevel,
+  coursesMap,
+  instructorsMap,
+  onAddLevel,
 }: LevelsTabProps) {
   const initialLevelId = levels.find(l => l.level_number === currentLevelNumber)?.level_id || levels[0]?.level_id || null
   const [selectedLevelId, setSelectedLevelId] = useState<number | null>(initialLevelId)
@@ -133,6 +139,7 @@ export function LevelsTab({
         activeLevelId={activeLevelId}
         onLevelChange={setSelectedLevelId}
         currentLevelNumber={currentLevelNumber}
+        onAddLevel={onAddLevel}
       />
 
       <div className="grid gap-6">
@@ -156,7 +163,7 @@ export function LevelsTab({
                 </h3>
                 <p className="text-sm text-slate-500 flex items-center gap-1">
                   <BookOpen className="w-4 h-4" aria-hidden={true} />
-                  Course ID: {selectedLevel.course_id}
+                  {coursesMap[selectedLevel.course_id]?.course_name || `Course ID: ${selectedLevel.course_id}`}
                 </p>
               </div>
             </div>
@@ -250,8 +257,15 @@ export function LevelsTab({
           </div>
 
           <div className="mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600 flex items-center justify-between">
-            <div>
-              <span className="text-slate-500">Instructor ID:</span> {selectedLevel.instructor_id}
+            <div className="flex gap-4">
+              <div>
+                <span className="text-slate-500 font-medium">Instructor:</span>{' '}
+                <span className="text-slate-900 font-semibold">{instructorsMap[selectedLevel.instructor_id]?.instructor_name || `Unknown (${selectedLevel.instructor_id})`}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-medium">Course:</span>{' '}
+                <span className="text-slate-900 font-semibold">{coursesMap[selectedLevel.course_id]?.course_name || `Unknown (${selectedLevel.course_id})`}</span>
+              </div>
             </div>
             <button
               disabled

@@ -10,6 +10,8 @@ import {
   type LevelDetailDTO,
   type Session,
   type GenerateLevelSessionsRequest,
+  type CourseInfoDTO,
+  type InstructorInfoDTO,
 } from '../api/academics'
 
 interface UseGroupDetailReturn {
@@ -23,6 +25,8 @@ interface UseGroupDetailReturn {
   setActiveLevel: (levelId: number) => void
   activeLevelId: number | null
   generateSessions: (data: GenerateLevelSessionsRequest) => Promise<Session[]>
+  coursesMap: Record<string, CourseInfoDTO>
+  instructorsMap: Record<string, InstructorInfoDTO>
 }
 
 export function useGroupDetail(groupId: number): UseGroupDetailReturn {
@@ -36,9 +40,9 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
     staleTime: 5 * 60 * 1000,
   })
 
-  const { data: levelsData, isLoading: isLoadingLevels } = useQuery({
+  const { data: levelsResponse, isLoading: isLoadingLevels } = useQuery({
     queryKey: queryKeys.groupLevels(groupId),
-    queryFn: () => getDetailedLevels(groupId).then(r => r.levels),
+    queryFn: () => getDetailedLevels(groupId),
     enabled: groupId > 0,
     staleTime: 5 * 60 * 1000,
   })
@@ -50,7 +54,9 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
     staleTime: 5 * 60 * 1000,
   })
 
-  const levels = levelsData ?? []
+  const levels = levelsResponse?.levels ?? []
+  const coursesMap = levelsResponse?.courses ?? {}
+  const instructorsMap = levelsResponse?.instructors ?? {}
   const sessions = sessionsData ?? []
   const isLoading = isLoadingGroup || isLoadingLevels || isLoadingSessions
   const error = groupError instanceof Error ? groupError.message : null
@@ -102,5 +108,7 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
     setActiveLevel,
     activeLevelId,
     generateSessions,
+    coursesMap,
+    instructorsMap,
   }
 }
