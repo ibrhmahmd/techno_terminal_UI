@@ -104,6 +104,7 @@ export function GroupCombobox({
         <button 
           type="button"
           onClick={() => { onChange(null); setSearch(''); setGroupByMode('course') }}
+          aria-label={`Change group selection (currently ${value.name})`}
           className="text-sm font-medium text-red-600 hover:text-red-700"
         >
           Change
@@ -122,7 +123,7 @@ export function GroupCombobox({
       isLoading={isLoading}
       modes={['course', 'instructor', 'day']}
       activeMode={groupByMode}
-      onModeChange={(mode) => setGroupByMode(mode as any)}
+      onModeChange={(mode) => setGroupByMode(mode as 'course' | 'instructor' | 'day')}
       categories={categories}
       totalItemsCount={totalCount}
       onSelect={(group) => {
@@ -142,7 +143,7 @@ export function GroupCombobox({
             data-category-id={cat.id}
             className="spy-category-header sticky top-0 z-10 px-4 py-1.5 bg-white/95 backdrop-blur-sm border-b border-slate-100 text-[11px] font-bold text-slate-800 flex items-center gap-1.5 shadow-sm"
           >
-            {cat.icon && <span className="material-symbols-outlined text-[14px] text-secondary/70">{cat.icon as React.ReactNode}</span>}
+            {cat.icon && <span className="material-symbols-outlined text-[14px] text-secondary/70" aria-hidden="true">{cat.icon}</span>}
             {cat.title}
           </div>
         )
@@ -158,7 +159,7 @@ export function GroupCombobox({
               <p className="font-medium text-sm text-on-surface leading-tight flex items-center gap-2">
                 {g.name}
                 {categories.find(c => c.id === 'recents')?.items.some(r => r.id === g.id) && (
-                   <span className="material-symbols-outlined text-[14px] text-yellow-500">history</span>
+                   <span className="material-symbols-outlined text-[14px] text-yellow-500" aria-hidden="true">history</span>
                 )}
               </p>
             </div>
@@ -171,12 +172,12 @@ export function GroupCombobox({
           <div className="flex items-center gap-3 text-xs text-slate-500">
             {g.schedule?.start_time && (
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[12px] opacity-70">schedule</span>
+                <span className="material-symbols-outlined text-[12px] opacity-70" aria-hidden="true">schedule</span>
                 {g.schedule.start_time.slice(0, 5)} - {g.schedule.end_time?.slice(0, 5)}
               </span>
             )}
             <span className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-[12px] opacity-70">person</span>
+              <span className="material-symbols-outlined text-[12px] opacity-70" aria-hidden="true">person</span>
               {g.instructor_name || 'TBA'}
             </span>
           </div>

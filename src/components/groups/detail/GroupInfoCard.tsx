@@ -95,31 +95,31 @@ export function GroupInfoCard({
           </button>
           <button
             onClick={onEdit}
+            aria-label="Edit Group"
             className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-            title="Edit Group"
           >
-            <Edit2 className="w-4 h-4" />
+            <Edit2 className="w-4 h-4" aria-hidden="true" />
           </button>
           <button
             onClick={onArchive}
+            aria-label="Archive Group"
             className="p-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors"
-            title="Archive Group"
           >
-            <Archive className="w-4 h-4" />
+            <Archive className="w-4 h-4" aria-hidden="true" />
           </button>
           <button
             onClick={onDelete}
+            aria-label="Delete Group"
             className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-            title="Delete Group"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-          <Users className="w-5 h-5 text-slate-500" />
+          <Users className="w-5 h-5 text-slate-500" aria-hidden="true" />
           <div>
             <p className="text-sm text-slate-500">Instructor</p>
             <p className="font-medium text-slate-900">{group.instructor_name || 'Not assigned'}</p>
@@ -127,7 +127,7 @@ export function GroupInfoCard({
         </div>
 
         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-          <BookOpen className="w-5 h-5 text-slate-500" />
+          <BookOpen className="w-5 h-5 text-slate-500" aria-hidden="true" />
           <div>
             <p className="text-sm text-slate-500">Course</p>
             <p className="font-medium text-slate-900">{group.course_name || 'Not assigned'}</p>
@@ -135,19 +135,19 @@ export function GroupInfoCard({
         </div>
 
         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-          <Calendar className="w-5 h-5 text-slate-500" />
+          <Calendar className="w-5 h-5 text-slate-500" aria-hidden="true" />
           <div>
             <p className="text-sm text-slate-500">Schedule</p>
             <p className="font-medium text-slate-900 flex items-center gap-1">
               {group.schedule?.day || 'No day'}
-              <Clock className="w-3 h-3" />
+              <Clock className="w-3 h-3" aria-hidden="true" />
               {formatTime(group.schedule?.start_time)} - {formatTime(group.schedule?.end_time)}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-          <Users className="w-5 h-5 text-slate-500" />
+          <Users className="w-5 h-5 text-slate-500" aria-hidden="true" />
           <div>
             <p className="text-sm text-slate-500">Students in Level</p>
             <p className="font-medium text-slate-900">

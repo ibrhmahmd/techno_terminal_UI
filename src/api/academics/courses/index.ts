@@ -20,5 +20,4 @@ export {
   getCourseById,
   getAllCourseStats,
   getCourseStats,
-  getCourseGroups,
 } from './core';

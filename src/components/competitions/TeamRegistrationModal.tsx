@@ -33,7 +33,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { data: groups, isLoading: groupsLoading } = useGroupsFlat(selectionMode === 'group' && isOpen)
+  const { data: groups, isLoading: groupsLoading } = useGroupsFlat(undefined, selectionMode === 'group' && isOpen)
 
   useEffect(() => {
     if (isOpen) {
@@ -317,7 +317,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
               onChange={setSelectedGroup}
               search={groupSearch}
               setSearch={setGroupSearch}
-              groups={groups ?? []}
+              groups={groups?.items ?? []}
               isLoading={groupsLoading}
               recentGroupIds={[]}
             />

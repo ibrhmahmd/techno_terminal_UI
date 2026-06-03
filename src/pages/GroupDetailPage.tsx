@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
@@ -23,8 +23,6 @@ export function GroupDetailPage() {
   const navigate = useNavigate()
   const groupId = Number(id) || 0
   const { showToast } = useToast()
-  const enrollmentsErrorShownRef = useRef(false)
-  const paymentsErrorShownRef = useRef(false)
 
   const isValidGroupId = !isNaN(groupId) && groupId > 0
 
@@ -65,16 +63,14 @@ export function GroupDetailPage() {
 
   // Show toast notifications for hook errors
   useEffect(() => {
-    if (enrollmentsError && !enrollmentsErrorShownRef.current) {
+    if (enrollmentsError) {
       showToast(enrollmentsError, 'error')
-      enrollmentsErrorShownRef.current = true
     }
   }, [enrollmentsError, showToast])
 
   useEffect(() => {
-    if (paymentsError && !paymentsErrorShownRef.current) {
+    if (paymentsError) {
       showToast(paymentsError, 'error')
-      paymentsErrorShownRef.current = true
     }
   }, [paymentsError, showToast])
 
@@ -84,7 +80,6 @@ export function GroupDetailPage() {
     archiveGroup,
     levelUp, 
     createNewLevel,
-    error: mutationError 
   } = useGroupMutations(groupId)
 
   // Current level enrollment count from consolidated data
@@ -93,10 +88,9 @@ export function GroupDetailPage() {
     try {
       await updateGroup(data)
       showToast('Group updated successfully', 'success')
-      await refetch()
       setIsEditDialogOpen(false)
-    } catch {
-      showToast(mutationError || 'Failed to update group', 'error')
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to update group', 'error')
     }
   }
 
@@ -105,8 +99,8 @@ export function GroupDetailPage() {
       await deleteGroup()
       showToast('Group deleted successfully', 'success')
       navigate('/groups')
-    } catch {
-      showToast(mutationError || 'Failed to delete group', 'error')
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to delete group', 'error')
       setIsDeleteDialogOpen(false)
     }
   }
@@ -115,10 +109,9 @@ export function GroupDetailPage() {
     try {
       await archiveGroup()
       showToast('Group archived successfully', 'success')
-      await refetch()
       setIsArchiveDialogOpen(false)
-    } catch {
-      showToast(mutationError || 'Failed to archive group', 'error')
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to archive group', 'error')
       setIsArchiveDialogOpen(false)
     }
   }
@@ -131,8 +124,8 @@ export function GroupDetailPage() {
         'success'
       )
       await refetch()
-    } catch {
-      showToast(mutationError || 'Failed to level up group', 'error')
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to level up group', 'error')
     }
   }
 
@@ -149,15 +142,15 @@ export function GroupDetailPage() {
       )
       setIsProgressLevelDialogOpen(false)
       await refetch()
-    } catch {
-      showToast(mutationError || 'Failed to create new level', 'error')
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to create new level', 'error')
     }
   }
 
   const handleNotesChange = useCallback(async (notes: string) => {
     setIsSavingNotes(true)
     try {
-      await updateGroup({ notes } as UpdateGroupDTO)
+      await updateGroup({ notes })
     } catch {
       // Error handled by mutation hook
     } finally {
@@ -250,47 +243,55 @@ export function GroupDetailPage() {
           />
 
           {activeTab === 'attendance' && (
-            <AttendanceTab
-              groupId={groupId}
-              levels={levels}
-              activeLevelId={activeLevelId}
-              currentLevelNumber={group.current_level}
-              instructorName={group.instructor_name}
-              onLevelChange={setActiveLevel}
-            />
+            <div role="tabpanel" id="panel-attendance" aria-labelledby="tab-attendance">
+              <AttendanceTab
+                groupId={groupId}
+                levels={levels}
+                activeLevelId={activeLevelId}
+                currentLevelNumber={group.current_level}
+                instructorName={group.instructor_name}
+                onLevelChange={setActiveLevel}
+              />
+            </div>
           )}
 
           {activeTab === 'levels' && (
-            <LevelsTab
-              levels={levels}
-              currentLevelNumber={group.current_level}
-            />
+            <div role="tabpanel" id="panel-levels" aria-labelledby="tab-levels">
+              <LevelsTab
+                levels={levels}
+                currentLevelNumber={group.current_level}
+              />
+            </div>
           )}
 
           {activeTab === 'students' && (
-            <StudentsTab
-              groupId={groupId}
-              levels={levels}
-              activeLevelId={activeLevelId}
-              currentLevelNumber={group.current_level}
-              onLevelChange={setActiveLevel}
-            />
+            <div role="tabpanel" id="panel-students" aria-labelledby="tab-students">
+              <StudentsTab
+                groupId={groupId}
+                levels={levels}
+                activeLevelId={activeLevelId}
+                currentLevelNumber={group.current_level}
+                onLevelChange={setActiveLevel}
+              />
+            </div>
           )}
 
           {activeTab === 'payments' && (
-            <PaymentsTab
-              paymentSummary={paymentSummary}
-              paymentsByLevel={paymentsByLevel}
-              totalExpected={totalExpected}
-              totalCollected={totalCollected}
-              totalDue={totalDue}
-              collectionRate={collectionRate}
-              isLoading={isLoadingPayments}
-            />
+            <div role="tabpanel" id="panel-payments" aria-labelledby="tab-payments">
+              <PaymentsTab
+                paymentSummary={paymentSummary}
+                paymentsByLevel={paymentsByLevel}
+                totalExpected={totalExpected}
+                totalCollected={totalCollected}
+                totalDue={totalDue}
+                collectionRate={collectionRate}
+                isLoading={isLoadingPayments}
+              />
+            </div>
           )}
 
           {activeTab === 'history' && (
-            <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">
+            <div role="tabpanel" id="panel-history" aria-labelledby="tab-history" className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">
               <span className="material-symbols-outlined text-4xl mb-2" aria-hidden="true">history</span>
               <p className="font-medium">Competition history has been moved to the Competitions section.</p>
             </div>

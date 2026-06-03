@@ -1,37 +1,35 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  getEnrichedGroups,
+  getGroupsPaginated,
   getGroupsGrouped,
-  searchGroups,
-  getArchivedGroups,
   getGroupsByCourse,
   createGroup,
   updateGroup,
   deleteGroup,
   type GroupByField,
   type ScheduleGroupInput,
+  type GroupFilterOptions,
 } from '../api/academics'
 import { getUpcomingDates } from '../utils/date'
 import { dashboardKeys } from './dashboard/useDashboard'
+import { queryKeys } from './queryKeys'
 
 // ── Query Keys ──────────────────────────────────────────
 
 export const groupKeys = {
-  all:    ['groups'] as const,
-  flat:   ['groups', 'flat'] as const,
-  grouped: (by: GroupByField) => ['groups', 'grouped', by] as const,
-  archived: ['groups', 'archived'] as const,
-  byCourse: (courseId: number) => ['groups', 'by-course', courseId] as const,
-  search: (query: string, status?: string) => ['groups', 'search', query, status] as const,
+  all:     queryKeys.groups,
+  flat:    queryKeys.groupFlat,
+  grouped: queryKeys.groupGrouped,
+  byCourse: queryKeys.groupByCourse,
 }
 
 // ── Queries ───────────────────────────────────────────────────────────────────
 
-/** Flat all-groups list (used when groupBy === null / ALL) */
-export function useGroupsFlat(enabled: boolean) {
+/** Flat all-groups list with server-side filters (used when groupBy === null / ALL) */
+export function useGroupsFlat(filters: GroupFilterOptions | undefined, enabled: boolean) {
   return useQuery({
-    queryKey: groupKeys.flat,
-    queryFn: getEnrichedGroups,
+    queryKey: groupKeys.flat(filters),
+    queryFn: () => getGroupsPaginated(filters),
     staleTime: 10 * 60 * 1000,
     enabled,
   })
@@ -42,31 +40,11 @@ export function useGroupsGrouped(groupBy: Exclude<GroupByField, null>, enabled: 
   return useQuery({
     queryKey: groupKeys.grouped(groupBy),
     queryFn: async () => {
-      const result = await getGroupsGrouped(groupBy, { skip: 0, limit: 50 })
+      const result = await getGroupsGrouped(groupBy, { skip: 0, limit: 200 })
       return result.groups
     },
     staleTime: 5 * 60 * 1000,
     enabled,
-  })
-}
-
-/** Search groups by name (server-side) */
-export function useSearchGroups(query: string, status?: 'active' | 'inactive' | 'completed', enabled: boolean = true) {
-  return useQuery({
-    queryKey: groupKeys.search(query, status),
-    queryFn: () => searchGroups(query, status),
-    enabled: enabled && query.length > 0,
-    staleTime: 1 * 60 * 1000,
-  })
-}
-
-/** Get archived (completed) groups */
-export function useArchivedGroups(enabled: boolean = true) {
-  return useQuery({
-    queryKey: groupKeys.archived,
-    queryFn: () => getArchivedGroups({ skip: 0, limit: 100 }),
-    enabled,
-    staleTime: 5 * 60 * 1000,
   })
 }
 
@@ -87,7 +65,6 @@ function useGroupInvalidator() {
   const qc = useQueryClient()
   return () => {
     qc.invalidateQueries({ queryKey: groupKeys.all })
-    qc.invalidateQueries({ queryKey: groupKeys.archived })
   }
 }
 
@@ -97,7 +74,6 @@ export function useCreateGroup() {
     mutationFn: createGroup,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: groupKeys.all })
-      qc.invalidateQueries({ queryKey: groupKeys.archived })
       const upcomingDates = getUpcomingDates(7)
       upcomingDates.forEach(date => {
         qc.invalidateQueries({ queryKey: dashboardKeys.overview(date) })

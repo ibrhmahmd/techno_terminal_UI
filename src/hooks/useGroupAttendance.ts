@@ -39,4 +39,4 @@ export function useGroupAttendance(
   }
 }
 
-export type { UseGroupAttendanceOptions }
+

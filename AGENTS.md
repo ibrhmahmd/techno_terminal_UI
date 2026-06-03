@@ -1,26 +1,19 @@
-# Techno Terminal UI - Agent Instructions
+# Techno Terminal UI — Agent Instructions
 
 ## 1. Developer Commands
 
 ```bash
-npm run dev      # Vite dev server with /api proxy
+npm run dev      # Vite dev server (proxy /api → http://0.0.0.0:8000)
 npm run build    # tsc -b && vite build
-npm run lint     # ESLint
-npm run test     # Vitest
-npm run preview  # Vite preview (production build)
+npm run lint     # ESLint (flat config at eslint.config.js)
+npm run test     # Vitest (happy-dom, globals enabled)
+npm run preview  # Vite preview of production build
 npm run test -- src/tests/Foo.test.tsx  # single test file
 ```
 
-**Build caveat**: `tsc -b` uses `tsconfig.app.json` which **excludes** `src/tests/` and `*.test.{ts,tsx}` — test files are not typechecked during build.
+**Build caveat**: `tsc -b` uses `tsconfig.app.json` which **excludes** `src/tests/` and `*.test.*` — test files are not typechecked during build.
 
-### Dev proxy (`vite.config.ts`)
-```
-/api → https://techno-terminal-5c255cfe.fastapicloud.dev/
-```
-
-### Production (Vercel, `vercel.json`)
-- `/api/*` → same fastapicloud.dev backend
-- All other routes → `/index.html` (SPA fallback)
+**Vercel prod** (`vercel.json`): `/api/*` → `https://techno-terminal-5c255cfe.fastapicloud.dev/api/*`, all other routes → `/index.html` (SPA fallback). Build command is `npm run build`, output is `dist/`.
 
 ---
 
@@ -28,47 +21,46 @@ npm run test -- src/tests/Foo.test.tsx  # single test file
 
 | Guard | Access | Routes |
 |-------|--------|--------|
-| `<PublicRoute />` | Unauthenticated only | `/login` |
-| `<ProtectedRoute />` | Authenticated | `/dashboard`, `/groups/*`, `/students/:id`, `/parents/:id`, `/courses/*`, `/directory`, `/enrollments`, `/finance`, `/competitions/*`, `/teams/:id`, `/reports`, `/staff`, `/settings` |
-| `<RoleBasedRoute allowedRoles={['admin', 'system_admin']} />` | Admin only | `/notifications` |
+| `<PublicRoute />` | Unauthenticated only | `/login`, `/register`, `/forgot-password` |
+| `<ProtectedRoute />` | Authenticated | `/dashboard`, `/courses`, `/courses/:id`, `/groups`, `/groups/:id`, `/students/:id`, `/parents/:id`, `/attendance`, `/competitions`, `/competitions/:id`, `/competitions/:id/edit`, `/teams/:id` |
+| `<InstructorBlockedRoute />` | Block instructors | `/directory`, `/enrollments`, `/finance`, `/reports`, `/staff`, `/settings` |
+| `<RoleBasedRoute allowedRoles={['admin','system_admin']} />` | Admin only | `/notifications` |
 
-- `/` redirects to `/dashboard`, wildcard `*` redirects to `/login`
+- `/` → `/dashboard`, wildcard `*` → `/login`
 - `ProtectedRoute` waits for Zustand `persist` rehydration before deciding
-- `/attendance` route exists but renders `<div>Attendance</div>` placeholder
+- `/attendance` is a `<div>Attendance</div>` placeholder
 
 ---
 
 ## 3. Framework & Toolchain Quirks
 
-- **TypeScript strict mode**: `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax` — must use `import type` for type-only imports
-- **`erasableSyntaxOnly: true`**: enums, namespaces, and parameter properties are **forbidden** — use const objects or union types instead
-- **Tailwind v3** (despite `@tailwindcss/postcss` v4 in package.json; `postcss.config.js` uses v3 plugin, `tailwind.config.js` is v3 format)
-- **Fonts**: Space Grotesk (headlines, `font-headline`), Inter (body, `font-body`) — loaded from Google Fonts in `index.html`
+- **TS strict**: `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax` — must `import type` for type-only imports
+- **`erasableSyntaxOnly: true`**: enums, namespaces, parameter properties **forbidden** — use const objects or union types
+- **Tailwind v3** config (`tailwind.config.js`, `postcss.config.js` uses `tailwindcss` v3 plugin) despite `@tailwindcss/postcss` v4 in package.json
+- **Fonts**: Space Grotesk (`font-headline`) for headings, Inter (`font-body`) for body — loaded from Google Fonts in `index.html`
 - **Icons**: Lucide React (component) + Google Material Symbols (CSS class `material-symbols-outlined`)
-- **Zustand persist**: Auth store persisted under localStorage key `auth-storage`; also syncs across tabs via `storage` event listener
+- **Zustand persist**: Auth store key `auth-storage` in localStorage; cross-tab sync via `storage` event listener
 - **Vercel Speed Insights**: `<SpeedInsights />` in `App.tsx`
 
 ---
 
 ## 4. Testing (`vitest.config.ts`)
 
-- **Environment**: `happy-dom` (not jsdom)
-- **Setup**: `src/test/setup.ts` (just `import '@testing-library/jest-dom'`)
-- **Test files**: Convention is `src/tests/` with `*.test.{ts,tsx}` pattern (vitest config also accepts `*.spec.*` and subdirectories under `src/`)
-- **Vitest globals** enabled (`describe`, `it`, `expect`, `vi` — no import needed)
-- **Run single file**: `npm run test -- src/tests/GroupsHeader.test.tsx`
+- **Environment**: `happy-dom` (not jsdom). Setup: `src/test/setup.ts` (just `@testing-library/jest-dom`).
+- **Globals enabled**: `describe`, `it`, `expect`, `vi` — no import needed.
+- **Pattern**: `src/**/*.{test,spec}.{ts,tsx}` — convention is `src/tests/*.test.{ts,tsx}`.
 
 ---
 
 ## 5. API Layer (`src/api/`)
 
-- **Base**: Axios client at `src/api/client.ts`, base URL `/api/v1`
-- **Request interceptor**: Injects `Bearer` token from `authStore` (skips `/auth/*` endpoints)
-- **Response interceptor**: On 401 → queues concurrent requests, calls `POST /auth/refresh`, retries with new token. Falls back to logout if refresh fails or no refresh token.
-- **Debug mode**: `localStorage.setItem('api_debug', 'true')` logs all requests/responses/errors to console; also auto-enabled in `import.meta.env.DEV`
-- **API response envelope**: `ApiResponse<T>` (single) / `PaginatedApiResponse<T>` (paginated) in `src/types/api.ts`
+- **Axios client** at `src/api/client.ts`, base URL `/api/v1`
+- **Request interceptor**: injects `Bearer` token from `authStore` (skips `/auth/login`, `/auth/refresh`)
+- **Response interceptor**: On 401 → queues concurrent requests, calls `POST /auth/refresh`, retries. Falls back to logout + redirect to `/login` on failure.
+- **Debug mode**: `localStorage.setItem('api_debug', 'true')` logs all requests/responses/errors; auto-enabled in `import.meta.env.DEV`
+- **API envelopes**: `ApiResponse<T>` (single) / `PaginatedApiResponse<T>` (paginated) in `src/types/api.ts`
 
-### API Domain Folders
+### Domain API folders
 ```
 api/auth/         api/academics/     api/crm/          api/finance/
 api/dashboard/    api/hr/            api/analytics/     api/notifications/
@@ -80,7 +72,7 @@ api/competitions/ api/attendance/    api/enrollments/   api/teams/
 ## 6. Cache Management
 
 ### React Query client (`src/lib/queryClient.ts`)
-- Default `staleTime`: 5 min | `gcTime`: 30 min | `retry`: 1 | `refetchOnWindowFocus`: false
+- Defaults: `staleTime: 5min`, `gcTime: 30min`, `retry: 1`, `refetchOnWindowFocus: false`
 - Mutations never auto-retry (`retry: 0`)
 
 ### staleTime Overrides by Data Volatility
@@ -92,9 +84,9 @@ api/competitions/ api/attendance/    api/enrollments/   api/teams/
 | 5 min (default) | Dashboard, courses, students |
 | 10 min | Groups flat list, templates |
 
-### Centralized query keys (`src/hooks/queryKeys.ts`)
-Pattern: `['resource', id?, 'nested?']`. Always use via the exported factory.
-```typescript
+### Centralized keys (`src/hooks/queryKeys.ts`)
+Pattern: `['resource', id?, 'nested?']`. Use via exported factory:
+```ts
 queryKeys.group(id)   // → ['groups', id]
 queryKeys.student(id) // → ['students', id]
 ```
@@ -106,9 +98,9 @@ queryKeys.student(id) // → ['students', id]
 | Dashboard | `hooks/dashboard/useDashboard.ts` | `dashboardKeys.overview(date)` |
 | Notifications | `hooks/notifications/queryKeys.ts` | `notificationKeys.templates`, etc. |
 
-### Cross-domain invalidation (non-obvious)
+### Cross-domain invalidation
 After creating a group, `useGroupQueries.ts` also invalidates dashboard cache for upcoming dates:
-```typescript
+```ts
 const upcomingDates = getUpcomingDates(7)
 upcomingDates.forEach(date =>
   qc.invalidateQueries({ queryKey: dashboardKeys.overview(date) })
@@ -130,41 +122,32 @@ upcomingDates.forEach(date =>
 | Card | `components/{domain}/` | `GroupSessionCard.tsx` |
 | Shared | `components/{domain}/shared/` | `GroupStatusBadge.tsx` |
 
-### Folder organization
+### Folder layout
 ```
 src/components/
 ├── common/          # Modal, DataTable, Pagination, Toast, SearchBar, etc.
 ├── layout/          # AppLayout, Sidebar
-├── {domain}/        # groups/, crm/, finance/, courses/, etc.
+├── {domain}/        # groups/, crm/, finance/, courses/, student/, etc.
 └── {domain}/detail/ # Domain-specific detail sub-panels
 ```
 
 ### Data flow
 Page → custom hook (React Query) → API function (Axios) → server → cache → render
 
+**Reusable hooks**: `usePaginatedList`, `usePagination`, `useSearch`, `useDebounce` in `src/hooks/`.
+
 ---
 
 ## 8. Config & Environment
 
-- **ESLint**: Flat config at `eslint.config.js` (not `.eslintrc`). Ignores `dist/`.
+- **ESLint**: Flat config `eslint.config.js` (not `.eslintrc`). Ignores `dist/`.
 - **No `.env` files** in repo — no local env setup required.
-- **No CI workflows** (no `.github/`) and **no pre-commit hooks** (no `.husky/`).
-- **Specs**: Read `specs/<NNN>-<name>/plan.md` for active feature plans and context. Multiple specs exist (001–013); check `specs/` directory for the most recent.
+- **No CI** (no `.github/`) and **no pre-commit hooks** (no `.husky/`).
+- **Gitignored**: `.opencode/*` and `.specify/*` are gitignored.
+- **Specs**: `specs/<NNN>-<name>/plan.md` for active feature plans. Current highest: `031-*`. Active branch: `030-groups-ui-redesign`.
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/027-finance-audit-fixes/plan.md`
+`specs/031-groups-audit/plan.md`
 <!-- SPECKIT END -->
-
-## Active Plan (2026-06-02 Update)
-
-This feature branch (`027-finance-audit-fixes`) fixes 33 issues from a comprehensive finance audit:
-- **US1 (P1)**: 4 breaking bugs — stale error display, zero-amount search results, broken ReceiptDetailPanel fetch, incorrect unpaid totals with >200 enrollments
-- **US2 (P1)**: Missing cache invalidation after create receipt, adjust balance, and issue refund mutations
-- **US3 (P2)**: Dead code removal — `SearchReceiptsPanel.tsx` and `finance/index.ts`
-- **US4 (P2)**: Update `METHOD_LABELS`/`METHOD_COLORS` to match current payment options (cash, e_wallet, instapay, other)
-- **US5 (P2)**: TypeScript hardening — runtime type guards for payment method/type, narrow `PillOption.color` type
-- **US6 (P3)**: 14 accessibility fixes — ARIA roles, `aria-hidden`, `htmlFor`/`id`, ErrorBoundary per panel, focus management
-- **US7 (P3)**: Migrate `useStudentEnrollments` from `useEffect`+`useState` to `useQuery`
-- **Plan**: See `specs/027-finance-audit-fixes/plan.md`

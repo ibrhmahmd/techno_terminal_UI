@@ -6,7 +6,12 @@ interface GroupsHeaderProps {
   onCreateClick: () => void
 }
 
-export function GroupsHeader({ totalGroups, searchTerm, onSearchChange, onCreateClick }: GroupsHeaderProps) {
+export function GroupsHeader({ 
+  totalGroups, 
+  searchTerm, 
+  onSearchChange, 
+  onCreateClick,
+}: GroupsHeaderProps) {
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-6">
       <div className="w-full flex items-end justify-between">

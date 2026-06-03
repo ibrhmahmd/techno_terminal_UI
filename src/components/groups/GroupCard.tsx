@@ -45,6 +45,7 @@ export function GroupCard({ group, actions, loading = false }: GroupCardProps) {
     <div
       role="button"
       tabIndex={0}
+      aria-label={`View ${group.name}`}
       onClick={actions.onView}
       onKeyDown={handleKeyDown}
       className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30 cursor-pointer flex flex-col"
