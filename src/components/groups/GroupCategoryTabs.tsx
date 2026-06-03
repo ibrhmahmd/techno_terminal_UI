@@ -25,8 +25,8 @@ export function GroupCategoryTabs({ categories, activeKey, onChange }: GroupCate
   }
 
   return (
-    <div id="group-category-tablist" className="overflow-x-auto mb-4" role="tablist" aria-label="Group categories">
-      <div className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
+    <div id="group-category-tablist" className="mb-4" role="tablist" aria-label="Group categories">
+      <div className="flex flex-wrap items-center gap-1 rounded-xl bg-slate-800 p-1.5">
         {categories.map((cat, index) => {
           const isActive = cat.key === activeKey
           return (
@@ -38,7 +38,7 @@ export function GroupCategoryTabs({ categories, activeKey, onChange }: GroupCate
               role="tab"
               aria-selected={cat.key === activeKey}
               aria-controls={`panel-${cat.key}`}
-              className={`flex-1 flex justify-center items-center gap-2.5 min-w-[120px] px-5 py-2 rounded-lg text-sm font-medium transition-all select-none ${
+              className={`flex justify-center items-center gap-2.5 px-5 py-2 rounded-lg text-sm font-medium transition-all select-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none ${
                 isActive
                   ? 'bg-secondary text-white font-bold shadow-lg shadow-secondary/20'
                   : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'

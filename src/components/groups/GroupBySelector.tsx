@@ -14,8 +14,7 @@ const OPTIONS: Array<{ value: GroupBySelectorValue; label: string; icon: string 
   { value: 'day',         label: 'Day',          icon: 'calendar_today' },
   { value: 'course',      label: 'Course',       icon: 'menu_book'      },
   { value: 'instructor',  label: 'Instructor',   icon: 'person'         },
-  { value: 'status',      label: 'Status',       icon: 'toggle_on'      },
-  { value: 'search',      label: 'Group Search', icon: 'manage_search'  },
+  { value: 'search',      label: 'Filter Groups', icon: 'manage_search'  },
 ]
 
 export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorProps) {
@@ -31,43 +30,41 @@ export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorP
   }
 
   return (
-    <section className="w-full pb-4">
-      <div className="overflow-x-auto">
-        <div className="flex w-full items-center gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1" role="tablist" aria-label="Group by">
-          {OPTIONS.map(({ value: optVal, label, icon }, index) => {
-            const isActive = value === optVal
-            const isSearch = optVal === 'search'
+    <section className="w-full">
+      <div className="flex w-full items-stretch gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1" role="tablist" aria-label="Group by">
+        {OPTIONS.map(({ value: optVal, label, icon }, index) => {
+          const isActive = value === optVal
+          const isSearch = optVal === 'search'
 
-            return (
-              <div key={String(optVal)} className="flex items-center gap-1">
-                {isSearch && index > 0 && (
-                  <div className="w-px h-6 bg-blue-200/60 mx-1 shrink-0" />
-                )}
-                <button
-                  onClick={() => onChange(optVal)}
-                  onKeyDown={handleKeyDown(index)}
-                  role="tab"
-                  aria-selected={isActive}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all ${
-                    isActive
-                      ? isSearch
-                        ? 'bg-amber-50 text-amber-700 border border-amber-200 font-bold shadow-sm'
-                        : 'bg-white text-secondary shadow-sm font-bold border border-blue-200'
-                      : 'text-slate-500 hover:text-secondary hover:bg-white/70'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">{icon}</span>
-                  {label}
-                </button>
-              </div>
-            )
-          })}
-          {rightSlot && (
-            <div className="ml-auto shrink-0 pl-1 border-l border-slate-200">
-              {rightSlot}
+          return (
+            <div
+              key={String(optVal)}
+              className={`flex-1 flex items-center ${isSearch && index > 0 ? 'border-l border-blue-200/40 pl-1' : ''}`}
+            >
+              <button
+                onClick={() => onChange(optVal)}
+                onKeyDown={handleKeyDown(index)}
+                role="tab"
+                aria-selected={isActive}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all focus-visible:ring-2 focus-visible:ring-secondary/30 focus-visible:outline-none ${
+                  isActive
+                    ? isSearch
+                      ? 'bg-amber-50 text-amber-700 border border-amber-200 font-bold shadow-sm'
+                      : 'bg-white text-secondary shadow-sm font-bold border border-blue-200'
+                    : 'text-slate-500 hover:text-secondary hover:bg-white/70'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">{icon}</span>
+                {label}
+              </button>
             </div>
-          )}
-        </div>
+          )
+        })}
+        {rightSlot && (
+          <div className="ml-auto shrink-0 pl-1 border-l border-slate-200 flex items-stretch">
+            {rightSlot}
+          </div>
+        )}
       </div>
     </section>
   )

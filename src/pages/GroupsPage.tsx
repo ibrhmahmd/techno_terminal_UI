@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DataTable, PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialog } from '../components/common'
-import { ActiveFilterTagsList } from '../components/common/ActiveFilterTag'
+
 import { useToast } from '../components/common/Toast'
 import { GroupForm } from '../components/groups/GroupForm'
 import { type EnrichedGroupPublic, type ScheduleGroupInput } from '../api/academics'
@@ -208,24 +208,37 @@ export function GroupsPage() {
       />
 
       <PageSection>
-        <GroupBySelector
-          value={groupBy ?? null}
-          onChange={(field) => {
-            if (field === 'search') {
-              setIsFiltersOpen(prev => !prev)
-              if (groupBy !== null) {
-                setGroupBy(null)
-              }
-            } else {
-              setGroupBy(field)
-              setIsFiltersOpen(false)
-            }
-            setCurrentPage(1)
-          }}
-        />
-
-        <div className="flex items-center justify-end -mt-2 mb-4">
-          <ViewToggle value={viewMode} onChange={setViewMode} />
+        <div className="flex items-center gap-4 mb-4">
+          <div className="flex-1 min-w-0">
+            <GroupBySelector
+              value={(isFiltersOpen || hasActiveFilters) && !isGroupedView ? 'search' : (groupBy ?? null)}
+              onChange={(field) => {
+                if (field === 'search') {
+                  // Toggle filter panel, switch to flat view
+                  setIsFiltersOpen(prev => !prev)
+                  if (groupBy !== null) {
+                    setGroupBy(null)
+                  }
+                } else if (field === null) {
+                  // "All" view: switch to flat view, close filters, clear filters
+                  setGroupBy(null)
+                  setIsFiltersOpen(false)
+                  handleClearAllFilters()
+                } else {
+                  // Grouped view: switch to grouped view, close filters
+                  setGroupBy(field)
+                  setIsFiltersOpen(false)
+                  // Optional: handleClearAllFilters() here if we want to reset filters 
+                  // when leaving search view, but preserving them is often better UX 
+                  // so they can return to "Filter Groups" and see their filters.
+                }
+                setCurrentPage(1)
+              }}
+            />
+          </div>
+          <div className="shrink-0">
+            <ViewToggle value={viewMode} onChange={setViewMode} />
+          </div>
         </div>
 
         <GroupFilters 
@@ -233,21 +246,14 @@ export function GroupsPage() {
           onClose={() => setIsFiltersOpen(false)}
           onApply={() => setCurrentPage(1)}
           filters={filters}
+          activeFilterTags={activeFilterTags}
+          onRemoveFilter={handleRemoveFilter}
+          onClearAllFilters={handleClearAllFilters}
         />
-
-        {!isGroupedView && activeFilterTags.length > 0 && (
-          <div className="mb-6">
-            <ActiveFilterTagsList
-              filters={activeFilterTags}
-              onRemoveFilter={handleRemoveFilter}
-              onClearAll={handleClearAllFilters}
-            />
-          </div>
-        )}
 
         <ErrorBoundary>
           {error && !isLoading && (
-            <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-center">{error}</div>
+            <div role="alert" className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-center">{error}</div>
           )}
 
           {groupBy === undefined && (

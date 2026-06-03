@@ -6,6 +6,7 @@ interface FilterPillProps {
   filterCount?: number
   onClick: () => void
   disabled?: boolean
+  className?: string
 }
 
 export function FilterPill({
@@ -16,12 +17,14 @@ export function FilterPill({
   filterCount = 0,
   onClick,
   disabled = false,
+  className = '',
 }: FilterPillProps) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`px-4 py-2 rounded-lg font-headline text-sm font-medium transition-all flex items-center gap-2 ${
+      aria-pressed={isExpanded}
+      className={`${className} font-headline text-sm font-medium transition-all flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-secondary/30 focus-visible:outline-none ${
         isExpanded
           ? 'bg-secondary text-white shadow-sm'
           : hasFilters
@@ -29,10 +32,10 @@ export function FilterPill({
             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
-      <span className="material-symbols-outlined text-[18px]">{icon}</span>
+      <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{icon}</span>
       <span>{label}</span>
       {hasFilters && filterCount > 0 && (
-        <span className="ml-1 w-5 h-5 rounded-full bg-secondary text-white text-xs flex items-center justify-center">
+        <span className="ml-1 w-5 h-5 rounded-full bg-secondary text-white text-xs flex items-center justify-center tabular-nums">
           {filterCount}
         </span>
       )}

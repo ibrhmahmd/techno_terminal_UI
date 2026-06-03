@@ -11,10 +11,10 @@ export function ActiveFilterTag({ label, value, onRemove }: ActiveFilterTagProps
       <span className="truncate max-w-[150px]">{value}</span>
       <button
         onClick={onRemove}
-        className="ml-1 w-4 h-4 rounded-full hover:bg-secondary/20 flex items-center justify-center transition-colors"
+        className="ml-1 w-4 h-4 rounded-full hover:bg-secondary/20 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-secondary/30 focus-visible:outline-none"
         aria-label={`Remove ${label} filter`}
       >
-        <span className="material-symbols-outlined text-[14px]">close</span>
+        <span className="material-symbols-outlined text-[14px]" aria-hidden="true">close</span>
       </button>
     </span>
   )
@@ -47,7 +47,7 @@ export function ActiveFilterTagsList({
       ))}
       <button
         onClick={onClearAll}
-        className="text-sm text-slate-500 hover:text-secondary underline ml-2"
+        className="text-sm text-slate-500 hover:text-secondary underline ml-2 focus-visible:ring-2 focus-visible:ring-secondary/30 focus-visible:outline-none rounded"
       >
         Clear all
       </button>

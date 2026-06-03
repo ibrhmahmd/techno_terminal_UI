@@ -16,13 +16,13 @@ export function LevelsTab({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'active':
-        return <CheckCircle className="w-5 h-5 text-green-500" />
+        return <CheckCircle className="w-5 h-5 text-green-500" aria-hidden={true} />
       case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-500" />
+        return <CheckCircle className="w-5 h-5 text-green-500" aria-hidden={true} />
       case 'cancelled':
-        return <XCircle className="w-5 h-5 text-red-500" />
+        return <XCircle className="w-5 h-5 text-red-500" aria-hidden={true} />
       default:
-        return <AlertCircle className="w-5 h-5 text-slate-400" />
+        return <AlertCircle className="w-5 h-5 text-slate-400" aria-hidden={true} />
     }
   }
 
@@ -52,7 +52,7 @@ export function LevelsTab({
   if (levels.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
-        <GraduationCap className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+        <GraduationCap className="w-12 h-12 text-slate-300 mx-auto mb-3" aria-hidden={true} />
         <h3 className="text-lg font-medium text-slate-700 mb-1">No Level History</h3>
         <p className="text-slate-500">This group doesn't have any level progression data.</p>
       </div>
@@ -90,7 +90,7 @@ export function LevelsTab({
                 id={`level-header-${level.level_id}`}
                 aria-expanded={expandedLevel === level.level_id}
                 aria-label={`Level ${level.level_number} details`}
-                className="w-full p-4 text-left"
+                className="w-full p-4 text-left focus-visible:ring-2 focus-visible:ring-secondary/30 focus-visible:outline-none"
                 onClick={() => setExpandedLevel(expandedLevel === level.level_id ? null : level.level_id)}
               >
                 <div className="flex items-start justify-between">
@@ -108,7 +108,7 @@ export function LevelsTab({
                         )}
                       </h3>
                       <p className="text-sm text-slate-500 flex items-center gap-1">
-                        <BookOpen className="w-4 h-4" />
+                        <BookOpen className="w-4 h-4" aria-hidden={true} />
                         Course ID: {level.course_id}
                       </p>
                     </div>
@@ -122,19 +122,19 @@ export function LevelsTab({
                 {/* Quick Stats Row */}
                 <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-100">
                   <div className="flex items-center gap-2 text-sm">
-                    <Users className="w-4 h-4 text-slate-400" />
-                    <span className="text-slate-600">
+                    <Users className="w-4 h-4 text-slate-400" aria-hidden={true} />
+                    <span className="text-slate-600 tabular-nums">
                       {level.students_count} students ({level.students_completed} completed, {level.students_dropped} dropped)
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="w-4 h-4 text-slate-400" />
+                    <Calendar className="w-4 h-4 text-slate-400" aria-hidden={true} />
                     <span className="text-slate-600">
                       {formatDate(level.start_date)} - {formatDate(level.end_date)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <Clock className="w-4 h-4 text-slate-400" />
+                    <Clock className="w-4 h-4 text-slate-400" aria-hidden={true} />
                     <span className="text-slate-600">
                       {level.sessions.length} sessions
                     </span>
