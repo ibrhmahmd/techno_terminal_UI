@@ -1,14 +1,13 @@
 interface TabNavigationProps {
-  activeTab: 'attendance' | 'levels' | 'students' | 'payments' | 'history'
-  onTabChange: (tab: 'attendance' | 'levels' | 'students' | 'payments' | 'history') => void
+  activeTab: 'attendance' | 'levels' | 'students' | 'history'
+  onTabChange: (tab: 'attendance' | 'levels' | 'students' | 'history') => void
 }
 
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const tabs = [
     { id: 'attendance' as const, label: 'Attendance' },
-    { id: 'levels' as const, label: 'Levels' },
+    { id: 'levels' as const, label: 'Levels & Payments' },
     { id: 'students' as const, label: 'Students' },
-    { id: 'payments' as const, label: 'Payments' },
     { id: 'history' as const, label: 'History' },
   ]
 

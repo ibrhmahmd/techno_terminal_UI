@@ -7,7 +7,6 @@ import { TabNavigation } from '../components/groups/TabNavigation'
 import { AttendanceTab } from '../components/groups/AttendanceTab'
 import { LevelsTab } from '../components/groups/LevelsTab'
 import { StudentsTab } from '../components/groups/StudentsTab'
-import { PaymentsTab } from '../components/groups/PaymentsTab'
 import { HistoryTab } from '../components/groups/HistoryTab'
 import { GroupInfoCard, ProgressLevelDialog } from '../components/groups/detail'
 import { EditGroupDialog } from '../components/groups/detail/EditGroupDialog'
@@ -27,7 +26,7 @@ export function GroupDetailPage() {
 
   const isValidGroupId = !isNaN(groupId) && groupId > 0
 
-  const [activeTab, setActiveTab] = useState<'attendance' | 'levels' | 'students' | 'payments' | 'history'>('attendance')
+  const [activeTab, setActiveTab] = useState<'attendance' | 'levels' | 'students' | 'history'>('attendance')
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false)
@@ -49,17 +48,11 @@ export function GroupDetailPage() {
     error: enrollmentsError,
   } = useGroupEnrollments(groupId, activeTab === 'students')
 
-  // Real payment data (replaces enrollmentAnalytics estimates)
+  // Real payment data
   const {
-    summary: paymentSummary,
     paymentsByLevel,
-    totalExpected,
-    totalCollected,
-    totalDue,
-    collectionRate,
-    isLoading: isLoadingPayments,
     error: paymentsError,
-  } = useGroupPayments(groupId, activeTab === 'payments')
+  } = useGroupPayments(groupId, activeTab === 'levels')
 
   // Show toast notifications for hook errors
   useEffect(() => {
@@ -259,6 +252,7 @@ export function GroupDetailPage() {
                 levels={levels}
                 currentLevelNumber={group.current_level}
                 groupId={groupId}
+                paymentsByLevel={paymentsByLevel}
               />
             </div>
           )}
@@ -275,19 +269,6 @@ export function GroupDetailPage() {
             </div>
           )}
 
-          {activeTab === 'payments' && (
-            <div role="tabpanel" id="panel-payments" aria-labelledby="tab-payments">
-              <PaymentsTab
-                paymentSummary={paymentSummary}
-                paymentsByLevel={paymentsByLevel}
-                totalExpected={totalExpected}
-                totalCollected={totalCollected}
-                totalDue={totalDue}
-                collectionRate={collectionRate}
-                isLoading={isLoadingPayments}
-              />
-            </div>
-          )}
 
           {activeTab === 'history' && (
             <div role="tabpanel" id="panel-history" aria-labelledby="tab-history">
