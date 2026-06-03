@@ -192,6 +192,47 @@ export interface GroupEnrollmentsAllResponse {
   transfer_options: TransferOptionDTO[]
 }
 
+export interface EnrollmentHistoryItem {
+  enrollment_id: number
+  student_id: number
+  student_name: string
+  student_phone: string | null
+  level_number_at_enrollment: number
+  enrolled_at: string | null
+  status: string
+  amount_due: number
+  discount_applied: number
+  payments_made: number
+  balance_remaining: number
+}
+
+export interface EnrollmentHistoryResponse {
+  group_id: number
+  group_name: string
+  total_enrollments: number
+  active_enrollments: number
+  completed_enrollments: number
+  dropped_enrollments: number
+  enrollments: EnrollmentHistoryItem[]
+}
+
+export interface InstructorHistoryItem {
+  instructor_id: number
+  instructor_name: string
+  is_current: boolean
+  levels_taught_count: number
+  first_assigned_at: string
+  last_assigned_at: string
+}
+
+export interface InstructorHistoryResponse {
+  group_id: number
+  group_name: string
+  total_instructors: number
+  current_instructor: InstructorHistoryItem | null
+  instructors: InstructorHistoryItem[]
+}
+
 // ============================================================================
 // API Functions
 // ============================================================================
@@ -261,6 +302,35 @@ export async function getGroupEnrollmentsAll(
 ): Promise<GroupEnrollmentsAllResponse> {
   const response = await client.get<ApiResponse<GroupEnrollmentsAllResponse>>(
     `/academics/groups/${groupId}/enrollments/all`
+  )
+  return response.data.data
+}
+
+/**
+ * Get enrollment history and analytics for a group
+ * Auth: require_any
+ */
+export async function getEnrollmentHistory(
+  groupId: number,
+  status?: string
+): Promise<EnrollmentHistoryResponse> {
+  const params = status ? { status } : undefined
+  const response = await client.get<ApiResponse<EnrollmentHistoryResponse>>(
+    `/academics/groups/${groupId}/enrollment-history`,
+    params ? { params } : undefined
+  )
+  return response.data.data
+}
+
+/**
+ * Get instructor assignment history for a group
+ * Auth: require_any
+ */
+export async function getInstructorHistory(
+  groupId: number
+): Promise<InstructorHistoryResponse> {
+  const response = await client.get<ApiResponse<InstructorHistoryResponse>>(
+    `/academics/groups/${groupId}/instructor-history`
   )
   return response.data.data
 }

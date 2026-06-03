@@ -8,6 +8,7 @@ import { AttendanceTab } from '../components/groups/AttendanceTab'
 import { LevelsTab } from '../components/groups/LevelsTab'
 import { StudentsTab } from '../components/groups/StudentsTab'
 import { PaymentsTab } from '../components/groups/PaymentsTab'
+import { HistoryTab } from '../components/groups/HistoryTab'
 import { GroupInfoCard, ProgressLevelDialog } from '../components/groups/detail'
 import { EditGroupDialog } from '../components/groups/detail/EditGroupDialog'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
@@ -39,7 +40,6 @@ export function GroupDetailPage() {
     currentLevel,
     isLoading,
     error,
-    refetch,
     setActiveLevel,
     activeLevelId,
   } = useGroupDetail(groupId)
@@ -123,7 +123,6 @@ export function GroupDetailPage() {
         `Group progressed from level ${result.old_level_number} to ${result.new_level_number}. ${result.sessions_created} sessions created, ${result.enrollments_migrated} enrollments migrated.`,
         'success'
       )
-      await refetch()
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to level up group', 'error')
     }
@@ -141,7 +140,6 @@ export function GroupDetailPage() {
         'success'
       )
       setIsProgressLevelDialogOpen(false)
-      await refetch()
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to create new level', 'error')
     }
@@ -260,6 +258,7 @@ export function GroupDetailPage() {
               <LevelsTab
                 levels={levels}
                 currentLevelNumber={group.current_level}
+                groupId={groupId}
               />
             </div>
           )}
@@ -291,9 +290,8 @@ export function GroupDetailPage() {
           )}
 
           {activeTab === 'history' && (
-            <div role="tabpanel" id="panel-history" aria-labelledby="tab-history" className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">
-              <span className="material-symbols-outlined text-4xl mb-2" aria-hidden="true">history</span>
-              <p className="font-medium">Competition history has been moved to the Competitions section.</p>
+            <div role="tabpanel" id="panel-history" aria-labelledby="tab-history">
+              <HistoryTab groupId={groupId} />
             </div>
           )}
 

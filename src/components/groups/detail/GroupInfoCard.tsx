@@ -40,10 +40,7 @@ export function GroupInfoCard({
 
   // Sync notes when group data changes (e.g., after refetch)
   useEffect(() => {
-    const newNotes = group.notes || ''
-    if (newNotes !== notes) {
-      setNotes(newNotes)
-    }
+    setNotes(group.notes || '')
   }, [group.notes])
 
   // Only trigger onNotesChange after initial mount and when notes actually change

@@ -74,6 +74,7 @@ export function ProgressLevelDialog({
   useEffect(() => {
     if (!isOpen || !dialogRef.current) return
     const dialog = dialogRef.current
+    const trigger = triggerRef?.current
     const focusable = dialog.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     )
@@ -94,7 +95,7 @@ export function ProgressLevelDialog({
     dialog.addEventListener('keydown', handleTab)
     return () => {
       dialog.removeEventListener('keydown', handleTab)
-      triggerRef?.current?.focus()
+      trigger?.focus()
     }
   }, [isOpen, triggerRef])
 

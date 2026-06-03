@@ -1,15 +1,18 @@
 import { useState } from 'react'
-import { Calendar, Users, BookOpen, GraduationCap, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { Calendar, Users, BookOpen, GraduationCap, Clock, CheckCircle, XCircle, AlertCircle, Edit3 } from 'lucide-react'
 import type { LevelDetailDTO } from '../../api/academics'
+import { SessionListPanel } from './detail/SessionListPanel'
 
 interface LevelsTabProps {
   levels: LevelDetailDTO[]
   currentLevelNumber: number
+  groupId: number
 }
 
 export function LevelsTab({
   levels,
   currentLevelNumber,
+  groupId,
 }: LevelsTabProps) {
   const [expandedLevel, setExpandedLevel] = useState<number | null>(null)
 
@@ -172,8 +175,27 @@ export function LevelsTab({
                     </div>
                   </div>
 
-                  <div className="mt-4 text-sm text-slate-600">
-                    <span className="text-slate-500">Instructor ID:</span> {level.instructor_id}
+                  <div className="px-4 pb-4 mt-4 text-sm text-slate-600 flex items-center justify-between">
+                    <div>
+                      <span className="text-slate-500">Instructor ID:</span> {level.instructor_id}
+                    </div>
+                    <button
+                      disabled
+                      title="Coming soon — level renumbering requires a database migration"
+                      className="flex items-center gap-1.5 text-slate-500 opacity-50 cursor-not-allowed text-xs font-medium"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" /> Edit Level Number
+                      <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full ml-1 uppercase tracking-wider font-bold">
+                        Coming Soon
+                      </span>
+                    </button>
+                  </div>
+                  <div className="px-4 pb-4">
+                    <SessionListPanel 
+                      sessions={level.sessions}
+                      groupId={groupId}
+                      levelNumber={level.level_number}
+                    />
                   </div>
                 </>
               )}

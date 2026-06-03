@@ -38,7 +38,6 @@ export function GroupsPage() {
     handleSort,
     paginatedGroups,
     totalPages,
-    refresh,
     groupBy,
     setGroupBy,
     groupedData,
@@ -162,7 +161,6 @@ export function GroupsPage() {
     try {
       await createGroupMutation.mutateAsync(data)
       setIsCreateModalOpen(false)
-      await refresh()
     } catch (err: unknown) {
       const detail = err instanceof Error && 'response' in err
         ? (err as { response?: { data?: { detail?: unknown } } }).response?.data?.detail
@@ -189,7 +187,6 @@ export function GroupsPage() {
       await updateGroupMutation.mutateAsync({ id: selectedGroup.id, data })
       setIsEditModalOpen(false)
       setSelectedGroup(null)
-      await refresh()
     } catch (err: unknown) {
       setMutationError(err instanceof Error ? err.message : 'Failed to update group')
       throw err
@@ -211,7 +208,7 @@ export function GroupsPage() {
         <div className="flex items-center gap-4 mb-4">
           <div className="flex-1 min-w-0">
             <GroupBySelector
-              value={(isFiltersOpen || hasActiveFilters) && !isGroupedView ? 'search' : (groupBy ?? null)}
+              value={((isFiltersOpen || hasActiveFilters) && !isGroupedView ? 'search' : (groupBy ?? null)) as any}
               onChange={(field) => {
                 if (field === 'search') {
                   // Toggle filter panel, switch to flat view

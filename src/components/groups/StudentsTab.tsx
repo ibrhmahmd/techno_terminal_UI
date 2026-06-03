@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { CheckCircle2, XCircle, Clock } from 'lucide-react'
+import { TransferDialog } from './detail/TransferDialog'
 import { LevelSelector } from './detail/LevelSelector'
 import { DataTable } from '../common/datatable'
 import { ConfirmDialog } from '../common/ConfirmDialog'
@@ -50,6 +52,11 @@ export function StudentsTab({
   const [selectedLevelId, setSelectedLevelId] = useState<number | null>(activeLevelId)
   const [isDropDialogOpen, setIsDropDialogOpen] = useState(false)
   const [droppingEnrollmentId, setDroppingEnrollmentId] = useState<number | null>(null)
+  
+  const [isTransferOpen, setIsTransferOpen] = useState(false)
+  const [transferStudent, setTransferStudent] = useState<StudentWithEnrollment | null>(null)
+  
+  const navigate = useNavigate()
   const { showToast, ToastComponent } = useToast()
 
   useEffect(() => {
@@ -62,8 +69,10 @@ export function StudentsTab({
   const { 
     students: studentsRecord,
     enrollmentsByLevel,
+    transferOptions,
     isLoading, 
     error,
+    refetch: refetchEnrollments,
   } = useGroupEnrollments(groupId)
 
   // Get students for the selected level - combine enrollment data with student lookup
@@ -157,8 +166,8 @@ export function StudentsTab({
         isLoading={isLoading}
         emptyMessage="No students enrolled in this level"
         actions={{
-          view: (student) => showToast(`View student ${student.student_name}`, 'info'),
-          edit: (student) => showToast(`Edit student ${student.student_name}`, 'info'),
+          view: (student) => navigate(`/students/${student.student_id}`),
+          edit: (student) => { setTransferStudent(student); setIsTransferOpen(true) },
           delete: (student) => handleDropClick(student.enrollment_id),
         }}
       />
@@ -173,6 +182,24 @@ export function StudentsTab({
         onCancel={handleCancelDrop}
         variant="danger"
       />
+
+      {transferStudent && (
+        <TransferDialog
+          isOpen={isTransferOpen}
+          groupId={groupId}
+          studentName={transferStudent.student_name}
+          enrollmentId={transferStudent.enrollment_id}
+          transferOptions={transferOptions}
+          onClose={() => {
+            setIsTransferOpen(false)
+            setTransferStudent(null)
+          }}
+          onSuccess={() => {
+            showToast('Student transferred successfully', 'success')
+            refetchEnrollments()
+          }}
+        />
+      )}
 
       {ToastComponent}
     </div>
