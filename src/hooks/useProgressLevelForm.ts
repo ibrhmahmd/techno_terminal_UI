@@ -58,7 +58,7 @@ export function useProgressLevelForm(
 
   // Fetch employees (instructors) for selector
   const { data: employeesData, isLoading: isLoadingEmployees } = useQuery({
-    queryKey: ['employees', 'all'],
+    queryKey: queryKeys.employeesAll,
     queryFn: async () => {
       const result = await getEmployees({ page: 1, page_size: 100 })
       return (result.data || []) as EmployeePublic[]

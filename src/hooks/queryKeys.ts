@@ -1,6 +1,8 @@
 // Centralized React Query keys for consistent cache management
 // Follows pattern: ['resource', id?, 'nested?']
 
+import type { GroupFilterOptions, GroupByField } from '../api/academics'
+
 export const queryKeys = {
   // Groups
   groups: ['groups'] as const,
@@ -10,9 +12,14 @@ export const queryKeys = {
   groupPayments: (id: number) => ['groups', id, 'payments'] as const,
   groupEnrollments: (id: number) => ['groups', id, 'enrollments'] as const,
   groupAttendance: (id: number, levelNumber: number) => ['groups', id, 'attendance', levelNumber] as const,
+  groupFlat: (filters?: GroupFilterOptions) => ['groups', 'flat', filters] as const,
+  groupGrouped: (by: GroupByField) => ['groups', 'grouped', by] as const,
+  groupByCourse: (courseId: number) => ['groups', 'by-course', courseId] as const,
   
   // Students
   studentDetails: (id: number) => ['students', id, 'details'] as const,
+  studentsGroupedAll: ['students', 'grouped'] as const,
+  studentsGroupedByParams: (groupBy: string, skip: number, limit: number, tab: string, ageBucketsKey: string) => ['students', 'grouped', groupBy, skip, limit, tab, ageBucketsKey] as const,
   
   // Courses
   courses: ['courses'] as const,
@@ -52,6 +59,9 @@ export const queryKeys = {
     },
     studentEnrollments: (studentId: number) => ['finance', 'student-enrollments', studentId] as const,
   },
+
+  // Employees
+  employeesAll: ['employees', 'all'] as const,
 
   // Auth
   auth: {

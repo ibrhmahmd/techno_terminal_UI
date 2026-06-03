@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { GroupByField } from '../../api/academics'
 
-export type GroupBySelectorValue = GroupByField | 'search'
+type GroupBySelectorValue = GroupByField | 'search'
 
 interface GroupBySelectorProps {
   value: GroupByField
@@ -47,7 +47,7 @@ export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorP
                   onClick={() => onChange(optVal)}
                   onKeyDown={handleKeyDown(index)}
                   role="tab"
-                  aria-selected={isActive && !isSearch}
+                  aria-selected={isActive}
                   className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all ${
                     isActive
                       ? isSearch

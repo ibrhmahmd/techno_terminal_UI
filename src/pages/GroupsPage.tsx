@@ -141,7 +141,6 @@ export function GroupsPage() {
     setMutationError(null)
     try {
       await deleteGroupMutation.mutateAsync(deletingGroupId)
-      await refresh()
       showToast('Group deleted successfully', 'success')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to delete group'
@@ -251,7 +250,7 @@ export function GroupsPage() {
             <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-center">{error}</div>
           )}
 
-          {groupBy === undefined && !isLoading && (
+          {groupBy === undefined && (
             <div className="flex flex-col items-center justify-center py-28 gap-3 text-center">
               <span className="material-symbols-outlined text-6xl text-slate-200" aria-hidden="true">grid_view</span>
               <p className="text-slate-400 text-sm font-medium">
@@ -263,7 +262,7 @@ export function GroupsPage() {
           {groupBy !== undefined && !error && (
             <>
               {mutationError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 flex items-center gap-2">
+                <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 flex items-center gap-2">
                   <span className="material-symbols-outlined text-lg" aria-hidden="true">error</span>
                   {mutationError}
                 </div>
@@ -276,23 +275,25 @@ export function GroupsPage() {
                       activeKey={activeCategoryKey ?? groupedData[0]?.key ?? ''}
                       onChange={setActiveCategoryKey}
                     />
-                    <GroupCardGrid
-                      isLoading={isLoading}
-                      emptyMessage="No groups matched your selection"
-                      emptyIcon="grid_view"
-                    >
-                      {(groupedData.find(g => g.key === (activeCategoryKey ?? groupedData[0]?.key))?.groups ?? []).map((g) => (
-                        <GroupCard
-                          key={g.id}
-                          group={g}
-                          actions={{
-                            onView: () => handleView(g.id),
-                            onEdit: () => handleEdit(g),
-                            onDelete: () => handleDeleteClick(g.id),
-                          }}
-                        />
-                      ))}
-                    </GroupCardGrid>
+                    <div role="tabpanel" id={`panel-${activeCategoryKey ?? groupedData[0]?.key ?? ''}`} aria-labelledby={`tab-${activeCategoryKey ?? groupedData[0]?.key ?? ''}`}>
+                      <GroupCardGrid
+                        isLoading={isLoading}
+                        emptyMessage="No groups matched your selection"
+                        emptyIcon="grid_view"
+                      >
+                        {(groupedData.find(g => g.key === (activeCategoryKey ?? groupedData[0]?.key))?.groups ?? []).map((g) => (
+                          <GroupCard
+                            key={g.id}
+                            group={g}
+                            actions={{
+                              onView: () => handleView(g.id),
+                              onEdit: () => handleEdit(g),
+                              onDelete: () => handleDeleteClick(g.id),
+                            }}
+                          />
+                        ))}
+                      </GroupCardGrid>
+                    </div>
                   </>
                 ) : (
                   <GroupCardGrid

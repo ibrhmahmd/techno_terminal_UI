@@ -35,11 +35,8 @@ export function useGroups() {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored === null) return undefined
     if (stored === 'null') return null
-    const valid: Array<GroupByField> = ['day', 'course', 'instructor', 'status', null]
-    if (valid.includes(stored as GroupByField)) {
-        return stored as GroupByField
-    }
-    return undefined
+    const valid = new Set<GroupByField>(['day', 'course', 'instructor', 'status', null])
+    return valid.has(stored as GroupByField) ? stored as GroupByField : undefined
   })
   
   const isAllView = groupBy === null
@@ -49,8 +46,8 @@ export function useGroups() {
   const filterOptions: GroupFilterOptions = useMemo(() => ({
     q: searchTerm || undefined,
     course_ids: selectedCourses.length > 0 ? selectedCourses : undefined,
-    instructor_id: selectedInstructors.length > 0 ? selectedInstructors[0] : undefined,
-    level_number: selectedLevels.length > 0 ? selectedLevels[0] : undefined,
+    instructor_ids: selectedInstructors.length > 0 ? selectedInstructors : undefined,
+    level_numbers: selectedLevels.length > 0 ? selectedLevels : undefined,
     day: selectedDays.length > 0 ? selectedDays : undefined,
     status: selectedStatuses.length > 0 ? selectedStatuses : undefined,
     skip: (currentPage - 1) * pageSize,
@@ -62,7 +59,7 @@ export function useGroups() {
   
   // Grouped query runs if we chose a grouping option
   const groupedQuery = useGroupsGrouped(
-    groupBy as Exclude<GroupByField, null>, 
+    groupBy!,
     isGroupedView
   )
 
@@ -77,35 +74,32 @@ export function useGroups() {
     else if (isGroupedView) groupedQuery.refetch()
   }
 
-  // Keep frontend sorting on the returned items
-  const processedGroups = useMemo(() => {
+  const paginatedGroups = useMemo(() => {
     return [...groups].sort((a, b) => {
       const aRaw = a[sortField as keyof EnrichedGroupPublic]
       const bRaw = b[sortField as keyof EnrichedGroupPublic]
-      
+
       const aValue = sortField === 'current_student_count' ? Number(aRaw) : aRaw
       const bValue = sortField === 'current_student_count' ? Number(bRaw) : bRaw
-      
+
       if (typeof aValue === 'number' && typeof bValue === 'number') {
         const diff = aValue - bValue
         return sortDirection === 'asc' ? diff : -diff
       }
-      
+
       const aStr = String(aValue || '').toLowerCase()
       const bStr = String(bValue || '').toLowerCase()
-      
+
       const cmp = aStr.localeCompare(bStr)
       return sortDirection === 'asc' ? cmp : -cmp
     })
   }, [groups, sortField, sortDirection])
-
-  const paginatedGroups = processedGroups
   const totalPages = Math.ceil(totalGroups / pageSize)
 
   const validSortFields: SortField[] = ['name', 'course_name', 'instructor_name', 'current_student_count']
 
   const handleSort = (field: string) => {
-    const typedField = validSortFields.includes(field as SortField) ? field as SortField : 'name'
+    const typedField = validSortFields.find(f => f === field) ?? 'name'
     if (sortField === typedField) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
     } else {
@@ -138,7 +132,6 @@ export function useGroups() {
     sortField,
     sortDirection,
     handleSort,
-    processedGroups,
     paginatedGroups,
     totalPages,
     groupBy,

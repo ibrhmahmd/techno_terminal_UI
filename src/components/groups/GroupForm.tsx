@@ -1,12 +1,15 @@
-import { useState, type FormEvent, useEffect } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import type { ScheduleGroupInput, Course } from '../../api/academics'
-import { getCourses } from '../../api/academics'
+import type { ScheduleGroupInput, ScheduleInput } from '../../api/academics'
+import type { Schedule } from '../../api/academics/types/groups'
+import { useCourses } from '../../hooks/useCourses'
 import { useAllEmployees } from '../../hooks/useAllEmployees'
 import { formToSchedule } from '../../utils/scheduleTransform'
 
+type FormSchedule = Pick<ScheduleInput, 'day'> & Partial<ScheduleInput & Schedule>
+
 interface GroupFormProps {
-  initialData?: Partial<ScheduleGroupInput> & { name?: string; start_date?: string }
+  initialData?: Partial<ScheduleGroupInput> & { name?: string; start_date?: string; schedule?: FormSchedule }
   onSubmit: (data: ScheduleGroupInput) => Promise<void>
   onCancel: () => void
   mode: 'create' | 'edit'
@@ -20,6 +23,10 @@ interface TimeState {
   hour: number
   minute: string
   period: 'AM' | 'PM'
+}
+
+function getScheduleField(schedule: FormSchedule | undefined, field: 'start_time' | 'end_time' | 'time_start' | 'time_end'): string | undefined {
+  return (schedule as Record<string, unknown> | undefined)?.[field] as string | undefined
 }
 
 export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormProps) {
@@ -40,39 +47,24 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
   const [startDate, setStartDate] = useState(initialData?.start_date || '')
   const schedule = initialData?.schedule
   const day = schedule?.day || 'Saturday'
-  const startTimeStr = (schedule as Record<string, unknown> | undefined)?.start_time as string | undefined || (schedule as Record<string, unknown> | undefined)?.time_start as string | undefined
-  const endTimeStr = (schedule as Record<string, unknown> | undefined)?.end_time as string | undefined || (schedule as Record<string, unknown> | undefined)?.time_end as string | undefined
+  const startTimeStr = getScheduleField(schedule, 'start_time') || getScheduleField(schedule, 'time_start')
+  const endTimeStr = getScheduleField(schedule, 'end_time') || getScheduleField(schedule, 'time_end')
   const [defaultDay, setDefaultDay] = useState(day)
   const [startTime, setStartTime] = useState<TimeState>(parseTime(startTimeStr))
   const [endTime, setEndTime] = useState<TimeState>(parseTime(endTimeStr))
-  const [courses, setCourses] = useState<Course[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [isFetching, setIsFetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const { data: allEmployees = [], isLoading: isLoadingEmployees } = useAllEmployees()
   const instructors = allEmployees
 
-  useEffect(() => {
-    async function fetchCourses() {
-      setIsFetching(true)
-      try {
-        const coursesData = await getCourses().catch(() => [] as Course[])
-        setCourses(coursesData)
-      } catch {
-        // Silently fail - form will fall back to text inputs
-      } finally {
-        setIsFetching(false)
-      }
-    }
-    fetchCourses()
-  }, [])
+  const { courses } = useCourses()
 
   useEffect(() => {
     const s = initialData?.schedule
     const d = s?.day || 'Saturday'
-    const st = (s as Record<string, unknown> | undefined)?.start_time as string | undefined || (s as Record<string, unknown> | undefined)?.time_start as string | undefined
-    const et = (s as Record<string, unknown> | undefined)?.end_time as string | undefined || (s as Record<string, unknown> | undefined)?.time_end as string | undefined
+    const st = getScheduleField(s, 'start_time') || getScheduleField(s, 'time_start')
+    const et = getScheduleField(s, 'end_time') || getScheduleField(s, 'time_end')
     setDefaultDay(d)
     setStartTime(parseTime(st))
     setEndTime(parseTime(et))
@@ -126,7 +118,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+        <div role="alert" className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
           <span className="material-symbols-outlined text-lg" aria-hidden="true">error</span>
           <span>{error}</span>
         </div>
@@ -159,7 +151,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           value={courseId}
           onChange={(e) => setCourseId(e.target.value)}
           required
-          disabled={isLoading || isFetching}
+          disabled={isLoading}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
         >
           <option value="">Select a course...</option>
@@ -179,7 +171,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           value={instructorId}
           onChange={(e) => setInstructorId(e.target.value)}
           required
-          disabled={isLoading || isFetching || isLoadingEmployees}
+          disabled={isLoading || isLoadingEmployees}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
         >
           <option value="">Select an instructor...</option>

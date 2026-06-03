@@ -1,16 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { getStudentsGrouped } from '../api/crm'
 import { useGroupingSettingsStore } from '../store/groupingSettingsStore'
+import { queryKeys } from './queryKeys'
 
 const studentsGroupedKeys = {
-  all: ['students', 'grouped'] as const,
-  byParams: (
-    groupBy: string,
-    skip: number,
-    limit: number,
-    tab: 'students' | 'waiting',
-    ageBucketsKey: string
-  ) => ['students', 'grouped', groupBy, skip, limit, tab, ageBucketsKey] as const,
+  all: queryKeys.studentsGroupedAll,
+  byParams: queryKeys.studentsGroupedByParams,
 }
 
 function getAgeBucketsKey(

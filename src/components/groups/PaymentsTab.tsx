@@ -26,7 +26,7 @@ export function PaymentsTab({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+      <div role="status" aria-label="Loading payment data" className="bg-white rounded-xl border border-slate-200 p-8 text-center">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-12 h-12 bg-slate-200 rounded-full mb-3" />
           <div className="h-4 bg-slate-200 rounded w-32 mb-2" />
@@ -112,8 +112,9 @@ export function PaymentsTab({
           <div className="divide-y divide-slate-100">
             {paymentsByLevel.map((level) => (
               <div key={level.level_number}>
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   aria-expanded={selectedLevel === level.level_number}
                   aria-label={`Level ${level.level_number} payment details`}
                   className={`w-full p-4 hover:bg-slate-50 transition-colors text-left ${
@@ -122,6 +123,12 @@ export function PaymentsTab({
                   onClick={() => setSelectedLevel(
                     selectedLevel === level.level_number ? null : level.level_number
                   )}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSelectedLevel(selectedLevel === level.level_number ? null : level.level_number)
+                    }
+                  }}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -141,23 +148,24 @@ export function PaymentsTab({
                         {level.paid_count} paid, {level.unpaid_count} unpaid
                       </p>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setExpandedLevel(expandedLevel === level.level_number ? null : level.level_number)
-                      }}
-                      aria-expanded={expandedLevel === level.level_number}
-                      aria-label={expandedLevel === level.level_number ? `Collapse level ${level.level_number} details` : `Expand level ${level.level_number} details`}
-                      className="p-2 hover:bg-slate-100 rounded-lg"
-                    >
-                      {expandedLevel === level.level_number ? (
-                        <ChevronUp className="w-5 h-5 text-slate-500" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-slate-500" />
-                      )}
-                    </button>
                   </div>
-                </button>
+                </div>
+
+                <div className="flex justify-end px-4 pb-2">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedLevel(expandedLevel === level.level_number ? null : level.level_number)}
+                    aria-expanded={expandedLevel === level.level_number}
+                    aria-label={expandedLevel === level.level_number ? `Collapse level ${level.level_number} details` : `Expand level ${level.level_number} details`}
+                    className="p-2 hover:bg-slate-100 rounded-lg -mt-1"
+                  >
+                    {expandedLevel === level.level_number ? (
+                      <ChevronUp className="w-5 h-5 text-slate-500" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-slate-500" />
+                    )}
+                  </button>
+                </div>
 
                 {/* Expanded Payment Details */}
                 {expandedLevel === level.level_number && level.payments.length > 0 && (

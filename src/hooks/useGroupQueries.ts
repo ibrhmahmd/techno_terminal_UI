@@ -12,14 +12,15 @@ import {
 } from '../api/academics'
 import { getUpcomingDates } from '../utils/date'
 import { dashboardKeys } from './dashboard/useDashboard'
+import { queryKeys } from './queryKeys'
 
 // ── Query Keys ──────────────────────────────────────────
 
 export const groupKeys = {
-  all:     ['groups'] as const,
-  flat:    (filters?: GroupFilterOptions) => ['groups', 'flat', filters] as const,
-  grouped: (by: GroupByField) => ['groups', 'grouped', by] as const,
-  byCourse: (courseId: number) => ['groups', 'by-course', courseId] as const,
+  all:     queryKeys.groups,
+  flat:    queryKeys.groupFlat,
+  grouped: queryKeys.groupGrouped,
+  byCourse: queryKeys.groupByCourse,
 }
 
 // ── Queries ───────────────────────────────────────────────────────────────────
@@ -39,7 +40,7 @@ export function useGroupsGrouped(groupBy: Exclude<GroupByField, null>, enabled: 
   return useQuery({
     queryKey: groupKeys.grouped(groupBy),
     queryFn: async () => {
-      const result = await getGroupsGrouped(groupBy, { skip: 0, limit: 50 })
+      const result = await getGroupsGrouped(groupBy, { skip: 0, limit: 200 })
       return result.groups
     },
     staleTime: 5 * 60 * 1000,

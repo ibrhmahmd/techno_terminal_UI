@@ -144,10 +144,10 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 - **No `.env` files** in repo — no local env setup required.
 - **No CI** (no `.github/`) and **no pre-commit hooks** (no `.husky/`).
 - **Gitignored**: `.opencode/*` and `.specify/*` are gitignored.
-- **Specs**: `specs/<NNN>-<name>/plan.md` for active feature plans. Current highest: `029-*`. Active branch: `029-groups-filter-ui`.
+- **Specs**: `specs/<NNN>-<name>/plan.md` for active feature plans. Current highest: `031-*`. Active branch: `030-groups-ui-redesign`.
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/030-groups-ui-redesign/plan.md`
+`specs/031-groups-audit/plan.md`
 <!-- SPECKIT END -->

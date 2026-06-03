@@ -123,8 +123,8 @@ export interface GroupFilterOptions {
   q?: string;
   course_ids?: number[];
   day?: string[];
-  instructor_id?: number;
-  level_number?: number;
+  instructor_ids?: number[];
+  level_numbers?: number[];
   status?: string[];
   has_instructor?: boolean;
   include_inactive?: boolean;
@@ -134,7 +134,7 @@ export interface GroupFilterOptions {
 
 // get all enriched groups (active only, no pagination unless specified)
 export async function getEnrichedGroups(options?: GroupFilterOptions): Promise<EnrichedGroupPublic[]> {
-  const params: Record<string, any> = { limit: 200, ...options };
+  const params: Record<string, unknown> = { limit: 200, ...options };
   const response = await client.get<ApiResponse<GroupFilterResult>>(
     '/academics/groups/filter',
     { 

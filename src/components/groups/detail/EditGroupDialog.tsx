@@ -78,15 +78,14 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
     try {
       const formattedStart = formatTimeInput(startTime)
       const formattedEnd = formatTimeInput(endTime)
-      const scheduleData = formattedStart && formattedEnd
+      const scheduleData = day && formattedStart && formattedEnd
         ? formToSchedule(day, formattedStart, formattedEnd)
         : undefined
       await onSave({
         name,
-        instructor_id: Number(instructorId),
+        ...(instructorId ? { instructor_id: Number(instructorId) } : {}),
         schedule: scheduleData,
         capacity,
-        status,
         notes: notes || undefined,
       })
       onClose()
@@ -186,8 +185,8 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
+          <fieldset>
+            <legend className="block text-sm font-medium text-slate-700 mb-2">Status</legend>
             <div className="flex gap-4">
               {(['active', 'inactive', 'completed'] as const).map((s) => (
                 <label key={s} className="flex items-center gap-2 cursor-pointer">
@@ -203,7 +202,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
                 </label>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           <div>
             <label htmlFor="edit-notes" className="block text-sm font-medium text-slate-700 mb-1">Notes</label>

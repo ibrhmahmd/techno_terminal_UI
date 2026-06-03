@@ -86,9 +86,10 @@ export function GroupFilters({ isOpen, onClose, onApply, filters }: GroupFilters
         <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Filter Groups</h3>
         <button
           onClick={onClose}
+          aria-label="Close filters"
           className="text-slate-400 hover:text-slate-600 w-6 h-6 flex items-center justify-center rounded-md hover:bg-slate-200"
         >
-          <span className="material-symbols-outlined text-[20px]">close</span>
+          <span className="material-symbols-outlined text-[20px]" aria-hidden="true">close</span>
         </button>
       </div>
 
@@ -116,6 +117,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters }: GroupFilters
                   <button
                     key={course.id}
                     type="button"
+                    aria-pressed={filters.selectedCourses.includes(course.id)}
                     onClick={() => {
                       const newIds = filters.selectedCourses.includes(course.id)
                         ? filters.selectedCourses.filter(id => id !== course.id)
@@ -146,6 +148,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters }: GroupFilters
                   <button
                     key={instructor.id}
                     type="button"
+                    aria-pressed={filters.selectedInstructors.includes(instructor.id)}
                     onClick={() => {
                       const newIds = filters.selectedInstructors.includes(instructor.id)
                         ? filters.selectedInstructors.filter(id => id !== instructor.id)
@@ -176,6 +179,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters }: GroupFilters
                   <button
                     key={level}
                     type="button"
+                    aria-pressed={filters.selectedLevels.includes(level)}
                     onClick={() => {
                       const newLevels = filters.selectedLevels.includes(level)
                         ? filters.selectedLevels.filter(l => l !== level)
@@ -203,6 +207,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters }: GroupFilters
                   <button
                     key={day}
                     type="button"
+                    aria-pressed={filters.selectedDays.includes(day)}
                     onClick={() => {
                       const newDays = filters.selectedDays.includes(day)
                         ? filters.selectedDays.filter(d => d !== day)
@@ -230,6 +235,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters }: GroupFilters
                   <button
                     key={status}
                     type="button"
+                    aria-pressed={filters.selectedStatuses.includes(status)}
                     onClick={() => {
                       const newStatuses = filters.selectedStatuses.includes(status)
                         ? filters.selectedStatuses.filter(s => s !== status)
