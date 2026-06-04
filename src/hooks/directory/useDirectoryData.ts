@@ -62,6 +62,10 @@ interface UseDirectoryDataReturn {
   isLoadingFiltered: boolean
   isLoadingFilteredGrouped: boolean
 
+  // Error states
+  isError: boolean
+  error: Error | null
+
   // Counts
   totalStudents: number
   totalParents: number
@@ -84,7 +88,7 @@ export function useDirectoryData({
   filterGroupBy = 'none',
 }: UseDirectoryDataProps): UseDirectoryDataReturn {
   // Grouped data fetching (lazy - only when grouping is active)
-  const { data: studentsGroupedResult, isLoading: isLoadingStudentsGrouped } =
+  const { data: studentsGroupedResult, isLoading: isLoadingStudentsGrouped, isError: isStudentsGroupedError, error: studentsGroupedError } =
     useStudentsGrouped({
       groupBy: (studentGroupBy === 'status' || studentGroupBy === 'age' ? studentGroupBy : 'status') as 'status' | 'age',
       pagination: { page: studentGroupedPage, pageSize: groupedPageSize },
@@ -92,7 +96,7 @@ export function useDirectoryData({
       enabled: activeTab === 'students' && (studentGroupBy === 'status' || studentGroupBy === 'age') && !isSearching,
     })
 
-  const { data: waitingGroupedResult, isLoading: isLoadingWaitingGrouped } =
+  const { data: waitingGroupedResult, isLoading: isLoadingWaitingGrouped, isError: isWaitingGroupedError, error: waitingGroupedError } =
     useStudentsGrouped({
       groupBy: (waitingGroupBy === 'age' ? waitingGroupBy : 'status') as 'status' | 'age',
       pagination: { page: waitingGroupedPage, pageSize: groupedPageSize },
@@ -129,7 +133,7 @@ export function useDirectoryData({
   )
 
   // Grouped filter data (when group by is active in advanced search)
-  const { data: filteredGroupedResult, isLoading: isLoadingFilteredGrouped } =
+  const { data: filteredGroupedResult, isLoading: isLoadingFilteredGrouped, isError: isFilteredGroupedError, error: filteredGroupedError } =
     useStudentsGrouped({
       groupBy: filterGroupBy === 'none' ? 'status' : filterGroupBy,
       pagination: { page: filterPage, pageSize: filterPageSize },
@@ -144,21 +148,21 @@ export function useDirectoryData({
     : (studentsListQuery.data?.items ?? [])
   const deletedStudents = deletedStudentsQuery.data?.items ?? []
   const students = studentGroupBy === 'deleted' ? deletedStudents : activeStudents
+  const waitingStudents = useMemo(
+    () => students.filter((s) => s.status === 'waiting'),
+    [students]
+  )
   const totalStudents = studentGroupBy === 'deleted'
     ? (deletedStudentsQuery.data?.total ?? 0)
     : isSearching
       ? students.length
-      : (studentsListQuery.data?.total ?? 0)
+      : (studentsListQuery.data?.total ?? 0) - waitingStudents.length
 
   const parents = isSearching ? (parentsSearchQuery.data ?? []) : (parentsListQuery.data?.items ?? [])
   const totalParents = isSearching ? parents.length : (parentsListQuery.data?.total ?? 0)
 
   // BUG-23: Use API results directly - no double filtering
   const displayStudents = students.filter((s) => s.status !== 'waiting')
-  const waitingStudents = useMemo(
-    () => students.filter((s) => s.status === 'waiting'),
-    [students]
-  )
 
   // Transform grouped API response → GroupItem<StudentListItem>[] for DataTable
   const studentsGroupedData = useMemo(() => {
@@ -206,6 +210,28 @@ export function useDirectoryData({
 
   const isLoadingFiltered = filterQuery.isLoading
 
+  const isError =
+    studentsListQuery.isError ||
+    studentsSearchQuery.isError ||
+    deletedStudentsQuery.isError ||
+    parentsListQuery.isError ||
+    parentsSearchQuery.isError ||
+    filterQuery.isError ||
+    isStudentsGroupedError ||
+    isWaitingGroupedError ||
+    isFilteredGroupedError
+
+  const error =
+    studentsListQuery.error ??
+    studentsSearchQuery.error ??
+    deletedStudentsQuery.error ??
+    parentsListQuery.error ??
+    parentsSearchQuery.error ??
+    filterQuery.error ??
+    studentsGroupedError ??
+    waitingGroupedError ??
+    filteredGroupedError
+
   // Transform filtered grouped API response
   const filteredGroupedData = useMemo(() => {
     if (!filteredGroupedResult || filterGroupBy === 'none') return undefined
@@ -240,6 +266,8 @@ export function useDirectoryData({
     isLoadingWaitingGrouped,
     isLoadingFiltered,
     isLoadingFilteredGrouped,
+    isError,
+    error,
     totalStudents,
     totalParents,
   }

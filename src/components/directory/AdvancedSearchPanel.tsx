@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { DualNumberInput, ActiveFilterTagsList } from '../common'
 import { getCoursesPaginated } from '../../api/academics'
@@ -49,15 +49,19 @@ export function AdvancedSearchPanel({
   const courses = coursesData || []
 
   // Handle Enter key to apply filters
+  const onApplyRef = useRef(onApply)
+  useEffect(() => {
+    onApplyRef.current = onApply
+  }, [onApply])
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter' && hasActiveFilters) {
-        onApply()
+        onApplyRef.current()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [hasActiveFilters, onApply])
+  }, [hasActiveFilters])
 
   return (
     <div className="space-y-6">
@@ -67,7 +71,7 @@ export function AdvancedSearchPanel({
         {/* Column 1: Student Profile */}
         <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-5 hover:shadow-md transition-all duration-200 space-y-5">
           <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
-            <span className="material-symbols-outlined text-secondary font-semibold">person</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-secondary font-semibold">person</span>
             <h4 className="font-headline font-semibold text-slate-800">Student Profile</h4>
           </div>
 
@@ -81,6 +85,7 @@ export function AdvancedSearchPanel({
                   <button
                     key={value}
                     type="button"
+                    aria-pressed={isSelected}
                     onClick={() => {
                       const newStatus = isSelected
                         ? filters.status.filter((s) => s !== value)
@@ -111,6 +116,7 @@ export function AdvancedSearchPanel({
                   <button
                     key={value}
                     type="button"
+                    aria-pressed={isSelected}
                     onClick={() => {
                       const newGender = isSelected
                         ? filters.gender.filter((g) => g !== value)
@@ -164,11 +170,12 @@ export function AdvancedSearchPanel({
               <input
                 type="text"
                 placeholder="Search by instructor name..."
+                aria-label="Instructor name"
                 value={filters.instructorName}
                 onChange={(e) => onFilterChange('instructorName', e.target.value)}
                 className="w-full px-3 py-2 pl-9 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
               />
-              <span className="material-symbols-outlined text-[16px] text-slate-400 absolute left-3 top-2.5">
+              <span aria-hidden="true" className="material-symbols-outlined text-[16px] text-slate-400 absolute left-3 top-2.5">
                 person_2
               </span>
             </div>
@@ -178,7 +185,7 @@ export function AdvancedSearchPanel({
         {/* Column 2: Academics & Courses */}
         <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-5 hover:shadow-md transition-all duration-200 space-y-5">
           <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
-            <span className="material-symbols-outlined text-secondary font-semibold">school</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-secondary font-semibold">school</span>
             <h4 className="font-headline font-semibold text-slate-800">Courses & Groups</h4>
           </div>
 
@@ -246,6 +253,7 @@ export function AdvancedSearchPanel({
                   <button
                     key={day}
                     type="button"
+                    aria-pressed={isSelected}
                     onClick={() => {
                       const newDays = isSelected
                         ? filters.groupDays.filter((d) => d !== day)
@@ -285,6 +293,7 @@ export function AdvancedSearchPanel({
               <div className="flex items-center gap-2">
                 <input
                   type="date"
+                  aria-label="Enrollment date from"
                   value={filters.enrollmentDateFrom}
                   onChange={(e) => onFilterChange('enrollmentDateFrom', e.target.value)}
                   className="w-full px-2 py-1 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-secondary"
@@ -292,6 +301,7 @@ export function AdvancedSearchPanel({
                 <span className="text-slate-400 text-xs">to</span>
                 <input
                   type="date"
+                  aria-label="Enrollment date to"
                   value={filters.enrollmentDateTo}
                   onChange={(e) => onFilterChange('enrollmentDateTo', e.target.value)}
                   className="w-full px-2 py-1 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-secondary"
@@ -304,7 +314,7 @@ export function AdvancedSearchPanel({
         {/* Column 3: Finances & Activities */}
         <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-5 hover:shadow-md transition-all duration-200 space-y-5">
           <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
-            <span className="material-symbols-outlined text-secondary font-semibold">timeline</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-secondary font-semibold">timeline</span>
             <h4 className="font-headline font-semibold text-slate-800">Finances & Logs</h4>
           </div>
 
@@ -320,7 +330,7 @@ export function AdvancedSearchPanel({
                   : 'bg-white text-slate-600 border border-slate-200 hover:border-red-300'
               }`}
             >
-              <span className="material-symbols-outlined text-[16px]">
+              <span aria-hidden="true" className="material-symbols-outlined text-[16px]">
                 {filters.hasUnpaidBalance === true ? 'check_box' : 'check_box_outline_blank'}
               </span>
               Has unpaid balance only
@@ -384,6 +394,7 @@ export function AdvancedSearchPanel({
               <div className="flex items-center gap-2">
                 <input
                   type="date"
+                  aria-label="Activity date from"
                   value={filters.activityDateFrom}
                   onChange={(e) => onFilterChange('activityDateFrom', e.target.value)}
                   className="w-full px-2 py-1 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-secondary"
@@ -391,6 +402,7 @@ export function AdvancedSearchPanel({
                 <span className="text-slate-400 text-xs">to</span>
                 <input
                   type="date"
+                  aria-label="Activity date to"
                   value={filters.activityDateTo}
                   onChange={(e) => onFilterChange('activityDateTo', e.target.value)}
                   className="w-full px-2 py-1 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-secondary"
@@ -403,6 +415,7 @@ export function AdvancedSearchPanel({
               <input
                 type="text"
                 placeholder="e.g., Coupon, HTML, manual..."
+                aria-label="Activity search term"
                 value={filters.activitySearchTerm}
                 onChange={(e) => onFilterChange('activitySearchTerm', e.target.value)}
                 className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"

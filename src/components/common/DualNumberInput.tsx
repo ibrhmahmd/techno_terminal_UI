@@ -31,6 +31,7 @@ export function DualNumberInput({
           min={min}
           max={max}
           placeholder={minPlaceholder}
+          aria-label="Minimum value"
           value={minValue}
           onChange={(e) => onMinChange(e.target.value === '' ? '' : Number(e.target.value))}
           className="w-20 px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary text-center"
@@ -46,6 +47,7 @@ export function DualNumberInput({
           min={min}
           max={max}
           placeholder={maxPlaceholder}
+          aria-label="Maximum value"
           value={maxValue}
           onChange={(e) => onMaxChange(e.target.value === '' ? '' : Number(e.target.value))}
           className="w-20 px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary text-center"

@@ -33,12 +33,14 @@ export function SearchBar({
       <input
         type="text"
         placeholder={placeholder}
+        aria-label="Search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         className="bg-transparent border-none outline-none text-sm text-on-surface flex-1"
       />
       {query && (
         <button
+          aria-label="Clear search"
           onClick={() => {
             setQuery('')
             onSearch('')

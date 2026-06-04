@@ -92,7 +92,7 @@ export function Sidebar() {
         <div className="px-3 space-y-1">
           {filteredSections.map((section) => (
             <div key={section.title} className="mb-5">
-              <p className="px-3 py-1.5 text-[10px] font-bold text-on-primary-container/50 uppercase tracking-wider font-headline">
+              <p className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-headline">
                 {section.title}
               </p>
               <div className="space-y-0.5 mt-1">
@@ -104,8 +104,8 @@ export function Sidebar() {
                       onClick={() => handleNavigate(item.path)}
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-[6px] text-sm font-medium transition-colors ${
                         active
-                          ? 'bg-secondary/15 text-secondary'
-                          : 'text-on-primary-container/80 hover:bg-white/5 hover:text-white'
+                          ? 'bg-secondary-container/10 text-secondary-container font-semibold'
+                          : 'text-slate-300 hover:bg-white/5 hover:text-white'
                       }`}
                     >
                       <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
@@ -128,13 +128,13 @@ export function Sidebar() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">{user.username}</p>
-              <p className="text-xs text-on-primary-container/70 capitalize font-headline mt-0.5">{user.role.replace('_', ' ')}</p>
+              <p className="text-xs text-slate-300 capitalize font-headline mt-0.5">{user.role.replace('_', ' ')}</p>
             </div>
           </div>
         )}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-on-primary-container/80 hover:text-red-400 hover:bg-red-400/10 rounded-[6px] transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-red-400 hover:bg-red-400/10 rounded-[6px] transition-colors"
         >
           <span className="material-symbols-outlined text-base">logout</span>
           <span>Sign Out</span>

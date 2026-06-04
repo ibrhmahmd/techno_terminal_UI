@@ -169,13 +169,13 @@ export function SettingsPage() {
         sticky={false}
       />
 
-      <section className="px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="max-w-[1400px] mx-auto">
+      <section className="px-8 pt-6">
+        <div className="max-w-[1680px] mx-auto">
           <MetricsStripCards items={metricItems} activeIndex={activeIndex} />
         </div>
       </section>
 
-      <PageSection maxWidth="1400">
+      <PageSection>
         <div role="tabpanel" aria-labelledby={"tab-"+activeTab}>
           <ErrorBoundary>
             {activeTab === 'profile' && <ProfileTab />}

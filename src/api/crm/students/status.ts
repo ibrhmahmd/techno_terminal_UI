@@ -3,8 +3,10 @@
 
 import { client } from '../../client'
 import type { ApiResponse } from '../../../types/api'
-import type { StudentStatusSummary, StudentStatus } from './types/models'
+import type { StudentStatusSummary, StudentStatus, Student } from './types/models'
 import type { UpdateStudentStatusDTO, SetWaitingPriorityDTO } from './types/inputs'
+import type { PaginationParams, PaginationResult } from '../../../types/pagination'
+import type { PaginatedApiResponse } from '../../../types/api'
 
 // Update Student Status
 export async function updateStudentStatus(
@@ -29,10 +31,6 @@ export async function getStudentStatusSummary(): Promise<StudentStatusSummary> {
 }
 
 // Get Students by Status (filtered list)
-import type { PaginationParams, PaginationResult } from '../../../types/pagination'
-import type { PaginatedApiResponse } from '../../../types/api'
-import type { Student } from './types/models'
-
 export async function getStudentsByStatus(
   status: StudentStatus,
   params: PaginationParams = {}
@@ -52,4 +50,3 @@ export async function getStudentsByStatus(
     hasMore: total > skip + items.length
   }
 }
-

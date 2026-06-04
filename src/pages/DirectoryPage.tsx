@@ -14,7 +14,6 @@ import { useAdvancedSearch } from '../hooks/directory/useAdvancedSearch'
 import { AdvancedSearchPanel } from '../components/directory/AdvancedSearchPanel'
 import { createParent, searchParents, type StudentListItem, type StudentFilterItem, type StudentFilterParams, type StudentWithDetails, type CreateStudentDTO, type ParentListItem, type StudentStatus } from '../api/crm'
 
-type CreateStudentInput = CreateStudentDTO
 import { StudentCard } from '../components/directory/StudentCard'
 import { StudentMobileCard } from '../components/crm/StudentMobileCard'
 import { ParentCard } from '../components/directory/ParentCard'
@@ -81,6 +80,7 @@ export function DirectoryPage() {
     isLoadingFilteredGrouped,
     totalStudents,
     totalParents,
+    isError,
   } = useDirectoryData({
     activeTab,
     isSearching,
@@ -121,7 +121,7 @@ export function DirectoryPage() {
 
   // Wrapper to redirect to waiting list tab after successful creation
   const handleCreateStudentAndRedirect = async (
-    data: CreateStudentInput,
+    data: CreateStudentDTO,
     parent: ParentListItem | null,
     status: StudentStatus
   ) => {
@@ -278,6 +278,18 @@ export function DirectoryPage() {
     },
   ], [totalStudents, totalParents, waitingStudents.length, appliedFilters, filteredTotal, isLoading, isLoadingFiltered, handleTabChange, students.length, parents.length])
 
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-red-500">
+        <span className="material-symbols-outlined text-5xl mb-3" aria-hidden="true">error</span>
+        <p className="text-sm">Something went wrong loading data</p>
+        <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-secondary text-white rounded-lg">
+          Retry
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-surface">
       <TopNavbar activePage="Directory" />
@@ -373,7 +385,7 @@ export function DirectoryPage() {
                                 : (selectedLetter ? `No students found starting with "${selectedLetter}"` : 'No students found')
                             return (
                               <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                                <span className="material-symbols-outlined text-5xl mb-3">
+                                <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">
                                   {studentGroupBy === 'deleted' ? 'delete' : 'search'}
                                 </span>
                                 <p className="text-sm">{msg}</p>
@@ -423,7 +435,7 @@ export function DirectoryPage() {
                         </CardGrid>
                       ) : !studentsGroupedData || studentsGroupedData.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                          <span className="material-symbols-outlined text-5xl mb-3">inbox</span>
+                          <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">inbox</span>
                           <p className="text-sm">No students found</p>
                         </div>
                       ) : (
@@ -436,10 +448,12 @@ export function DirectoryPage() {
                           return (
                             <>
                               <div className="overflow-x-auto mb-4">
-                                <div className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
+                                <div role="tablist" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
                                   {studentsGroupedData.map((group) => (
                                     <button
                                       key={group.key}
+                                      role="tab"
+                                      aria-selected={activeKey === group.key}
                                       onClick={() => setActiveStudentGroup(group.key)}
                                       className={`flex-1 flex justify-center items-center gap-2.5 min-w-[120px] px-5 py-2 rounded-lg text-sm font-medium transition-all select-none ${
                                         activeKey === group.key
@@ -532,7 +546,7 @@ export function DirectoryPage() {
                     </CardGrid>
                   ) : !waitingGroupedData || waitingGroupedData.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                      <span className="material-symbols-outlined text-5xl mb-3">inbox</span>
+                      <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">inbox</span>
                       <p className="text-sm">No waiting students found</p>
                     </div>
                   ) : (
@@ -545,10 +559,12 @@ export function DirectoryPage() {
                       return (
                         <>
                           <div className="overflow-x-auto mb-4">
-                            <div className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
+                            <div role="tablist" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
                               {waitingGroupedData.map((group) => (
                                 <button
                                   key={group.key}
+                                  role="tab"
+                                  aria-selected={activeKey === group.key}
                                   onClick={() => setActiveStudentGroup(group.key)}
                                   className={`flex-1 flex justify-center items-center gap-2.5 min-w-[120px] px-5 py-2 rounded-lg text-sm font-medium transition-all select-none ${
                                     activeKey === group.key
@@ -611,7 +627,7 @@ export function DirectoryPage() {
                 </CardGrid>
               ) : parents.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                  <span className="material-symbols-outlined text-5xl mb-3">search</span>
+                  <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">search</span>
                   <p className="text-sm">
                     {searchTerm.length >= 2 ? 'No parents match your search' : 'No parents found'}
                   </p>
@@ -646,7 +662,7 @@ export function DirectoryPage() {
                 {/* Top Action Bar */}
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-headline font-semibold text-on-surface flex items-center gap-2">
-                    <span className="material-symbols-outlined text-secondary">tune</span>
+                    <span aria-hidden="true" className="material-symbols-outlined text-secondary">tune</span>
                     Filter Students
                   </h3>
                   <div className="flex items-center gap-2">
@@ -655,7 +671,7 @@ export function DirectoryPage() {
                       disabled={!hasActiveFilters}
                       className="px-4 py-2 bg-slate-100 text-slate-600 font-medium rounded-lg hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm"
                     >
-                      <span className="material-symbols-outlined text-[18px]">refresh</span>
+                      <span aria-hidden="true" className="material-symbols-outlined text-[18px]">refresh</span>
                       Reset
                     </button>
                     <button
@@ -663,7 +679,7 @@ export function DirectoryPage() {
                       disabled={!hasActiveFilters}
                       className="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm"
                     >
-                      <span className="material-symbols-outlined text-[18px]">search</span>
+                      <span aria-hidden="true" className="material-symbols-outlined text-[18px]">search</span>
                       Apply
                     </button>
                   </div>
@@ -762,12 +778,12 @@ export function DirectoryPage() {
                       </CardGrid>
                     ) : !appliedFilters ? (
                       <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                        <span className="material-symbols-outlined text-5xl mb-3">filter_list</span>
+                        <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">filter_list</span>
                         <p className="text-sm">Select filters and click Apply to search</p>
                       </div>
                     ) : !filteredStudents || filteredStudents.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                        <span className="material-symbols-outlined text-5xl mb-3">search</span>
+                        <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">search</span>
                         <p className="text-sm">No students match your filters</p>
                       </div>
                     ) : (
@@ -808,12 +824,12 @@ export function DirectoryPage() {
                       </CardGrid>
                     ) : !appliedFilters ? (
                       <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                        <span className="material-symbols-outlined text-5xl mb-3">filter_list</span>
+                        <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">filter_list</span>
                         <p className="text-sm">Select filters and click Apply to search</p>
                       </div>
                     ) : !filteredGroupedData || filteredGroupedData.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                        <span className="material-symbols-outlined text-5xl mb-3">search</span>
+                        <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">search</span>
                         <p className="text-sm">No students match your filters</p>
                       </div>
                     ) : (
@@ -826,10 +842,12 @@ export function DirectoryPage() {
                         return (
                           <>
                             <div className="overflow-x-auto mb-4">
-                              <div className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
+                              <div role="tablist" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
                                 {filteredGroupedData.map((group) => (
                                   <button
                                     key={group.key}
+                                    role="tab"
+                                    aria-selected={activeKey === group.key}
                                     onClick={() => setActiveFilterGroup(group.key)}
                                     className={`flex-1 flex justify-center items-center gap-2.5 min-w-[120px] px-5 py-2 rounded-lg text-sm font-medium transition-all select-none ${
                                       activeKey === group.key

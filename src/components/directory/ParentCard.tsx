@@ -28,7 +28,7 @@ export function ParentCard({ parent, actions, loading = false }: ParentCardProps
           {parent.full_name}
         </h3>
         <p className="text-sm text-slate-500 mt-1 flex items-center gap-1">
-          <span className="material-symbols-outlined text-[16px]">phone</span>
+          <span aria-hidden="true" className="material-symbols-outlined text-[16px]">phone</span>
           {parent.phone_primary}
         </p>
       </div>

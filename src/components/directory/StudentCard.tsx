@@ -50,19 +50,19 @@ export function StudentCard({ student, actions, isDeleted = false, loading = fal
           </h3>
           {student.phone && (
             <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-1">
-              <span className="material-symbols-outlined text-[16px]">phone</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[16px]">phone</span>
               {student.phone}
             </p>
           )}
           {!student.phone && (
             <p className="text-sm text-slate-400 mt-0.5 flex items-center gap-1">
-              <span className="material-symbols-outlined text-[16px]">phone</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[16px]">phone</span>
               &mdash;
             </p>
           )}
         </div>
         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${status.bg} ${status.text}`}>
-          <span className="material-symbols-outlined text-sm">{status.icon}</span>
+          <span aria-hidden="true" className="material-symbols-outlined text-sm">{status.icon}</span>
           {status.label}
         </span>
       </div>
@@ -70,13 +70,13 @@ export function StudentCard({ student, actions, isDeleted = false, loading = fal
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500 mb-3">
         {age !== null && (
           <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px]">cake</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[16px]">cake</span>
             {age} years
           </span>
         )}
         {enrollment && (
           <span className="flex items-center gap-1 truncate max-w-[180px]" title={enrollment}>
-            <span className="material-symbols-outlined text-[16px]">school</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[16px]">school</span>
             {enrollment}
           </span>
         )}
