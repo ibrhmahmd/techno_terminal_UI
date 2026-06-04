@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useToast } from '../../common/Toast'
 import {
   useCreateStudent,
@@ -41,6 +42,7 @@ export function useStudentActions(
   clearSearch: () => void
 ): UseStudentActionsReturn {
   const { showToast } = useToast()
+  const queryClient = useQueryClient()
   const [isLoading, setIsLoading] = useState(false)
 
   const createStudentMutation = useCreateStudent()
@@ -61,6 +63,7 @@ export function useStudentActions(
 
         if (selectedParent) {
           await linkParentToStudent(newStudent.id, selectedParent.id)
+          queryClient.invalidateQueries({ queryKey: ['directory', 'parents'] })
         }
 
         if (status !== 'active') {
@@ -104,7 +107,7 @@ export function useStudentActions(
         setIsLoading(false)
       }
     },
-    [createStudentMutation, closeCreateModal, clearSearch, showToast]
+    [createStudentMutation, closeCreateModal, clearSearch, showToast, queryClient]
   )
 
   const handleEditStudent = useCallback(
@@ -120,6 +123,7 @@ export function useStudentActions(
 
         if (selectedParent) {
           await linkParentToStudent(student.id, selectedParent.id)
+          queryClient.invalidateQueries({ queryKey: ['directory', 'parents'] })
         }
 
         if (status !== student.status) {
@@ -134,7 +138,7 @@ export function useStudentActions(
         setIsLoading(false)
       }
     },
-    [updateStudentMutation, closeEditModal, showToast]
+    [updateStudentMutation, closeEditModal, showToast, queryClient]
   )
 
   const handleSoftDeleteStudent = useCallback(

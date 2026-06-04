@@ -11,34 +11,19 @@ import {
   restoreStudent,
   hardDeleteStudent,
   getDeletedStudents,
-  createParent,
   type StudentListItem,
   type ParentListItem,
   type UpdateStudentDTO,
   type StudentFilterParams,
   type StudentFilterResult,
 } from '../api/crm'
-
-export const directoryKeys = {
-  students: {
-    all:        ['directory', 'students'] as const,
-    list:       (page: number, size: number) => ['directory', 'students', 'list', page, size] as const,
-    search:     (term: string)  => ['directory', 'students', 'search', term] as const,
-    deleted:    (page: number, size: number) => ['directory', 'students', 'deleted', page, size] as const,
-    filter:     (filters: StudentFilterParams) => ['directory', 'students', 'filter', filters] as const,
-  },
-  parents: {
-    all:        ['directory', 'parents'] as const,
-    list:       (page: number, size: number) => ['directory', 'parents', 'list', page, size] as const,
-    search:     (term: string)  => ['directory', 'parents', 'search', term] as const,
-  },
-}
+import { queryKeys } from './queryKeys'
 
 // ── Student Queries ───────────────────────────────────────────────────────────
 
 export function useStudentsList(page: number, pageSize: number, enabled: boolean) {
   return useQuery({
-    queryKey: directoryKeys.students.list(page, pageSize),
+    queryKey: queryKeys.directory.students.list(page, pageSize),
     queryFn: () => getStudentsPaginated({ skip: (page - 1) * pageSize, limit: pageSize }),
     staleTime: 3 * 60 * 1000,
     enabled,
@@ -47,7 +32,7 @@ export function useStudentsList(page: number, pageSize: number, enabled: boolean
 
 export function useStudentsSearch(term: string) {
   return useQuery<StudentListItem[]>({
-    queryKey: directoryKeys.students.search(term),
+    queryKey: queryKeys.directory.students.search(term),
     queryFn: () => searchStudents(term),
     staleTime: 2 * 60 * 1000,
     enabled: term.length >= 2,
@@ -56,7 +41,7 @@ export function useStudentsSearch(term: string) {
 
 export function useStudentsFilter(params: StudentFilterParams, enabled: boolean = true) {
   return useQuery<StudentFilterResult>({
-    queryKey: directoryKeys.students.filter(params),
+    queryKey: queryKeys.directory.students.filter(params),
     queryFn: () => filterStudents(params),
     staleTime: 2 * 60 * 1000,
     enabled,
@@ -67,7 +52,7 @@ export function useStudentsFilter(params: StudentFilterParams, enabled: boolean 
 
 export function useParentsList(page: number, pageSize: number, enabled: boolean) {
   return useQuery({
-    queryKey: directoryKeys.parents.list(page, pageSize),
+    queryKey: queryKeys.directory.parents.list(page, pageSize),
     queryFn: () => getParentsPaginated({ skip: (page - 1) * pageSize, limit: pageSize }),
     staleTime: 3 * 60 * 1000,
     enabled,
@@ -76,7 +61,7 @@ export function useParentsList(page: number, pageSize: number, enabled: boolean)
 
 export function useParentsSearch(term: string) {
   return useQuery<ParentListItem[]>({
-    queryKey: directoryKeys.parents.search(term),
+    queryKey: queryKeys.directory.parents.search(term),
     queryFn: () => searchParents(term),
     staleTime: 2 * 60 * 1000,
     enabled: term.length >= 2,
@@ -87,7 +72,10 @@ export function useParentsSearch(term: string) {
 
 function useStudentInvalidator() {
   const qc = useQueryClient()
-  return () => qc.invalidateQueries({ queryKey: directoryKeys.students.all })
+  return () => {
+    qc.invalidateQueries({ queryKey: ['directory', 'students'] })
+    qc.invalidateQueries({ queryKey: ['students'] })
+  }
 }
 
 export function useCreateStudent() {
@@ -120,17 +108,11 @@ export function useHardDeleteStudent() {
 
 export function useDeletedStudents(page: number, pageSize: number, enabled: boolean) {
   return useQuery({
-    queryKey: directoryKeys.students.deleted(page, pageSize),
+    queryKey: queryKeys.directory.students.deleted(page, pageSize),
     queryFn: () => getDeletedStudents({ skip: (page - 1) * pageSize, limit: pageSize }),
     staleTime: 3 * 60 * 1000,
     enabled,
   })
 }
 
-export function useCreateParent() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: createParent,
-    onSuccess: () => qc.invalidateQueries({ queryKey: directoryKeys.parents.all }),
-  })
-}
+

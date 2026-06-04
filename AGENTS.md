@@ -1,154 +1,86 @@
 # Techno Terminal UI — Agent Instructions
 
-## 1. Developer Commands
-
+## 1. Commands
 ```bash
-npm run dev                    # Vite dev server (proxy /api → http://0.0.0.0:8000)
+npm run dev                    # Vite dev (proxy /api → http://0.0.0.0:8000)
 npm run build                  # tsc -b && vite build — must pass before commits
 npm run lint                   # ESLint (flat config at eslint.config.js)
-npm run test                   # Vitest (happy-dom, globals enabled)
-npm run test -- src/tests/Foo.test.tsx  # single test file
-npm run preview                # Vite preview of production build
+npm run test                   # Vitest
+npm run test -- src/tests/Foo.test.tsx  # single file
 ```
+No formatter configured — lint only.
 
-**Build caveat**: `tsc -b` uses `tsconfig.app.json` which **excludes** `src/tests/` and `*.test.*` — test files are not typechecked during build. `tsconfig.node.json` covers `vite.config.ts` only.
-
-**Vercel prod** (`vercel.json`): `/api/*` → `https://techno-terminal-5c255cfe.fastapicloud.dev/api/*`, all other routes → `/index.html` (SPA fallback). Build command is `npm run build`, output is `dist/`.
+**Build caveat**: `tsc -b` uses `tsconfig.app.json` which **excludes** `src/tests/` and `*.test.*` — test files are not typechecked during build.
 
 ---
 
-## 2. Route Protection (`src/App.tsx`)
+## 2. TS & Toolchain Quirks
+- `verbatimModuleSyntax` → must `import type` for type-only imports
+- `erasableSyntaxOnly: true` → no enums, namespaces, parameter properties; use const objects or union types
+- `noUncheckedSideEffectImports: true` in both tsconfigs
+- **Tailwind**: v3 config (`tailwind.config.js`, `postcss.config.js` uses `tailwindcss` v3 plugin) despite `@tailwindcss/postcss` v4 installed — don't use v4 syntax
+- **Fonts**: Space Grotesk (`font-headline`) headings, Inter (`font-body`) body — Google Fonts in `index.html`
+- **Icons**: Lucide React components + Google Material Symbols (CSS class `material-symbols-outlined`)
+- **Time formatting**: Use `formatTime` from `src/utils/formatting.ts` (12h), not inline formatting
 
+---
+
+## 3. Route Protection (`src/App.tsx`)
 | Guard | Access | Routes |
 |-------|--------|--------|
-| `<PublicRoute />` | Unauthenticated only | `/login`, `/register`, `/forgot-password` |
-| `<ProtectedRoute />` | Authenticated | `/dashboard`, `/courses`, `/courses/:id`, `/groups`, `/groups/:id`, `/students/:id`, `/parents/:id`, `/attendance`, `/competitions`, `/competitions/:id`, `/competitions/:id/edit`, `/teams/:id` |
+| `<PublicRoute />` | Unauthenticated only | `/login`, `/register`, `/forgot-password`, `/reset-password` |
+| `<ProtectedRoute />` | Authenticated | `/dashboard`, `/courses`, `/courses/:id`, `/groups`, `/groups/:id`, `/students/:id`, `/parents/:id`, `/attendance`, `/capabilities`, `/competitions`, `/competitions/:id`, `/competitions/:id/edit`, `/teams/:id` |
 | `<InstructorBlockedRoute />` | Block instructors | `/directory`, `/enrollments`, `/finance`, `/reports`, `/staff`, `/settings` |
 | `<RoleBasedRoute allowedRoles={['admin','system_admin']} />` | Admin only | `/notifications` |
 
-- `/` → `/dashboard`, wildcard `*` → `/login`
-- `ProtectedRoute` waits for Zustand `persist` rehydration before deciding
-- `/attendance` is a `<div>Attendance</div>` placeholder
+Guards wait for Zustand persist rehydration before deciding auth state.
 
 ---
 
-## 3. Framework & Toolchain Quirks
-
-- **TS strict**: `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax` — must `import type` for type-only imports
-- **`erasableSyntaxOnly: true`**: enums, namespaces, parameter properties **forbidden** — use const objects or union types
-- **`noUncheckedSideEffectImports: true`** in both tsconfigs
-- **Tailwind v3** config (`tailwind.config.js`, `postcss.config.js` uses `tailwindcss` v3 plugin) despite `@tailwindcss/postcss` v4 in package.json
-- **Fonts**: Space Grotesk (`font-headline`) for headings, Inter (`font-body`) for body — loaded from Google Fonts in `index.html`
-- **Icons**: Lucide React (component) + Google Material Symbols (CSS class `material-symbols-outlined`)
-- **Zustand persist**: Auth store key `auth-storage` in localStorage; cross-tab sync via `storage` event listener
-- **Vercel Speed Insights**: `<SpeedInsights />` in `App.tsx`
-- **Time formatting**: Use shared `formatTime` from `src/utils/formatting.ts` (12h), not inline formatting
+## 4. API & State Management
+- **Global state**: Zustand (`src/store/authStore.ts`, persist key `auth-storage`, cross-tab sync via `storage` event)
+- **Server state**: React Query (`src/lib/queryClient.ts`): `staleTime: 5min`, `gcTime: 30min`, `retry: 1`, `refetchOnWindowFocus: false`; mutations `retry: 0`
+- **Query keys**: Centralized in `src/hooks/queryKeys.ts` — use factory functions, never inline arrays
+- **API client**: `src/api/client.ts` (Axios, base `/api/v1`); Bearer token from `authStore` (skips `/auth/login`, `/auth/refresh`)
+- **401 handling**: Queues concurrent requests → `POST /auth/refresh` → retries. Falls back to logout + redirect to `/login`
+- **Debug**: `localStorage.setItem('api_debug', 'true')` logs all requests; auto-enabled in DEV
+- **Envelopes**: `ApiResponse<T>` / `PaginatedApiResponse<T>` in `src/types/api.ts`
 
 ---
 
-## 4. Testing (`vitest.config.ts`)
-
-- **Environment**: `happy-dom` (not jsdom). Setup: `src/test/setup.ts` (just `@testing-library/jest-dom`).
-- **Globals enabled**: `describe`, `it`, `expect`, `vi` — no import needed.
-- **Pattern**: `src/**/*.{test,spec}.{ts,tsx}` — convention is `src/tests/*.test.{ts,tsx}`.
-
----
-
-## 5. API Layer (`src/api/`)
-
-- **Axios client** at `src/api/client.ts`, base URL `/api/v1`
-- **Request interceptor**: injects `Bearer` token from `authStore` (skips `/auth/login`, `/auth/refresh`)
-- **Response interceptor**: On 401 → queues concurrent requests, calls `POST /auth/refresh`, retries. Falls back to logout + redirect to `/login` on failure.
-- **Debug mode**: `localStorage.setItem('api_debug', 'true')` logs all requests/responses/errors; auto-enabled in `import.meta.env.DEV`
-- **API envelopes**: `ApiResponse<T>` (single) / `PaginatedApiResponse<T>` (paginated) in `src/types/api.ts`
-
-### Domain API folders
-```
-api/auth/         api/academics/     api/crm/          api/finance/
-api/dashboard/    api/hr/            api/analytics/     api/notifications/
-api/competitions/ api/attendance/    api/enrollments/   api/teams/
-```
-
----
-
-## 6. Cache Management
-
-### React Query client (`src/lib/queryClient.ts`)
-- Defaults: `staleTime: 5min`, `gcTime: 30min`, `retry: 1`, `refetchOnWindowFocus: false`
-- Mutations never auto-retry (`retry: 0`)
-
-### staleTime Overrides by Data Volatility
-| staleTime | Data |
-|-----------|------|
-| 0 min | Bulk messaging job status |
-| 1 min | Attendance |
-| 2-3 min | Directory, waiting list, teams |
-| 5 min (default) | Dashboard, courses, students |
-| 10 min | Groups flat list, templates |
-
-### Centralized keys (`src/hooks/queryKeys.ts`)
-Pattern: `['resource', id?, 'nested?']`. Use via exported factory:
-```ts
-queryKeys.group(id)   // → ['groups', id]
-queryKeys.student(id) // → ['students', id]
-```
-
-### Domain-specific keys
-| Domain | File | Keys |
-|--------|------|------|
-| Groups | `hooks/useGroupQueries.ts` | `groupKeys.flat`, `groupKeys.grouped(field)` |
-| Dashboard | `hooks/dashboard/useDashboard.ts` | `dashboardKeys.overview(date)` |
-| Notifications | `hooks/notifications/queryKeys.ts` | `notificationKeys.templates`, etc. |
-
-### Cross-domain invalidation
-After creating a group, `useGroupQueries.ts` also invalidates dashboard cache for upcoming dates:
-```ts
-const upcomingDates = getUpcomingDates(7)
-upcomingDates.forEach(date =>
-  qc.invalidateQueries({ queryKey: dashboardKeys.overview(date) })
-)
-```
-
----
-
-## 7. Component Conventions
-
-### Naming suffix → location
+## 5. Component Conventions
 | Suffix | Directory | Example |
 |--------|-----------|---------|
 | Page | `pages/` | `GroupsPage.tsx` |
-| Tab | `components/{domain}/` | `AttendanceTab.tsx` |
-| Modal/Dialog | `components/{domain}/` | `CreateAccountModal.tsx` |
-| Form | `components/{domain}/` | `GroupForm.tsx` |
-| Table | `components/{domain}/` | `GroupsTable.tsx` |
-| Card | `components/{domain}/` | `GroupSessionCard.tsx` |
+| Tab/Modal/Form/Table/Card | `components/{domain}/` | `AttendanceTab.tsx` |
 | Shared | `components/{domain}/shared/` | `GroupStatusBadge.tsx` |
 
-### Folder layout
-```
-src/components/
-├── common/          # Modal, DataTable, Pagination, Toast, SearchBar, etc.
-├── layout/          # AppLayout, Sidebar
-├── {domain}/        # groups/, crm/, finance/, courses/, student/, etc.
-└── {domain}/detail/ # Domain-specific detail sub-panels
-```
+Data flow: Page → custom hook (React Query) → API fn → server → cache → render
 
-### Data flow
-Page → custom hook (React Query) → API function (Axios) → server → cache → render
-
-**Reusable hooks**: `usePaginatedList`, `usePagination`, `useSearch`, `useDebounce` in `src/hooks/`.
+Reusable hooks: `usePaginatedList`, `usePagination`, `useSearch`, `useDebounce` in `src/hooks/`.
 
 ---
 
-## 8. Config & Environment
+## 6. Testing (Vitest)
+- Environment: `happy-dom` (not jsdom). Setup: `src/test/setup.ts` (`@testing-library/jest-dom`)
+- Globals enabled: `describe`, `it`, `expect`, `vi` — no import needed
+- Convention: `src/tests/*.test.{ts,tsx}` (config: `src/**/*.{test,spec}.{ts,tsx}`)
 
-- **ESLint**: Flat config `eslint.config.js` (not `.eslintrc`). Ignores `dist/`.
-- **No `.env` files** in repo — no local env setup required.
-- **No CI** (no `.github/`) and **no pre-commit hooks** (no `.husky/`).
-- **Gitignored**: `.opencode/*` and `.specify/*` are gitignored.
-- **Specs**: `specs/<NNN>-<name>/plan.md` for active feature plans. Driven by `.opencode/command/*.md` speckit scripts. Highest spec: `034-*`.
-- **Supplementary docs**: `ARCHITECTURE.md`, `auth-api.md`, `competitions-api.md`, `daily-reports.md`, `docs/` — consult when context demands deeper architecture or API detail.
+---
+
+## 7. Vercel Deploy
+- `vercel.json`: `/api/*` → `https://techno-terminal-5c255cfe.fastapicloud.dev/api/*`, all other routes → `/index.html` (SPA fallback)
+- Build: `npm run build`, output `dist/`
+
+---
+
+## 8. Config & Specs
+- ESLint: flat config `eslint.config.js`, ignores `dist/`
+- No `.env`, no CI (`.github/`), no pre-commit hooks (`.husky/`)
+- Gitignored: `.opencode/*`, `.specify/*`
+- Specs: `specs/<NNN>-<name>/plan.md` for active feature plans. Highest: `036-*`
+- Supplementary docs: `ARCHITECTURE.md`, `auth-spec.md`, `competitions-api.md`, `daily-reports.md`, `enrollments-spec.md`, `docs/`
 
 <!-- SPECKIT START -->
-Active plan: `specs/023-system-contract/plan.md`
+Active plan: `specs/037-directory-filtering-audit/plan.md`
 <!-- SPECKIT END -->

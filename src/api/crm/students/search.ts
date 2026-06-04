@@ -39,6 +39,7 @@ export async function getStudentsGrouped(
     includeInactive?: boolean
     statusFilter?: 'active' | 'waiting' | 'inactive' // For waiting tab
     ageBuckets?: { min: number; max: number; label: string; key: string }[]
+    filterParams?: StudentFilterParams // Advanced filter criteria
   }
 ): Promise<StudentGroupedResultDTO> {
   const { skip = 0, limit = 50 } = params
@@ -56,6 +57,30 @@ export async function getStudentsGrouped(
         include_inactive: filters?.includeInactive,
         status_filter: filters?.statusFilter,
         age_buckets: filters?.ageBuckets ? JSON.stringify(filters.ageBuckets) : undefined,
+        // Forward advanced filter params to backend
+        ...(filters?.filterParams ? {
+          min_age: filters.filterParams.min_age,
+          max_age: filters.filterParams.max_age,
+          status: filters.filterParams.status,
+          gender: filters.filterParams.gender,
+          course_ids: filters.filterParams.course_ids?.join(','),
+          group_default_day: filters.filterParams.group_default_day,
+          instructor_name: filters.filterParams.instructor_name,
+          has_unpaid_balance: filters.filterParams.has_unpaid_balance,
+          enrollment_date_from: filters.filterParams.enrollment_date_from,
+          enrollment_date_to: filters.filterParams.enrollment_date_to,
+          min_enrollments: filters.filterParams.min_enrollments,
+          max_enrollments: filters.filterParams.max_enrollments,
+          exclude_course_ids: filters.filterParams.exclude_course_ids?.join(','),
+          course_enrollment_date_from: filters.filterParams.course_enrollment_date_from,
+          course_enrollment_date_to: filters.filterParams.course_enrollment_date_to,
+          min_activity_count: filters.filterParams.min_activity_count,
+          max_activity_count: filters.filterParams.max_activity_count,
+          activity_types: filters.filterParams.activity_types,
+          activity_date_from: filters.filterParams.activity_date_from,
+          activity_date_to: filters.filterParams.activity_date_to,
+          activity_search_term: filters.filterParams.activity_search_term,
+        } : {}),
       },
     }
   )

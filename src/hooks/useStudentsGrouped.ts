@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getStudentsGrouped } from '../api/crm'
 import { useGroupingSettingsStore } from '../store/groupingSettingsStore'
 import { queryKeys } from './queryKeys'
+import type { StudentFilterParams } from '../api/crm'
 
 const studentsGroupedKeys = {
   all: queryKeys.studentsGroupedAll,
@@ -19,6 +20,7 @@ interface UseStudentsGroupedOptions {
   pagination: { page: number; pageSize: number }
   tab: 'students' | 'waiting'
   enabled?: boolean
+  filterParams?: StudentFilterParams
 }
 
 export function useStudentsGrouped({
@@ -26,20 +28,19 @@ export function useStudentsGrouped({
   pagination,
   tab,
   enabled = true,
+  filterParams,
 }: UseStudentsGroupedOptions) {
   const ageBuckets = useGroupingSettingsStore((state) => state.ageBuckets)
 
   const skip = (pagination.page - 1) * pagination.pageSize
   const limit = pagination.pageSize
 
+  const ageBucketsKey = groupBy === 'age' ? getAgeBucketsKey(ageBuckets) : 'default'
+  const baseKey = studentsGroupedKeys.byParams(groupBy, skip, limit, tab, ageBucketsKey)
+  const queryKey = filterParams ? [...baseKey, filterParams] : baseKey
+
   return useQuery({
-    queryKey: studentsGroupedKeys.byParams(
-      groupBy,
-      skip,
-      limit,
-      tab,
-      groupBy === 'age' ? getAgeBucketsKey(ageBuckets) : 'default'
-    ),
+    queryKey,
     queryFn: () =>
       getStudentsGrouped(
         groupBy,
@@ -48,6 +49,7 @@ export function useStudentsGrouped({
           includeInactive: tab === 'students',
           statusFilter: tab === 'waiting' ? 'waiting' : undefined,
           ageBuckets: groupBy === 'age' ? ageBuckets : undefined,
+          filterParams,
         }
       ),
     enabled,

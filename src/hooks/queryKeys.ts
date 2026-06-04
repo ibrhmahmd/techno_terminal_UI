@@ -71,6 +71,22 @@ export const queryKeys = {
   // Employees
   employeesAll: ['employees', 'all'] as const,
 
+  // Directory
+  directory: {
+    students: {
+      all:        ['directory', 'students'] as const,
+      list:       (page: number, size: number) => ['directory', 'students', 'list', page, size] as const,
+      search:     (term: string)  => ['directory', 'students', 'search', term] as const,
+      deleted:    (page: number, size: number) => ['directory', 'students', 'deleted', page, size] as const,
+      filter:     (filters: import('../api/crm').StudentFilterParams) => ['directory', 'students', 'filter', filters] as const,
+    },
+    parents: {
+      all:        ['directory', 'parents'] as const,
+      list:       (page: number, size: number) => ['directory', 'parents', 'list', page, size] as const,
+      search:     (term: string)  => ['directory', 'parents', 'search', term] as const,
+    },
+  },
+
   // Auth
   auth: {
     all: ['auth'] as const,

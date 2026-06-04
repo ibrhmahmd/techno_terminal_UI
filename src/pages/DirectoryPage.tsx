@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { Pagination, PageHeader, PageSection, ActionButton, SearchBar, Modal, ConfirmDialog } from '../components/common'
 import { useToast } from '../components/common/Toast'
@@ -22,7 +22,7 @@ import { ParentMobileCard } from '../components/crm/ParentMobileCard'
 import { CardGrid } from '../components/directory/CardGrid'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { CardSkeleton } from '../components/directory/shared/CardSkeleton'
-import { DirectoryTabs } from '../components/directory/DirectoryTabs'
+import { MetricsStripCards } from '../components/common/MetricsStripCards'
 import { AlphabetSlider } from '../components/directory/AlphabetSlider'
 import { StudentGroupBySelector } from '../components/directory/StudentGroupBySelector'
 import type { StudentGroupBy, WaitingGroupBy } from '../config/studentGrouping'
@@ -232,6 +232,44 @@ export function DirectoryPage() {
     setSelectedLetter(null)
   }, [resetFilters])
 
+  const PANEL_ORDER = ['students', 'parents', 'waiting', 'advanced'] as const
+  const activeIndex = PANEL_ORDER.indexOf(activeTab)
+
+  const metricItems = useMemo(() => [
+    {
+      label: 'Students',
+      value: String(totalStudents),
+      icon: 'school',
+      color: 'secondary' as const,
+      isLoading: isLoading && students.length === 0,
+      onClick: () => handleTabChange('students'),
+    },
+    {
+      label: 'Parents',
+      value: String(totalParents),
+      icon: 'family_restroom',
+      color: 'emerald' as const,
+      isLoading: isLoading && parents.length === 0,
+      onClick: () => handleTabChange('parents'),
+    },
+    {
+      label: 'Waiting List',
+      value: String(waitingStudents.length),
+      icon: 'schedule',
+      color: 'amber' as const,
+      isLoading: isLoading && waitingStudents.length === 0,
+      onClick: () => handleTabChange('waiting'),
+    },
+    {
+      label: 'Filter Students',
+      value: appliedFilters ? `${filteredTotal ?? 0} matches` : 'Configure',
+      icon: 'tune',
+      color: 'blue' as const,
+      isLoading: isLoadingFiltered,
+      onClick: () => handleTabChange('advanced'),
+    },
+  ], [totalStudents, totalParents, waitingStudents.length, appliedFilters, filteredTotal, isLoading, isLoadingFiltered, handleTabChange, students.length, parents.length])
+
   return (
     <div className="min-h-screen bg-surface">
       <TopNavbar activePage="Directory" />
@@ -267,11 +305,11 @@ export function DirectoryPage() {
       />
 
       {/* Tab Navigation */}
-      <DirectoryTabs
-        activeTab={activeTab}
-        waitingCount={waitingStudents.length}
-        onTabChange={handleTabChange}
-      />
+      <section className="px-8 pt-6">
+        <div className="max-w-[1680px] mx-auto">
+          <MetricsStripCards items={metricItems} activeIndex={activeIndex} />
+        </div>
+      </section>
 
         {/* Content */}
         <PageSection>

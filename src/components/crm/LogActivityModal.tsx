@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Plus, Trash2 } from 'lucide-react'
 import { Modal } from '../common'
 import {
   logActivity,
@@ -51,7 +52,7 @@ export function LogActivityModal({
   const [createdAt, setCreatedAt] = useState('')
   const [referenceType, setReferenceType] = useState<ReferenceType | ''>('')
   const [referenceId, setReferenceId] = useState<string>('')
-  const [metadataJson, setMetadataJson] = useState('')
+  const [metadataRows, setMetadataRows] = useState<{ key: string; value: string }[]>([])
 
   // Query Entities for reference selectors
   const { data: studentData } = useQuery({
@@ -132,7 +133,17 @@ export function LogActivityModal({
 
       setReferenceType(activity.reference_type || '')
       setReferenceId(activity.reference_id ? String(activity.reference_id) : '')
-      setMetadataJson(activity.metadata ? JSON.stringify(activity.metadata, null, 2) : '')
+
+      // Map metadata object to Key-Value Rows
+      if (activity.metadata && typeof activity.metadata === 'object') {
+        const rows = Object.entries(activity.metadata).map(([k, v]) => ({
+          key: k,
+          value: typeof v === 'object' ? JSON.stringify(v) : String(v),
+        }))
+        setMetadataRows(rows)
+      } else {
+        setMetadataRows([])
+      }
     } else {
       // Reset to defaults
       setActivityType('note_added')
@@ -151,7 +162,7 @@ export function LogActivityModal({
 
       setReferenceType('')
       setReferenceId('')
-      setMetadataJson('')
+      setMetadataRows([])
     }
   }, [activity, isOpen])
 
@@ -170,22 +181,51 @@ export function LogActivityModal({
     setReferenceId('')
   }
 
+  // Key-Value row builders
+  const addMetadataRow = () => {
+    setMetadataRows([...metadataRows, { key: '', value: '' }])
+  }
+
+  const removeMetadataRow = (index: number) => {
+    setMetadataRows(metadataRows.filter((_, idx) => idx !== index))
+  }
+
+  const updateMetadataRow = (index: number, field: 'key' | 'value', val: string) => {
+    setMetadataRows(
+      metadataRows.map((row, idx) => (idx === index ? { ...row, [field]: val } : row))
+    )
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const finalType = isCustomType ? customType.trim() : activityType
     if (!finalType) {
-      showToast('Activity type is required', 'error')
+      showToast('Activity type required.', 'error')
       return
     }
 
-    let parsedMetadata: Record<string, unknown> | null = null
-    if (metadataJson.trim()) {
-      try {
-        parsedMetadata = JSON.parse(metadataJson)
-      } catch {
-        showToast('Invalid JSON metadata format', 'error')
-        return
+    // Compile rows to a JSON metadata object
+    const finalMetadata: Record<string, unknown> = {}
+    for (const row of metadataRows) {
+      const k = row.key.trim()
+      const v = row.value.trim()
+      if (k) {
+        // Automatically parse simple types
+        if (v === 'true') {
+          finalMetadata[k] = true
+        } else if (v === 'false') {
+          finalMetadata[k] = false
+        } else if (v !== '' && !isNaN(Number(v))) {
+          finalMetadata[k] = Number(v)
+        } else {
+          try {
+            // Try parsing if it is nested JSON
+            finalMetadata[k] = JSON.parse(v)
+          } catch {
+            finalMetadata[k] = v
+          }
+        }
       }
     }
 
@@ -194,7 +234,7 @@ export function LogActivityModal({
       try {
         finalCreatedAt = new Date(createdAt).toISOString()
       } catch {
-        showToast('Invalid date format', 'error')
+        showToast('Invalid date format.', 'error')
         return
       }
     }
@@ -207,21 +247,21 @@ export function LogActivityModal({
         description: description.trim() || null,
         reference_type: referenceType || null,
         reference_id: referenceId ? Number(referenceId) : null,
-        metadata: parsedMetadata,
+        metadata: Object.keys(finalMetadata).length > 0 ? finalMetadata : null,
         created_at: finalCreatedAt,
       }
 
       if (activity) {
         await updateActivity(studentId, activity.id, payload)
-        showToast('Activity updated successfully', 'success')
+        showToast('Activity updated.', 'success')
       } else {
         await logActivity(studentId, payload)
-        showToast('Activity logged successfully', 'success')
+        showToast('Activity logged.', 'success')
       }
       onSuccess()
       onClose()
     } catch (err: any) {
-      showToast(err?.response?.data?.message || 'Operation failed', 'error')
+      showToast(err?.response?.data?.message || 'Operation failed.', 'error')
     } finally {
       setLoading(false)
     }
@@ -233,17 +273,17 @@ export function LogActivityModal({
       onClose={onClose}
       title={activity ? 'Edit Activity Log' : 'Log Manual Activity'}
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {/* Type Selection */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
               Activity Type
             </label>
             <select
               value={activityType}
               onChange={(e) => handleTypeChange(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all bg-white text-sm"
+              className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1.5 text-sm cursor-pointer"
             >
               {PREDEFINED_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>
@@ -255,15 +295,15 @@ export function LogActivityModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Subtype (Optional)
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              Subtype
             </label>
             <input
               type="text"
-              placeholder="e.g. system_import, manual_fix"
+              placeholder="e.g., system_import, manual_fix"
               value={activitySubtype}
               onChange={(e) => setActivitySubtype(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-sm"
+              className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1.5 text-sm"
             />
           </div>
         </div>
@@ -271,56 +311,56 @@ export function LogActivityModal({
         {/* Custom Type Input */}
         {isCustomType && (
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
               Custom Activity Type Name *
             </label>
             <input
               type="text"
               required
-              placeholder="e.g. scholarship_awarded, interview_completed"
+              placeholder="e.g., scholarship_awarded, interview_completed"
               value={customType}
               onChange={(e) => setCustomType(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary font-mono text-sm"
+              className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1.5 font-mono text-sm"
             />
           </div>
         )}
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
             Description / Log details
           </label>
           <textarea
-            rows={3}
+            rows={2}
             placeholder="Describe what occurred..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-sm"
+            className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1.5 text-sm resize-none"
           />
         </div>
 
         {/* Date Time Picker & Reference type */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
               Logged Date & Time
             </label>
             <input
               type="datetime-local"
               value={createdAt}
               onChange={(e) => setCreatedAt(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary text-sm bg-white"
+              className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1.5 text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Reference Entity (Optional)
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              Reference Entity
             </label>
             <select
               value={referenceType}
               onChange={(e) => handleReferenceTypeChange(e.target.value as ReferenceType | '')}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all bg-white text-sm"
+              className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1.5 text-sm cursor-pointer"
             >
               <option value="">No reference</option>
               <option value="student">Student</option>
@@ -335,12 +375,12 @@ export function LogActivityModal({
 
         {/* Reference ID selector based on Reference Type */}
         {referenceType && (
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Select Referenced {referenceType.charAt(0).toUpperCase() + referenceType.slice(1)} *
+          <div className="bg-slate-100/50 rounded-[6px] p-3 space-y-1">
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              Select Referenced {referenceType} *
             </label>
             {referenceType === 'student' && (
-              <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 font-medium">
+              <div className="py-1 text-sm text-slate-700 font-medium">
                 {studentData ? `${studentData.full_name} (ID: ${studentId})` : `Student (ID: ${studentId})`}
               </div>
             )}
@@ -350,7 +390,7 @@ export function LogActivityModal({
                   required
                   value={referenceId}
                   onChange={(e) => setReferenceId(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary bg-white text-sm"
+                  className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1 text-sm cursor-pointer"
                   disabled={loadingCourses}
                 >
                   <option value="">-- Choose Course --</option>
@@ -364,7 +404,7 @@ export function LogActivityModal({
                   ))}
                 </select>
                 {loadingCourses && (
-                  <span className="absolute right-8 top-2.5 animate-spin w-4 h-4 border-2 border-secondary border-t-transparent rounded-full" />
+                  <span className="absolute right-8 top-1 animate-spin w-4 h-4 border-2 border-secondary border-t-transparent rounded-full" />
                 )}
               </div>
             )}
@@ -374,7 +414,7 @@ export function LogActivityModal({
                   required
                   value={referenceId}
                   onChange={(e) => setReferenceId(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary bg-white text-sm"
+                  className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1 text-sm cursor-pointer"
                   disabled={loadingGroups}
                 >
                   <option value="">-- Choose Group --</option>
@@ -388,7 +428,7 @@ export function LogActivityModal({
                   ))}
                 </select>
                 {loadingGroups && (
-                  <span className="absolute right-8 top-2.5 animate-spin w-4 h-4 border-2 border-secondary border-t-transparent rounded-full" />
+                  <span className="absolute right-8 top-1 animate-spin w-4 h-4 border-2 border-secondary border-t-transparent rounded-full" />
                 )}
               </div>
             )}
@@ -398,7 +438,7 @@ export function LogActivityModal({
                   required
                   value={referenceId}
                   onChange={(e) => setReferenceId(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary bg-white text-sm"
+                  className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1 text-sm cursor-pointer"
                   disabled={loadingCompetitions}
                 >
                   <option value="">-- Choose Competition --</option>
@@ -412,7 +452,7 @@ export function LogActivityModal({
                   ))}
                 </select>
                 {loadingCompetitions && (
-                  <span className="absolute right-8 top-2.5 animate-spin w-4 h-4 border-2 border-secondary border-t-transparent rounded-full" />
+                  <span className="absolute right-8 top-1 animate-spin w-4 h-4 border-2 border-secondary border-t-transparent rounded-full" />
                 )}
               </div>
             )}
@@ -422,7 +462,7 @@ export function LogActivityModal({
                   required
                   value={referenceId}
                   onChange={(e) => setReferenceId(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary bg-white text-sm"
+                  className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1 text-sm cursor-pointer"
                   disabled={loadingPayments}
                 >
                   <option value="">-- Choose Payment --</option>
@@ -439,7 +479,7 @@ export function LogActivityModal({
                   )}
                 </select>
                 {loadingPayments && (
-                  <span className="absolute right-8 top-2.5 animate-spin w-4 h-4 border-2 border-secondary border-t-transparent rounded-full" />
+                  <span className="absolute right-8 top-1 animate-spin w-4 h-4 border-2 border-secondary border-t-transparent rounded-full" />
                 )}
               </div>
             )}
@@ -449,7 +489,7 @@ export function LogActivityModal({
                   required
                   value={referenceId}
                   onChange={(e) => setReferenceId(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary bg-white text-sm"
+                  className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1 text-sm cursor-pointer"
                   disabled={loadingEnrollments}
                 >
                   <option value="">-- Choose Enrollment --</option>
@@ -466,40 +506,77 @@ export function LogActivityModal({
                   )}
                 </select>
                 {loadingEnrollments && (
-                  <span className="absolute right-8 top-2.5 animate-spin w-4 h-4 border-2 border-secondary border-t-transparent rounded-full" />
+                  <span className="absolute right-8 top-1 animate-spin w-4 h-4 border-2 border-secondary border-t-transparent rounded-full" />
                 )}
               </div>
             )}
           </div>
         )}
 
-        {/* Metadata JSON */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Metadata JSON (Optional)
-          </label>
-          <textarea
-            rows={4}
-            placeholder='{\n  "coupon_code": "SUMMER50",\n  "approved_by": "Principal"\n}'
-            value={metadataJson}
-            onChange={(e) => setMetadataJson(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary font-mono text-sm"
-          />
+        {/* Metadata Custom Fields builder */}
+        <div className="bg-slate-100/50 rounded-[6px] p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              Custom Metadata Fields
+            </span>
+            <button
+              type="button"
+              onClick={addMetadataRow}
+              className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-secondary hover:text-secondary/80 bg-slate-200/50 hover:bg-slate-200/80 rounded-[6px] transition-all"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add Field
+            </button>
+          </div>
+
+          {metadataRows.length === 0 ? (
+            <p className="text-xs text-slate-400 italic">
+              No custom fields added yet. Add metadata tags like coupon codes, custom references, or approval details.
+            </p>
+          ) : (
+            <div className="space-y-3 max-h-40 overflow-y-auto pr-1 scrollbar-thin">
+              {metadataRows.map((row, idx) => (
+                <div key={idx} className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    placeholder="Key (e.g., coupon_code)"
+                    value={row.key}
+                    onChange={(e) => updateMetadataRow(idx, 'key', e.target.value)}
+                    className="flex-1 min-w-0 bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1 text-xs"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Value (e.g., SUMMER50)"
+                    value={row.value}
+                    onChange={(e) => updateMetadataRow(idx, 'value', e.target.value)}
+                    className="flex-1 min-w-0 bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1 text-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeMetadataRow(idx)}
+                    className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-[4px] transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium transition-colors"
+            className="px-4 py-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-[6px] text-xs font-semibold transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 text-white bg-primary hover:bg-primary/90 disabled:bg-primary/50 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+            className="px-4 py-2 text-white bg-secondary hover:bg-secondary/90 disabled:bg-secondary/50 rounded-[6px] text-xs font-semibold transition-colors flex items-center gap-2"
           >
             {loading && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />}
             {activity ? 'Save Changes' : 'Log Activity'}

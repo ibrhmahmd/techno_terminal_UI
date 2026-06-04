@@ -134,7 +134,8 @@ export function useDirectoryData({
       groupBy: filterGroupBy === 'none' ? 'status' : filterGroupBy,
       pagination: { page: filterPage, pageSize: filterPageSize },
       tab: 'students',
-      enabled: activeTab === 'advanced' && filterGroupBy !== 'none' && !!filterParams && Object.keys(filterParams).length > 0,
+      enabled: activeTab === 'advanced' && filterGroupBy !== 'none' && !!filterParams,
+      filterParams,
     })
 
   // Derived data
@@ -213,7 +214,7 @@ export function useDirectoryData({
       key: group.key,
       label: filterGroupBy === 'age' ? formatAgeGroupLabel(group.label) : group.label,
       count: group.count,
-      items: group.students as StudentFilterItem[],
+      items: group.students as unknown as StudentFilterItem[],
       sortKey: filterGroupBy === 'age' ? parseInt(group.key.split('-')[0] || '0', 10) : 0,
     }))
 
