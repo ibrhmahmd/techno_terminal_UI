@@ -29,15 +29,14 @@ const navSections = [
     title: 'Resources',
     items: [
       { path: '/staff', label: 'Staff', icon: 'people' },
+      { path: '/capabilities', label: 'Capabilities', icon: 'article' },
       { path: '/notifications', label: 'Notifications', icon: 'notifications' },
       { path: '/settings', label: 'Settings', icon: 'settings' },
     ],
   },
 ]
 
-interface SidebarProps {}
-
-export function Sidebar({}: SidebarProps) {
+export function Sidebar() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuthStore()
@@ -59,7 +58,7 @@ export function Sidebar({}: SidebarProps) {
 
   // Filter sections based on user role
   const allowedPaths = user?.role === 'instructor'
-    ? ['/dashboard', '/groups', '/courses', '/competitions', '/students', '/parents', '/attendance']
+    ? ['/dashboard', '/groups', '/courses', '/competitions', '/students', '/parents', '/attendance', '/capabilities']
     : null
   const filteredSections = navSections.map(section => ({
     ...section,

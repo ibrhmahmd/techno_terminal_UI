@@ -150,5 +150,5 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 - **Supplementary docs**: `ARCHITECTURE.md`, `auth-api.md`, `competitions-api.md`, `daily-reports.md`, `docs/` — consult when context demands deeper architecture or API detail.
 
 <!-- SPECKIT START -->
-Active plan: `specs/036-edit-enrollment/plan.md`
+Active plan: `specs/023-system-contract/plan.md`
 <!-- SPECKIT END -->

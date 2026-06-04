@@ -26,6 +26,7 @@ import { ReportsPage } from './pages/ReportsPage'
 import { StaffPage } from './pages/StaffPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { NotificationsPage } from './pages/NotificationsPage'
+import { CapabilitiesPage } from './pages/CapabilitiesPage'
 import { RoleBasedRoute } from './components/common/RoleBasedRoute'
 import { InstructorBlockedRoute } from './components/common/InstructorBlockedRoute'
 
@@ -79,6 +80,7 @@ function App() {
             <Route path="/students/:id" element={<StudentDetailPage />} />
             <Route path="/parents/:id" element={<ParentDetailPage />} />
             <Route path="/attendance" element={<div>Attendance</div>} />
+            <Route path="/capabilities" element={<CapabilitiesPage />} />
             <Route path="/competitions" element={<CompetitionsPage />} />
             <Route path="/competitions/:id/edit" element={<CompetitionEditPage />} />
             <Route path="/competitions/:id" element={<CompetitionDetailPage />} />
