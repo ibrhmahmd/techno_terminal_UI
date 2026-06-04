@@ -5,6 +5,7 @@ import type { Schedule } from '../../api/academics/types/groups'
 import { useCourses } from '../../hooks/useCourses'
 import { useAllEmployees } from '../../hooks/useAllEmployees'
 import { formToSchedule } from '../../utils/scheduleTransform'
+import { SearchablePillSelector } from '../common/SearchablePillSelector'
 
 type FormSchedule = Pick<ScheduleInput, 'day'> & Partial<ScheduleInput & Schedule>
 
@@ -41,8 +42,8 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
   }
 
   const [name, setName] = useState(initialData?.name || '')
-  const [courseId, setCourseId] = useState(initialData?.course_id || '')
-  const [instructorId, setInstructorId] = useState(initialData?.instructor_id || '')
+  const [courseId, setCourseId] = useState<string | number | null>(initialData?.course_id || null)
+  const [instructorId, setInstructorId] = useState<string | number | null>(initialData?.instructor_id || null)
   const [capacity, setCapacity] = useState(initialData?.capacity || 12)
   const [startDate, setStartDate] = useState(initialData?.start_date || '')
   const schedule = initialData?.schedule
@@ -68,6 +69,8 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
     setDefaultDay(d)
     setStartTime(parseTime(st))
     setEndTime(parseTime(et))
+    setCourseId(initialData?.course_id || null)
+    setInstructorId(initialData?.instructor_id || null)
   }, [initialData])
 
   const to24h = (time: TimeState): string => {
@@ -143,44 +146,30 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
 
       {/* Course */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="course_id" className="text-sm font-medium text-on-surface">
+        <label className="text-sm font-medium text-on-surface">
           Course <span className="text-red-500">*</span>
         </label>
-        <select
-          id="course_id"
+        <SearchablePillSelector
+          options={courses.filter(c => c.is_active).map(c => ({ id: c.id, label: c.name, subLabel: c.category }))}
           value={courseId}
-          onChange={(e) => setCourseId(e.target.value)}
-          required
+          onChange={setCourseId}
+          placeholder="Search courses..."
           disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-        >
-          <option value="">Select a course...</option>
-          {courses.filter(c => c.is_active).map(course => (
-            <option key={course.id} value={course.id}>{course.name}</option>
-          ))}
-        </select>
+        />
       </div>
 
       {/* Instructor */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="instructor_id" className="text-sm font-medium text-on-surface">
+        <label className="text-sm font-medium text-on-surface">
           Instructor <span className="text-red-500">*</span>
         </label>
-        <select
-          id="instructor_id"
+        <SearchablePillSelector
+          options={instructors.filter(i => i.is_active !== false).map(i => ({ id: i.id, label: i.full_name, subLabel: i.job_title }))}
           value={instructorId}
-          onChange={(e) => setInstructorId(e.target.value)}
-          required
+          onChange={setInstructorId}
+          placeholder="Search instructors..."
           disabled={isLoading || isLoadingEmployees}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-        >
-          <option value="">Select an instructor...</option>
-          {instructors.filter(i => i.is_active !== false).map(instructor => (
-            <option key={instructor.id} value={instructor.id}>
-              {instructor.full_name} ({instructor.job_title})
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
       {/* Capacity and Day */}

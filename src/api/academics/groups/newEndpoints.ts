@@ -105,6 +105,7 @@ export interface PaymentDetailDTO {
   payment_method: 'cash' | 'card' | 'bank_transfer' | 'wallet'
   status: 'completed' | 'pending' | 'failed' | 'refunded'
   receipt_number: string | null
+  receipt_id?: number | null
   transaction_type: 'payment' | 'refund' | 'adjustment'
 }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { PageHeader, PageSection, ActionButton, SearchBar, LoadingSpinner, Modal, PaginationControls, EmptyState, ErrorState } from '../components/common'
 import { EmployeeForm } from '../components/staff/EmployeeForm'
@@ -12,17 +13,30 @@ import type { EmployeeCreateInput, CreateEmployeeAccountRequest } from '../api/h
 
 export function StaffPage() {
   const { showToast, ToastComponent } = useToast()
+  const [searchParams] = useSearchParams()
+  const initialSearch = searchParams.get('search') || ''
 
   // Pagination state (declared before effects that reference it)
   const [page, setPage] = useState(1)
   const pageSize = 20
 
   // Search with debounce
-  const [searchInput, setSearchInput] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [searchInput, setSearchInput] = useState(initialSearch)
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch)
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
+  // Sync search input if url search parameter changes
   useEffect(() => {
+    const searchVal = searchParams.get('search') || ''
+    setSearchInput(searchVal)
+    setDebouncedSearch(searchVal)
+    setPage(1)
+  }, [searchParams])
+
+  useEffect(() => {
+    // If the searchInput matches the debounced search (e.g. from initial/sync), skip debounce to avoid infinite loop or extra requests
+    if (searchInput === debouncedSearch) return
+
     if (debounceTimer.current) clearTimeout(debounceTimer.current)
     debounceTimer.current = setTimeout(() => {
       setDebouncedSearch(searchInput)
@@ -31,7 +45,7 @@ export function StaffPage() {
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current)
     }
-  }, [searchInput])
+  }, [searchInput, debouncedSearch])
 
   // Filter state
   const [employmentType] = useState('')

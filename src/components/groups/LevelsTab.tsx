@@ -1,23 +1,72 @@
 import { useState } from 'react'
-import { BookOpen, GraduationCap, CheckCircle, XCircle, AlertCircle, Edit3 } from 'lucide-react'
+import { BookOpen, GraduationCap, CheckCircle, XCircle, AlertCircle, Edit3, FileDown, MessageCircle, Calendar } from 'lucide-react'
 import type { LevelDetailDTO, LevelPaymentsDTO, CourseInfoDTO, InstructorInfoDTO } from '../../api/academics'
 import { LevelSelector } from './detail/LevelSelector'
 import { useGroupAttendance } from '../../hooks/useGroupAttendance'
 import { AttendanceGrid } from '../attendance/AttendanceGrid'
 import { transformRoster, transformSessions } from '../../utils/attendanceTransforms'
 import { LoadingSpinner } from '../common/LoadingSpinner'
+import { downloadReceiptPdf } from '../../api/finance/receipts'
+import { sendReceiptToStudent } from '../../api/crm/students/payments'
+import { useToast } from '../common/Toast'
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString()} EGP`
 }
 
 function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments'] }) {
+  const { showToast } = useToast()
+  const [downloadingId, setDownloadingId] = useState<number | null>(null)
+  const [sendingId, setSendingId] = useState<number | null>(null)
+
   if (!payments || payments.length === 0) {
     return (
       <div className="py-8 text-center bg-slate-50 rounded-lg">
         <p className="text-slate-500 text-sm">No recent payments found for this level.</p>
       </div>
     )
+  }
+
+  const handleDownloadPdf = async (payment: any, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!payment.receipt_id) {
+      showToast('No receipt linked to this payment', 'error')
+      return
+    }
+    setDownloadingId(payment.payment_id)
+    try {
+      const blob = await downloadReceiptPdf(payment.receipt_id)
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `receipt-${payment.receipt_number || payment.receipt_id}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      showToast('Receipt PDF downloaded successfully', 'success')
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to download receipt PDF', 'error')
+    } finally {
+      setDownloadingId(null)
+    }
+  }
+
+  const handleSendWhatsApp = async (payment: any, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSendingId(payment.payment_id)
+    try {
+      const result = await sendReceiptToStudent(payment.payment_id, 'whatsapp')
+      if (result.success) {
+        showToast(result.message || 'Receipt sent via WhatsApp successfully', 'success')
+      } else {
+        showToast(result.message || 'Failed to send receipt via WhatsApp', 'error')
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to send receipt via WhatsApp', 'error')
+    } finally {
+      setSendingId(null)
+    }
   }
 
   return (
@@ -34,23 +83,45 @@ function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments
                 {new Date(payment.payment_date).toLocaleDateString()} • {payment.payment_method}
               </p>
             </div>
-            <div className="text-right">
-              <p className={`text-sm font-semibold ${
-                payment.status === 'completed' ? 'text-emerald-600' :
-                payment.status === 'pending' ? 'text-amber-600' :
-                payment.status === 'failed' ? 'text-red-600' :
-                'text-slate-600'
-              }`}>
-                {formatCurrency(payment.amount)}
-              </p>
-              <span className={`text-[10px] px-2 py-0.5 mt-1 inline-block rounded-full uppercase tracking-wider font-bold ${
-                payment.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
-                payment.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                payment.status === 'failed' ? 'bg-red-100 text-red-700' :
-                'bg-slate-100 text-slate-600'
-              }`}>
-                {payment.status}
-              </span>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className={`text-sm font-semibold ${
+                  payment.status === 'completed' ? 'text-emerald-600' :
+                  payment.status === 'pending' ? 'text-amber-600' :
+                  payment.status === 'failed' ? 'text-red-600' :
+                  'text-slate-600'
+                }`}>
+                  {formatCurrency(payment.amount)}
+                </p>
+                <span className={`text-[10px] px-2 py-0.5 mt-1 inline-block rounded-full uppercase tracking-wider font-bold ${
+                  payment.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                  payment.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                  payment.status === 'failed' ? 'bg-red-100 text-red-700' :
+                  'bg-slate-100 text-slate-600'
+                }`}>
+                  {payment.status}
+                </span>
+              </div>
+              {payment.status === 'completed' && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={(e) => handleDownloadPdf(payment, e)}
+                    disabled={downloadingId === payment.payment_id}
+                    className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50"
+                    title="Download PDF Receipt"
+                  >
+                    <FileDown className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={(e) => handleSendWhatsApp(payment, e)}
+                    disabled={sendingId === payment.payment_id}
+                    className="p-1.5 text-slate-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors disabled:opacity-50"
+                    title="Send via WhatsApp (Soon)"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -78,7 +149,7 @@ export function LevelsTab({
   groupId,
   paymentsByLevel,
   coursesMap,
-  instructorsMap: _instructorsMap,
+  instructorsMap,
   onAddLevel,
   groupInstructorName,
   groupName,
@@ -211,44 +282,88 @@ export function LevelsTab({
           </div>
 
           {/* Level Metrics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            {/* Date Range Card */}
-            <div className="bg-surface-container-lowest p-4 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[90px]">
-              <div>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Timeline</span>
-                <span className="font-headline text-sm font-bold text-slate-900 leading-tight block">
-                  {formatDate(selectedLevel.start_date)} - {formatDate(selectedLevel.end_date)}
-                </span>
-              </div>
-              <div>
-                <span className="text-[11px] font-extrabold text-secondary bg-secondary/10 px-2 py-0.5 rounded mt-1.5 inline-block">
-                  Duration: {getDurationString(selectedLevel.start_date, selectedLevel.end_date) || 'N/A'}
-                </span>
-              </div>
-            </div>
+          {(() => {
+            const unpaidCount = selectedLevel.payment_summary?.unpaid_students_count ?? 0
+            const paidCount = Math.max(0, (selectedLevel.students_count ?? 0) - unpaidCount)
 
-            {/* Sessions Card */}
-            <div className="bg-surface-container-lowest p-4 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[90px]">
-              <div>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Sessions</span>
-                <span className="font-headline text-base font-bold text-slate-900 leading-tight block">
-                  {selectedLevel.sessions.length} Sessions
-                </span>
-              </div>
-              <span className="text-[11px] text-slate-500 mt-1.5 block">Total session nodes</span>
-            </div>
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-6">
+                {/* Start Date Card */}
+                <div className="bg-surface-container-lowest p-3.5 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[84px] shadow-sm">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      Start Date
+                    </span>
+                    <span className="font-headline text-sm font-extrabold text-slate-900 leading-tight block">
+                      {formatDate(selectedLevel.start_date)}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 mt-1 block">Level induction</span>
+                </div>
 
-            {/* Course Card */}
-            <div className="bg-surface-container-lowest p-4 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[90px]">
-              <div>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Course</span>
-                <span className="font-headline text-sm font-bold text-slate-900 leading-tight block truncate" title={coursesMap[selectedLevel.course_id]?.course_name || courseName || `ID: ${selectedLevel.course_id}`}>
-                  {coursesMap[selectedLevel.course_id]?.course_name || courseName || `ID: ${selectedLevel.course_id}`}
-                </span>
+                {/* End Date Card */}
+                <div className="bg-surface-container-lowest p-3.5 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[84px] shadow-sm">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      End Date
+                    </span>
+                    <span className="font-headline text-sm font-extrabold text-slate-900 leading-tight block">
+                      {formatDate(selectedLevel.end_date)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-extrabold text-secondary bg-secondary/10 px-2 py-0.5 rounded mt-1 inline-block">
+                      Duration: {getDurationString(selectedLevel.start_date, selectedLevel.end_date) || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Paid Students Card */}
+                <div className="bg-surface-container-lowest p-3.5 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[84px] shadow-sm">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                      Paid Students
+                    </span>
+                    <span className="font-headline text-base font-extrabold text-emerald-600 leading-tight block">
+                      {paidCount} Student{paidCount !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 mt-1 block font-medium">Tuition settled</span>
+                </div>
+
+                {/* Unpaid Students Card */}
+                <div className="bg-surface-container-lowest p-3.5 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[84px] shadow-sm">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                      Unpaid Students
+                    </span>
+                    <span className="font-headline text-base font-extrabold text-amber-600 leading-tight block">
+                      {unpaidCount} Student{unpaidCount !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 mt-1 block font-medium">Outstanding fees</span>
+                </div>
+
+                {/* Course Card */}
+                <div className="bg-surface-container-lowest p-3.5 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[84px] shadow-sm">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
+                      <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                      Course
+                    </span>
+                    <span className="font-headline text-sm font-extrabold text-slate-900 leading-tight block truncate" title={coursesMap[selectedLevel.course_id]?.course_name || courseName || `ID: ${selectedLevel.course_id}`}>
+                      {coursesMap[selectedLevel.course_id]?.course_name || courseName || `ID: ${selectedLevel.course_id}`}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 mt-1 block">Curriculum standard</span>
+                </div>
               </div>
-              <span className="text-[11px] text-slate-500 mt-1.5 block">Curriculum standard</span>
-            </div>
-          </div>
+            )
+          })()}
 
           <div className="mt-6 border-t border-slate-200 pt-6">
             <div className="flex justify-center mb-6">
@@ -287,7 +402,10 @@ export function LevelsTab({
                 <LevelAttendancePanel
                   groupId={groupId}
                   levelNumber={selectedLevel.level_number}
-                  groupInstructorName={groupInstructorName}
+                  groupInstructorName={
+                    (selectedLevel.instructor_id && instructorsMap?.[selectedLevel.instructor_id]?.instructor_name) ||
+                    groupInstructorName
+                  }
                   groupName={groupName}
                   courseName={courseName}
                 />

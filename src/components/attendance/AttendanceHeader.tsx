@@ -52,23 +52,30 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
           return (
             <th
               key={`session-header-${session.session_id}-${sessionIdx}`}
-              className={`px-4 py-4 border-b border-slate-300 text-center border-l border-slate-200 bg-slate-100 ${
+              className={`px-3 py-4 border-b border-slate-300 text-center border-l border-slate-200 bg-slate-100 ${
                 cancelled ? 'opacity-50 blur-[1px] bg-gray-200' : ''
               }`}
             >
-              <div className="flex flex-col items-center gap-1 min-w-[120px]">
-                {/* Session Date */}
-                <span className="block text-[13px] font-extrabold text-slate-900 leading-none">
-                  {formatSessionDate(session.date)}
-                </span>
-                {/* Session Number */}
-                <span className={`block text-[11px] font-bold uppercase tracking-wider text-slate-500 ${cancelled ? 'line-through text-slate-400' : ''}`}>
-                  Session {sessionNum}
-                </span>
-                {/* Time */}
-                <span className="block text-[11px] font-semibold text-slate-600 tracking-tight leading-none">
-                  {session.time_start ? formatTime(session.time_start) : ''}
-                </span>
+              <div className="flex flex-col items-center gap-2 min-w-[130px] justify-center">
+                <div className="flex items-center gap-2 justify-center w-full">
+                  {/* Left: Prominent Session Number Badge */}
+                  <div className={`flex items-center justify-center w-7 h-7 rounded bg-slate-900 text-white font-headline text-[13px] font-extrabold shadow-sm flex-shrink-0 ${
+                    cancelled ? 'bg-slate-400 opacity-60' : ''
+                  }`}>
+                    {String(sessionNum).padStart(2, '0')}
+                  </div>
+                  {/* Right: Date and Time Stack */}
+                  <div className="text-left flex flex-col justify-center">
+                    <span className={`block text-[12px] font-extrabold text-slate-900 leading-tight tracking-tight ${
+                      cancelled ? 'line-through text-slate-400' : ''
+                    }`}>
+                      {formatSessionDate(session.date)}
+                    </span>
+                    <span className="block text-[10px] font-semibold text-slate-500 tracking-tight leading-none mt-0.5">
+                      {session.time_start ? formatTime(session.time_start) : ''}
+                    </span>
+                  </div>
+                </div>
                 {/* Instructor name badge */}
                 <span 
                   className="block text-[10px] font-bold text-slate-800 bg-slate-200/85 border border-slate-300/60 px-2 py-0.5 rounded-sm mt-0.5 max-w-full truncate"
