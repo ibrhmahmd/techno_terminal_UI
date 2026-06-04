@@ -49,6 +49,12 @@ export const queryKeys = {
     dailyReport: {
       data: (date: string) => ['reports', 'daily-report', 'data', date] as const,
     },
+    weeklyReport: {
+      data: (date: string) => ['reports', 'weekly-report', 'data', date] as const,
+    },
+    monthlyReport: {
+      data: (date: string) => ['reports', 'monthly-report', 'data', date] as const,
+    },
   },
 
   // Finance

@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 
-type TabId = 'daily_report' | 'weekly_report' | 'revenue_collections' | 'progress'
+type TabId = 'daily_report' | 'weekly_report' | 'monthly_report' | 'revenue_collections' | 'progress'
 
 interface TabConfig {
   id: TabId
@@ -17,7 +17,8 @@ interface TabNavigationProps {
 
 const DEFAULT_TABS: TabConfig[] = [
   { id: 'daily_report', label: 'Daily Report', icon: 'calendar_today' },
-  { id: 'weekly_report', label: 'Weekly Report', icon: 'date_range', comingSoon: true },
+  { id: 'weekly_report', label: 'Weekly Report', icon: 'date_range' },
+  { id: 'monthly_report', label: 'Monthly Report', icon: 'calendar_month' },
   { id: 'revenue_collections', label: 'Revenue & Collections', icon: 'payments' },
   { id: 'progress', label: 'Progress', icon: 'military_tech' },
 ]

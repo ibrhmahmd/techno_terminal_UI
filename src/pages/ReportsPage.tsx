@@ -6,6 +6,8 @@ import { RevenueAndCollectionsTab } from '../components/reports/organisms/Revenu
 import { ProgressTab } from '../components/reports/organisms/ProgressTab'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { DailyReportTab } from '../components/reports/organisms/DailyReportTab'
+import { WeeklyReportTab } from '../components/reports/organisms/WeeklyReportTab'
+import { MonthlyReportTab } from '../components/reports/organisms/MonthlyReportTab'
 
 export function ReportsPage() {
   const [activeTab, setActiveTab] = useState<TabId>('daily_report')
@@ -25,6 +27,8 @@ export function ReportsPage() {
         {activeTab === 'revenue_collections' && <ErrorBoundary><RevenueAndCollectionsTab /></ErrorBoundary>}
         {activeTab === 'progress' && <ErrorBoundary><ProgressTab /></ErrorBoundary>}
         {activeTab === 'daily_report' && <ErrorBoundary><DailyReportTab /></ErrorBoundary>}
+        {activeTab === 'weekly_report' && <ErrorBoundary><WeeklyReportTab /></ErrorBoundary>}
+        {activeTab === 'monthly_report' && <ErrorBoundary><MonthlyReportTab /></ErrorBoundary>}
       </PageSection>
     </div>
   )
