@@ -83,6 +83,7 @@ export interface AttendanceSessionDTO {
   time_end: string
   status: 'scheduled' | 'completed' | 'cancelled'
   is_extra_session: boolean
+  notes: string | null
   attendance: Record<string, 'present' | 'absent' | 'excused' | 'late' | null>
 }
 

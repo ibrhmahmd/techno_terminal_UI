@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 import { formatTime } from '../../utils/formatting'
 import { sessionStatusColors } from '../../utils/colors'
@@ -9,7 +8,7 @@ interface AttendanceHeaderProps {
 }
 
 export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHeaderProps) {
-  const displaySessions = useMemo(() => sessions.slice(0, 5), [sessions])
+
 
   const isCancelled = (session: SessionWithAttendanceDTO) => session.status === 'cancelled'
 
@@ -45,7 +44,7 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
         >
           Student
         </th>
-        {displaySessions.map((session, sessionIdx) => {
+        {sessions.map((session, sessionIdx) => {
           const cancelled = isCancelled(session)
           const sessionNum = session.session_number || (sessionIdx + 1)
 
@@ -56,35 +55,35 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
                 cancelled ? 'opacity-50 blur-[1px] bg-gray-200' : ''
               }`}
             >
-              <div className="flex flex-col items-center gap-2 min-w-[130px] justify-center">
+              <div className="flex flex-col items-center gap-2 min-w-[210px] justify-center">
                 <div className="flex items-center gap-2 justify-center w-full">
                   {/* Left: Prominent Session Number Badge */}
-                  <div className={`flex items-center justify-center w-7 h-7 rounded bg-slate-900 text-white font-headline text-[13px] font-extrabold shadow-sm flex-shrink-0 ${
+                  <div className={`flex items-center justify-center w-10 h-10 rounded bg-slate-900 text-white font-headline text-[17px] font-extrabold shadow-sm flex-shrink-0 ${
                     cancelled ? 'bg-slate-400 opacity-60' : ''
                   }`}>
                     {String(sessionNum).padStart(2, '0')}
                   </div>
                   {/* Right: Date and Time Stack */}
                   <div className="text-left flex flex-col justify-center">
-                    <span className={`block text-[12px] font-extrabold text-slate-900 leading-tight tracking-tight ${
+                    <span className={`block text-[16px] font-extrabold text-slate-900 leading-tight tracking-tight ${
                       cancelled ? 'line-through text-slate-400' : ''
                     }`}>
                       {formatSessionDate(session.date)}
                     </span>
-                    <span className="block text-[10px] font-semibold text-slate-500 tracking-tight leading-none mt-0.5">
+                    <span className="block text-[13px] font-bold text-slate-500 tracking-tight leading-none mt-0.5">
                       {session.time_start ? formatTime(session.time_start) : ''}
                     </span>
                   </div>
                 </div>
                 {/* Instructor name badge */}
                 <span 
-                  className="block text-[10px] font-bold text-slate-800 bg-slate-200/85 border border-slate-300/60 px-2 py-0.5 rounded-sm mt-0.5 max-w-full truncate"
+                  className="block text-[13px] font-extrabold text-slate-800 bg-slate-200/85 border border-slate-300/60 px-3 py-1.5 rounded mt-0.5 max-w-full truncate"
                   title={getInstructorName(session)}
                 >
                   {getInstructorName(session)}
                 </span>
                 {cancelled && (
-                  <span className={`mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${sessionStatusColors.cancelled}`}>
+                  <span className={`mt-1 px-3 py-1 rounded-full text-[11px] font-bold ${sessionStatusColors.cancelled}`}>
                     CANCELLED
                   </span>
                 )}

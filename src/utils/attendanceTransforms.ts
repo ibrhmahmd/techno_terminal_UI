@@ -1,17 +1,25 @@
-import type { AttendanceRosterDTO, AttendanceSessionDTO } from '../api/academics'
-import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../api/dashboard'
+import type {
+  AttendanceRosterDTO,
+  AttendanceSessionDTO,
+} from "../api/academics";
+import type {
+  SessionWithAttendanceDTO,
+  StudentRosterDTO,
+} from "../api/dashboard";
 
 /**
  * Transform new API roster to StudentRosterDTO format
  */
-export function transformRoster(roster: AttendanceRosterDTO[]): StudentRosterDTO[] {
-  return roster.map(r => ({
+export function transformRoster(
+  roster: AttendanceRosterDTO[],
+): StudentRosterDTO[] {
+  return roster.map((r) => ({
     student_id: r.student_id,
     student_name: r.student_name,
-    gender: 'male' as const, // Default fallback
-    billing_status: r.billing_status === 'paid' ? 'paid' : 'due',
-    balance: r.billing_status === 'paid' ? 0 : -1,
-  }))
+    gender: "male" as const, // Default fallback
+    billing_status: r.billing_status === "paid" ? "paid" : "due",
+    balance: r.billing_status === "paid" ? 0 : -1,
+  }));
 }
 
 /**
@@ -19,9 +27,11 @@ export function transformRoster(roster: AttendanceRosterDTO[]): StudentRosterDTO
  * New: 'present' | 'absent' | 'excused' | 'late' | null
  * Old: 'present' | 'absent' | 'cancelled' | null
  */
-export function mapStatus(status: 'present' | 'absent' | 'excused' | 'late' | null): 'present' | 'absent' | 'cancelled' | null {
-  if (status === 'excused' || status === 'late') return 'present' // Treat as present for compatibility
-  return status
+export function mapStatus(
+  status: "present" | "absent" | "excused" | "late" | null,
+): "present" | "absent" | "cancelled" | null {
+  if (status === "excused" || status === "late") return "present"; // Treat as present for compatibility
+  return status;
 }
 
 /**
@@ -31,9 +41,9 @@ export function transformSessions(
   sessions: AttendanceSessionDTO[],
   roster: AttendanceRosterDTO[],
   groupId: number,
-  levelNumber: number
+  levelNumber: number,
 ): SessionWithAttendanceDTO[] {
-  return sessions.map(s => ({
+  return sessions.map((s) => ({
     session_id: s.session_id,
     id: s.session_id, // Alias
     session_number: s.session_number,
@@ -50,16 +60,18 @@ export function transformSessions(
     actual_instructor_id: null,
     instructor_name: null,
     is_substitute: false,
-    notes: null,
+    notes: s.notes,
     // Convert attendance Record map to AttendanceRecordDTO array
-    attendance: Object.entries(s.attendance || {}).map(([studentId, status]) => {
-      const student = roster.find(r => r.student_id === Number(studentId))
-      return {
-        student_id: Number(studentId),
-        student_name: student?.student_name || '',
-        gender: 'male' as const,
-        status: mapStatus(status as any),
-      }
-    }),
-  }))
+    attendance: Object.entries(s.attendance || {}).map(
+      ([studentId, status]) => {
+        const student = roster.find((r) => r.student_id === Number(studentId));
+        return {
+          student_id: Number(studentId),
+          student_name: student?.student_name || "",
+          gender: "male" as const,
+          status: mapStatus(status as any),
+        };
+      },
+    ),
+  }));
 }

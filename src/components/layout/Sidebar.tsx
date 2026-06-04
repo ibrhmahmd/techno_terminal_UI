@@ -35,19 +35,15 @@ const navSections = [
   },
 ]
 
-interface SidebarProps {
-  isOpen: boolean
-  onClose: () => void
-}
+interface SidebarProps {}
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({}: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuthStore()
 
   const handleLogout = async () => {
     await logout()
-    onClose()
     navigate('/login')
   }
 
@@ -59,7 +55,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const handleNavigate = (path: string) => {
     navigate(path)
-    onClose()
   }
 
   // Filter sections based on user role
@@ -81,9 +76,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 z-50 flex flex-col overflow-hidden transition-transform duration-300 ease-in-out ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:translate-x-0`}
+      className="fixed left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 z-50 flex-col overflow-hidden hidden lg:flex"
     >
       {/* Brand/Header */}
       <div className="p-6 border-b border-slate-800 flex items-center justify-between">
@@ -92,12 +85,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           className="text-left hover:opacity-80 transition-opacity"
         >
           <h1 className="text-xl font-bold font-headline text-white tracking-tight">TechnoTerminal</h1>
-        </button>
-        <button
-          onClick={onClose}
-          className="lg:hidden p-1 text-slate-400 hover:text-white transition-colors"
-        >
-          <span className="material-symbols-outlined text-xl">close</span>
         </button>
       </div>
 

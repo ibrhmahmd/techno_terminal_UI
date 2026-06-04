@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { dashboardKeys } from '../../hooks/dashboard/useDashboard'
@@ -77,8 +77,8 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   // Debounced attendance state (kept for cleanup, but not used for auto-save)
   const attendanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const displaySessions = useMemo(() => sessions.slice(0, 5), [sessions])
   const fetchCycleRef = useRef(0)
+
 
   const { showToast, ToastComponent } = useToast()
 
@@ -109,7 +109,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     try {
       fetchCycleRef.current += 1
       console.debug(
-        `[AttendanceGrid] Fetch #${fetchCycleRef.current} started for group ${groupId} with ${displaySessions.length} sessions`
+        `[AttendanceGrid] Fetch #${fetchCycleRef.current} started for group ${groupId} with ${sessions.length} sessions`
       )
 
       // Use provided roster from parent component (handle empty roster gracefully)
@@ -125,7 +125,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       // correct empty-state message ("no sessions" vs "no students") is shown.
       const studentRows: StudentRow[] = rosterData.map((r) => {
         const attendanceMap = new Map<number, AttendanceStatus>()
-        displaySessions.forEach((session) => {
+        sessions.forEach((session) => {
           // Get attendance from the embedded data in the session
           const sessionAttendance = session.attendance || []
           const record = sessionAttendance.find((a) => a.student_id === r.student_id)
@@ -145,7 +145,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       setStudents(studentRows)
       setError(null)
       console.debug(
-        `[AttendanceGrid] Fetch #${fetchCycleRef.current} completed for group ${groupId} (${studentRows.length} students, ${displaySessions.length} sessions)`
+        `[AttendanceGrid] Fetch #${fetchCycleRef.current} completed for group ${groupId} (${studentRows.length} students, ${sessions.length} sessions)`
       )
     } catch (err) {
       console.error('Failed to refresh data:', err)
@@ -154,7 +154,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     } finally {
       setIsLoading(false)
     }
-  }, [groupId, displaySessions, roster, showToast, sessions])
+  }, [groupId, sessions, roster, showToast])
 
   // Load roster and attendance data
   useEffect(() => {
@@ -490,7 +490,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     )
   }
 
-  if (displaySessions.length === 0) {
+  if (sessions.length === 0) {
     return (
       <div className="p-8 text-center text-outline-variant">
         <p className="mb-2">No sessions have been generated for this level yet.</p>
@@ -507,20 +507,20 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   }
 
   return (
-    <div className="bg-white border border-outline-variant/10 shadow-sm overflow-hidden">
+    <div className="bg-white border border-outline-variant/10 shadow-sm w-full max-w-full overflow-x-hidden">
       {error && (
         <div role="alert" className="p-3 bg-red-50 border-b border-red-100 text-red-700 text-sm">
           {error}
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[1000px] border-2 border-slate-400">
+      <div className="w-full overflow-x-auto">
+        <table className="text-left border-collapse border-2 border-slate-400" style={{ width: '100%', minWidth: `${Math.max(700, 200 + sessions.length * 160)}px` }}>
           {/* Group Header Row */}
           {groupName && (
             <thead>
               <tr className="bg-slate-50">
-                <th colSpan={6} className="p-0 border-b-2 border-slate-400">
+                <th colSpan={sessions.length + 1} className="p-0 border-b-2 border-slate-400">
                   <div className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="w-1 h-8 bg-secondary rounded-full"></div>
@@ -626,6 +626,8 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         isOpen={isAddSessionOpen}
         groupId={groupId}
         levelNumber={level}
+        sessions={sessions}
+        groupInstructorName={groupInstructorName}
         onClose={() => {
           setIsAddSessionOpen(false)
           // We need to invalidate queries after adding to make the new session appear immediately

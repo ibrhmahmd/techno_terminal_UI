@@ -17,7 +17,7 @@ interface AttendanceTableBodyProps {
 }
 
 export function AttendanceTableBody({ students, sessions, onToggle }: AttendanceTableBodyProps) {
-  const displaySessions = sessions.slice(0, 5)
+
 
   return (
     <tbody>
@@ -37,7 +37,7 @@ export function AttendanceTableBody({ students, sessions, onToggle }: Attendance
           </td>
 
           {/* Attendance Cells */}
-          {displaySessions.map((session, sessionIdx) => {
+          {sessions.map((session, sessionIdx) => {
             const status = student.attendance.get(session.session_id) || null
             const isCancelled = session.status === 'cancelled'
             return (

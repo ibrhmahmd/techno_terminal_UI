@@ -3,15 +3,15 @@
 ## 1. Developer Commands
 
 ```bash
-npm run dev      # Vite dev server (proxy /api → http://0.0.0.0:8000)
-npm run build    # tsc -b && vite build
-npm run lint     # ESLint (flat config at eslint.config.js)
-npm run test     # Vitest (happy-dom, globals enabled)
-npm run preview  # Vite preview of production build
+npm run dev                    # Vite dev server (proxy /api → http://0.0.0.0:8000)
+npm run build                  # tsc -b && vite build — must pass before commits
+npm run lint                   # ESLint (flat config at eslint.config.js)
+npm run test                   # Vitest (happy-dom, globals enabled)
 npm run test -- src/tests/Foo.test.tsx  # single test file
+npm run preview                # Vite preview of production build
 ```
 
-**Build caveat**: `tsc -b` uses `tsconfig.app.json` which **excludes** `src/tests/` and `*.test.*` — test files are not typechecked during build.
+**Build caveat**: `tsc -b` uses `tsconfig.app.json` which **excludes** `src/tests/` and `*.test.*` — test files are not typechecked during build. `tsconfig.node.json` covers `vite.config.ts` only.
 
 **Vercel prod** (`vercel.json`): `/api/*` → `https://techno-terminal-5c255cfe.fastapicloud.dev/api/*`, all other routes → `/index.html` (SPA fallback). Build command is `npm run build`, output is `dist/`.
 
@@ -36,11 +36,13 @@ npm run test -- src/tests/Foo.test.tsx  # single test file
 
 - **TS strict**: `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax` — must `import type` for type-only imports
 - **`erasableSyntaxOnly: true`**: enums, namespaces, parameter properties **forbidden** — use const objects or union types
+- **`noUncheckedSideEffectImports: true`** in both tsconfigs
 - **Tailwind v3** config (`tailwind.config.js`, `postcss.config.js` uses `tailwindcss` v3 plugin) despite `@tailwindcss/postcss` v4 in package.json
 - **Fonts**: Space Grotesk (`font-headline`) for headings, Inter (`font-body`) for body — loaded from Google Fonts in `index.html`
 - **Icons**: Lucide React (component) + Google Material Symbols (CSS class `material-symbols-outlined`)
 - **Zustand persist**: Auth store key `auth-storage` in localStorage; cross-tab sync via `storage` event listener
 - **Vercel Speed Insights**: `<SpeedInsights />` in `App.tsx`
+- **Time formatting**: Use shared `formatTime` from `src/utils/formatting.ts` (12h), not inline formatting
 
 ---
 
@@ -144,8 +146,9 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 - **No `.env` files** in repo — no local env setup required.
 - **No CI** (no `.github/`) and **no pre-commit hooks** (no `.husky/`).
 - **Gitignored**: `.opencode/*` and `.specify/*` are gitignored.
-- **Specs**: `specs/<NNN>-<name>/plan.md` for active feature plans. Current highest: `031-*`. Active branch: `030-groups-ui-redesign`.
+- **Specs**: `specs/<NNN>-<name>/plan.md` for active feature plans. Driven by `.opencode/command/*.md` speckit scripts. Highest spec: `033-*`.
+- **Supplementary docs**: `ARCHITECTURE.md`, `auth-api.md`, `competitions-api.md`, `daily-reports.md`, `docs/` — consult when context demands deeper architecture or API detail.
 
 <!-- SPECKIT START -->
-Active plan: `specs/033-group-detail-backend-fixes/plan.md`
+Active plan: `specs/034-mobile-layout-redesign/plan.md`
 <!-- SPECKIT END -->

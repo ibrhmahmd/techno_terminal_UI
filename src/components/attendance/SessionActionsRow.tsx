@@ -77,12 +77,12 @@ export function SessionActionsRow({
           return (
             <td
               key={`actions-${session.session_id}`}
-              className={`px-4 py-3 border-l border-slate-200 text-center ${
+              className={`px-4 py-4 border-l border-slate-200 text-center ${
                 cancelled ? 'opacity-50 blur-[1px] bg-gray-100' : ''
               }`}
             >
-              <div className="flex flex-col items-center gap-1.5">
-                <div className="flex gap-1 justify-center flex-wrap">
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex gap-1.5 justify-center flex-wrap">
                   {cancelled ? (
                     <>
                       <span className={`px-2 py-1 rounded-md text-xs font-bold ${sessionStatusColors.cancelled}`}>
@@ -91,18 +91,20 @@ export function SessionActionsRow({
                       <button
                         onClick={() => onReactivate(session.session_id)}
                         disabled={disabled}
-                        className="p-1 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-extrabold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors disabled:opacity-50"
                         title="Reactivate session"
                       >
-                        <span className="material-symbols-outlined text-[16px]" aria-hidden="true">restore</span>
+                        <span className="material-symbols-outlined text-base" aria-hidden="true">restore</span>
+                        Reactivate
                       </button>
                       <button
                         onClick={() => handleHardDeleteClick(session.session_id)}
                         disabled={disabled}
-                        className="p-1 text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-extrabold text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors disabled:opacity-50"
                         title="Delete session"
                       >
-                        <span className="material-symbols-outlined text-[16px]" aria-hidden="true">delete</span>
+                        <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
+                        Delete
                       </button>
                     </>
                   ) : (
@@ -110,10 +112,10 @@ export function SessionActionsRow({
                       <button
                         onClick={() => onEdit(session)}
                         disabled={disabled || cancelled}
-                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-secondary bg-secondary/10 rounded-md hover:bg-secondary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-extrabold text-secondary bg-secondary/10 rounded-md hover:bg-secondary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         aria-label="Edit session details"
                       >
-                        <span className="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
+                        <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
                         Edit
                       </button>
 
@@ -121,20 +123,22 @@ export function SessionActionsRow({
                         <button
                           onClick={() => handleCancelClick(session.session_id)}
                           disabled={disabled}
-                          className="flex items-center justify-center p-1 text-amber-600 bg-amber-50 rounded-md hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-extrabold text-amber-600 bg-amber-50 rounded-md hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Cancel session"
                         >
-                          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">block</span>
+                          <span className="material-symbols-outlined text-base" aria-hidden="true">block</span>
+                          Cancel
                         </button>
                       )}
                       
                       <button
                         onClick={() => handleHardDeleteClick(session.session_id)}
                         disabled={disabled}
-                        className="flex items-center justify-center p-1 text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-extrabold text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Delete session"
                       >
-                        <span className="material-symbols-outlined text-[16px]" aria-hidden="true">delete</span>
+                        <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
+                        Delete
                       </button>
                     </>
                   )}
@@ -147,15 +151,15 @@ export function SessionActionsRow({
                       <button
                         onClick={() => onComplete(session.session_id)}
                         disabled={disabled}
-                        className="w-full flex items-center justify-center gap-1 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full flex items-center justify-center gap-1.5 py-1.5 text-sm font-extrabold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Mark session as completed"
                       >
-                        <span className="material-symbols-outlined text-xs">check_circle</span>
+                        <span className="material-symbols-outlined text-sm">check_circle</span>
                         Mark Complete
                       </button>
                     ) : (
-                      <div className="w-full flex items-center justify-center gap-1 py-1 text-xs font-bold text-emerald-800 bg-emerald-100/60 border border-emerald-200 rounded-md">
-                        <span className="material-symbols-outlined text-xs">check_circle</span>
+                      <div className="w-full flex items-center justify-center gap-1.5 py-1.5 text-sm font-extrabold text-emerald-800 bg-emerald-100/60 border border-emerald-200 rounded-md">
+                        <span className="material-symbols-outlined text-sm">check_circle</span>
                         Completed
                       </div>
                     )}

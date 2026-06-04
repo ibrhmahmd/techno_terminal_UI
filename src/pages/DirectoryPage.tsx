@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { Pagination, PageHeader, PageSection, ActionButton, SearchBar, Modal, ConfirmDialog } from '../components/common'
@@ -15,8 +16,11 @@ import { createParent, searchParents, type StudentListItem, type StudentFilterIt
 
 type CreateStudentInput = CreateStudentDTO
 import { StudentCard } from '../components/directory/StudentCard'
+import { StudentMobileCard } from '../components/crm/StudentMobileCard'
 import { ParentCard } from '../components/directory/ParentCard'
+import { ParentMobileCard } from '../components/crm/ParentMobileCard'
 import { CardGrid } from '../components/directory/CardGrid'
+import { useIsMobile } from '../hooks/useIsMobile'
 import { CardSkeleton } from '../components/directory/shared/CardSkeleton'
 import { DirectoryTabs } from '../components/directory/DirectoryTabs'
 import { AlphabetSlider } from '../components/directory/AlphabetSlider'
@@ -24,6 +28,7 @@ import { StudentGroupBySelector } from '../components/directory/StudentGroupBySe
 import type { StudentGroupBy, WaitingGroupBy } from '../config/studentGrouping'
 
 export function DirectoryPage() {
+  const isMobile = useIsMobile()
   const { showToast, ToastComponent } = useToast()
   const [activeTab, setActiveTab] = useState<'students' | 'parents' | 'waiting' | 'advanced'>('students')
 
@@ -331,20 +336,32 @@ export function DirectoryPage() {
                           return (
                             <CardGrid>
                               {items.map((s) => (
-                                <StudentCard
-                                  key={s.id}
-                                  student={s}
-                                  isDeleted={studentGroupBy === 'deleted'}
-                                  actions={{
-                                    onEdit: () => {
-                                      setEditingStudent(s as StudentListItem)
-                                      setIsEditStudentModalOpen(true)
-                                    },
-                                    onDelete: () => handleSoftDeleteWithConfirm(s),
-                                    onRestore: () => handleRestoreStudent(s),
-                                    onPermanentDelete: () => handleHardDeleteWithConfirm(s),
-                                  }}
-                                />
+                                isMobile ? (
+                                  <StudentMobileCard
+                                    key={s.id}
+                                    id={s.id}
+                                    name={s.full_name}
+                                    gender={s.gender || 'male'}
+                                    grade={(s as any).grade}
+                                    status={s.status}
+                                    billingStatus={(s as any).has_unpaid_balance ? 'due' : 'paid'}
+                                  />
+                                ) : (
+                                  <StudentCard
+                                    key={s.id}
+                                    student={s}
+                                    isDeleted={studentGroupBy === 'deleted'}
+                                    actions={{
+                                      onEdit: () => {
+                                        setEditingStudent(s as StudentListItem)
+                                        setIsEditStudentModalOpen(true)
+                                      },
+                                      onDelete: () => handleSoftDeleteWithConfirm(s),
+                                      onRestore: () => handleRestoreStudent(s),
+                                      onPermanentDelete: () => handleHardDeleteWithConfirm(s),
+                                    }}
+                                  />
+                                )
                               ))}
                             </CardGrid>
                           )
@@ -394,19 +411,31 @@ export function DirectoryPage() {
                               </div>
                               <CardGrid>
                                 {activeItems.map((s) => (
-                                  <StudentCard
-                                    key={s.id}
-                                    student={s}
-                                    actions={{
-                                      onEdit: () => {
-                                        setEditingStudent(s as unknown as StudentListItem)
-                                        setIsEditStudentModalOpen(true)
-                                      },
-                                      onDelete: () => handleSoftDeleteWithConfirm(s),
-                                      onRestore: () => handleRestoreStudent(s),
-                                      onPermanentDelete: () => handleHardDeleteWithConfirm(s),
-                                    }}
-                                  />
+                                  isMobile ? (
+                                    <StudentMobileCard
+                                      key={s.id}
+                                      id={s.id}
+                                      name={s.full_name}
+                                      gender={s.gender || 'male'}
+                                      grade={(s as any).grade}
+                                      status={s.status}
+                                      billingStatus={(s as any).has_unpaid_balance ? 'due' : 'paid'}
+                                    />
+                                  ) : (
+                                    <StudentCard
+                                      key={s.id}
+                                      student={s}
+                                      actions={{
+                                        onEdit: () => {
+                                          setEditingStudent(s as unknown as StudentListItem)
+                                          setIsEditStudentModalOpen(true)
+                                        },
+                                        onDelete: () => handleSoftDeleteWithConfirm(s),
+                                        onRestore: () => handleRestoreStudent(s),
+                                        onPermanentDelete: () => handleHardDeleteWithConfirm(s),
+                                      }}
+                                    />
+                                  )
                                 ))}
                               </CardGrid>
                             </>
@@ -488,17 +517,29 @@ export function DirectoryPage() {
                           </div>
                           <CardGrid>
                             {activeItems.map((s) => (
-                              <StudentCard
-                                key={s.id}
-                                student={s}
-                                actions={{
-                                  onEdit: () => {
-                                    setEditingStudent(s as StudentListItem)
-                                    setIsEditStudentModalOpen(true)
-                                  },
-                                  onDelete: () => handleSoftDeleteWithConfirm(s),
-                                }}
-                              />
+                              isMobile ? (
+                                <StudentMobileCard
+                                  key={s.id}
+                                  id={s.id}
+                                  name={s.full_name}
+                                  gender={s.gender || 'male'}
+                                  grade={(s as any).grade}
+                                  status={s.status}
+                                  billingStatus={(s as any).has_unpaid_balance ? 'due' : 'paid'}
+                                />
+                              ) : (
+                                <StudentCard
+                                  key={s.id}
+                                  student={s}
+                                  actions={{
+                                    onEdit: () => {
+                                      setEditingStudent(s as StudentListItem)
+                                      setIsEditStudentModalOpen(true)
+                                    },
+                                    onDelete: () => handleSoftDeleteWithConfirm(s),
+                                  }}
+                                />
+                              )
                             ))}
                           </CardGrid>
                         </>
@@ -525,11 +566,21 @@ export function DirectoryPage() {
               ) : (
                 <CardGrid>
                   {parents.map((p) => (
-                    <ParentCard
-                      key={p.id}
-                      parent={p}
-                      actions={{}}
-                    />
+                    isMobile ? (
+                      <ParentMobileCard
+                        key={p.id}
+                        id={p.id}
+                        name={p.full_name}
+                        phone={(p as any).phone_number}
+                        studentCount={(p as any).student_count || 0}
+                      />
+                    ) : (
+                      <ParentCard
+                        key={p.id}
+                        parent={p}
+                        actions={{}}
+                      />
+                    )
                   ))}
                 </CardGrid>
               )}
@@ -647,17 +698,29 @@ export function DirectoryPage() {
                     ) : (
                       <CardGrid>
                         {(filteredStudents ?? []).map((s) => (
-                          <StudentCard
-                            key={s.id}
-                            student={s}
-                            actions={{
-                              onEdit: () => {
-                                setEditingStudent(s as unknown as StudentListItem)
-                                setIsEditStudentModalOpen(true)
-                              },
-                              onDelete: () => handleSoftDeleteWithConfirm(s),
-                            }}
-                          />
+                          isMobile ? (
+                            <StudentMobileCard
+                              key={s.id}
+                              id={s.id}
+                              name={s.full_name}
+                              gender={s.gender || 'male'}
+                              grade={(s as any).grade}
+                              status={s.status}
+                              billingStatus={(s as any).has_unpaid_balance ? 'due' : 'paid'}
+                            />
+                          ) : (
+                            <StudentCard
+                              key={s.id}
+                              student={s}
+                              actions={{
+                                onEdit: () => {
+                                  setEditingStudent(s as unknown as StudentListItem)
+                                  setIsEditStudentModalOpen(true)
+                                },
+                                onDelete: () => handleSoftDeleteWithConfirm(s),
+                              }}
+                            />
+                          )
                         ))}
                       </CardGrid>
                     )}
@@ -710,17 +773,29 @@ export function DirectoryPage() {
                             </div>
                             <CardGrid>
                               {activeItems.map((s) => (
-                                <StudentCard
-                                  key={s.id}
-                                  student={s}
-                                  actions={{
-                                    onEdit: () => {
-                                      setEditingStudent(s as StudentListItem)
-                                      setIsEditStudentModalOpen(true)
-                                    },
-                                    onDelete: () => handleSoftDeleteWithConfirm(s),
-                                  }}
-                                />
+                                isMobile ? (
+                                  <StudentMobileCard
+                                    key={s.id}
+                                    id={s.id}
+                                    name={s.full_name}
+                                    gender={s.gender || 'male'}
+                                    grade={(s as any).grade}
+                                    status={s.status}
+                                    billingStatus={(s as any).has_unpaid_balance ? 'due' : 'paid'}
+                                  />
+                                ) : (
+                                  <StudentCard
+                                    key={s.id}
+                                    student={s}
+                                    actions={{
+                                      onEdit: () => {
+                                        setEditingStudent(s as StudentListItem)
+                                        setIsEditStudentModalOpen(true)
+                                      },
+                                      onDelete: () => handleSoftDeleteWithConfirm(s),
+                                    }}
+                                  />
+                                )
                               ))}
                             </CardGrid>
                           </>
