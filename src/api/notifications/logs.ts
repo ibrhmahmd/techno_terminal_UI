@@ -21,6 +21,7 @@ export async function getLogs(filters?: NotificationLogFilters): Promise<Paginat
   if (filters?.status) params.append('status', filters.status)
   if (filters?.channel) params.append('channel', filters.channel)
   if (filters?.search) params.append('search', filters.search)
+  if (filters?.recipient_type) params.append('recipient_type', filters.recipient_type)
   if (filters?.limit !== undefined) params.append('limit', filters.limit.toString())
   if (filters?.offset !== undefined) params.append('offset', filters.offset.toString())
 

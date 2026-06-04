@@ -162,6 +162,7 @@ export interface NotificationLogFilters {
   status?: string
   channel?: string
   search?: string
+  recipient_type?: string
   limit?: number
   offset?: number
 }

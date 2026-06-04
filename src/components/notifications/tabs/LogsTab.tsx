@@ -15,6 +15,7 @@ export function LogsTab() {
   const [status, setStatus] = useState<string>('')
   const [channel, setChannel] = useState<string>('')
   const [search, setSearch] = useState<string>('')
+  const [recipientType, setRecipientType] = useState<string>('')
   
   // Modal State
   const [selectedLog, setSelectedLog] = useState<NotificationLogDTO | null>(null)
@@ -29,6 +30,7 @@ export function LogsTab() {
     status: status || undefined,
     channel: channel || undefined,
     search: debouncedSearch || undefined,
+    recipient_type: recipientType || undefined,
     limit: pageSize,
     offset: offset,
   })
@@ -40,6 +42,15 @@ export function LogsTab() {
   const isHtmlBody = (body: string) => {
     const trimmed = body.trim().toLowerCase()
     return trimmed.startsWith('<!doctype') || trimmed.startsWith('<html') || trimmed.includes('<div') || trimmed.includes('<p')
+  }
+
+  const hasActiveFilters = search !== '' || status !== '' || channel !== '' || recipientType !== ''
+  const handleResetFilters = () => {
+    setSearch('')
+    setStatus('')
+    setChannel('')
+    setRecipientType('')
+    setPage(1)
   }
 
   return (
@@ -90,6 +101,31 @@ export function LogsTab() {
             <option value="WHATSAPP">WhatsApp</option>
           </select>
         </div>
+        <div className="w-full sm:w-48">
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 font-headline">Recipient Type</label>
+          <select
+            value={recipientType}
+            onChange={(e) => {
+              setRecipientType(e.target.value)
+              setPage(1)
+            }}
+            className="w-full bg-transparent border-b border-slate-200 focus:border-secondary outline-none py-2 font-body text-sm text-slate-700 transition-colors cursor-pointer"
+          >
+            <option value="">All Types</option>
+            <option value="PARENT">Parent</option>
+            <option value="EMPLOYEE">Employee</option>
+            <option value="ADDITIONAL">Additional</option>
+          </select>
+        </div>
+        {hasActiveFilters && (
+          <button
+            onClick={handleResetFilters}
+            className="h-10 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-lg transition-all flex items-center gap-1.5 text-sm"
+          >
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">refresh</span>
+            Reset
+          </button>
+        )}
       </div>
 
       {/* Main Logs Table */}
