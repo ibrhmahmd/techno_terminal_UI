@@ -1,0 +1,74 @@
+[
+  {
+    "severity": "high",
+    "risk": "moderate",
+    "file": "components/groups/LevelsTab.tsx",
+    "line": 30,
+    "finding": "`payment` parameter typed as `any` instead of the proper `PaymentDetailDTO` type. The parameter is passed from the `payments.map()` iterable which has type `PaymentDetailDTO[]`, but the handler discards type safety.",
+    "before": "const handleDownloadPdf = async (payment: any, e: React.MouseEvent) => {",
+    "after": "const handleDownloadPdf = async (payment: PaymentDetailDTO, e: React.MouseEvent) => {"
+  },
+  {
+    "severity": "high",
+    "risk": "moderate",
+    "file": "components/groups/LevelsTab.tsx",
+    "line": 55,
+    "finding": "`payment` parameter typed as `any` instead of `PaymentDetailDTO`. Same pattern as line 30.",
+    "before": "const handleSendWhatsApp = async (payment: any, e: React.MouseEvent) => {",
+    "after": "const handleSendWhatsApp = async (payment: PaymentDetailDTO, e: React.MouseEvent) => {"
+  },
+  {
+    "severity": "medium",
+    "risk": "safe",
+    "file": "components/groups/HistoryTab.tsx",
+    "line": 144,
+    "finding": "`enrollmentColumns as any` used to bypass type mismatch between `DataTableColumn<EnrollmentHistoryItem>[]` and the DataTable's expected column type. Likely a generic inference issue in the DataTable component.",
+    "before": "columns={enrollmentColumns as any}",
+    "after": "columns={enrollmentColumns}"
+  },
+  {
+    "severity": "high",
+    "risk": "breaking",
+    "file": "pages/GroupsPage.tsx",
+    "line": 211,
+    "finding": "`as any` cast needed because `GroupBySelectorProps.value` is typed as `GroupByField` but the actual value passed can be `'search'` (a `GroupBySelectorValue`). The component's prop type is wrong — it should accept its own `GroupBySelectorValue` type which includes `'search'`.",
+    "before": "value={((isFiltersOpen || hasActiveFilters) && !isGroupedView ? 'search' : (groupBy ?? null)) as any}",
+    "after": "value={(isFiltersOpen || hasActiveFilters) && !isGroupedView ? 'search' : (groupBy ?? null)}"
+  },
+  {
+    "severity": "high",
+    "risk": "breaking",
+    "file": "components/groups/GroupBySelector.tsx",
+    "line": 7,
+    "finding": "`value` prop typed as `GroupByField` which excludes `'search'`. The component's `OPTIONS` includes `{ value: 'search', ... }` and `onChange` accepts `GroupBySelectorValue` (which includes `'search'`). The value prop must match the full value union to remove the `as any` in GroupsPage.tsx.",
+    "before": "  value: GroupByField",
+    "after": "  value: GroupBySelectorValue"
+  },
+  {
+    "severity": "medium",
+    "risk": "moderate",
+    "file": "hooks/useGroups.ts",
+    "line": 39,
+    "finding": "Unsafe `stored as GroupByField` cast. The stored string is validated via a Set check first, but the cast to pass `has()` erases type safety. A type predicate function would be safer.",
+    "before": "    return valid.has(stored as GroupByField) ? stored as GroupByField : undefined",
+    "after": "    return valid.has(stored as GroupByField) ? stored as GroupByField : undefined"
+  },
+  {
+    "severity": "medium",
+    "risk": "safe",
+    "file": "hooks/useGroups.ts",
+    "line": 79,
+    "finding": "`sortField as keyof EnrichedGroupPublic` — `sortField` is typed as `SortField` which already contains keys that exist on `EnrichedGroupPublic`. This cast is unnecessary and masks a potential type narrowing issue.",
+    "before": "      const aRaw = a[sortField as keyof EnrichedGroupPublic]",
+    "after": "      const aRaw = a[sortField]"
+  },
+  {
+    "severity": "low",
+    "risk": "safe",
+    "file": "components/groups/TabNavigation.tsx",
+    "line": 1,
+    "finding": "Dead/unused component. `TabNavigation` in `components/groups/` is not exported from the barrel file, not imported by any other file in the codebase, and is shadowed by a different `TabNavigation` in `components/reports/molecules/TabNavigation.tsx`.",
+    "before": "export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {",
+    "after": "/* Unused — consider removing */"
+  }
+]

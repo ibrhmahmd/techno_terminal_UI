@@ -4,6 +4,9 @@ import { CardSkeleton } from '../directory/shared/CardSkeleton'
 import { GroupStatusBadge } from './shared/GroupStatusBadge'
 import { formatTimeDisplay } from '../../utils/formatting'
 
+import { useIsMobile } from '../../hooks/useIsMobile'
+import { formatInstructorName } from '../../utils/formatting'
+
 interface GroupCardActions {
   onView?: () => void
   onEdit?: () => void
@@ -17,6 +20,8 @@ export interface GroupCardProps {
 }
 
 export function GroupCard({ group, actions, loading = false }: GroupCardProps) {
+  const isMobile = useIsMobile()
+  
   if (loading) return <CardSkeleton />
 
   const day = group.schedule?.day
@@ -41,6 +46,10 @@ export function GroupCard({ group, actions, loading = false }: GroupCardProps) {
     }
   }
 
+  const instructorDisplay = group.instructor_name 
+    ? (isMobile ? formatInstructorName(group.instructor_name) : group.instructor_name)
+    : 'Unassigned'
+
   return (
     <div
       role="button"
@@ -64,9 +73,9 @@ export function GroupCard({ group, actions, loading = false }: GroupCardProps) {
       </div>
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500 mb-3">
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1" title={group.instructor_name || 'Unassigned'}>
           <span className="material-symbols-outlined text-[16px]" aria-hidden="true">person</span>
-          {group.instructor_name || 'Unassigned'}
+          {instructorDisplay}
         </span>
         {schedule && (
           <span className="flex items-center gap-1">

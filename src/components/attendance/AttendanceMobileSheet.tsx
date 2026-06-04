@@ -4,7 +4,7 @@ import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashb
 import type { AttendanceStatus, AttendanceEntry } from '../../api/attendance'
 import { markAttendance } from '../../api/attendance'
 import { dashboardKeys } from '../../hooks/dashboard'
-import { formatTime } from '../../utils/formatting'
+import { formatTime, formatInstructorName } from '../../utils/formatting'
 import { sessionStatusColors } from '../../utils/colors'
 import { useToast } from '../common/Toast'
 
@@ -115,13 +115,13 @@ export function AttendanceMobileSheet({
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-slate-900/60 z-50 transition-opacity lg:hidden"
+        className="fixed inset-0 bg-slate-900/60 z-[60] transition-opacity lg:hidden"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Sheet */}
-      <div className="fixed inset-x-0 bottom-0 z-50 bg-surface rounded-t-2xl shadow-2xl lg:hidden flex flex-col max-h-[90vh] transition-transform duration-300 translate-y-0">
+      <div className="fixed inset-x-0 bottom-0 z-[60] bg-surface rounded-t-2xl shadow-2xl lg:hidden flex flex-col max-h-[90vh] transition-transform duration-300 translate-y-0">
         
         {/* Drag Handle */}
         <div className="flex justify-center pt-3 pb-2 shrink-0">
@@ -155,10 +155,10 @@ export function AttendanceMobileSheet({
           </button>
         </div>
 
-        {/* Content Area */}
+        {/* Content Area — grows and scrolls, shrink-0 footer sits below */}
         <div className="overflow-y-auto flex-1 overscroll-contain">
           {activeStep === 'sessions' ? (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 pb-20">
               {sessions.length === 0 ? (
                 <div className="p-8 text-center text-slate-500">No sessions available.</div>
               ) : (
@@ -195,7 +195,9 @@ export function AttendanceMobileSheet({
                         <div className="flex items-center gap-3 text-sm text-slate-500 font-medium">
                           <span>{session.time_start ? formatTime(session.time_start) : 'No time'}</span>
                           <span>•</span>
-                          <span className="truncate">{session.instructor_name || instructorName || 'TBA'}</span>
+                          <span className="truncate" title={session.instructor_name || instructorName || 'TBA'}>
+                            {formatInstructorName(session.instructor_name || instructorName || 'TBA')}
+                          </span>
                         </div>
                       </div>
                       
@@ -210,7 +212,7 @@ export function AttendanceMobileSheet({
               )}
             </div>
           ) : (
-            <div className="divide-y divide-slate-100 pb-24">
+            <div className="divide-y divide-slate-100">
               {roster.map(student => {
                 const status = localAttendance.get(student.student_id)
                 const statusConfig = {
@@ -256,9 +258,9 @@ export function AttendanceMobileSheet({
           )}
         </div>
 
-        {/* Save Footer for Step 2 */}
+        {/* Save Footer for Step 2 — part of flex flow, never absolute */}
         {activeStep === 'students' && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-200 shrink-0">
+          <div className="p-4 bg-white border-t border-slate-200 shrink-0">
             <button
               onClick={handleSave}
               disabled={pendingEntries.length === 0 || isSaving}

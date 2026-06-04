@@ -1,3 +1,6 @@
+import { useIsMobile } from '../../hooks/useIsMobile'
+import { formatInstructorName } from '../../utils/formatting'
+
 interface InstructorSelectorBarProps {
   instructors: string[]
   selectedInstructor: string | null
@@ -11,6 +14,8 @@ export function InstructorSelectorBar({
   onSelectInstructor,
   disabled = false
 }: InstructorSelectorBarProps) {
+  const isMobile = useIsMobile()
+
   // Don't render if no instructors
   if (instructors.length === 0) {
     return null
@@ -34,8 +39,13 @@ export function InstructorSelectorBar({
                 : 'text-slate-600 hover:text-secondary hover:bg-white/70'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => onSelectInstructor(null)}
+            title="All Instructors"
           >
-            All Instructors
+            {isMobile ? (
+              <span className="material-symbols-outlined flex items-center justify-center text-[20px]">groups</span>
+            ) : (
+              'All Instructors'
+            )}
           </button>
 
           {/* Individual instructor buttons */}
@@ -51,8 +61,9 @@ export function InstructorSelectorBar({
                   : 'text-slate-600 hover:text-secondary hover:bg-white/70'
               } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => onSelectInstructor(instructorName)}
+              title={instructorName}
             >
-              {instructorName}
+              {isMobile ? formatInstructorName(instructorName) : instructorName}
             </button>
           ))}
         </div>

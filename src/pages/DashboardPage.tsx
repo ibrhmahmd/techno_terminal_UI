@@ -94,17 +94,13 @@ export function DashboardPage() {
                 ) : (
                   filteredScheduleItems.map((item, index) => {
                     const group = getGroupInfo(item.group_id)
-                    const groupData = getGroupData(item.group_id)
+                    if (!group) return null
+                    
                     return (
                       <MobileGroupCard
                         key={`mobile-group-${item.group_id}-${index}`}
-                        groupId={item.group_id}
-                        groupName={group?.name || 'Unknown Group'}
-                        courseName={group?.course_name || 'Unknown Course'}
-                        instructorName={group?.instructor_id ? instructors[group.instructor_id]?.name || 'TBA' : 'TBA'}
-                        sessionCount={groupData.sessions.length}
-                        studentCount={group?.student_count || 0}
-                        todaySession={item.today_session}
+                        group={group}
+                        instructorName={group.instructor_id ? instructors[group.instructor_id]?.name || 'TBA' : 'TBA'}
                         onOpenAttendance={() => setOpenGroupId(item.group_id)}
                       />
                     )

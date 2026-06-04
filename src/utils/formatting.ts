@@ -116,3 +116,13 @@ export function formatTimeDisplay(value: string | null | undefined): string {
   if (!value) return '--:--'
   return value.slice(0, 5)
 }
+
+/**
+ * Format a full name to First Name + Last Initial (e.g., "Ibrahim Ahmd" -> "Ibrahim A.")
+ */
+export function formatInstructorName(fullName: string | undefined | null): string {
+  if (!fullName) return 'TBA'
+  const parts = fullName.trim().split(/\s+/)
+  if (parts.length <= 1) return parts[0]
+  return `${parts[0]} ${parts[1][0]}.`
+}

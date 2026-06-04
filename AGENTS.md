@@ -146,9 +146,9 @@ Page → custom hook (React Query) → API function (Axios) → server → cache
 - **No `.env` files** in repo — no local env setup required.
 - **No CI** (no `.github/`) and **no pre-commit hooks** (no `.husky/`).
 - **Gitignored**: `.opencode/*` and `.specify/*` are gitignored.
-- **Specs**: `specs/<NNN>-<name>/plan.md` for active feature plans. Driven by `.opencode/command/*.md` speckit scripts. Highest spec: `033-*`.
+- **Specs**: `specs/<NNN>-<name>/plan.md` for active feature plans. Driven by `.opencode/command/*.md` speckit scripts. Highest spec: `034-*`.
 - **Supplementary docs**: `ARCHITECTURE.md`, `auth-api.md`, `competitions-api.md`, `daily-reports.md`, `docs/` — consult when context demands deeper architecture or API detail.
 
 <!-- SPECKIT START -->
-Active plan: `specs/034-mobile-layout-redesign/plan.md`
+Active plan: `specs/034-groups-audit/spec.md`
 <!-- SPECKIT END -->

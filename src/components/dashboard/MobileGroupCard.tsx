@@ -1,61 +1,81 @@
-import type { TodaySessionDTO } from '../../api/dashboard'
+import type { GroupInfoDTO } from '../../api/dashboard'
+import { formatInstructorName } from '../../utils/formatting'
 
 export interface MobileGroupCardProps {
-  groupId: number
-  groupName: string
-  courseName: string
+  group: GroupInfoDTO
   instructorName: string
-  sessionCount: number
-  studentCount: number
-  todaySession: TodaySessionDTO | null
   onOpenAttendance: () => void
 }
 
-export function MobileGroupCard({
-  groupName,
-  courseName,
-  instructorName,
-  sessionCount,
-  studentCount,
-  onOpenAttendance,
-}: MobileGroupCardProps) {
+export function MobileGroupCard({ group, instructorName, onOpenAttendance }: MobileGroupCardProps) {
+  const shortInstructor = formatInstructorName(instructorName)
+  const scheduleDay = group.default_day
+  const timeRange = group.default_time_start && group.default_time_end
+    ? `${group.default_time_start.slice(0, 5)} – ${group.default_time_end.slice(0, 5)}`
+    : null
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onOpenAttendance()
+    }
+  }
+
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`View attendance for ${group.name}`}
       onClick={onOpenAttendance}
-      className="w-full relative min-h-[80px] bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col p-4 pl-5 text-left transition-all active:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent group"
+      onKeyDown={handleKeyDown}
+      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30 cursor-pointer flex flex-col"
     >
-      {/* Left accent bar */}
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-secondary rounded-l-xl opacity-80" />
-
-      <div className="flex justify-between items-start w-full">
-        <div className="flex-1 pr-4">
-          <h3 className="font-headline font-bold text-slate-900 text-lg leading-tight mb-0.5">
-            {groupName}
+      {/* Header */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-headline font-semibold text-on-surface text-base truncate">
+            {group.name}
           </h3>
-          <p className="text-slate-500 text-sm font-medium mb-2">{courseName}</p>
-          
-          <div className="flex items-center gap-1.5 text-slate-600 mb-3">
-            <span className="material-symbols-outlined text-sm opacity-70">person</span>
-            <span className="text-sm font-medium">{instructorName}</span>
-          </div>
-
-          <div className="flex items-center gap-4 text-slate-500 text-xs font-semibold uppercase tracking-wider">
-            <div className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[15px]">event</span>
-              <span>{sessionCount} {sessionCount === 1 ? 'Session' : 'Sessions'}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[15px]">group</span>
-              <span>{studentCount} {studentCount === 1 ? 'Student' : 'Students'}</span>
-            </div>
-          </div>
+          <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-1">
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">menu_book</span>
+            {group.course_name}
+          </p>
         </div>
-
-        {/* Right arrow */}
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 group-hover:bg-teal-50 transition-colors">
-          <span className="material-symbols-outlined text-teal-500 text-xl">arrow_forward</span>
-        </div>
+        {/* Attendance indicator badge */}
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 text-xs font-semibold border border-teal-100 shrink-0 ml-2">
+          <span className="material-symbols-outlined text-[14px]">how_to_reg</span>
+          Attendance
+        </span>
       </div>
-    </button>
+
+      {/* Meta info row */}
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500 mb-3">
+        <span className="flex items-center gap-1" title={instructorName}>
+          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">person</span>
+          {shortInstructor}
+        </span>
+        {(scheduleDay || timeRange) && (
+          <span className="flex items-center gap-1">
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">calendar_today</span>
+            {scheduleDay}{timeRange ? ` ${timeRange}` : ''}
+          </span>
+        )}
+        <span className="flex items-center gap-1">
+          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">group</span>
+          {group.student_count} / {group.max_capacity}
+        </span>
+      </div>
+
+      {/* Footer action */}
+      <div className="mt-auto pt-3 border-t border-slate-100 flex justify-end">
+        <button
+          onClick={(e) => { e.stopPropagation(); onOpenAttendance() }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/10 text-secondary text-sm font-semibold hover:bg-secondary/20 transition-colors"
+        >
+          <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
+          Mark Attendance
+        </button>
+      </div>
+    </div>
   )
 }
