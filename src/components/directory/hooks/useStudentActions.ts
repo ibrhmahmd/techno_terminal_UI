@@ -17,12 +17,14 @@ import {
   type UpdateStudentDTO,
   type StudentStatus,
 } from '../../../api/crm'
+import { logActivity } from '../../../api/crm/students/activity'
 
 interface UseStudentActionsReturn {
   handleCreateStudent: (
     data: CreateStudentDTO,
     selectedParent: ParentListItem | null,
-    status: StudentStatus
+    status: StudentStatus,
+    initialActivity?: { activity_type: string; description: string }
   ) => Promise<void>
   handleEditStudent: (
     student: StudentListItem,
@@ -55,7 +57,8 @@ export function useStudentActions(
     async (
       data: CreateStudentDTO,
       selectedParent: ParentListItem | null,
-      status: StudentStatus
+      status: StudentStatus,
+      initialActivity?: { activity_type: string; description: string }
     ) => {
       setIsLoading(true)
       try {
@@ -68,6 +71,13 @@ export function useStudentActions(
 
         if (status !== 'active') {
           await updateStudentStatus(newStudent.id, { status })
+        }
+
+        if (initialActivity && initialActivity.description) {
+          await logActivity(newStudent.id, {
+            activity_type: initialActivity.activity_type,
+            description: initialActivity.description,
+          })
         }
 
         showToast('Student created successfully', 'success')

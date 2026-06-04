@@ -9,7 +9,12 @@ type CreateStudentInput = CreateStudentDTO
 interface StudentFormProps {
   initialData?: Partial<CreateStudentDTO>
   initialStatus?: StudentStatus
-  onSubmit: (data: CreateStudentInput, selectedParent: ParentListItem | null, status: StudentStatus) => Promise<void>
+  onSubmit: (
+    data: CreateStudentInput,
+    selectedParent: ParentListItem | null,
+    status: StudentStatus,
+    initialActivity?: { activity_type: string; description: string }
+  ) => Promise<void>
   onCancel: () => void
   mode: 'create' | 'edit'
   onSearchParents?: (query: string) => Promise<ParentListItem[]>
@@ -28,6 +33,11 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
   const [selectedParent, setSelectedParent] = useState<ParentListItem | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Initial Activity Log State
+  const [addInitialActivity, setAddInitialActivity] = useState(false)
+  const [activityType, setActivityType] = useState('note_added')
+  const [activityDescription, setActivityDescription] = useState('')
 
   // Ref for auto-focus on name input
   const nameInputRef = useRef<HTMLInputElement>(null)
@@ -72,7 +82,14 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
         notes: formData.notes || null,
       }
       
-      await onSubmit(submitData, mode === 'create' ? selectedParent : null, statusValue)
+      await onSubmit(
+        submitData,
+        mode === 'create' ? selectedParent : null,
+        statusValue,
+        addInitialActivity && activityDescription.trim()
+          ? { activity_type: activityType, description: activityDescription.trim() }
+          : undefined
+      )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -136,7 +153,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
           placeholder="Enter student's full name"
           required
           disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
+          className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
 
@@ -155,7 +172,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
             onKeyDown={handleKeyDown}
             placeholder="+20 123 456 7890"
             disabled={isLoading}
-            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
+            className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 
@@ -209,7 +226,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
           placeholder="Additional notes about the student..."
           rows={3}
           disabled={isLoading}
-          className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed resize-none"
+          className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed resize-none"
         />
       </div>
 
@@ -222,20 +239,78 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
         />
       )}
 
+      {/* Initial Activity Log Section (Create Mode Only) */}
+      {mode === 'create' && (
+        <div className="bg-surface-container-low p-4 rounded-[6px] space-y-4">
+          <label className="flex items-center gap-2.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={addInitialActivity}
+              onChange={(e) => setAddInitialActivity(e.target.checked)}
+              disabled={isLoading}
+              className="w-4 h-4 rounded text-secondary focus:ring-secondary/20 border-slate-300 transition-all cursor-pointer"
+            />
+            <span className="text-sm font-medium text-on-surface">
+              Log initial activity note
+            </span>
+          </label>
+
+          {addInitialActivity && (
+            <div className="grid grid-cols-1 gap-4 pt-2 border-t border-slate-100 animate-fadeIn">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="activity_type" className="text-sm font-medium text-on-surface">
+                  Activity Type
+                </label>
+                <select
+                  id="activity_type"
+                  value={activityType}
+                  onChange={(e) => setActivityType(e.target.value)}
+                  disabled={isLoading}
+                  className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  <option value="note_added">Note Added</option>
+                  <option value="registration">Registration</option>
+                  <option value="status_change">Status Change</option>
+                  <option value="enrollment">Enrollment</option>
+                  <option value="payment">Payment</option>
+                  <option value="competition">Competition</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="activity_description" className="text-sm font-medium text-on-surface">
+                  Activity Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="activity_description"
+                  value={activityDescription}
+                  onChange={(e) => setActivityDescription(e.target.value)}
+                  placeholder="Describe the initial activity (e.g., Parent called to schedule orientation)..."
+                  rows={2}
+                  required={addInitialActivity}
+                  disabled={isLoading}
+                  className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
         <button
           type="button"
           onClick={onCancel}
           disabled={isLoading}
-          className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-[6px] hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isLoading}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-[6px] hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading && <LoadingSpinner size="sm" />}
           {mode === 'create' ? 'Create Student' : 'Save Changes'}

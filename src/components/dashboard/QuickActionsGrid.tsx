@@ -8,6 +8,7 @@ import { useCreateStudent } from '../../hooks/useDirectory'
 import { linkParentToStudent, updateStudentStatus } from '../../api/crm'
 import { useToast } from '../common/Toast'
 import type { ParentListItem, CreateStudentDTO, StudentStatus } from '../../api/crm'
+import { logActivity } from '../../api/crm/students/activity'
 
 interface QuickActionsGridProps {
   todaySessionCount: number
@@ -27,7 +28,8 @@ export function QuickActionsGrid({ todaySessionCount }: QuickActionsGridProps) {
   const handleCreateStudent = async (
     data: CreateStudentDTO,
     selectedParent: ParentListItem | null,
-    status: StudentStatus
+    status: StudentStatus,
+    initialActivity?: { activity_type: string; description: string }
   ) => {
     try {
       const newStudent = await createStudentMutation.mutateAsync(data)
@@ -38,6 +40,13 @@ export function QuickActionsGrid({ todaySessionCount }: QuickActionsGridProps) {
 
       if (status && status !== 'active') {
         await updateStudentStatus(newStudent.id, { status })
+      }
+
+      if (initialActivity && initialActivity.description) {
+        await logActivity(newStudent.id, {
+          activity_type: initialActivity.activity_type,
+          description: initialActivity.description,
+        })
       }
 
       showToast('Student registered successfully', 'success')
@@ -89,8 +98,8 @@ export function QuickActionsGrid({ todaySessionCount }: QuickActionsGridProps) {
         title="Quick Register Student"
       >
         <StudentForm
-          onSubmit={(data, parent, status) =>
-            handleCreateStudent(data, parent, status)
+          onSubmit={(data, parent, status, initialActivity) =>
+            handleCreateStudent(data, parent, status, initialActivity)
           }
           onCancel={() => setIsQuickRegisterOpen(false)}
           mode="create"

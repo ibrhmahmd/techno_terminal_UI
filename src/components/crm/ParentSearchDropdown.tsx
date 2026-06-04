@@ -88,15 +88,15 @@ export function ParentSearchDropdown({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-on-surface">
         {label}
       </label>
       
       {selectedParent ? (
-        <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-surface-container rounded-[6px]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-secondary" />
             </div>
             <div>
               <p className="font-medium text-slate-800">{selectedParent.full_name}</p>
@@ -118,7 +118,7 @@ export function ParentSearchDropdown({
           </div>
           <button
             onClick={handleClear}
-            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-500/10 rounded-[6px] transition-colors"
             title="Remove parent"
             aria-label="Remove selected parent"
           >
@@ -137,7 +137,7 @@ export function ParentSearchDropdown({
               onKeyDown={handleKeyDown}
               onFocus={() => searchQuery.trim().length >= 2 && setIsOpen(true)}
               placeholder={placeholder}
-              className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent"
+              className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 pl-10 pr-4 py-2.5 text-sm rounded-none outline-none transition-colors"
               aria-expanded={isOpen}
               aria-autocomplete="list"
               aria-controls={isOpen ? 'parent-search-results' : undefined}
@@ -153,7 +153,7 @@ export function ParentSearchDropdown({
           {isOpen && (
             <div
               id="parent-search-results"
-              className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+              className="absolute z-50 w-full mt-1 bg-white rounded-[6px] shadow-lg max-h-60 overflow-y-auto border border-slate-100"
               role="listbox"
             >
               {results.length === 0 ? (

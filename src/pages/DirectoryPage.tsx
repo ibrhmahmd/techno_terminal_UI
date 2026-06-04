@@ -123,9 +123,10 @@ export function DirectoryPage() {
   const handleCreateStudentAndRedirect = async (
     data: CreateStudentDTO,
     parent: ParentListItem | null,
-    status: StudentStatus
+    status: StudentStatus,
+    initialActivity?: { activity_type: string; description: string }
   ) => {
-    await handleCreateStudent(data, parent, status)
+    await handleCreateStudent(data, parent, status, initialActivity)
     // Redirect to waiting list tab (default status is 'waiting')
     handleTabChange('waiting')
   }
@@ -932,8 +933,8 @@ export function DirectoryPage() {
         title="Create Student"
       >
         <StudentForm
-          onSubmit={(data, parent, status) =>
-            handleCreateStudentAndRedirect(data, parent, status)
+          onSubmit={(data, parent, status, initialActivity) =>
+            handleCreateStudentAndRedirect(data, parent, status, initialActivity)
           }
           onCancel={() => setIsCreateStudentModalOpen(false)}
           mode="create"
