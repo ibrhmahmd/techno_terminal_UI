@@ -38,6 +38,11 @@ const NOTIFICATION_GROUPS = {
     types: ['level_progression'] as NotificationType[],
     icon: 'trending_up',
   },
+  security: {
+    label: 'Security & Auth',
+    types: ['admin_login_alert'] as NotificationType[],
+    icon: 'security',
+  },
 } as const
 
 const TYPE_DESCRIPTIONS: Record<NotificationType, string> = {
@@ -54,6 +59,7 @@ const TYPE_DESCRIPTIONS: Record<NotificationType, string> = {
   competition_team_registration: 'When a team registers for competition',
   competition_fee_payment: 'When competition fees are paid',
   competition_placement: 'When competition results are published',
+  admin_login_alert: 'When an admin logs in from a new IP or device',
 }
 
 export function AdminSettingsTab() {

@@ -19,6 +19,7 @@ export type NotificationType =
   | 'competition_team_registration'
   | 'competition_fee_payment'
   | 'competition_placement'
+  | 'admin_login_alert'
 
 export type NotificationChannel = 'EMAIL'
 

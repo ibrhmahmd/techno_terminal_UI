@@ -67,9 +67,9 @@ function ReceiptRow({
 
 export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayReceiptsListProps) {
   const today = useMemo(() => new Date().toISOString().split('T')[0], [])
-  const { receipts, isLoading, error } = useDailyReceipts(today)
-  const { search: searchApi, isSearching } = useReceipts()
   const [date, setDate] = useState(today)
+  const { receipts, isLoading, error } = useDailyReceipts(date)
+  const { search: searchApi, isSearching } = useReceipts()
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [searchFromDate, setSearchFromDate] = useState('')
   const [searchToDate, setSearchToDate] = useState('')
@@ -81,9 +81,8 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
 
   const filteredReceipts = useMemo(() => {
     if (searchResults) return searchResults
-    if (date === today) return receipts
-    return receipts.filter((r) => r.issued_at.startsWith(date))
-  }, [receipts, date, today, searchResults])
+    return receipts
+  }, [receipts, searchResults])
 
   const totalAmount = useMemo(
     () => filteredReceipts.reduce((sum, r) => sum + r.total_amount, 0),
