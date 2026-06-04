@@ -30,7 +30,7 @@ export function ProfileTab() {
 
   if (!displayUser) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
+      <div className="bg-white rounded-[6px] shadow-sm p-8 text-center">
         <LoadingSpinner />
       </div>
     )
@@ -108,20 +108,20 @@ export function ProfileTab() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-body">
       {/* Profile Information */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-[6px] shadow-sm p-6">
         <h2 className="font-headline text-xl font-semibold text-on-surface mb-6">
           Profile Information
         </h2>
 
         {profileError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+          <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700">
             {profileError}
           </div>
         )}
         {profileSuccess && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-100 rounded-lg text-sm text-green-700">
+          <div className="mb-4 p-3 bg-secondary/15 rounded-[6px] text-sm text-secondary">
             {profileSuccess}
           </div>
         )}
@@ -129,35 +129,35 @@ export function ProfileTab() {
         {isEditing ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-500">Username</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Username</label>
               <input
                 type="text"
                 value={editUsername}
                 onChange={(e) => setEditUsername(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
+                className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-500">Email</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</label>
               <input
                 type="email"
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
+                className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
               />
             </div>
             <div className="flex gap-3 pt-4 md:col-span-2">
               <button
                 onClick={handleSaveProfile}
                 disabled={updateProfileMutation.isPending}
-                className="px-4 py-2 bg-secondary text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 bg-secondary text-white rounded-[6px] font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-2 text-sm transition-opacity duration-120"
               >
                 {updateProfileMutation.isPending && <LoadingSpinner size="sm" variant="light" />}
                 Save Changes
               </button>
               <button
                 onClick={cancelEditing}
-                className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50"
+                className="px-4 py-2 bg-slate-100 text-slate-600 rounded-[6px] text-sm font-medium hover:bg-slate-200 transition-colors duration-120"
               >
                 Cancel
               </button>
@@ -168,8 +168,8 @@ export function ProfileTab() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {profileFields.map((field) => (
                 <div key={field.label} className="space-y-1">
-                  <label className="text-sm font-medium text-slate-500">{field.label}</label>
-                  <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-on-surface">
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{field.label}</label>
+                  <div className="px-4 py-2.5 bg-slate-50 rounded-[6px] text-sm text-on-surface">
                     {field.value}
                   </div>
                 </div>
@@ -178,7 +178,7 @@ export function ProfileTab() {
             <div className="mt-6">
               <button
                 onClick={startEditing}
-                className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-[6px] text-sm font-medium hover:bg-slate-200 transition-colors flex items-center gap-2 duration-120"
               >
                 <span className="material-symbols-outlined text-base">edit</span>
                 Edit Profile
@@ -189,26 +189,26 @@ export function ProfileTab() {
       </div>
 
       {/* Change Password */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-[6px] shadow-sm p-6">
         <h2 className="font-headline text-xl font-semibold text-on-surface mb-6">
           Change Password
         </h2>
 
         {passwordError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+          <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700">
             {passwordError}
           </div>
         )}
 
         {passwordSuccess && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-100 rounded-lg text-sm text-green-700">
+          <div className="mb-4 p-3 bg-secondary/15 rounded-[6px] text-sm text-secondary">
             {passwordSuccess}
           </div>
         )}
 
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-on-surface mb-1">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
               Current Password *
             </label>
             <input
@@ -216,13 +216,13 @@ export function ProfileTab() {
               required
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
+              className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
               placeholder="Enter current password"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-on-surface mb-1">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
               New Password *
             </label>
             <input
@@ -231,16 +231,16 @@ export function ProfileTab() {
               minLength={12}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
+              className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
               placeholder="Enter new password"
             />
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               Password must be at least 12 characters
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-on-surface mb-1">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
               Confirm Password *
             </label>
             <input
@@ -249,7 +249,7 @@ export function ProfileTab() {
               minLength={12}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
+              className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
               placeholder="Confirm new password"
             />
           </div>
@@ -258,7 +258,7 @@ export function ProfileTab() {
             <button
               type="submit"
               disabled={changePasswordMutation.isPending}
-              className="px-4 py-2 bg-secondary text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 bg-secondary text-white rounded-[6px] font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-2 text-sm transition-opacity duration-120"
             >
               {changePasswordMutation.isPending && <LoadingSpinner size="sm" variant="light" />}
               Change Password
@@ -268,7 +268,7 @@ export function ProfileTab() {
       </div>
 
       {/* Multi-Factor Authentication */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-[6px] shadow-sm p-6">
         <h2 className="font-headline text-xl font-semibold text-on-surface mb-6">
           Multi-Factor Authentication
         </h2>
@@ -291,18 +291,18 @@ export function ProfileTab() {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-on-surface">MFA Status:</span>
                 {mfaData?.enrolled ? (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-xs font-semibold bg-secondary/15 text-secondary">
+                    <span className="h-1.5 w-1.5 rounded-full bg-secondary"></span>
                     Enrolled ({mfaData.method || 'Unknown'})
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-xs font-semibold bg-amber-500/10 text-amber-700">
                     <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
                     Not Enrolled
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 font-body">
                 {!mfaData?.enrolled 
                   ? 'Multi-Factor Authentication (MFA) enrollment is coming soon to secure your account.'
                   : 'Your account is secured with Multi-Factor Authentication.'

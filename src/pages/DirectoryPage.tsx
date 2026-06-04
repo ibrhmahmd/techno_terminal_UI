@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback, useMemo } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { Pagination, PageHeader, PageSection, ActionButton, SearchBar, Modal, ConfirmDialog } from '../components/common'
@@ -209,6 +208,8 @@ export function DirectoryPage() {
       setWaitingGroupBy('none')
       setStudentGroupedPage(1)
       setWaitingGroupedPage(1)
+      setActiveStudentGroup('')
+      setActiveFilterGroup('')
       setFilterPage(1)
       if (tab !== 'advanced') {
         setAppliedFilters(null)
@@ -323,6 +324,7 @@ export function DirectoryPage() {
                     setStudentGroupBy(newGroupBy as StudentGroupBy)
                     setStudentGroupedPage(1)
                     setCurrentPage(1)
+                    setActiveStudentGroup('')
                   }}
                   mode="students"
                   disabled={isSearching}
@@ -380,9 +382,9 @@ export function DirectoryPage() {
                                     id={s.id}
                                     name={s.full_name}
                                     gender={s.gender || 'male'}
-                                    grade={(s as any).grade}
+                                    grade={s.grade}
                                     status={s.status}
-                                    billingStatus={(s as any).has_unpaid_balance ? 'due' : 'paid'}
+                                    billingStatus={s.has_unpaid_balance ? 'due' : 'paid'}
                                   />
                                 ) : (
                                   <StudentCard
@@ -391,7 +393,7 @@ export function DirectoryPage() {
                                     isDeleted={studentGroupBy === 'deleted'}
                                     actions={{
                                       onEdit: () => {
-                                        setEditingStudent(s as StudentListItem)
+                                        setEditingStudent(s)
                                         setIsEditStudentModalOpen(true)
                                       },
                                       onDelete: () => handleSoftDeleteWithConfirm(s),
@@ -419,7 +421,10 @@ export function DirectoryPage() {
                         </div>
                       ) : (
                         (() => {
-                          const activeKey = activeStudentGroup || studentsGroupedData[0]?.key || ''
+                          const defaultKey = studentsGroupedData[0]?.key ?? ''
+                          const activeKey = (activeStudentGroup || defaultKey) && studentsGroupedData.some(g => g.key === (activeStudentGroup || defaultKey))
+                            ? (activeStudentGroup || defaultKey)
+                            : defaultKey
                           const activeItems = studentsGroupedData.find(g => g.key === activeKey)?.items ?? []
                           return (
                             <>
@@ -455,9 +460,9 @@ export function DirectoryPage() {
                                       id={s.id}
                                       name={s.full_name}
                                       gender={s.gender || 'male'}
-                                      grade={(s as any).grade}
+                                      grade={s.grade}
                                       status={s.status}
-                                      billingStatus={(s as any).has_unpaid_balance ? 'due' : 'paid'}
+                                      billingStatus={s.has_unpaid_balance ? 'due' : 'paid'}
                                     />
                                   ) : (
                                     <StudentCard
@@ -465,12 +470,12 @@ export function DirectoryPage() {
                                       student={s}
                                       actions={{
                                         onEdit: () => {
-                                          setEditingStudent(s as unknown as StudentListItem)
-                                          setIsEditStudentModalOpen(true)
-                                        },
-                                        onDelete: () => handleSoftDeleteWithConfirm(s),
-                                        onRestore: () => handleRestoreStudent(s),
-                                        onPermanentDelete: () => handleHardDeleteWithConfirm(s),
+                                        setEditingStudent(s)
+                                        setIsEditStudentModalOpen(true)
+                                      },
+                                      onDelete: () => handleSoftDeleteWithConfirm(s),
+                                      onRestore: () => handleRestoreStudent(s),
+                                      onPermanentDelete: () => handleHardDeleteWithConfirm(s),
                                       }}
                                     />
                                   )
@@ -525,7 +530,10 @@ export function DirectoryPage() {
                     </div>
                   ) : (
                     (() => {
-                      const activeKey = activeStudentGroup || waitingGroupedData[0]?.key || ''
+                      const defaultKey = waitingGroupedData[0]?.key ?? ''
+                      const activeKey = (activeStudentGroup || defaultKey) && waitingGroupedData.some(g => g.key === (activeStudentGroup || defaultKey))
+                        ? (activeStudentGroup || defaultKey)
+                        : defaultKey
                       const activeItems = waitingGroupedData.find(g => g.key === activeKey)?.items ?? []
                       return (
                         <>
@@ -561,9 +569,9 @@ export function DirectoryPage() {
                                   id={s.id}
                                   name={s.full_name}
                                   gender={s.gender || 'male'}
-                                  grade={(s as any).grade}
+                                  grade={s.grade}
                                   status={s.status}
-                                  billingStatus={(s as any).has_unpaid_balance ? 'due' : 'paid'}
+                                  billingStatus={s.has_unpaid_balance ? 'due' : 'paid'}
                                 />
                               ) : (
                                 <StudentCard
@@ -571,7 +579,7 @@ export function DirectoryPage() {
                                   student={s}
                                   actions={{
                                     onEdit: () => {
-                                      setEditingStudent(s as StudentListItem)
+                                      setEditingStudent(s)
                                       setIsEditStudentModalOpen(true)
                                     },
                                     onDelete: () => handleSoftDeleteWithConfirm(s),
@@ -609,8 +617,8 @@ export function DirectoryPage() {
                         key={p.id}
                         id={p.id}
                         name={p.full_name}
-                        phone={(p as any).phone_number}
-                        studentCount={(p as any).student_count || 0}
+                        phone={p.phone_primary}
+                        studentCount={p.student_count || 0}
                       />
                     ) : (
                       <ParentCard
@@ -731,6 +739,7 @@ export function DirectoryPage() {
                     onChange={(newGroupBy) => {
                       setFilterGroupBy(newGroupBy as 'none' | 'status' | 'age')
                       setFilterPage(1)
+                      setActiveFilterGroup('')
                     }}
                     mode="students"
                     disabled={!appliedFilters}
@@ -763,9 +772,9 @@ export function DirectoryPage() {
                               id={s.id}
                               name={s.full_name}
                               gender={s.gender || 'male'}
-                              grade={(s as any).grade}
+                              grade={s.grade}
                               status={s.status}
-                              billingStatus={(s as any).has_unpaid_balance ? 'due' : 'paid'}
+                              billingStatus={s.unpaid_balance ? 'due' : 'paid'}
                             />
                           ) : (
                             <StudentCard
@@ -802,7 +811,10 @@ export function DirectoryPage() {
                       </div>
                     ) : (
                       (() => {
-                        const activeKey = activeFilterGroup || filteredGroupedData[0]?.key || ''
+                        const defaultKey = filteredGroupedData[0]?.key ?? ''
+                        const activeKey = (activeFilterGroup || defaultKey) && filteredGroupedData.some(g => g.key === (activeFilterGroup || defaultKey))
+                          ? (activeFilterGroup || defaultKey)
+                          : defaultKey
                         const activeItems = filteredGroupedData.find(g => g.key === activeKey)?.items ?? []
                         return (
                           <>
@@ -838,9 +850,9 @@ export function DirectoryPage() {
                                     id={s.id}
                                     name={s.full_name}
                                     gender={s.gender || 'male'}
-                                    grade={(s as any).grade}
+                                    grade={s.grade}
                                     status={s.status}
-                                    billingStatus={(s as any).has_unpaid_balance ? 'due' : 'paid'}
+                                    billingStatus={s.has_unpaid_balance ? 'due' : 'paid'}
                                   />
                                 ) : (
                                   <StudentCard
@@ -848,7 +860,7 @@ export function DirectoryPage() {
                                     student={s}
                                     actions={{
                                       onEdit: () => {
-                                        setEditingStudent(s as StudentListItem)
+                                        setEditingStudent(s)
                                         setIsEditStudentModalOpen(true)
                                       },
                                       onDelete: () => handleSoftDeleteWithConfirm(s),
@@ -862,28 +874,12 @@ export function DirectoryPage() {
                       })()
                     )}
                   </>
-                )}
-              </div>
-
-              {/* Pagination for filtered results */}
-              {appliedFilters && (
-                <div className="mt-6 pt-4 border-t border-slate-200">
-                  <Pagination
-                    currentPage={filterPage}
-                    totalPages={Math.ceil((filteredTotal ?? 0) / 25)}
-                    totalRecords={filteredTotal ?? 0}
-                    pageSize={25}
-                    onPageChange={setFilterPage}
-                    pageSizeOptions={[10, 25, 50, 100]}
-                    showTotalInfo={true}
-                    loading={isLoadingFiltered}
-                  />
+                  )}
                 </div>
-              )}
-            </div>
-          )}
-          
-          {/* Pagination - only show when not searching and not on advanced tab */}
+              </div>
+            )}
+
+        {/* Pagination - only show when not searching and not on advanced tab */}
           {searchTerm.length < 2 && activeTab !== 'advanced' && (
             <div className="mt-6 pt-4 border-t border-slate-200">
               <Pagination

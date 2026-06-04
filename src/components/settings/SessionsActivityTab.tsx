@@ -57,7 +57,7 @@ function ActiveSessions() {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
+      <div className="bg-white rounded-[6px] shadow-sm p-8 text-center font-body">
         <LoadingSpinner />
       </div>
     )
@@ -65,14 +65,14 @@ function ActiveSessions() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
+      <div className="bg-white rounded-[6px] shadow-sm p-8 text-center font-body">
         <p className="text-red-600">Failed to load sessions.</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+    <div className="bg-white rounded-[6px] shadow-sm p-6 font-body">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <span className="material-symbols-outlined text-slate-400">devices</span>
@@ -85,7 +85,7 @@ function ActiveSessions() {
           <button
             onClick={() => setShowConfirm(true)}
             disabled={revokeMutation.isPending}
-            className="px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-2"
+            className="px-4 py-2 text-sm font-medium text-red-700 bg-red-500/10 rounded-[6px] hover:bg-red-500/15 transition-colors flex items-center gap-2 duration-120"
           >
             {revokeMutation.isPending ? (
               <LoadingSpinner size="sm" />
@@ -104,7 +104,7 @@ function ActiveSessions() {
           {sessions.map((session) => (
             <div
               key={session.id}
-              className="flex items-center justify-between p-4 bg-slate-50 rounded-lg"
+              className="flex items-center justify-between p-4 bg-slate-50/50 rounded-[6px]"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -113,14 +113,14 @@ function ActiveSessions() {
                     {session.user_agent?.split('/')[0] || 'Unknown Device'}
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 font-mono">
                   <span>IP: {session.ip}</span>
                   <span>Created: {new Date(session.created_at).toLocaleString()}</span>
                   <span>Last Active: {new Date(session.last_active_at).toLocaleString()}</span>
                 </div>
               </div>
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 ml-4 whitespace-nowrap">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+              <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-xs font-semibold bg-secondary/15 text-secondary ml-4 whitespace-nowrap">
+                <span className="w-1.5 h-1.5 bg-secondary rounded-full" />
                 Active
               </span>
             </div>
@@ -131,7 +131,7 @@ function ActiveSessions() {
       {/* Confirmation Modal */}
       {showConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label="Logout all other sessions">
-          <div ref={confirmRef} className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+          <div ref={confirmRef} className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-md">
             <h3 className="font-headline text-lg font-semibold text-on-surface mb-2">
               Logout All Other Sessions?
             </h3>
@@ -143,14 +143,14 @@ function ActiveSessions() {
               <button
                 onClick={() => setShowConfirm(false)}
                 disabled={revokeMutation.isPending}
-                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50"
+                className="flex-1 px-4 py-2 bg-slate-100 text-slate-600 rounded-[6px] text-sm font-medium hover:bg-slate-200 transition-colors duration-120"
               >
                 Cancel
               </button>
               <button
                 onClick={handleRevokeAll}
                 disabled={revokeMutation.isPending}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-[6px] text-sm font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 transition-opacity duration-120"
               >
                 {revokeMutation.isPending && <LoadingSpinner size="sm" variant="light" />}
                 Logout All
@@ -170,7 +170,7 @@ function ActivityLog() {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
+      <div className="bg-white rounded-[6px] shadow-sm p-8 text-center font-body">
         <LoadingSpinner />
       </div>
     )
@@ -178,7 +178,7 @@ function ActivityLog() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
+      <div className="bg-white rounded-[6px] shadow-sm p-8 text-center font-body">
         <p className="text-red-600">Failed to load activity log.</p>
       </div>
     )
@@ -189,7 +189,7 @@ function ActivityLog() {
   const totalPages = Math.ceil(total / limit)
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+    <div className="bg-white rounded-[6px] shadow-sm p-6 font-body">
       <div className="flex items-center gap-3 mb-6">
         <span className="material-symbols-outlined text-slate-400">history</span>
         <h2 className="font-headline text-xl font-semibold text-on-surface">
@@ -202,22 +202,22 @@ function ActivityLog() {
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="text-left py-3 px-2 text-slate-500 font-medium">Event</th>
-                  <th className="text-left py-3 px-2 text-slate-500 font-medium">IP Address</th>
-                  <th className="text-left py-3 px-2 text-slate-500 font-medium">Date</th>
+            <table className="w-full text-left text-sm font-body">
+              <thead className="bg-slate-50/50">
+                <tr>
+                  <th className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Event</th>
+                  <th className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">IP Address</th>
+                  <th className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Date</th>
                 </tr>
               </thead>
               <tbody>
                 {entries.map((entry) => (
-                  <tr key={entry.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="py-3 px-2">
-                      <span className="text-on-surface">{EVENT_LABELS[entry.event_type] || entry.event_type}</span>
+                  <tr key={entry.id} className="odd:bg-white even:bg-slate-50/30 hover:bg-slate-50/50 transition-colors">
+                    <td className="py-2 px-3">
+                      <span className="text-on-surface font-medium">{EVENT_LABELS[entry.event_type] || entry.event_type}</span>
                     </td>
-                    <td className="py-3 px-2 text-slate-500">{entry.ip_address || '\u2014'}</td>
-                    <td className="py-3 px-2 text-slate-500">
+                    <td className="py-2 px-3 text-slate-500 font-mono">{entry.ip_address || '\u2014'}</td>
+                    <td className="py-2 px-3 text-slate-500">
                       {new Date(entry.created_at).toLocaleString()}
                     </td>
                   </tr>
@@ -227,22 +227,22 @@ function ActivityLog() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-4">
+            <div className="flex items-center justify-between pt-4 mt-4">
               <p className="text-xs text-slate-500">
-                Showing {page * limit + 1}\u2013{Math.min((page + 1) * limit, total)} of {total}
+                Showing {page * limit + 1}&#8211;{Math.min((page + 1) * limit, total)} of {total}
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setPage(Math.max(0, page - 1))}
                   disabled={page === 0}
-                  className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-xs bg-slate-100 text-slate-700 rounded-[6px] hover:bg-slate-200 transition-colors duration-120 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
                   disabled={page >= totalPages - 1}
-                  className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-xs bg-slate-100 text-slate-700 rounded-[6px] hover:bg-slate-200 transition-colors duration-120 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   Next
                 </button>

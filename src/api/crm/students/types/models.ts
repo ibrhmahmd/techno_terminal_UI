@@ -23,6 +23,8 @@ export interface StudentListItem {
   status: StudentStatus
   date_of_birth?: string | null
   gender?: 'male' | 'female'  | null
+  grade?: string | null
+  has_unpaid_balance?: boolean
 }
 
 export interface StudentWithDetails extends Student {
@@ -75,6 +77,7 @@ export interface ParentListItem {
   id: number
   full_name: string
   phone_primary: string
+  student_count?: number
 }
 
 export interface EnrollmentInfo {
@@ -177,6 +180,7 @@ export interface StudentFilterItem {
   status: StudentStatus
   gender: 'male' | 'female' | 'unknown' | null
   phone: string | null
+  grade?: string | null
   current_group_id: number | null
   current_group_name: string | null
   group_default_day: string | null

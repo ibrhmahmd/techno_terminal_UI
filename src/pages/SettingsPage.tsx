@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
@@ -11,6 +11,7 @@ import { SessionsActivityTab } from '../components/settings/SessionsActivityTab'
 import { UsersTab } from '../components/settings/UsersTab'
 import { AuditLogTable, AuditDateFilter } from '../components/settings/AuditLogTable'
 import { useAuditLogins, useAuditPasswordChanges, useAuditFailedAttempts } from '../hooks/useAuthQueries'
+import { MetricsStripCards } from '../components/common/MetricsStripCards'
 
 type TabType = 'profile' | 'sessions-activity' | 'users' | 'audit-logins' | 'audit-password-changes' | 'audit-failed-attempts'
 
@@ -55,8 +56,8 @@ function AuditFailedAttemptsSection() {
     <>
       <div className="mb-4"><AuditDateFilter from={from} to={to} onFromChange={(v) => { setFrom(v); setPage(0) }} onToChange={(v) => { setTo(v); setPage(0) }} /></div>
       {!hasFrom ? (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
-          <p className="text-slate-500">Please select a start date to view failed attempts.</p>
+        <div className="bg-white rounded-[6px] shadow-sm p-8 text-center">
+          <p className="font-body text-slate-500">Specify a start date filter to retrieve failed authentication logs.</p>
         </div>
       ) : (
         <AuditLogTable data={data?.data ?? []} total={data?.total ?? 0} page={page} pageSize={limit} onPageChange={setPage} isLoading={isLoading} error={!!error} />
@@ -73,16 +74,80 @@ export function SettingsPage() {
   const canManageUsers = user?.role === 'admin' || user?.role === 'system_admin'
   const isSystemAdmin = user?.role === 'system_admin'
 
-  const tabs: { id: TabType; label: string; icon: string }[] = [
-    { id: 'profile', label: 'Profile', icon: 'person' },
-    { id: 'sessions-activity', label: 'Sessions & Activity', icon: 'devices' },
-    ...(canManageUsers ? [{ id: 'users' as TabType, label: 'Users', icon: 'group' }] : []),
-    ...(isSystemAdmin ? [
-      { id: 'audit-logins' as TabType, label: 'Login Logs', icon: 'login' },
-      { id: 'audit-password-changes' as TabType, label: 'Password Changes', icon: 'lock' },
-      { id: 'audit-failed-attempts' as TabType, label: 'Failed Attempts', icon: 'warning' },
-    ] : []),
-  ]
+  const metricItems = useMemo(() => {
+    const items: {
+      label: string
+      value: string
+      icon: string
+      color: 'secondary' | 'emerald' | 'amber' | 'blue' | 'slate'
+      onClick: () => void
+    }[] = [
+      {
+        label: 'Profile',
+        value: 'User',
+        icon: 'person',
+        color: 'secondary',
+        onClick: () => setActiveTab('profile'),
+      },
+      {
+        label: 'Sessions & Activity',
+        value: 'Devices',
+        icon: 'devices',
+        color: 'emerald',
+        onClick: () => setActiveTab('sessions-activity'),
+      },
+    ]
+
+    if (canManageUsers) {
+      items.push({
+        label: 'Users',
+        value: 'Accounts',
+        icon: 'group',
+        color: 'blue',
+        onClick: () => setActiveTab('users'),
+      })
+    }
+
+    if (isSystemAdmin) {
+      items.push(
+        {
+          label: 'Login Logs',
+          value: 'Access',
+          icon: 'login',
+          color: 'amber',
+          onClick: () => setActiveTab('audit-logins'),
+        },
+        {
+          label: 'Password Changes',
+          value: 'Security',
+          icon: 'lock',
+          color: 'slate',
+          onClick: () => setActiveTab('audit-password-changes'),
+        },
+        {
+          label: 'Failed Attempts',
+          value: 'Alerts',
+          icon: 'warning',
+          color: 'slate',
+          onClick: () => setActiveTab('audit-failed-attempts'),
+        }
+      )
+    }
+
+    return items
+  }, [canManageUsers, isSystemAdmin])
+
+  const activeIndex = useMemo(() => {
+    return metricItems.findIndex((item) => {
+      if (activeTab === 'profile') return item.label === 'Profile'
+      if (activeTab === 'sessions-activity') return item.label === 'Sessions & Activity'
+      if (activeTab === 'users') return item.label === 'Users'
+      if (activeTab === 'audit-logins') return item.label === 'Login Logs'
+      if (activeTab === 'audit-password-changes') return item.label === 'Password Changes'
+      if (activeTab === 'audit-failed-attempts') return item.label === 'Failed Attempts'
+      return false
+    })
+  }, [metricItems, activeTab])
 
   const headerActions = canManageUsers ? (
     <ActionButton
@@ -104,37 +169,17 @@ export function SettingsPage() {
         sticky={false}
       />
 
-      <div className="border-b border-slate-200">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-1 overflow-x-auto" role="tablist" aria-orientation="horizontal">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                id={"tab-"+tab.id}
-                role="tab"
-                aria-selected={activeTab === tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap border-b-2 ${
-                  activeTab === tab.id
-                    ? 'text-secondary border-secondary'
-                    : 'text-slate-500 border-transparent hover:text-slate-700'
-                }`}
-              >
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  {tab.icon}
-                </span>
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+      <section className="px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="max-w-[1400px] mx-auto">
+          <MetricsStripCards items={metricItems} activeIndex={activeIndex} />
         </div>
-      </div>
+      </section>
 
-      <PageSection>
+      <PageSection maxWidth="1400">
         <div role="tabpanel" aria-labelledby={"tab-"+activeTab}>
           <ErrorBoundary>
             {activeTab === 'profile' && <ProfileTab />}
-          {activeTab === 'sessions-activity' && <SessionsActivityTab />}
+            {activeTab === 'sessions-activity' && <SessionsActivityTab />}
             {activeTab === 'users' && canManageUsers && <UsersTab />}
             {activeTab === 'audit-logins' && <AuditLoginSection />}
             {activeTab === 'audit-password-changes' && <AuditPasswordChangeSection />}
@@ -145,3 +190,4 @@ export function SettingsPage() {
     </div>
   )
 }
+

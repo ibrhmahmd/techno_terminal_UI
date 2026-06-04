@@ -140,29 +140,30 @@ export interface TemplateSummaryDTO {
 
 export interface NotificationLogDTO {
   id: number
-  notification_type: NotificationType
-  channel: NotificationChannel
-  recipient_count: number
-  success_count: number
-  failure_count: number
-  sent_at: string
-  status: LogStatus
-  error_message?: string
   template_id?: number
-  created_by: number
+  channel: 'EMAIL' | 'WHATSAPP' | string
+  recipient_type: 'PARENT' | 'EMPLOYEE' | string
+  recipient_id: number
+  recipient_contact: string
+  subject: string | null
+  body: string
+  status: 'PENDING' | 'SENT' | 'FAILED' | string
+  error_message?: string
+  sent_at?: string
+  created_at: string
 }
 
 export interface NotificationLogDetailDTO extends NotificationLogDTO {
-  recipients: LogRecipientDTO[]
+  recipients?: LogRecipientDTO[]
   template?: TemplateSummaryDTO
 }
 
 export interface NotificationLogFilters {
-  notification_type?: NotificationType
-  status?: LogStatus
-  date_from?: string
-  date_to?: string
-  created_by?: number
+  status?: string
+  channel?: string
+  search?: string
+  limit?: number
+  offset?: number
 }
 
 // ============================================================================

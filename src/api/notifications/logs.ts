@@ -2,6 +2,7 @@
 // Endpoints for notification history and audit logs
 
 import { client } from '../client'
+import type { PaginatedApiResponse } from '../../types/api'
 import type {
   NotificationLogDTO,
   NotificationLogDetailDTO,
@@ -15,19 +16,19 @@ const LOGS_BASE = '/notifications/logs'
  * Get notification logs with optional filters
  * GET /api/v1/notifications/logs
  */
-export async function getLogs(filters?: NotificationLogFilters): Promise<NotificationLogDTO[]> {
+export async function getLogs(filters?: NotificationLogFilters): Promise<PaginatedApiResponse<NotificationLogDTO>> {
   const params = new URLSearchParams()
-  if (filters?.notification_type) params.append('notification_type', filters.notification_type)
   if (filters?.status) params.append('status', filters.status)
-  if (filters?.date_from) params.append('date_from', filters.date_from)
-  if (filters?.date_to) params.append('date_to', filters.date_to)
-  if (filters?.created_by) params.append('created_by', filters.created_by.toString())
+  if (filters?.channel) params.append('channel', filters.channel)
+  if (filters?.search) params.append('search', filters.search)
+  if (filters?.limit !== undefined) params.append('limit', filters.limit.toString())
+  if (filters?.offset !== undefined) params.append('offset', filters.offset.toString())
 
   const query = params.toString()
   const url = query ? `${LOGS_BASE}?${query}` : LOGS_BASE
 
-  const response = await client.get<{ data: NotificationLogDTO[] }>(url)
-  return response.data.data
+  const response = await client.get<PaginatedApiResponse<NotificationLogDTO>>(url)
+  return response.data
 }
 
 /**

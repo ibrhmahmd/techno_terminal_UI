@@ -103,38 +103,38 @@ export function AdminSettingsTab() {
   return (
     <div className="space-y-8">
       {/* Personal Preferences */}
-      <section className="bg-white rounded-xl border border-slate-200 p-6">
+      <section className="bg-white rounded-[6px] shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
-              <span className="material-symbols-outlined text-indigo-600">notifications</span>
+            <div className="w-10 h-10 rounded-[6px] bg-secondary/10 flex items-center justify-center">
+              <span className="material-symbols-outlined text-secondary">notifications</span>
             </div>
             <div>
-              <h3 className="font-medium text-on-surface">Personal Preferences</h3>
-              <p className="text-sm text-slate-500">Choose which notifications you want to receive</p>
+              <h3 className="font-headline text-lg font-semibold text-on-surface">Personal Preferences</h3>
+              <p className="font-body text-sm text-slate-500">Configure notification flags for direct activities</p>
             </div>
           </div>
         </div>
 
         <div className="space-y-6">
           {Object.entries(NOTIFICATION_GROUPS).map(([key, group]) => (
-            <div key={key} className="border-b border-slate-100 last:border-0 pb-6 last:pb-0">
+            <div key={key} className="pb-6 last:pb-0">
               <div className="flex items-center gap-2 mb-4">
                 <span className="material-symbols-outlined text-slate-400">{group.icon}</span>
-                <h4 className="font-medium text-slate-700">{group.label}</h4>
+                <h4 className="font-headline font-semibold text-sm text-slate-700">{group.label}</h4>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {group.types.map(type => (
                   <div
                     key={type}
-                    className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-[6px] bg-slate-50/50 hover:bg-slate-50 transition-colors duration-120"
                   >
                     <div>
-                      <p className="text-sm font-medium text-slate-700">
+                      <p className="font-body text-sm font-medium text-slate-700">
                         {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                       </p>
-                      <p className="text-xs text-slate-500">{TYPE_DESCRIPTIONS[type]}</p>
+                      <p className="font-body text-xs text-slate-500">{TYPE_DESCRIPTIONS[type]}</p>
                     </div>
                     <label className={`relative inline-flex items-center ${togglingType === type ? 'cursor-wait' : 'cursor-pointer'}`}>
                       <input
@@ -144,7 +144,7 @@ export function AdminSettingsTab() {
                         onChange={(e) => handleToggle(type, e.target.checked)}
                         disabled={togglingType === type}
                       />
-                      <div className={`w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary ${togglingType === type ? 'opacity-50' : ''}`}></div>
+                      <div className={`w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-secondary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary ${togglingType === type ? 'opacity-50' : ''}`}></div>
                       {togglingType === type && (
                         <span className="absolute inset-0 flex items-center justify-center">
                           <span className="material-symbols-outlined text-xs text-slate-500 animate-spin">sync</span>
@@ -160,15 +160,15 @@ export function AdminSettingsTab() {
       </section>
 
       {/* Additional Recipients */}
-      <section className="bg-white rounded-xl border border-slate-200 p-6">
+      <section className="bg-white rounded-[6px] shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-              <span className="material-symbols-outlined text-emerald-600">people</span>
+            <div className="w-10 h-10 rounded-[6px] bg-secondary/10 flex items-center justify-center">
+              <span className="material-symbols-outlined text-secondary">people</span>
             </div>
             <div>
-              <h3 className="font-medium text-on-surface">Additional Recipients</h3>
-              <p className="text-sm text-slate-500">Add emails that should also receive your notifications</p>
+              <h3 className="font-headline text-lg font-semibold text-on-surface">Additional Recipients</h3>
+              <p className="font-body text-sm text-slate-500">Register extra notification channels</p>
             </div>
           </div>
           <button
@@ -176,7 +176,7 @@ export function AdminSettingsTab() {
               setEditingRecipient(null)
               setIsRecipientModalOpen(true)
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-secondary-dark transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-[6px] text-sm font-medium hover:opacity-95 transition-opacity"
           >
             <span className="material-symbols-outlined">add</span>
             Add Recipient
@@ -184,61 +184,61 @@ export function AdminSettingsTab() {
         </div>
 
         <DataTableContainer>
-          <table className="w-full">
-            <thead className="bg-slate-50">
+          <table className="w-full text-left font-body">
+            <thead className="bg-slate-50/50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Email</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Label</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Types</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Actions</th>
+                <th className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                <th className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Label</th>
+                <th className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Types</th>
+                <th className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody>
               {recipients?.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                    <span className="material-symbols-outlined text-4xl mb-2 block">inbox</span>
-                    No additional recipients configured
+                    <span className="material-symbols-outlined text-3xl mb-1 block">inbox</span>
+                    No active channels defined.
                   </td>
                 </tr>
               ) : (
                 recipients?.map(recipient => (
-                  <tr key={recipient.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 text-sm text-slate-900">{recipient.email}</td>
-                    <td className="px-4 py-3 text-sm text-slate-600">{recipient.label || '-'}</td>
-                    <td className="px-4 py-3">
+                  <tr key={recipient.id} className="odd:bg-white even:bg-slate-50/30 hover:bg-slate-50/50 transition-colors">
+                    <td className="px-4 py-2 text-sm text-slate-900 font-mono">{recipient.email}</td>
+                    <td className="px-4 py-2 text-sm text-slate-600">{recipient.label || '\u2014'}</td>
+                    <td className="px-4 py-2">
                       {recipient.notification_types ? (
-                        <span className="text-xs px-2 py-1 bg-slate-100 rounded-full text-slate-600">
-                          {recipient.notification_types.length} types
+                        <span className="text-xs px-2 py-0.5 bg-slate-500/10 rounded-[6px] text-slate-600">
+                          {recipient.notification_types.length} channels
                         </span>
                       ) : (
-                        <span className="text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full">
-                          All types
+                        <span className="text-xs px-2 py-0.5 bg-secondary/15 text-secondary rounded-[6px]">
+                          All channels
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-1 rounded-full ${recipient.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <td className="px-4 py-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-[6px] font-medium ${recipient.is_active ? 'bg-secondary/15 text-secondary' : 'bg-slate-500/10 text-slate-600'}`}>
                         {recipient.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-2">
                       <div className="flex gap-2">
                         <button
                           onClick={() => {
                             setEditingRecipient(recipient)
                             setIsRecipientModalOpen(true)
                           }}
-                          className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                          className="p-1 text-slate-400 hover:text-secondary transition-colors"
                         >
-                          <span className="material-symbols-outlined">edit</span>
+                          <span className="material-symbols-outlined text-lg">edit</span>
                         </button>
                         <button
                           onClick={() => deleteRecipient.mutate(recipient.id)}
                           className="p-1 text-slate-400 hover:text-red-600 transition-colors"
                         >
-                          <span className="material-symbols-outlined">delete</span>
+                          <span className="material-symbols-outlined text-lg">delete</span>
                         </button>
                       </div>
                     </td>
@@ -304,74 +304,74 @@ function RecipientModal({ isOpen, onClose, recipient, onSave }: RecipientModalPr
       title={recipient ? 'Edit Recipient' : 'Add Recipient'}
       size="lg"
       footer={
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 font-body">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+            className="px-4 py-2 text-slate-600 bg-slate-100 rounded-[6px] hover:bg-slate-200 transition-colors duration-120 text-sm font-medium"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={!email}
-            className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-dark disabled:opacity-50 transition-colors"
+            className="px-4 py-2 bg-secondary text-white rounded-[6px] hover:opacity-90 disabled:opacity-50 transition-opacity duration-120 text-sm font-medium"
           >
             {recipient ? 'Save Changes' : 'Add Recipient'}
           </button>
         </div>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6 font-body">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Email Address *</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Email Address *</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+            className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
             placeholder="recipient@example.com"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Label (Optional)</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Label (Optional)</label>
           <input
             type="text"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+            className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
             placeholder="e.g., Finance Manager"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Status</label>
+          <label className="flex items-center gap-2 cursor-pointer mt-2">
             <input
               type="checkbox"
               checked={isActive}
               onChange={(e) => setIsActive(e.target.checked)}
-              className="w-4 h-4 text-secondary rounded focus:ring-secondary"
+              className="w-4 h-4 text-secondary rounded-[4px] border-slate-300 focus:ring-secondary/20"
             />
             <span className="text-sm text-slate-600">Active</span>
           </label>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Notification Types</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Notification Types</label>
           <label className="flex items-center gap-2 cursor-pointer mb-3">
             <input
               type="checkbox"
               checked={useAllTypes}
               onChange={(e) => setUseAllTypes(e.target.checked)}
-              className="w-4 h-4 text-secondary rounded focus:ring-secondary"
+              className="w-4 h-4 text-secondary rounded-[4px] border-slate-300 focus:ring-secondary/20"
             />
             <span className="text-sm text-slate-600">Receive all notification types</span>
           </label>
 
           {!useAllTypes && (
-            <div className="border border-slate-200 rounded-lg p-3 max-h-48 overflow-y-auto">
+            <div className="bg-slate-50/50 rounded-[6px] p-3 max-h-48 overflow-y-auto">
               <div className="space-y-2">
                 {allTypes.map(type => (
                   <label key={type} className="flex items-center gap-2 cursor-pointer">
@@ -385,7 +385,7 @@ function RecipientModal({ isOpen, onClose, recipient, onSave }: RecipientModalPr
                           setSelectedTypes(selectedTypes.filter(t => t !== type))
                         }
                       }}
-                      className="w-4 h-4 text-secondary rounded focus:ring-secondary"
+                      className="w-4 h-4 text-secondary rounded-[4px] border-slate-300 focus:ring-secondary/20"
                     />
                     <span className="text-sm text-slate-600">
                       {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}

@@ -1,15 +1,14 @@
-// Notifications Page
-// Admin-only page for managing notification settings, templates, logs, and bulk messaging
-
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
+import { PageHeader, PageSection } from '../components/common'
 import { AdminSettingsTab } from '../components/notifications/tabs/AdminSettingsTab'
 import { LogsTab } from '../components/notifications/tabs/LogsTab'
 import { BulkMessagingTab } from '../components/notifications/tabs/BulkMessagingTab'
+import { MetricsStripCards } from '../components/common/MetricsStripCards'
 
 const tabs = [
-  { id: 'admin', label: 'Admin Settings', icon: 'person' },
+  { id: 'admin', label: 'Admin Settings', icon: 'settings' },
   { id: 'logs', label: 'Logs', icon: 'history' },
   { id: 'bulk', label: 'Bulk Messaging', icon: 'send' },
 ] as const
@@ -34,48 +33,54 @@ export function NotificationsPage() {
     setSearchParams({ tab: tabId })
   }, [setSearchParams])
 
+  const activeIndex = tabs.findIndex(t => t.id === activeTab)
+
+  const metricItems = useMemo(() => [
+    {
+      label: 'Admin Settings',
+      value: 'Config',
+      icon: 'settings',
+      color: 'secondary' as const,
+      onClick: () => handleTabChange('admin'),
+    },
+    {
+      label: 'Logs',
+      value: 'Audit',
+      icon: 'history',
+      color: 'amber' as const,
+      onClick: () => handleTabChange('logs'),
+    },
+    {
+      label: 'Bulk Messaging',
+      value: 'Dispatch',
+      icon: 'send',
+      color: 'blue' as const,
+      onClick: () => handleTabChange('bulk'),
+    },
+  ], [handleTabChange])
+
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50">
+    <div className="min-h-screen bg-surface">
       <TopNavbar activePage="Notifications" />
+      <PageHeader
+        title="Notifications"
+        subtitle="Configure system notification rules and recipient dispatch settings."
+        sticky={false}
+      />
 
-      <div className="flex-1 overflow-auto p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* Header */}
-          <div>
-            <h1 className="text-2xl font-bold text-on-surface">Notifications</h1>
-            <p className="text-slate-500 mt-1">
-              Manage notification preferences
-            </p>
-          </div>
-
-          {/* Tab Navigation */}
-          <div className="border-b border-slate-200">
-            <nav className="flex gap-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => handleTabChange(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === tab.id
-                      ? 'border-secondary text-secondary'
-                      : 'border-transparent text-slate-600 hover:text-on-surface hover:border-slate-300'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-lg">{tab.icon}</span>
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {/* Tab Content */}
-          <div className="min-h-[400px]">
-            {activeTab === 'admin' && <AdminSettingsTab />}
-            {activeTab === 'logs' && <LogsTab />}
-            {activeTab === 'bulk' && <BulkMessagingTab />}
-          </div>
+      <section className="px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="max-w-[1400px] mx-auto">
+          <MetricsStripCards items={metricItems} activeIndex={activeIndex} />
         </div>
-      </div>
+      </section>
+
+      <PageSection maxWidth="1400">
+        <div className="min-h-[400px]">
+          {activeTab === 'admin' && <AdminSettingsTab />}
+          {activeTab === 'logs' && <LogsTab />}
+          {activeTab === 'bulk' && <BulkMessagingTab />}
+        </div>
+      </PageSection>
     </div>
   )
 }

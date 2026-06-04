@@ -52,8 +52,8 @@ interface UseDirectoryDataReturn {
   filteredStudents?: StudentFilterItem[]
   filteredTotal?: number
 
-  // Grouped filter data
-  filteredGroupedData?: GroupItem<StudentFilterItem>[]
+  // Grouped filter data (API returns StudentListItem in grouped results)
+  filteredGroupedData?: GroupItem<StudentListItem>[]
 
   // Loading states
   isLoading: boolean
@@ -214,7 +214,7 @@ export function useDirectoryData({
       key: group.key,
       label: filterGroupBy === 'age' ? formatAgeGroupLabel(group.label) : group.label,
       count: group.count,
-      items: group.students as unknown as StudentFilterItem[],
+      items: group.students,
       sortKey: filterGroupBy === 'age' ? parseInt(group.key.split('-')[0] || '0', 10) : 0,
     }))
 
