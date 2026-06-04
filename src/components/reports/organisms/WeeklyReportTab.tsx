@@ -8,6 +8,9 @@ import { useToast } from '../../common/Toast'
 import { LoadingState } from '../../common/LoadingState'
 import { ErrorState } from '../../common/ErrorState'
 import { EmptyState } from '../../common/EmptyState'
+import { ReportSessionDetails } from '../atoms/ReportSessionDetails'
+import { ReportPaymentDetails } from '../atoms/ReportPaymentDetails'
+import { ReportDebtorsDetails } from '../atoms/ReportDebtorsDetails'
 
 export function WeeklyReportTab() {
   const [date, setDate] = useState<string>(getTodayISO())
@@ -95,7 +98,16 @@ export function WeeklyReportTab() {
              <div className="bg-white p-6 rounded-xl border border-slate-200">
                 <div dangerouslySetInnerHTML={{ __html: data.revenue_by_course || data.top_courses }} />
              </div>
+             {data.top_instructors && (
+                <div className="bg-white p-6 rounded-xl border border-slate-200">
+                   <div dangerouslySetInnerHTML={{ __html: data.top_instructors }} />
+                </div>
+             )}
           </div>
+          
+          <ReportSessionDetails sessions={data.session_details || []} />
+          <ReportPaymentDetails payments={data.payments_by_type || []} />
+          <ReportDebtorsDetails topDebtors={data.top_debtors || []} unpaidAttendees={data.cumulative_unpaid_debtors || []} />
         </div>
       )}
     </div>

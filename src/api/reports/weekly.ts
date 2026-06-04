@@ -15,6 +15,13 @@ export interface PeriodReportData {
   revenue_by_course: string
   top_courses: string
   revenue_breakdown: string
+  top_instructors: string
+  course_performance_matrix: string
+  session_details: import('./daily').SessionDetail[]
+  payment_details: import('./daily').PaymentDetail[]
+  payments_by_type: import('./daily').PaymentsByTypeItem[]
+  cumulative_unpaid_debtors: import('./daily').UnpaidAttendeeItem[]
+  top_debtors: import('./daily').TopDebtorItem[]
 }
 
 export async function getWeeklyReportData(targetDate: string): Promise<ApiResponse<PeriodReportData>> {

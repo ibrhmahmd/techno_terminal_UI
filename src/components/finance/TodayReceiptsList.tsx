@@ -74,8 +74,10 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
   const [searchFromDate, setSearchFromDate] = useState('')
   const [searchToDate, setSearchToDate] = useState('')
   const [searchPayerName, setSearchPayerName] = useState('')
+  const [searchReceiptNumber, setSearchReceiptNumber] = useState('')
   const [searchResults, setSearchResults] = useState<DailyReceiptItem[] | null>(null)
   const [selectedReceiptId, setSelectedReceiptId] = useState<number | null>(null)
+  const [searchErrorMsg, setSearchErrorMsg] = useState<string | null>(null)
 
   const filteredReceipts = useMemo(() => {
     if (searchResults) return searchResults
@@ -90,11 +92,29 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
 
   const handleAdvancedSearch = async () => {
     if (!searchFromDate || !searchToDate) return
+    setSearchErrorMsg(null)
+    
+    const from = new Date(searchFromDate)
+    const to = new Date(searchToDate)
+    const diffTime = Math.abs(to.getTime() - from.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays > 90) {
+      setSearchErrorMsg('Date range cannot exceed 90 days.')
+      return
+    }
+
+    if (to < from) {
+      setSearchErrorMsg('To Date must be after From Date.')
+      return
+    }
+
     try {
       const results = await searchApi({
         from_date: searchFromDate,
         to_date: searchToDate,
         ...(searchPayerName && { payer_name: searchPayerName }),
+        ...(searchReceiptNumber && { receipt_number: searchReceiptNumber }),
       })
       setSearchResults(
         results.map((r) => ({
@@ -107,7 +127,7 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
         }))
       )
     } catch {
-      // ignore
+      setSearchErrorMsg('Failed to search receipts.')
     }
   }
 
@@ -157,7 +177,12 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
 
       {showAdvanced && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {searchErrorMsg && (
+            <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-red-700 text-sm mb-4">
+              {searchErrorMsg}
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label htmlFor="search-from-date" className="block text-sm font-medium text-on-surface mb-1">From Date</label>
               <input
@@ -186,6 +211,17 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
                 value={searchPayerName}
                 onChange={(e) => setSearchPayerName(e.target.value)}
                 placeholder="Optional..."
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+              />
+            </div>
+            <div>
+              <label htmlFor="search-receipt-number" className="block text-sm font-medium text-on-surface mb-1">Receipt Number</label>
+              <input
+                id="search-receipt-number"
+                type="text"
+                value={searchReceiptNumber}
+                onChange={(e) => setSearchReceiptNumber(e.target.value)}
+                placeholder="TR-..."
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
               />
             </div>

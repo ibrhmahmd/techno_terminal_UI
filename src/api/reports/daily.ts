@@ -30,6 +30,18 @@ export interface InstructorSummaryItem {
   session_count: number
 }
 
+export interface UnpaidAttendeeItem {
+  student_name: string
+  group_name: string
+  amount_owed: number
+  payment_status: string
+}
+
+export interface TopDebtorItem {
+  student_name: string
+  amount_owed: number
+}
+
 export interface DailyReportData {
   date: string
   total_revenue: number
