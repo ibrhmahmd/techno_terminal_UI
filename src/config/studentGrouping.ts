@@ -23,21 +23,6 @@ export type StudentGroupBy = 'none' | 'status' | 'age' | 'competition' | 'delete
 // Group by options for waiting tab (no status option)
 export type WaitingGroupBy = 'none' | 'age' | 'competition'
 
-// Group by selector options
-export const STUDENT_GROUP_OPTIONS = [
-  { value: 'none' as const, label: 'All', icon: 'grid_view' },
-  { value: 'status' as const, label: 'Status', icon: 'flag' },
-  { value: 'age' as const, label: 'Age', icon: 'cake' },
-  { value: 'competition' as const, label: 'Competition', icon: 'emoji_events', disabled: true },
-  { value: 'deleted' as const, label: 'Deleted', icon: 'delete', accent: 'red' },
-]
-
-export const WAITING_GROUP_OPTIONS = [
-  { value: 'none' as const, label: 'All', icon: 'grid_view' },
-  { value: 'age' as const, label: 'Age', icon: 'cake' },
-  { value: 'competition' as const, label: 'Competition', icon: 'emoji_events', disabled: true },
-]
-
 export interface GroupOption {
   value: string
   label: string
@@ -95,23 +80,6 @@ export function validateAgeBuckets(buckets: AgeBucket[]): { valid: boolean; erro
   })
 
   return { valid: errors.length === 0, errors }
-}
-
-/**
- * Get age bucket for a given age
- */
-export function getAgeBucket(age: number, buckets: AgeBucket[]): AgeBucket | null {
-  return buckets.find((b) => age >= b.min && age < b.max) || null
-}
-
-/**
- * Format age bucket for display
- */
-export function formatAgeBucketLabel(bucket: AgeBucket): string {
-  if (bucket.max >= 100) {
-    return `${bucket.min}+`
-  }
-  return `${bucket.min}-${bucket.max - 1}`
 }
 
 /**

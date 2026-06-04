@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { Pagination, PageHeader, PageSection, ActionButton, SearchBar, Modal, ConfirmDialog } from '../components/common'
 import { useToast } from '../components/common/Toast'
@@ -148,18 +149,24 @@ export function DirectoryPage() {
   // Filter active vs deleted students
   const displayStudents = students.filter((s) => s.status !== 'waiting')
 
-  // Handle create parent
+  const qc = useQueryClient()
+  const createParentMutation = useMutation({
+    mutationFn: createParent,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['directory', 'parents'] })
+      showToast('Parent created successfully', 'success')
+      setIsCreateParentModalOpen(false)
+    },
+    onError: () => {
+      showToast('Failed to create parent', 'error')
+    },
+  })
+
   const handleCreateParent = useCallback(
     async (data: Parameters<typeof createParent>[0]) => {
-      try {
-        await createParent(data)
-        showToast('Parent created successfully', 'success')
-        setIsCreateParentModalOpen(false)
-      } catch {
-        showToast('Failed to create parent', 'error')
-      }
+      await createParentMutation.mutateAsync(data)
     },
-    [showToast]
+    [createParentMutation]
   )
 
   // Handle soft delete with confirmation

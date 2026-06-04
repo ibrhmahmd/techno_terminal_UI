@@ -75,64 +75,66 @@ export function Sidebar() {
 
   return (
     <aside
-      className="fixed left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 z-50 flex-col overflow-hidden hidden lg:flex"
+      className="fixed left-0 top-0 h-screen w-64 bg-primary-container z-50 flex flex-col overflow-hidden hidden lg:flex shadow-[0_12px_40px_rgba(11,28,48,0.06)]"
     >
       {/* Brand/Header */}
-      <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+      <div className="p-6 pt-8 pb-5 flex items-center justify-between">
         <button
           onClick={() => handleNavigate('/dashboard')}
-          className="text-left hover:opacity-80 transition-opacity"
+          className="text-left hover:opacity-85 transition-opacity"
         >
           <h1 className="text-xl font-bold font-headline text-white tracking-tight">TechnoTerminal</h1>
         </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4">
+      <nav className="flex-1 overflow-y-auto py-2">
         <div className="px-3 space-y-1">
           {filteredSections.map((section) => (
-            <div key={section.title} className="mb-4">
-              <p className="px-3 py-2 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+            <div key={section.title} className="mb-5">
+              <p className="px-3 py-1.5 text-[10px] font-bold text-on-primary-container/50 uppercase tracking-wider font-headline">
                 {section.title}
               </p>
-              {section.items.map((item) => {
-                const active = isActive(item.path)
-                return (
-                  <button
-                    key={item.path}
-                    onClick={() => handleNavigate(item.path)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                      active
-                        ? 'bg-teal-500/10 text-teal-500 border-r-2 border-teal-500'
-                        : 'text-slate-400 border-r-2 border-transparent hover:bg-slate-900 hover:text-slate-200'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-base">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </button>
-                )
-              })}
+              <div className="space-y-0.5 mt-1">
+                {section.items.map((item) => {
+                  const active = isActive(item.path)
+                  return (
+                    <button
+                      key={item.path}
+                      onClick={() => handleNavigate(item.path)}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-[6px] text-sm font-medium transition-colors ${
+                        active
+                          ? 'bg-secondary/15 text-secondary'
+                          : 'text-on-primary-container/80 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           ))}
         </div>
       </nav>
 
       {/* Footer - User Info & Logout */}
-      <div className="p-4 border-t border-slate-800 space-y-3">
+      <div className="p-4 space-y-3 pb-6">
         {user && (
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/50">
-            <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center">
-              <span className="material-symbols-outlined text-sm text-teal-400">person</span>
+          <div className="flex items-center gap-3 p-2.5 rounded-[6px] bg-black/20">
+            <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-sm text-secondary-container">person</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-200 truncate">{user.username}</p>
-              <p className="text-xs text-slate-500 capitalize">{user.role.replace('_', ' ')}</p>
+              <p className="text-sm font-medium text-white truncate">{user.username}</p>
+              <p className="text-xs text-on-primary-container/70 capitalize font-headline mt-0.5">{user.role.replace('_', ' ')}</p>
             </div>
           </div>
         )}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-on-primary-container/80 hover:text-red-400 hover:bg-red-400/10 rounded-[6px] transition-colors"
         >
           <span className="material-symbols-outlined text-base">logout</span>
           <span>Sign Out</span>

@@ -59,4 +59,4 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
   }
 }
 
-export default useSearch
+

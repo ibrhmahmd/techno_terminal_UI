@@ -12,7 +12,6 @@ export {
   restoreStudent,
   hardDeleteStudent,
   getDeletedStudents,
-  getParentById,
   getStudentParents,
 } from './core'
 
@@ -75,7 +74,6 @@ export {
 // Search
 export {
   searchStudents,
-  searchStudentsAdvanced,
   getStudentsGrouped,
   filterStudents,
   type StudentGroupedResultDTO,
@@ -154,5 +152,3 @@ export {
   type ManualActivityResponseDTO,
 } from './types'
 
-// Additional type exports from search
-export type { StudentSearchFilters } from './search'
