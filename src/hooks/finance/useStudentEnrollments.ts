@@ -9,11 +9,14 @@ export interface StudentEnrollmentInfo {
   enrollment_id: number
   group_id: number
   group_name: string
+  course_name?: string
+  instructor_name?: string
   level_number: number
-  amount_due: number
+  amount_due: number | null
   discount_applied: number
   amount_paid: number
   remaining_balance: number
+  notes: string | null
 }
 
 export interface UseStudentEnrollmentsReturn {
@@ -29,13 +32,16 @@ function mapEnrollments(enrollmentsData: Enrollment[]): StudentEnrollmentInfo[] 
     enrollment_id: e.id,
     group_id: e.group_id,
     group_name: e.group_name || `Group #${e.group_id}`,
+    course_name: e.course_name,
+    instructor_name: e.instructor_name,
     level_number: e.level_number,
     amount_due: e.amount_due,
     discount_applied: e.discount_applied,
     amount_paid: 0,
     remaining_balance: e.amount_remaining !== undefined
       ? e.amount_remaining
-      : e.amount_due - e.discount_applied,
+      : (e.amount_due || 0) - e.discount_applied,
+    notes: e.notes || null,
   }))
 }
 

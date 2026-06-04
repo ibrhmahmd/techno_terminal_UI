@@ -4,8 +4,10 @@ import type { EnrollmentInfo } from '../../api/crm/students'
 import type { EnrichedGroupPublic } from '../../api/academics'
 import { EmptyState, EntityDetailCard, Modal } from '../common'
 import { GroupCombobox } from '../common/combobox/GroupCombobox'
+import { EditEnrollmentModal } from '../enrollments/EditEnrollmentModal'
 
 interface EnrollmentsTabProps {
+  studentId: number
   enrollments: EnrollmentInfo[]
   currentGroupName?: string | null
   onEnroll?: () => void
@@ -112,7 +114,9 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
   )
 }
 
-export function EnrollmentsTab({ enrollments, onEnroll }: EnrollmentsTabProps) {
+export function EnrollmentsTab({ studentId, enrollments, onEnroll }: EnrollmentsTabProps) {
+  const [editEnrollmentId, setEditEnrollmentId] = useState<number | null>(null)
+
   // Separate current and past enrollments
   const currentEnrollment = enrollments.find(e => e.status === 'active')
   const pastEnrollments = enrollments.filter(e => e.status !== 'active')
@@ -177,6 +181,13 @@ export function EnrollmentsTab({ enrollments, onEnroll }: EnrollmentsTabProps) {
             { label: 'Course', value: currentEnrollment.course_name, icon: <MapPin className="w-3 h-3" />, link: `/courses/${currentEnrollment.course_id}` },
             { label: 'Enrolled On', value: currentEnrollment.enrolled_at, icon: <Calendar className="w-3 h-3" /> }
           ]}
+          actions={[
+            {
+              label: 'Edit Finance / Notes',
+              onClick: () => setEditEnrollmentId(currentEnrollment.enrollment_id),
+              variant: 'secondary'
+            }
+          ]}
         />
       )}
 
@@ -213,13 +224,19 @@ export function EnrollmentsTab({ enrollments, onEnroll }: EnrollmentsTabProps) {
                       </span>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end">
                     <p className="text-sm font-medium text-on-surface">
                       Level {enrollment.level_number}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 mb-2">
                       {enrollment.status === 'active' ? 'Active Enrollment' : 'Past Enrollment'}
                     </p>
+                    <button
+                      onClick={() => setEditEnrollmentId(enrollment.enrollment_id)}
+                      className="text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded"
+                    >
+                      Edit Finance / Notes
+                    </button>
                   </div>
                 </div>
               </div>
@@ -227,6 +244,13 @@ export function EnrollmentsTab({ enrollments, onEnroll }: EnrollmentsTabProps) {
           </div>
         )}
       </div>
+
+      <EditEnrollmentModal
+        isOpen={editEnrollmentId !== null}
+        onClose={() => setEditEnrollmentId(null)}
+        enrollmentId={editEnrollmentId}
+        studentId={studentId}
+      />
     </div>
   )
 }

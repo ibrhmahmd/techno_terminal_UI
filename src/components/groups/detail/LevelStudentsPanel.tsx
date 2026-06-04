@@ -10,6 +10,7 @@ import { deleteEnrollment } from '../../../api/enrollments/enrollments'
 import { queryClient } from '../../../lib/queryClient'
 import { queryKeys } from '../../../hooks/queryKeys'
 import type { LevelDetailDTO } from '../../../api/academics'
+import { EditEnrollmentModal } from '../../enrollments/EditEnrollmentModal'
 
 type StudentWithEnrollment = {
   enrollment_id: number
@@ -42,12 +43,14 @@ function GroupStudentCard({
   student, 
   onView, 
   onTransfer, 
-  onDrop 
+  onDrop,
+  onEditFinance
 }: { 
   student: StudentWithEnrollment, 
-  onView: () => void, 
+  onView: () => void,
   onTransfer: () => void, 
-  onDrop: () => void 
+  onDrop: () => void,
+  onEditFinance: () => void
 }) {
   const enrollmentStatusConfig: Record<string, { bg: string, text: string, label: string }> = {
     active: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Active' },
@@ -95,6 +98,7 @@ function GroupStudentCard({
           visible="always"
           actions={[
             { icon: 'visibility', label: 'View', onClick: onView, variant: 'primary' },
+            { icon: 'payments', label: 'Finance', onClick: onEditFinance },
             { icon: 'swap_horiz', label: 'Transfer', onClick: onTransfer },
             { icon: 'person_remove', label: 'Drop', onClick: onDrop, variant: 'danger' },
           ]}
@@ -113,6 +117,9 @@ export function LevelStudentsPanel({
   
   const [isTransferOpen, setIsTransferOpen] = useState(false)
   const [transferStudent, setTransferStudent] = useState<StudentWithEnrollment | null>(null)
+
+  const [editEnrollmentId, setEditEnrollmentId] = useState<number | null>(null)
+  const [editStudentId, setEditStudentId] = useState<number | null>(null)
   
   const navigate = useNavigate()
   const { showToast, ToastComponent } = useToast()
@@ -200,6 +207,10 @@ export function LevelStudentsPanel({
               onView={() => navigate(`/students/${student.student_id}`)}
               onTransfer={() => { setTransferStudent(student); setIsTransferOpen(true) }}
               onDrop={() => handleDropClick(student.enrollment_id)}
+              onEditFinance={() => {
+                setEditEnrollmentId(student.enrollment_id)
+                setEditStudentId(student.student_id)
+              }}
             />
           ))}
         </div>
@@ -237,6 +248,16 @@ export function LevelStudentsPanel({
           }}
         />
       )}
+
+      <EditEnrollmentModal
+        isOpen={editEnrollmentId !== null && editStudentId !== null}
+        onClose={() => {
+          setEditEnrollmentId(null)
+          setEditStudentId(null)
+        }}
+        enrollmentId={editEnrollmentId}
+        studentId={editStudentId}
+      />
 
       {ToastComponent}
     </div>
