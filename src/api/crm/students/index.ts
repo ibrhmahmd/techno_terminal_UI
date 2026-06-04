@@ -52,6 +52,8 @@ export {
   getEnrollmentHistory,
   getCompetitionHistory,
   logActivity,
+  updateActivity,
+  deleteActivity,
   type PaginatedEnrollmentHistory,
   type PaginatedCompetitionHistory,
 } from './activity'
@@ -148,6 +150,7 @@ export {
   type EnrollmentHistoryEntry,
   type CompetitionHistoryEntry,
   type ActivityLogRequest,
+  type ActivityLogUpdateRequest,
   type ManualActivityResponseDTO,
 } from './types'
 

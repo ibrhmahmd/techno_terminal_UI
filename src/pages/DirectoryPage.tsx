@@ -653,6 +653,27 @@ export function DirectoryPage() {
                         setFilter('enrollmentDateFrom', '')
                         setFilter('enrollmentDateTo', '')
                         break
+                      case 'excludeCourseIds':
+                        setFilter('excludeCourseIds', [])
+                        break
+                      case 'courseEnrollmentDates':
+                        setFilter('courseEnrollmentDateFrom', '')
+                        setFilter('courseEnrollmentDateTo', '')
+                        break
+                      case 'activityCount':
+                        setFilter('minActivityCount', '')
+                        setFilter('maxActivityCount', '')
+                        break
+                      case 'activityTypes':
+                        setFilter('activityTypes', [])
+                        break
+                      case 'activityDates':
+                        setFilter('activityDateFrom', '')
+                        setFilter('activityDateTo', '')
+                        break
+                      case 'activitySearch':
+                        setFilter('activitySearchTerm', '')
+                        break
                     }
                   }}
                 />

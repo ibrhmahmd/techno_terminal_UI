@@ -9,9 +9,14 @@ import { EmptyState } from '../common/EmptyState'
 import {
   useActivityHistory,
   useActivitySummary,
-  useEnrollmentHistory
+  useEnrollmentHistory,
+  useDeleteActivity,
 } from '../../hooks/useStudentActivity'
 import type { ActivityLogResponseDTO, ActivitySummaryItem, EnrollmentHistoryEntry } from '../../api/crm'
+import { useAuthStore } from '../../store/authStore'
+import { useToast } from '../common/Toast'
+import { LogActivityModal } from '../crm/LogActivityModal'
+import { ConfirmDialog } from '../common/ConfirmDialog'
 
 type TabType = 'timeline' | 'enrollments' | 'summary'
 
@@ -23,14 +28,25 @@ export function ActivityHistoryTab({ studentId }: ActivityHistoryTabProps) {
   const [activeTab, setActiveTab] = useState<TabType>('timeline')
   const [dateFilter, setDateFilter] = useState<{ from?: string; to?: string }>({})
 
-  const { data: history, isLoading: loadingHistory } = useActivityHistory(studentId, {
+  // Modals & Confirmation state
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false)
+  const [selectedActivity, setSelectedActivity] = useState<ActivityLogResponseDTO | null>(null)
+  const [activityToDelete, setActivityToDelete] = useState<ActivityLogResponseDTO | null>(null)
+
+  const user = useAuthStore((state) => state.user)
+  const { showToast } = useToast()
+  const deleteMutation = useDeleteActivity()
+
+  const isAdmin = user?.role === 'admin' || user?.role === 'system_admin'
+
+  const { data: history, isLoading: loadingHistory, refetch: refetchHistory } = useActivityHistory(studentId, {
     date_from: dateFilter.from,
     date_to: dateFilter.to,
     limit: 50,
     enabled: activeTab === 'timeline',
   })
 
-  const { data: summary, isLoading: loadingSummary } = useActivitySummary(
+  const { data: summary, isLoading: loadingSummary, refetch: refetchSummary } = useActivitySummary(
     studentId,
     { date_from: dateFilter.from, date_to: dateFilter.to },
     activeTab === 'summary'
@@ -45,29 +61,68 @@ export function ActivityHistoryTab({ studentId }: ActivityHistoryTabProps) {
 
   const isLoading = loadingHistory || loadingSummary || loadingEnrollments
 
+  const handleDeleteConfirm = async () => {
+    if (!activityToDelete) return
+    try {
+      await deleteMutation.mutateAsync({
+        studentId,
+        activityId: activityToDelete.id,
+      })
+      showToast('Activity log deleted successfully', 'success')
+      setActivityToDelete(null)
+    } catch (err: any) {
+      showToast(err?.response?.data?.message || 'Failed to delete activity log', 'error')
+    }
+  }
+
+  const handleEditActivity = (item: ActivityLogResponseDTO) => {
+    setSelectedActivity(item)
+    setIsLogModalOpen(true)
+  }
+
+  const handleSuccess = () => {
+    refetchHistory()
+    refetchSummary()
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex space-x-1 bg-slate-100 p-1 rounded-lg">
-          {[
-            { id: 'timeline', label: 'Timeline', icon: Clock },
-            { id: 'enrollments', label: 'Enrollments', icon: BookOpen },
-            { id: 'summary', label: 'Summary', icon: FileText },
-          ].map(({ id, label, icon: Icon }) => (
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+          <div className="flex space-x-1 bg-slate-100 p-1 rounded-lg">
+            {[
+              { id: 'timeline', label: 'Timeline', icon: Clock },
+              { id: 'enrollments', label: 'Enrollments', icon: BookOpen },
+              { id: 'summary', label: 'Summary', icon: FileText },
+            ].map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id as TabType)}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === id
+                    ? 'bg-white text-on-surface shadow-sm'
+                    : 'text-slate-600 hover:text-on-surface'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {isAdmin && activeTab === 'timeline' && (
             <button
-              key={id}
-              onClick={() => setActiveTab(id as TabType)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === id
-                  ? 'bg-white text-on-surface shadow-sm'
-                  : 'text-slate-600 hover:text-on-surface'
-              }`}
+              onClick={() => {
+                setSelectedActivity(null)
+                setIsLogModalOpen(true)
+              }}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary/95 rounded-lg shadow-sm hover:shadow transition-all"
             >
-              <Icon className="w-4 h-4" />
-              {label}
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              Log Activity
             </button>
-          ))}
+          )}
         </div>
 
         {/* Date Filter */}
@@ -76,7 +131,7 @@ export function ActivityHistoryTab({ studentId }: ActivityHistoryTabProps) {
             type="date"
             value={dateFilter.from || ''}
             onChange={(e) => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
-            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg"
+            className="px-3 py-1.5 text-sm border border-slate-200 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
             placeholder="From"
           />
           <span className="text-slate-400">to</span>
@@ -84,7 +139,7 @@ export function ActivityHistoryTab({ studentId }: ActivityHistoryTabProps) {
             type="date"
             value={dateFilter.to || ''}
             onChange={(e) => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
-            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg"
+            className="px-3 py-1.5 text-sm border border-slate-200 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
             placeholder="To"
           />
         </div>
@@ -97,17 +152,60 @@ export function ActivityHistoryTab({ studentId }: ActivityHistoryTabProps) {
         </div>
       ) : (
         <>
-          {activeTab === 'timeline' && <TimelineView history={history || []} />}
+          {activeTab === 'timeline' && (
+            <TimelineView
+              history={history || []}
+              isAdmin={isAdmin}
+              onEditActivity={handleEditActivity}
+              onDeleteActivity={setActivityToDelete}
+              onLogActivity={() => {
+                setSelectedActivity(null)
+                setIsLogModalOpen(true)
+              }}
+            />
+          )}
           {activeTab === 'enrollments' && <EnrollmentsView enrollments={enrollments || []} />}
           {activeTab === 'summary' && <SummaryView summary={summary || []} />}
         </>
       )}
+
+      {/* Modals & Dialogs */}
+      <LogActivityModal
+        isOpen={isLogModalOpen}
+        onClose={() => setIsLogModalOpen(false)}
+        studentId={studentId}
+        activity={selectedActivity}
+        onSuccess={handleSuccess}
+      />
+
+      <ConfirmDialog
+        isOpen={activityToDelete !== null}
+        title="Delete Activity Log"
+        message="Are you sure you want to delete this activity log? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setActivityToDelete(null)}
+      />
     </div>
   )
 }
 
 // Timeline View Component
-function TimelineView({ history }: { history: ActivityLogResponseDTO[] }) {
+function TimelineView({
+  history,
+  isAdmin,
+  onEditActivity,
+  onDeleteActivity,
+  onLogActivity,
+}: {
+  history: ActivityLogResponseDTO[]
+  isAdmin: boolean
+  onEditActivity: (item: ActivityLogResponseDTO) => void
+  onDeleteActivity: (item: ActivityLogResponseDTO) => void
+  onLogActivity: () => void
+}) {
   if (history.length === 0) {
     return (
       <EmptyState
@@ -136,7 +234,14 @@ function TimelineView({ history }: { history: ActivityLogResponseDTO[] }) {
           </div>
           <div className="space-y-3 ml-7">
             {items.map((item, idx) => (
-              <TimelineItem key={idx} item={item} />
+              <TimelineItem
+                key={idx}
+                item={item}
+                isAdmin={isAdmin}
+                onLogNew={onLogActivity}
+                onEdit={() => onEditActivity(item)}
+                onDelete={() => onDeleteActivity(item)}
+              />
             ))}
           </div>
         </div>
@@ -146,7 +251,19 @@ function TimelineView({ history }: { history: ActivityLogResponseDTO[] }) {
 }
 
 // Single Timeline Item
-function TimelineItem({ item }: { item: ActivityLogResponseDTO }) {
+function TimelineItem({
+  item,
+  isAdmin,
+  onLogNew,
+  onEdit,
+  onDelete,
+}: {
+  item: ActivityLogResponseDTO
+  isAdmin: boolean
+  onLogNew: () => void
+  onEdit: () => void
+  onDelete: () => void
+}) {
   const getIcon = () => {
     switch (item.activity_type) {
       case 'enrollment':
@@ -162,7 +279,7 @@ function TimelineItem({ item }: { item: ActivityLogResponseDTO }) {
   }
 
   return (
-    <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+    <div className="flex items-start gap-3 p-3 bg-slate-50 hover:bg-slate-100/70 rounded-lg transition-colors group relative">
       <div className="mt-0.5">{getIcon()}</div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -170,16 +287,16 @@ function TimelineItem({ item }: { item: ActivityLogResponseDTO }) {
             {item.activity_type.replace(/_/g, ' ')}
           </span>
           {item.activity_subtype && (
-            <span className="px-2 py-0.5 text-xs rounded-full bg-slate-100 text-slate-600">
+            <span className="px-2 py-0.5 text-xs rounded-full bg-slate-100 text-slate-600 font-medium">
               {item.activity_subtype}
             </span>
           )}
         </div>
         {item.description && (
-          <p className="text-sm text-slate-600 mt-1">{item.description}</p>
+          <p className="text-sm text-slate-600 mt-1 leading-relaxed">{item.description}</p>
         )}
         {typeof item.metadata?.changes_summary === 'string' ? (
-          <div className="mt-2 text-xs text-slate-600 font-mono bg-slate-100/50 border border-slate-200 p-2 rounded whitespace-pre-wrap">
+          <div className="mt-2 text-xs text-slate-600 font-mono bg-white border border-slate-200 p-2 rounded whitespace-pre-wrap">
             {item.metadata.changes_summary as string}
           </div>
         ) : null}
@@ -188,6 +305,33 @@ function TimelineItem({ item }: { item: ActivityLogResponseDTO }) {
           {item.performed_by_name && <span>by {item.performed_by_name}</span>}
         </div>
       </div>
+
+      {/* Admin Actions */}
+      {isAdmin && (
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 self-start ml-2 bg-white/90 backdrop-blur shadow-sm border border-slate-200 rounded-lg p-0.5">
+          <button
+            onClick={onLogNew}
+            title="Log New Activity"
+            className="p-1 text-slate-500 hover:text-primary hover:bg-slate-50 rounded transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px] block">add</span>
+          </button>
+          <button
+            onClick={onEdit}
+            title="Edit Log"
+            className="p-1 text-slate-500 hover:text-secondary hover:bg-slate-50 rounded transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px] block">edit</span>
+          </button>
+          <button
+            onClick={onDelete}
+            title="Delete Log"
+            className="p-1 text-slate-500 hover:text-red-600 hover:bg-slate-50 rounded transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px] block">delete</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }

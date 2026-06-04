@@ -8,7 +8,10 @@ import {
   getActivitySummary,
   getEnrollmentHistory,
   logActivity,
+  updateActivity,
+  deleteActivity,
   type ActivityLogRequest,
+  type ActivityLogUpdateRequest,
 } from '../api/crm'
 import type { PaginatedEnrollmentHistory } from '../api/crm'
 
@@ -83,10 +86,66 @@ export function useLogActivity() {
         queryKey: activityKeys.all,
       })
       queryClient.invalidateQueries({
-        queryKey: activityKeys.history(variables.studentId),
+        queryKey: ['student-activity', 'history', variables.studentId],
       })
       queryClient.invalidateQueries({
-        queryKey: activityKeys.summary(variables.studentId),
+        queryKey: ['student-activity', 'summary', variables.studentId],
+      })
+    },
+  })
+}
+
+// Update manual activity
+export function useUpdateActivity() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      studentId,
+      activityId,
+      data,
+    }: {
+      studentId: number
+      activityId: number
+      data: ActivityLogUpdateRequest
+    }) => updateActivity(studentId, activityId, data),
+    onSuccess: (_data, variables) => {
+      // Invalidate activity queries for this student
+      queryClient.invalidateQueries({
+        queryKey: activityKeys.all,
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['student-activity', 'history', variables.studentId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['student-activity', 'summary', variables.studentId],
+      })
+    },
+  })
+}
+
+// Delete manual activity
+export function useDeleteActivity() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      studentId,
+      activityId,
+    }: {
+      studentId: number
+      activityId: number
+    }) => deleteActivity(studentId, activityId),
+    onSuccess: (_data, variables) => {
+      // Invalidate activity queries for this student
+      queryClient.invalidateQueries({
+        queryKey: activityKeys.all,
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['student-activity', 'history', variables.studentId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['student-activity', 'summary', variables.studentId],
       })
     },
   })

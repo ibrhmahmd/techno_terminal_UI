@@ -114,6 +114,15 @@ export interface StudentFilterParams {
   enrollment_date_to?: string    // YYYY-MM-DD
   min_enrollments?: number
   max_enrollments?: number
+  exclude_course_ids?: number[]
+  course_enrollment_date_from?: string  // YYYY-MM-DD
+  course_enrollment_date_to?: string    // YYYY-MM-DD
+  min_activity_count?: number
+  max_activity_count?: number
+  activity_types?: string[]
+  activity_date_from?: string  // YYYY-MM-DD
+  activity_date_to?: string    // YYYY-MM-DD
+  activity_search_term?: string
   skip?: number
   limit?: number
 }
@@ -138,6 +147,15 @@ export async function filterStudents(
         enrollment_date_to: params.enrollment_date_to,
         min_enrollments: params.min_enrollments,
         max_enrollments: params.max_enrollments,
+        exclude_course_ids: params.exclude_course_ids?.join(','),
+        course_enrollment_date_from: params.course_enrollment_date_from,
+        course_enrollment_date_to: params.course_enrollment_date_to,
+        min_activity_count: params.min_activity_count,
+        max_activity_count: params.max_activity_count,
+        activity_types: params.activity_types,
+        activity_date_from: params.activity_date_from,
+        activity_date_to: params.activity_date_to,
+        activity_search_term: params.activity_search_term,
         skip: params.skip ?? 0,
         limit: params.limit ?? 50,
       },

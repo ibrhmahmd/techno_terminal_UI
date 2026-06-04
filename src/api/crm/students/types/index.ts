@@ -60,6 +60,7 @@ export {
   type EnrollmentHistoryEntry,
   type CompetitionHistoryEntry,
   type ActivityLogRequest,
+  type ActivityLogUpdateRequest,
   type ManualActivityResponseDTO,
 } from './activity'
 

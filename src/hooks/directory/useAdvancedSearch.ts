@@ -14,6 +14,15 @@ export interface FilterState {
   enrollmentCountMax: number | ''
   enrollmentDateFrom: string
   enrollmentDateTo: string
+  excludeCourseIds: number[]
+  courseEnrollmentDateFrom: string
+  courseEnrollmentDateTo: string
+  minActivityCount: number | ''
+  maxActivityCount: number | ''
+  activityTypes: string[]
+  activityDateFrom: string
+  activityDateTo: string
+  activitySearchTerm: string
 }
 
 const DAY_NAME_MAP: Record<string, string> = {
@@ -39,6 +48,15 @@ const initialFilters: FilterState = {
   enrollmentCountMax: '',
   enrollmentDateFrom: '',
   enrollmentDateTo: '',
+  excludeCourseIds: [],
+  courseEnrollmentDateFrom: '',
+  courseEnrollmentDateTo: '',
+  minActivityCount: '',
+  maxActivityCount: '',
+  activityTypes: [],
+  activityDateFrom: '',
+  activityDateTo: '',
+  activitySearchTerm: '',
 }
 
 interface UseAdvancedSearchReturn {
@@ -64,6 +82,7 @@ export function useAdvancedSearch(): UseAdvancedSearchReturn {
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === 'ageMin' || key === 'ageMax') return value !== ''
     if (key === 'enrollmentCountMin' || key === 'enrollmentCountMax') return value !== ''
+    if (key === 'minActivityCount' || key === 'maxActivityCount') return value !== ''
     if (key === 'hasUnpaidBalance') return value === true
     if (Array.isArray(value)) return value.length > 0
     if (typeof value === 'string') return value !== ''
@@ -88,6 +107,19 @@ export function useAdvancedSearch(): UseAdvancedSearchReturn {
     if (filters.enrollmentCountMax !== '') params.max_enrollments = Number(filters.enrollmentCountMax)
     if (filters.enrollmentDateFrom) params.enrollment_date_from = filters.enrollmentDateFrom
     if (filters.enrollmentDateTo) params.enrollment_date_to = filters.enrollmentDateTo
+
+    // Advanced Course Exclusion and Course Enrollment Dates
+    if (filters.excludeCourseIds.length > 0) params.exclude_course_ids = filters.excludeCourseIds
+    if (filters.courseEnrollmentDateFrom) params.course_enrollment_date_from = filters.courseEnrollmentDateFrom
+    if (filters.courseEnrollmentDateTo) params.course_enrollment_date_to = filters.courseEnrollmentDateTo
+
+    // Advanced Activity Log Filtering
+    if (filters.minActivityCount !== '') params.min_activity_count = Number(filters.minActivityCount)
+    if (filters.maxActivityCount !== '') params.max_activity_count = Number(filters.maxActivityCount)
+    if (filters.activityTypes.length > 0) params.activity_types = filters.activityTypes
+    if (filters.activityDateFrom) params.activity_date_from = filters.activityDateFrom
+    if (filters.activityDateTo) params.activity_date_to = filters.activityDateTo
+    if (filters.activitySearchTerm.trim()) params.activity_search_term = filters.activitySearchTerm.trim()
 
     return params
   }, [filters])
@@ -120,6 +152,14 @@ export function useAdvancedSearch(): UseAdvancedSearchReturn {
         id: 'gender',
         label: 'Gender',
         value: filters.gender.map(g => g.charAt(0).toUpperCase() + g.slice(1)).join(', '),
+      })
+    }
+
+    if (filters.courseIds.length > 0) {
+      active.push({
+        id: 'courseIds',
+        label: 'Courses',
+        value: `${filters.courseIds.length} selected`,
       })
     }
 
@@ -168,6 +208,66 @@ export function useAdvancedSearch(): UseAdvancedSearchReturn {
           : filters.enrollmentDateFrom
             ? `From ${filters.enrollmentDateFrom}`
             : `Until ${filters.enrollmentDateTo}`,
+      })
+    }
+
+    if (filters.excludeCourseIds.length > 0) {
+      active.push({
+        id: 'excludeCourseIds',
+        label: 'Excluded Courses',
+        value: `${filters.excludeCourseIds.length} selected`,
+      })
+    }
+
+    if (filters.courseEnrollmentDateFrom || filters.courseEnrollmentDateTo) {
+      active.push({
+        id: 'courseEnrollmentDates',
+        label: 'Course Dates',
+        value: filters.courseEnrollmentDateFrom && filters.courseEnrollmentDateTo
+          ? `${filters.courseEnrollmentDateFrom} to ${filters.courseEnrollmentDateTo}`
+          : filters.courseEnrollmentDateFrom
+            ? `From ${filters.courseEnrollmentDateFrom}`
+            : `Until ${filters.courseEnrollmentDateTo}`,
+      })
+    }
+
+    if (filters.minActivityCount !== '' || filters.maxActivityCount !== '') {
+      active.push({
+        id: 'activityCount',
+        label: 'Activities',
+        value: filters.minActivityCount !== '' && filters.maxActivityCount !== ''
+          ? `${filters.minActivityCount}-${filters.maxActivityCount}`
+          : filters.minActivityCount !== ''
+            ? `${filters.minActivityCount}+`
+            : `<${filters.maxActivityCount}`,
+      })
+    }
+
+    if (filters.activityTypes.length > 0) {
+      active.push({
+        id: 'activityTypes',
+        label: 'Activity Types',
+        value: filters.activityTypes.join(', '),
+      })
+    }
+
+    if (filters.activityDateFrom || filters.activityDateTo) {
+      active.push({
+        id: 'activityDates',
+        label: 'Activity Logged',
+        value: filters.activityDateFrom && filters.activityDateTo
+          ? `${filters.activityDateFrom} to ${filters.activityDateTo}`
+          : filters.activityDateFrom
+            ? `From ${filters.activityDateFrom}`
+            : `Until ${filters.activityDateTo}`,
+      })
+    }
+
+    if (filters.activitySearchTerm.trim()) {
+      active.push({
+        id: 'activitySearch',
+        label: 'Activity search',
+        value: filters.activitySearchTerm.trim(),
       })
     }
 

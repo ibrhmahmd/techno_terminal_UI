@@ -10,6 +10,7 @@ import type {
   EnrollmentHistoryEntry,
   CompetitionHistoryEntry,
   ActivityLogRequest,
+  ActivityLogUpdateRequest,
   ManualActivityResponseDTO,
 } from './types/activity'
 
@@ -92,6 +93,29 @@ export async function logActivity(
     data
   )
   return response.data.data
+}
+
+// Update manual activity
+export async function updateActivity(
+  studentId: number,
+  activityId: number,
+  data: ActivityLogUpdateRequest
+): Promise<ManualActivityResponseDTO> {
+  const response = await client.patch<ApiResponse<ManualActivityResponseDTO>>(
+    `/crm/students/${studentId}/log-activity/${activityId}`,
+    data
+  )
+  return response.data.data
+}
+
+// Delete manual activity
+export async function deleteActivity(
+  studentId: number,
+  activityId: number
+): Promise<void> {
+  await client.delete<ApiResponse<void>>(
+    `/crm/students/${studentId}/log-activity/${activityId}`
+  )
 }
 
 

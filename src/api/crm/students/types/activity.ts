@@ -80,11 +80,23 @@ export interface CompetitionHistoryEntry {
 }
 
 export interface ActivityLogRequest {
-  activity_type: ActivityType
+  activity_type: string
   activity_subtype?: string | null
   description?: string | null
   reference_type?: ReferenceType | null
   reference_id?: number | null
+  metadata?: Record<string, unknown> | null
+  created_at?: string | null
+}
+
+export interface ActivityLogUpdateRequest {
+  activity_type?: string
+  activity_subtype?: string | null
+  description?: string | null
+  reference_type?: ReferenceType | null
+  reference_id?: number | null
+  metadata?: Record<string, unknown> | null
+  created_at?: string | null
 }
 
 export interface ManualActivityResponseDTO {
