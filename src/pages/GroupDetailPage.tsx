@@ -23,7 +23,7 @@ export function GroupDetailPage() {
 
   const isValidGroupId = !isNaN(groupId) && groupId > 0
 
-  const [activeTab, setActiveTab] = useState<'levels' | 'history'>('levels')
+  const [activeTab, setActiveTab] = useState<'levels' | 'history' | 'competitions'>('levels')
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false)
@@ -138,7 +138,7 @@ export function GroupDetailPage() {
     return (
       <div className="min-h-screen bg-surface">
         <TopNavbar activePage="Groups" />
-        <div className="p-8 max-w-[1400px] mx-auto">
+        <div className="p-8 max-w-[1680px] mx-auto">
           <div className="p-12 bg-amber-50 border border-amber-100 rounded-xl text-center">
             <span className="material-symbols-outlined text-4xl text-amber-500 mb-2" aria-hidden="true">warning</span>
             <h2 className="text-xl font-bold text-amber-800 mb-2">Invalid Group ID</h2>
@@ -170,7 +170,7 @@ export function GroupDetailPage() {
     return (
       <div className="min-h-screen bg-surface">
         <TopNavbar activePage="Groups" />
-        <div className="p-8 max-w-[1400px] mx-auto">
+        <div className="p-8 max-w-[1680px] mx-auto">
           <div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center">
             <span className="material-symbols-outlined text-4xl text-red-500 mb-2" aria-hidden="true">error</span>
             <h2 className="text-xl font-bold text-red-800 mb-2">Error</h2>
@@ -185,7 +185,7 @@ export function GroupDetailPage() {
     return (
       <div className="min-h-screen bg-surface">
         <TopNavbar activePage="Groups" />
-        <div className="p-8 max-w-[1400px] mx-auto">
+        <div className="p-8 max-w-[1680px] mx-auto">
           <div className="p-12 text-center text-on-surface-variant">
             <p>Group not found</p>
           </div>
@@ -198,7 +198,7 @@ export function GroupDetailPage() {
     <div className="min-h-screen bg-surface">
       <TopNavbar activePage="Groups" />
 
-      <div className="p-4 md:p-8 max-w-[1400px] mx-auto space-y-6">
+      <div className="p-4 md:p-8 max-w-[1680px] mx-auto space-y-6">
         <ErrorBoundary>
           <GroupInfoCard
             group={group}
@@ -229,6 +229,13 @@ export function GroupDetailPage() {
                 isActive: activeTab === 'history',
                 onClick: () => setActiveTab('history'),
               },
+              {
+                label: 'Competitions (soon)',
+                icon: 'emoji_events',
+                color: 'slate',
+                isActive: activeTab === 'competitions',
+                onClick: () => setActiveTab('competitions'),
+              },
             ]}
           />
 
@@ -243,12 +250,24 @@ export function GroupDetailPage() {
                 coursesMap={coursesMap}
                 instructorsMap={instructorsMap}
                 onAddLevel={() => setIsProgressLevelDialogOpen(true)}
+                groupInstructorName={group.instructor_name}
+                groupName={group.name}
+                courseName={group.course_name}
               />
             </div>
           )}
           {activeTab === 'history' && (
             <div role="tabpanel" id="panel-history" aria-labelledby="tab-history">
               <HistoryTab groupId={groupId} />
+            </div>
+          )}
+          {activeTab === 'competitions' && (
+            <div role="tabpanel" id="panel-competitions" aria-labelledby="tab-competitions" className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
+              <span className="material-symbols-outlined text-6xl text-slate-300 mb-3 block" aria-hidden="true">emoji_events</span>
+              <h3 className="text-lg font-bold font-headline text-slate-800 mb-1">Competitions Features Coming Soon</h3>
+              <p className="text-sm text-slate-500 max-w-md mx-auto">
+                You will soon be able to track and manage student teams, competition registrations, and event statistics directly linked to this group.
+              </p>
             </div>
           )}
           </div>

@@ -9,10 +9,19 @@ interface SessionActionsRowProps {
   onCancel: (sessionId: number) => void
   onDelete: (sessionId: number) => void
   onReactivate: (sessionId: number) => void
+  onComplete: (sessionId: number) => void
   disabled?: boolean
 }
 
-export function SessionActionsRow({ sessions, onEdit, onCancel, onDelete, onReactivate, disabled }: SessionActionsRowProps) {
+export function SessionActionsRow({
+  sessions,
+  onEdit,
+  onCancel,
+  onDelete,
+  onReactivate,
+  onComplete,
+  disabled
+}: SessionActionsRowProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [sessionToDelete, setSessionToDelete] = useState<number | null>(null)
   const [isHardDeleteDialogOpen, setIsHardDeleteDialogOpen] = useState(false)
@@ -72,61 +81,85 @@ export function SessionActionsRow({ sessions, onEdit, onCancel, onDelete, onReac
                 cancelled ? 'opacity-50 blur-[1px] bg-gray-100' : ''
               }`}
             >
-              <div className="flex gap-1 justify-center flex-wrap">
-                {cancelled ? (
-                  <>
-                    <span className={`px-2 py-1 rounded-md text-[10px] font-bold ${sessionStatusColors.cancelled}`}>
-                      CANCELLED
-                    </span>
-                    <button
-                      onClick={() => onReactivate(session.session_id)}
-                      disabled={disabled}
-                      className="p-1.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors disabled:opacity-50"
-                      title="Reactivate session"
-                    >
-                      <span className="material-symbols-outlined text-[16px]" aria-hidden="true">restore</span>
-                    </button>
-                    <button
-                      onClick={() => handleHardDeleteClick(session.session_id)}
-                      disabled={disabled}
-                      className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors disabled:opacity-50"
-                      title="Delete session"
-                    >
-                      <span className="material-symbols-outlined text-[16px]" aria-hidden="true">delete</span>
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => onEdit(session)}
-                      disabled={disabled || cancelled}
-                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-secondary bg-secondary/10 rounded-lg hover:bg-secondary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      aria-label="Edit session details"
-                    >
-                      <span className="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
-                      Edit
-                    </button>
-
-                    {session.status === 'scheduled' && (
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="flex gap-1 justify-center flex-wrap">
+                  {cancelled ? (
+                    <>
+                      <span className={`px-2 py-1 rounded-md text-xs font-bold ${sessionStatusColors.cancelled}`}>
+                        CANCELLED
+                      </span>
                       <button
-                        onClick={() => handleCancelClick(session.session_id)}
+                        onClick={() => onReactivate(session.session_id)}
                         disabled={disabled}
-                        className="flex items-center justify-center p-1.5 text-amber-600 bg-amber-50 rounded-md hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Cancel session"
+                        className="p-1 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors disabled:opacity-50"
+                        title="Reactivate session"
                       >
-                        <span className="material-symbols-outlined text-[16px]" aria-hidden="true">block</span>
+                        <span className="material-symbols-outlined text-[16px]" aria-hidden="true">restore</span>
                       </button>
+                      <button
+                        onClick={() => handleHardDeleteClick(session.session_id)}
+                        disabled={disabled}
+                        className="p-1 text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors disabled:opacity-50"
+                        title="Delete session"
+                      >
+                        <span className="material-symbols-outlined text-[16px]" aria-hidden="true">delete</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => onEdit(session)}
+                        disabled={disabled || cancelled}
+                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-secondary bg-secondary/10 rounded-md hover:bg-secondary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Edit session details"
+                      >
+                        <span className="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
+                        Edit
+                      </button>
+
+                      {session.status === 'scheduled' && (
+                        <button
+                          onClick={() => handleCancelClick(session.session_id)}
+                          disabled={disabled}
+                          className="flex items-center justify-center p-1 text-amber-600 bg-amber-50 rounded-md hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Cancel session"
+                        >
+                          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">block</span>
+                        </button>
+                      )}
+                      
+                      <button
+                        onClick={() => handleHardDeleteClick(session.session_id)}
+                        disabled={disabled}
+                        className="flex items-center justify-center p-1 text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Delete session"
+                      >
+                        <span className="material-symbols-outlined text-[16px]" aria-hidden="true">delete</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Mark Complete / Completed Badge under the first row */}
+                {!cancelled && (
+                  <div className="w-full px-1">
+                    {session.status === 'scheduled' ? (
+                      <button
+                        onClick={() => onComplete(session.session_id)}
+                        disabled={disabled}
+                        className="w-full flex items-center justify-center gap-1 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Mark session as completed"
+                      >
+                        <span className="material-symbols-outlined text-xs">check_circle</span>
+                        Mark Complete
+                      </button>
+                    ) : (
+                      <div className="w-full flex items-center justify-center gap-1 py-1 text-xs font-bold text-emerald-800 bg-emerald-100/60 border border-emerald-200 rounded-md">
+                        <span className="material-symbols-outlined text-xs">check_circle</span>
+                        Completed
+                      </div>
                     )}
-                    
-                    <button
-                      onClick={() => handleHardDeleteClick(session.session_id)}
-                      disabled={disabled}
-                      className="flex items-center justify-center p-1.5 text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Delete session"
-                    >
-                      <span className="material-symbols-outlined text-[16px]" aria-hidden="true">delete</span>
-                    </button>
-                  </>
+                  </div>
                 )}
               </div>
             </td>

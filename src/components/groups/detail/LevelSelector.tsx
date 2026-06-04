@@ -24,7 +24,7 @@ export function LevelSelector({
   return (
     <section className="w-full pb-4">
       <div className="overflow-x-auto">
-        <div role="tablist" aria-label="Select level" className="flex w-full min-w-fit items-center gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1">
+        <div role="tablist" aria-label="Select level" className="flex w-full min-w-fit items-center gap-1 rounded-md bg-surface-container-low border border-surface-container-low p-1">
           <div className="flex flex-1 items-center gap-1">
           {levels.map((level, index) => {
             const isActive = level.level_id === activeLevelId
@@ -39,8 +39,8 @@ export function LevelSelector({
                 onClick={() => onLevelChange(level.level_id)}
                 className={`flex flex-col items-center justify-center px-6 py-2 rounded-md transition-all whitespace-nowrap min-w-[120px] ${
                   isActive
-                    ? 'bg-white text-secondary shadow-sm font-bold border border-blue-200'
-                    : 'text-slate-600 hover:text-secondary hover:bg-white/70'
+                    ? 'bg-surface text-secondary shadow-sm font-bold border border-surface-container-high'
+                    : 'text-slate-600 hover:text-secondary hover:bg-surface-container-lowest/50'
                 }`}
               >
                 <span className="font-headline text-sm">Level {level.level_number}</span>

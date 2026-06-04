@@ -74,7 +74,7 @@ export function EntityPageHeader({
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-6">
-      <div className="max-w-[1400px] mx-auto">
+      <div className="max-w-[1680px] mx-auto">
         {backLink && (
           <button
             onClick={() => navigate(backLink)}

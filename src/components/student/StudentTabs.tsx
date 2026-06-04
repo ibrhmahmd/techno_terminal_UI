@@ -26,7 +26,7 @@ const tabs: Tab[] = [
 export function StudentTabs({ activeTab, onTabChange }: StudentTabsProps) {
   return (
     <div className="bg-white border-b border-slate-200">
-      <div className="max-w-[1400px] mx-auto px-8">
+      <div className="max-w-[1680px] mx-auto px-8">
         <nav className="flex space-x-1" aria-label="Student tabs">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id

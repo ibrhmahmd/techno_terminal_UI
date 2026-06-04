@@ -7,7 +7,7 @@ interface DirectoryTabsProps {
 export function DirectoryTabs({ activeTab, waitingCount, onTabChange }: DirectoryTabsProps) {
   return (
     <div className="px-8 pt-4 border-b border-slate-200">
-      <div className="max-w-[1400px] mx-auto">
+      <div className="max-w-[1680px] mx-auto">
         <div className="flex space-x-1">
           <button
             onClick={() => onTabChange('students')}

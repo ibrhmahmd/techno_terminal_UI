@@ -226,6 +226,23 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     }
   }, [refetchData, showToast, selectedDate, qc, groupId])
 
+  // Handle complete session
+  const handleCompleteSession = useCallback(async (sessionId: number) => {
+    try {
+      await updateSession(sessionId, { status: 'completed' })
+      setHasChanges(true)
+      showToast('Session marked as completed successfully', 'success')
+      if (selectedDate) {
+        await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+      }
+      await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+      await refetchData()
+    } catch (err) {
+      console.error('Failed to complete session:', err)
+      showToast('Failed to complete session', 'error')
+    }
+  }, [refetchData, showToast, selectedDate, qc, groupId])
+
   // Handle save edited session
   const handleSaveEditedSession = useCallback(async (sessionId: number, data: UpdateSessionDTO) => {
     try {
@@ -541,7 +558,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors shadow-sm"
                       >
                         <span className="material-symbols-outlined text-sm">add</span>
-                        Add Node
+                        Add Session
                       </button>
                     </div>
                   </div>
@@ -560,6 +577,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
               onCancel={handleCancelSession}
               onDelete={handleDeleteSession}
               onReactivate={handleReactivateSession}
+              onComplete={handleCompleteSession}
               disabled={isSaving}
             />
           </tbody>

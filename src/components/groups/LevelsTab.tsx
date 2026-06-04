@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Calendar, Users, BookOpen, GraduationCap, Clock, CheckCircle, XCircle, AlertCircle, Edit3 } from 'lucide-react'
+import { BookOpen, GraduationCap, CheckCircle, XCircle, AlertCircle, Edit3 } from 'lucide-react'
 import type { LevelDetailDTO, LevelPaymentsDTO, CourseInfoDTO, InstructorInfoDTO } from '../../api/academics'
 import { LevelSelector } from './detail/LevelSelector'
-import { PillSelector } from '../common'
 import { useGroupAttendance } from '../../hooks/useGroupAttendance'
 import { AttendanceGrid } from '../attendance/AttendanceGrid'
 import { transformRoster, transformSessions } from '../../utils/attendanceTransforms'
@@ -68,6 +67,9 @@ interface LevelsTabProps {
   coursesMap: Record<string, CourseInfoDTO>
   instructorsMap: Record<string, InstructorInfoDTO>
   onAddLevel?: () => void
+  groupInstructorName?: string
+  groupName?: string
+  courseName?: string
 }
 
 export function LevelsTab({
@@ -76,8 +78,11 @@ export function LevelsTab({
   groupId,
   paymentsByLevel,
   coursesMap,
-  instructorsMap,
+  instructorsMap: _instructorsMap,
   onAddLevel,
+  groupInstructorName,
+  groupName,
+  courseName,
 }: LevelsTabProps) {
   const initialLevelId = levels.find(l => l.level_number === currentLevelNumber)?.level_id || levels[0]?.level_id || null
   const [selectedLevelId, setSelectedLevelId] = useState<number | null>(initialLevelId)
@@ -122,6 +127,29 @@ export function LevelsTab({
     })
   }
 
+  const getDurationString = (start?: string | null, end?: string | null) => {
+    if (!start || !end) return ''
+    try {
+      const s = new Date(start)
+      const e = new Date(end)
+      const diffTime = Math.abs(e.getTime() - s.getTime())
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      const weeks = Math.floor(diffDays / 7)
+      const extraDays = diffDays % 7
+      
+      let parts = []
+      if (weeks > 0) {
+        parts.push(`${weeks} week${weeks > 1 ? 's' : ''}`)
+      }
+      if (extraDays > 0 || weeks === 0) {
+        parts.push(`${extraDays} day${extraDays > 1 ? 's' : ''}`)
+      }
+      return `${parts.join(' ')}`
+    } catch {
+      return ''
+    }
+  }
+
   if (levels.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
@@ -145,20 +173,27 @@ export function LevelsTab({
       />
 
       <div className="grid gap-6">
-        <div className={`bg-white rounded-xl border shadow-sm p-6 ${
-          selectedLevel.level_number === currentLevelNumber ? 'border-blue-300 ring-1 ring-blue-100' : 'border-slate-200'
+        <div className={`bg-surface-container-low border border-surface-container-low rounded-lg p-6 ${
+          selectedLevel.level_number === currentLevelNumber ? 'ring-1 ring-secondary/30' : ''
         }`}>
           {/* Card Header */}
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+              <div className="w-12 h-12 rounded-md bg-gradient-to-br from-secondary to-secondary/80 flex items-center justify-center text-white font-bold text-lg">
                 {selectedLevel.level_number}
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                   Level {selectedLevel.level_number}
+                  <button
+                    disabled
+                    title="Coming soon — level renumbering requires a database migration"
+                    className="p-1 hover:bg-slate-200 rounded-md transition-colors text-slate-400 hover:text-slate-600 cursor-not-allowed opacity-60 flex items-center justify-center"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
                   {selectedLevel.level_number === currentLevelNumber && (
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
                       Current
                     </span>
                   )}
@@ -175,43 +210,87 @@ export function LevelsTab({
             </div>
           </div>
 
-          {/* Quick Stats Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-4 border-t border-slate-100">
-            <div className="flex items-center gap-2 text-sm">
-              <Users className="w-4 h-4 text-slate-400" aria-hidden={true} />
-              <span className="text-slate-600 tabular-nums">
-                {selectedLevel.students_count} students ({selectedLevel.students_completed} completed, {selectedLevel.students_dropped} dropped)
-              </span>
+          {/* Level Metrics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            {/* Date Range Card */}
+            <div className="bg-surface-container-lowest p-4 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[90px]">
+              <div>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Timeline</span>
+                <span className="font-headline text-sm font-bold text-slate-900 leading-tight block">
+                  {formatDate(selectedLevel.start_date)} - {formatDate(selectedLevel.end_date)}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] font-extrabold text-secondary bg-secondary/10 px-2 py-0.5 rounded mt-1.5 inline-block">
+                  Duration: {getDurationString(selectedLevel.start_date, selectedLevel.end_date) || 'N/A'}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="w-4 h-4 text-slate-400" aria-hidden={true} />
-              <span className="text-slate-600">
-                {formatDate(selectedLevel.start_date)} - {formatDate(selectedLevel.end_date)}
-              </span>
+
+            {/* Sessions Card */}
+            <div className="bg-surface-container-lowest p-4 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[90px]">
+              <div>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Sessions</span>
+                <span className="font-headline text-base font-bold text-slate-900 leading-tight block">
+                  {selectedLevel.sessions.length} Sessions
+                </span>
+              </div>
+              <span className="text-[11px] text-slate-500 mt-1.5 block">Total session nodes</span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="w-4 h-4 text-slate-400" aria-hidden={true} />
-              <span className="text-slate-600">
-                {selectedLevel.sessions.length} sessions
-              </span>
+
+            {/* Course Card */}
+            <div className="bg-surface-container-lowest p-4 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[90px]">
+              <div>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Course</span>
+                <span className="font-headline text-sm font-bold text-slate-900 leading-tight block truncate" title={coursesMap[selectedLevel.course_id]?.course_name || courseName || `ID: ${selectedLevel.course_id}`}>
+                  {coursesMap[selectedLevel.course_id]?.course_name || courseName || `ID: ${selectedLevel.course_id}`}
+                </span>
+              </div>
+              <span className="text-[11px] text-slate-500 mt-1.5 block">Curriculum standard</span>
             </div>
           </div>
 
-          <div className="mt-6 border-t border-slate-100 pt-6">
+          <div className="mt-6 border-t border-slate-200 pt-6">
             <div className="flex justify-center mb-6">
-              <PillSelector
-                options={[
-                  { value: 'attendance', label: 'Attendance & Sessions', icon: 'groups' },
-                  { value: 'payments', label: 'Payments', icon: 'payments' },
-                ]}
-                value={viewMode}
-                onChange={(val) => setViewMode(val as 'attendance' | 'payments')}
-              />
+              <div role="tablist" aria-label="Select view" className="flex items-center gap-1 rounded-md bg-surface-container-low border border-surface-container-low p-1 w-full max-w-md">
+                <button
+                  role="tab"
+                  aria-selected={viewMode === 'attendance'}
+                  onClick={() => setViewMode('attendance')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md transition-all whitespace-nowrap font-headline text-sm ${
+                    viewMode === 'attendance'
+                      ? 'bg-surface text-secondary shadow-sm font-bold border border-surface-container-high'
+                      : 'text-slate-600 hover:text-secondary hover:bg-surface-container-lowest/50'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">groups</span>
+                  Attendance & Sessions
+                </button>
+                <button
+                  role="tab"
+                  aria-selected={viewMode === 'payments'}
+                  onClick={() => setViewMode('payments')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md transition-all whitespace-nowrap font-headline text-sm ${
+                    viewMode === 'payments'
+                      ? 'bg-surface text-secondary shadow-sm font-bold border border-surface-container-high'
+                      : 'text-slate-600 hover:text-secondary hover:bg-surface-container-lowest/50'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">payments</span>
+                  Payments
+                </button>
+              </div>
             </div>
             
             {viewMode === 'attendance' ? (
               <div className="animate-fadeIn">
-                <LevelAttendancePanel groupId={groupId} levelNumber={selectedLevel.level_number} />
+                <LevelAttendancePanel
+                  groupId={groupId}
+                  levelNumber={selectedLevel.level_number}
+                  groupInstructorName={groupInstructorName}
+                  groupName={groupName}
+                  courseName={courseName}
+                />
               </div>
             ) : viewMode === 'payments' ? (
               <div className="animate-fadeIn">
@@ -245,36 +324,25 @@ export function LevelsTab({
               </div>
             ) : null}
           </div>
-
-          <div className="mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600 flex items-center justify-between">
-            <div className="flex gap-4">
-              <div>
-                <span className="text-slate-500 font-medium">Instructor:</span>{' '}
-                <span className="text-slate-900 font-semibold">{instructorsMap[selectedLevel.instructor_id]?.instructor_name || `Unknown (${selectedLevel.instructor_id})`}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 font-medium">Course:</span>{' '}
-                <span className="text-slate-900 font-semibold">{coursesMap[selectedLevel.course_id]?.course_name || `Unknown (${selectedLevel.course_id})`}</span>
-              </div>
-            </div>
-            <button
-              disabled
-              title="Coming soon — level renumbering requires a database migration"
-              className="flex items-center gap-1.5 text-slate-500 opacity-50 cursor-not-allowed text-xs font-medium"
-            >
-              <Edit3 className="w-3.5 h-3.5" /> Edit Level Number
-              <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full ml-1 uppercase tracking-wider font-bold">
-                Coming Soon
-              </span>
-            </button>
-          </div>
         </div>
       </div>
     </div>
   )
 }
 
-function LevelAttendancePanel({ groupId, levelNumber }: { groupId: number, levelNumber: number }) {
+function LevelAttendancePanel({
+  groupId,
+  levelNumber,
+  groupInstructorName,
+  groupName,
+  courseName,
+}: {
+  groupId: number
+  levelNumber: number
+  groupInstructorName?: string
+  groupName?: string
+  courseName?: string
+}) {
   const { roster, sessions, isLoading, error } = useGroupAttendance(groupId, levelNumber)
 
   if (isLoading) return <div className="py-12 flex justify-center"><LoadingSpinner /></div>
@@ -289,6 +357,9 @@ function LevelAttendancePanel({ groupId, levelNumber }: { groupId: number, level
       sessions={transformedSessions}
       groupId={groupId}
       level={levelNumber}
+      groupInstructorName={groupInstructorName}
+      groupName={groupName}
+      courseName={courseName}
     />
   )
 }

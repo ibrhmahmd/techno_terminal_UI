@@ -2,7 +2,7 @@ interface MetricItem {
   label: string
   value?: string
   icon: string
-  color: 'secondary' | 'emerald' | 'amber' | 'blue'
+  color: 'secondary' | 'emerald' | 'amber' | 'blue' | 'slate'
   isLoading?: boolean
   isActive?: boolean
   onClick?: () => void
@@ -18,6 +18,7 @@ const colorMap: Record<MetricItem['color'], { bg: string; text: string; iconBg: 
   emerald: { bg: 'bg-emerald-50', text: 'text-emerald-600', iconBg: 'bg-emerald-100' },
   amber: { bg: 'bg-amber-50', text: 'text-amber-600', iconBg: 'bg-amber-100' },
   blue: { bg: 'bg-blue-50', text: 'text-blue-600', iconBg: 'bg-blue-100' },
+  slate: { bg: 'bg-slate-50', text: 'text-slate-400', iconBg: 'bg-slate-100' },
 }
 
 function MetricCard({ label, value, icon, color, isLoading, isActive, onClick }: MetricItem) {

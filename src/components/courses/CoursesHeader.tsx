@@ -8,7 +8,7 @@ interface CoursesHeaderProps {
 export function CoursesHeader({ totalCourses, searchTerm, onSearchChange, onCreateClick }: CoursesHeaderProps) {
   return (
     <div className="px-4 md:px-8 py-6 bg-surface border-b border-slate-200">
-      <div className="max-w-[1400px] mx-auto">
+      <div className="max-w-[1680px] mx-auto">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           {/* Title Section */}
           <div>

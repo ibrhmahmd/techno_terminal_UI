@@ -6,7 +6,7 @@ interface PageSectionProps {
   /** Additional CSS classes */
   className?: string
   /** Maximum width constraint */
-  maxWidth?: 'full' | '1400'
+  maxWidth?: 'full' | '1400' | '1680'
   /** Whether to add top padding */
   withPadding?: boolean
 }
@@ -30,10 +30,10 @@ interface PageSectionProps {
 export function PageSection({ 
   children, 
   className = '',
-  maxWidth = '1400',
+  maxWidth = '1680',
   withPadding = true
 }: PageSectionProps) {
-  const maxWidthClass = maxWidth === '1400' ? 'max-w-[1400px]' : ''
+  const maxWidthClass = maxWidth === '1400' ? 'max-w-[1400px]' : maxWidth === '1680' ? 'max-w-[1680px]' : ''
   const paddingClass = withPadding ? 'px-4 sm:px-6 lg:px-8 py-8' : ''
 
   return (
