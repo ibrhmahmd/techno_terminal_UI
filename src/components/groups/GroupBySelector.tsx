@@ -4,7 +4,7 @@ import type { GroupByField } from '../../api/academics'
 type GroupBySelectorValue = GroupByField | 'search'
 
 interface GroupBySelectorProps {
-  value: GroupByField
+  value: GroupByField | 'search'
   onChange: (field: GroupBySelectorValue) => void
   rightSlot?: ReactNode
 }

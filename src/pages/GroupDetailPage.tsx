@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
@@ -46,9 +46,14 @@ export function GroupDetailPage() {
     error: paymentsError,
   } = useGroupPayments(groupId, activeTab === 'levels')
 
+  const prevPaymentErrorRef = useRef<string | null>(null)
   useEffect(() => {
-    if (paymentsError) {
+    if (paymentsError && paymentsError !== prevPaymentErrorRef.current) {
+      prevPaymentErrorRef.current = paymentsError
       showToast(paymentsError, 'error')
+    }
+    if (!paymentsError) {
+      prevPaymentErrorRef.current = null
     }
   }, [paymentsError, showToast])
 

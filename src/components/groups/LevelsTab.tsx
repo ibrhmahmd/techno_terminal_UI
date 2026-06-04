@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BookOpen, GraduationCap, CheckCircle, XCircle, AlertCircle, Edit3, FileDown, MessageCircle, Calendar } from 'lucide-react'
-import type { LevelDetailDTO, LevelPaymentsDTO, CourseInfoDTO, InstructorInfoDTO } from '../../api/academics'
+import type { LevelDetailDTO, LevelPaymentsDTO, CourseInfoDTO, InstructorInfoDTO, PaymentDetailDTO } from '../../api/academics'
 import { LevelSelector } from './detail/LevelSelector'
 import { useGroupAttendance } from '../../hooks/useGroupAttendance'
 import { AttendanceGrid } from '../attendance/AttendanceGrid'
@@ -9,6 +9,7 @@ import { LoadingSpinner } from '../common/LoadingSpinner'
 import { downloadReceiptPdf } from '../../api/finance/receipts'
 import { sendReceiptToStudent } from '../../api/crm/students/payments'
 import { useToast } from '../common/Toast'
+import { formatDate } from '../../utils/formatting'
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString()} EGP`
@@ -27,7 +28,7 @@ function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments
     )
   }
 
-  const handleDownloadPdf = async (payment: any, e: React.MouseEvent) => {
+  const handleDownloadPdf = async (payment: PaymentDetailDTO, e: React.MouseEvent) => {
     e.stopPropagation()
     if (!payment.receipt_id) {
       showToast('No receipt linked to this payment', 'error')
@@ -52,7 +53,7 @@ function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments
     }
   }
 
-  const handleSendWhatsApp = async (payment: any, e: React.MouseEvent) => {
+  const handleSendWhatsApp = async (payment: PaymentDetailDTO, e: React.MouseEvent) => {
     e.stopPropagation()
     setSendingId(payment.payment_id)
     try {
@@ -80,7 +81,7 @@ function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments
             <div>
               <p className="text-sm font-medium text-slate-900">{payment.student_name}</p>
               <p className="text-xs text-slate-500 mt-0.5">
-                {new Date(payment.payment_date).toLocaleDateString()} • {payment.payment_method}
+                {formatDate(payment.payment_date)} • {payment.payment_method}
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -110,7 +111,7 @@ function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments
                     className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50"
                     title="Download PDF Receipt"
                   >
-                    <FileDown className="w-4 h-4" />
+                    <FileDown className="w-4 h-4" aria-hidden="true" />
                   </button>
                   <button
                     onClick={(e) => handleSendWhatsApp(payment, e)}
@@ -118,7 +119,7 @@ function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments
                     className="p-1.5 text-slate-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors disabled:opacity-50"
                     title="Send via WhatsApp (Soon)"
                   >
-                    <MessageCircle className="w-4 h-4" />
+                    <MessageCircle className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </div>
               )}
@@ -208,7 +209,7 @@ export function LevelsTab({
       const weeks = Math.floor(diffDays / 7)
       const extraDays = diffDays % 7
       
-      let parts = []
+      const parts = []
       if (weeks > 0) {
         parts.push(`${weeks} week${weeks > 1 ? 's' : ''}`)
       }
@@ -260,8 +261,9 @@ export function LevelsTab({
                     disabled
                     title="Coming soon — level renumbering requires a database migration"
                     className="p-1 hover:bg-slate-200 rounded-md transition-colors text-slate-400 hover:text-slate-600 cursor-not-allowed opacity-60 flex items-center justify-center"
+                    aria-label="Edit level number"
                   >
-                    <Edit3 className="w-3.5 h-3.5" />
+                    <Edit3 className="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
                   {selectedLevel.level_number === currentLevelNumber && (
                     <span className="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
@@ -270,7 +272,7 @@ export function LevelsTab({
                   )}
                 </h3>
                 <p className="text-sm text-slate-500 flex items-center gap-1">
-                  <BookOpen className="w-4 h-4" aria-hidden={true} />
+                  <BookOpen className="w-4 h-4" aria-hidden="true" />
                   {coursesMap[selectedLevel.course_id]?.course_name || `Course ID: ${selectedLevel.course_id}`}
                 </p>
               </div>
@@ -292,7 +294,7 @@ export function LevelsTab({
                 <div className="bg-surface-container-lowest p-3.5 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[84px] shadow-sm">
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
                       Start Date
                     </span>
                     <span className="font-headline text-sm font-extrabold text-slate-900 leading-tight block">
@@ -306,7 +308,7 @@ export function LevelsTab({
                 <div className="bg-surface-container-lowest p-3.5 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[84px] shadow-sm">
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
                       End Date
                     </span>
                     <span className="font-headline text-sm font-extrabold text-slate-900 leading-tight block">
@@ -324,7 +326,7 @@ export function LevelsTab({
                 <div className="bg-surface-container-lowest p-3.5 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[84px] shadow-sm">
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
-                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
                       Paid Students
                     </span>
                     <span className="font-headline text-base font-extrabold text-emerald-600 leading-tight block">
@@ -338,7 +340,7 @@ export function LevelsTab({
                 <div className="bg-surface-container-lowest p-3.5 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[84px] shadow-sm">
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
-                      <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
                       Unpaid Students
                     </span>
                     <span className="font-headline text-base font-extrabold text-amber-600 leading-tight block">
@@ -352,7 +354,7 @@ export function LevelsTab({
                 <div className="bg-surface-container-lowest p-3.5 rounded-md border border-surface-container-low flex flex-col justify-between min-h-[84px] shadow-sm">
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
-                      <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                      <BookOpen className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
                       Course
                     </span>
                     <span className="font-headline text-sm font-extrabold text-slate-900 leading-tight block truncate" title={coursesMap[selectedLevel.course_id]?.course_name || courseName || `ID: ${selectedLevel.course_id}`}>
@@ -378,7 +380,7 @@ export function LevelsTab({
                       : 'text-slate-600 hover:text-secondary hover:bg-surface-container-lowest/50'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[18px]">groups</span>
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">groups</span>
                   Attendance & Sessions
                 </button>
                 <button
@@ -391,7 +393,7 @@ export function LevelsTab({
                       : 'text-slate-600 hover:text-secondary hover:bg-surface-container-lowest/50'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[18px]">payments</span>
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">payments</span>
                   Payments
                 </button>
               </div>

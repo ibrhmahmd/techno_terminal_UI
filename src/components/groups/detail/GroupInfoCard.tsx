@@ -156,7 +156,7 @@ export function GroupInfoCard({
             <p className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
               {group.schedule?.day || 'No day'}
               <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-              {formatTime(group.schedule?.start_time || '')} - {formatTime(group.schedule?.end_time || '')}
+              {formatTime(group.schedule?.start_time || '') || '--:--'} - {formatTime(group.schedule?.end_time || '') || '--:--'}
             </p>
           </div>
         </div>

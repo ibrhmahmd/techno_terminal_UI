@@ -34,9 +34,14 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     await queryClient.invalidateQueries({ queryKey: queryKeys.group(groupId) })
     await queryClient.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
     await queryClient.invalidateQueries({ queryKey: queryKeys.groupSessions(groupId) })
+  }, [queryClient, groupId])
+
+  // Extended invalidations for mutations that also affect enrollments and payments
+  const invalidateGroupsExtended = useCallback(async () => {
+    await invalidateGroups()
     await queryClient.invalidateQueries({ queryKey: queryKeys.groupEnrollments(groupId) })
     await queryClient.invalidateQueries({ queryKey: queryKeys.groupPayments(groupId) })
-  }, [queryClient, groupId])
+  }, [queryClient, groupId, invalidateGroups])
 
   // Update group mutation
   const updateMutation = useMutation({
@@ -67,7 +72,7 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     mutationFn: async (): Promise<ProgressGroupLevelResult> => {
       return progressGroupLevel(groupId)
     },
-    onSuccess: invalidateGroups,
+    onSuccess: invalidateGroupsExtended,
   })
 
   // Create new level mutation (full overrides)
@@ -75,7 +80,7 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     mutationFn: async (data: ProgressGroupLevelRequest): Promise<ProgressGroupLevelResult> => {
       return progressGroupLevel(groupId, data)
     },
-    onSuccess: invalidateGroups,
+    onSuccess: invalidateGroupsExtended,
   })
 
   // Combine all pending states
@@ -99,11 +104,11 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     return null
   }
   const error =
-    getErrorMessage(updateMutation.error) ||
-    getErrorMessage(deleteMutation.error) ||
-    getErrorMessage(archiveMutation.error) ||
-    getErrorMessage(levelUpMutation.error) ||
-    getErrorMessage(createLevelMutation.error) ||
+    updateMutation.isError ? getErrorMessage(updateMutation.error) :
+    deleteMutation.isError ? getErrorMessage(deleteMutation.error) :
+    archiveMutation.isError ? getErrorMessage(archiveMutation.error) :
+    levelUpMutation.isError ? getErrorMessage(levelUpMutation.error) :
+    createLevelMutation.isError ? getErrorMessage(createLevelMutation.error) :
     null
 
   // Clear all mutations

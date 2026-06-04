@@ -33,7 +33,7 @@ const FILTER_CATEGORIES = [
 ] as const
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-const STATUSES = ['active', 'inactive', 'archived']
+const STATUSES = ['active', 'inactive', 'archived', 'completed']
 const LEVELS = [1, 2, 3, 4, 5, 6, 7, 8]
 
 function OptionPill({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {

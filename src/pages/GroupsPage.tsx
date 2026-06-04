@@ -208,7 +208,7 @@ export function GroupsPage() {
         <div className="flex items-center gap-4 mb-4">
           <div className="flex-1 min-w-0">
             <GroupBySelector
-              value={((isFiltersOpen || hasActiveFilters) && !isGroupedView ? 'search' : (groupBy ?? null)) as any}
+              value={(isFiltersOpen || hasActiveFilters) && !isGroupedView ? 'search' : (groupBy ?? null)}
               onChange={(field) => {
                 if (field === 'search') {
                   // Toggle filter panel, switch to flat view

@@ -141,7 +141,7 @@ export function HistoryTab({ groupId }: HistoryTabProps) {
           {filteredEnrollments.length > 0 ? (
             <DataTable
               data={filteredEnrollments}
-              columns={enrollmentColumns as any}
+              columns={enrollmentColumns}
               keyExtractor={(row) => row.enrollment_id.toString()}
             />
           ) : (

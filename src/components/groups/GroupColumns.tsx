@@ -1,5 +1,6 @@
 import type { DataTableColumn } from '../common/datatable'
 import type { EnrichedGroupPublic } from '../../api/academics'
+import { formatTimeDisplay } from '../../utils/formatting'
 
 // Column configuration for Groups DataTable
 export const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
@@ -36,7 +37,7 @@ export const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
       <div className="flex flex-col gap-0.5">
         <span className="text-xs font-semibold text-slate-900">{group.schedule?.day ?? '--'}</span>
         <span className="text-[10px] text-slate-500">
-          {group.schedule?.start_time?.slice(0, 5) ?? '--:--'} - {group.schedule?.end_time?.slice(0, 5) ?? '--:--'}
+          {formatTimeDisplay(group.schedule?.start_time)} - {formatTimeDisplay(group.schedule?.end_time)}
         </span>
       </div>
     )

@@ -38,7 +38,7 @@ export function AddSessionDialog({
 
   // Load instructors via React Query
   const { data: instructorsData } = useQuery({
-    queryKey: ['employees', 'list'],
+    queryKey: queryKeys.employeesAll,
     queryFn: () => getEmployees({ page: 1, page_size: 100 }),
     staleTime: 10 * 60 * 1000,
     enabled: isOpen,
@@ -96,7 +96,7 @@ export function AddSessionDialog({
             const month = String(nextDate.getMonth() + 1).padStart(2, '0')
             const day = String(nextDate.getDate()).padStart(2, '0')
             setDate(`${year}-${month}-${day}`)
-          } catch (e) {
+          } catch {
             setDate('')
           }
         }
@@ -310,10 +310,11 @@ export function AddSessionDialog({
           {/* Row 1: Date & Status */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             <div className="lg:col-span-5">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              <label htmlFor="session-date" className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                 Session Date <span className="text-red-500">*</span>
               </label>
               <input
+                id="session-date"
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
@@ -389,6 +390,9 @@ export function AddSessionDialog({
               </div>
               <button
                 type="button"
+                role="switch"
+                aria-checked={isSubstitute}
+                aria-label="Toggle substitute instructor"
                 onClick={() => setIsSubstitute((prev) => !prev)}
                 className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-secondary/20 ${
                   isSubstitute ? 'bg-secondary' : 'bg-slate-200'
@@ -405,10 +409,11 @@ export function AddSessionDialog({
 
           {/* Row 4: Notes */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+            <label htmlFor="session-notes" className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               Notes (Optional)
             </label>
             <textarea
+              id="session-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3.5 py-2 border border-slate-200 rounded-md text-sm text-slate-800 bg-white focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none transition-all resize-none"

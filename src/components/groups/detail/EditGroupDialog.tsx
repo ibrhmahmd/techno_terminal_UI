@@ -16,7 +16,7 @@ interface EditGroupDialogProps {
 }
 
 const DAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-const STATUSES = ['active', 'completed', 'cancelled']
+const STATUSES = ['active', 'inactive', 'archived', 'completed']
 
 export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: EditGroupDialogProps) {
   const [name, setName] = useState(group.name || '')
@@ -222,7 +222,8 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
                       >
                         {s === 'active' && isSelected && <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />}
                         {s === 'completed' && isSelected && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
-                        {s === 'cancelled' && isSelected && <span className="w-1.5 h-1.5 rounded-full bg-red-500" />}
+                        {s === 'inactive' && isSelected && <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />}
+                        {s === 'archived' && isSelected && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
                         {s}
                       </button>
                     )

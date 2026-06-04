@@ -7,11 +7,6 @@
  *   import type { EnrichedGroupPublic } from '../api/academics/types'
  */
 
-// Common/shared types
-export type {
-  PaginatedGroupsResponse,
-} from './common';
-
 // Re-export from sub-modules
 export * from './groups';
 export * from './sessions';

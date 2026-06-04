@@ -71,7 +71,7 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
         setActiveLevelId(levels[levels.length - 1].level_id)
       }
     }
-  }, [levels, activeLevelId])
+  }, [levels, activeLevelId, setActiveLevelId])
 
   const currentLevel = useMemo(() => {
     return levels.find((l) => l.level_id === activeLevelId) || null
