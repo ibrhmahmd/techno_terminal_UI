@@ -11,6 +11,8 @@ import {
   register,
   createUser,
   resetPassword,
+  getMfaStatus,
+  resetPasswordWithToken,
   type UpdateProfileRequest,
   type ChangePasswordRequest,
   type ActivityQuery,
@@ -18,11 +20,12 @@ import {
   type ForgotPasswordRequest,
   type CreateUserRequest,
   type ResetPasswordRequest,
+  type ResetPasswordWithTokenRequest,
 } from '../api/auth'
 import {
   getUsers,
   updateUser,
-  deactivateUser,
+  deleteUser,
   inviteUser,
   getAuditLogins,
   getAuditPasswordChanges,
@@ -71,6 +74,15 @@ export function useUpdateProfile() {
   })
 }
 
+export function useMfaStatus() {
+  return useQuery({
+    queryKey: queryKeys.auth.mfa,
+    queryFn: getMfaStatus,
+    staleTime: 300_000,
+    retry: false,
+  })
+}
+
 // --- Password ---
 
 export function useChangePassword() {
@@ -82,6 +94,13 @@ export function useChangePassword() {
 export function useForgotPassword() {
   return useMutation({
     mutationFn: (data: ForgotPasswordRequest) => forgotPassword(data),
+  })
+}
+
+export function useResetPasswordWithToken() {
+  return useMutation({
+    mutationFn: ({ recoveryToken, data }: { recoveryToken: string; data: ResetPasswordWithTokenRequest }) =>
+      resetPasswordWithToken(recoveryToken, data),
   })
 }
 
@@ -136,10 +155,10 @@ export function useUpdateUser() {
   })
 }
 
-export function useDeactivateUser() {
+export function useDeleteUser() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: number) => deactivateUser(id),
+    mutationFn: (id: number) => deleteUser(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.auth.users })
       qc.invalidateQueries({ queryKey: queryKeys.auth.all })

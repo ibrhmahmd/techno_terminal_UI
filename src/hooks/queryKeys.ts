@@ -74,5 +74,6 @@ export const queryKeys = {
     auditLogins: ['auth', 'admin', 'audit', 'logins'] as const,
     auditPasswordChanges: ['auth', 'admin', 'audit', 'password-changes'] as const,
     auditFailedAttempts: ['auth', 'admin', 'audit', 'failed-attempts'] as const,
+    mfa: ['auth', 'mfa'] as const,
   },
 } as const

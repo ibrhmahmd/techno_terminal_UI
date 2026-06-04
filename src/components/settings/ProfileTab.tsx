@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import { formatDate } from '../../utils/formatting'
-import { useUpdateProfile, useChangePassword } from '../../hooks/useAuthQueries'
+import { useUpdateProfile, useChangePassword, useMfaStatus } from '../../hooks/useAuthQueries'
 import { LoadingSpinner } from '../common/LoadingSpinner'
+
 
 export function ProfileTab() {
   const { user } = useAuthStore()
   const updateProfileMutation = useUpdateProfile()
   const changePasswordMutation = useChangePassword()
+  const { data: mfaData, isLoading: mfaLoading, isError: mfaError } = useMfaStatus()
+
 
   // Editing state
   const [isEditing, setIsEditing] = useState(false)
@@ -74,8 +77,8 @@ export function ProfileTab() {
     setPasswordError(null)
     setPasswordSuccess(null)
 
-    if (newPassword.length < 8) {
-      setPasswordError('Password must be at least 8 characters')
+    if (newPassword.length < 12) {
+      setPasswordError('Password must be at least 12 characters')
       return
     }
 
@@ -225,14 +228,14 @@ export function ProfileTab() {
             <input
               type="password"
               required
-              minLength={8}
+              minLength={12}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
               placeholder="Enter new password"
             />
             <p className="text-xs text-slate-500 mt-1">
-              Password must be at least 8 characters
+              Password must be at least 12 characters
             </p>
           </div>
 
@@ -243,7 +246,7 @@ export function ProfileTab() {
             <input
               type="password"
               required
-              minLength={8}
+              minLength={12}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
@@ -262,6 +265,52 @@ export function ProfileTab() {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Multi-Factor Authentication */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h2 className="font-headline text-xl font-semibold text-on-surface mb-6">
+          Multi-Factor Authentication
+        </h2>
+        
+        {mfaLoading ? (
+          <div className="flex items-center gap-2 text-slate-500 text-sm">
+            <LoadingSpinner size="sm" />
+            <span>Checking MFA status...</span>
+          </div>
+        ) : mfaError ? (
+          <div className="text-slate-500 text-sm italic">
+            Status unavailable
+          </div>
+        ) : (
+          <div className="flex items-start gap-4">
+            <span className="material-symbols-outlined text-4xl text-slate-400 shrink-0 select-none">
+              shield
+            </span>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-on-surface">MFA Status:</span>
+                {mfaData?.enrolled ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                    Enrolled ({mfaData.method || 'Unknown'})
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                    Not Enrolled
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500">
+                {!mfaData?.enrolled 
+                  ? 'Multi-Factor Authentication (MFA) enrollment is coming soon to secure your account.'
+                  : 'Your account is secured with Multi-Factor Authentication.'
+                }
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

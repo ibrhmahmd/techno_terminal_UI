@@ -1,6 +1,7 @@
 import { client } from '../client'
 import type { ApiResponse, PaginatedApiResponse } from '../../types/api'
-import type { User, Session, AuditLogEntry } from './types'
+import type { User, Session, AuditLogEntry, MfaStatus } from './types'
+
 
 export interface LoginCredentials {
   email: string
@@ -123,3 +124,22 @@ export interface ForgotPasswordRequest {
 export async function forgotPassword(request: ForgotPasswordRequest): Promise<void> {
   await client.post('/auth/forgot-password', request)
 }
+
+export interface ResetPasswordWithTokenRequest {
+  new_password: string
+}
+
+export async function resetPasswordWithToken(
+  recoveryToken: string,
+  request: ResetPasswordWithTokenRequest
+): Promise<void> {
+  await client.post('/auth/reset-password-confirm', request, {
+    headers: { Authorization: `Bearer ${recoveryToken}` },
+  })
+}
+
+export async function getMfaStatus(): Promise<MfaStatus> {
+  const response = await client.get<ApiResponse<MfaStatus>>('/auth/me/mfa/status')
+  return response.data.data
+}
+

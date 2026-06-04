@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import { type CreateUserRequest, type User } from '../../api/auth'
-import { useUsers, useUpdateUser, useDeactivateUser, useInviteUser, useCreateUser, useResetPassword } from '../../hooks/useAuthQueries'
+import { useUsers, useUpdateUser, useDeleteUser, useInviteUser, useCreateUser, useResetPassword } from '../../hooks/useAuthQueries'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { InstructorCombobox } from '../common/combobox/InstructorCombobox'
 import type { EmployeeListItem } from '../../api/hr'
@@ -52,17 +52,20 @@ function StatusBadge({ status }: { status: 'Active' | 'Invited' | 'Deactivated' 
 function UserDetailModal({ user, onClose }: UserDetailModalProps) {
   const { user: currentUser } = useAuthStore()
   const updateUserMutation = useUpdateUser()
-  const deactivateUserMutation = useDeactivateUser()
+  const deleteUserMutation = useDeleteUser()
   const [selectedRole, setSelectedRole] = useState(user.role)
   const [isDeactivating, setIsDeactivating] = useState(false)
+  const [isReactivating, setIsReactivating] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const isSelf = currentUser?.id === user.id
   const status = getUserStatus(user)
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !showDeactivateConfirm) onClose()
+      if (e.key === 'Escape' && !showDeactivateConfirm && !showDeleteConfirm) onClose()
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
@@ -80,11 +83,32 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
   const handleDeactivate = async () => {
     setIsDeactivating(true)
     try {
-      await deactivateUserMutation.mutateAsync(user.id)
+      await updateUserMutation.mutateAsync({ id: user.id, data: { is_active: false } })
       setShowDeactivateConfirm(false)
       onClose()
     } finally {
       setIsDeactivating(false)
+    }
+  }
+
+  const handleReactivate = async () => {
+    setIsReactivating(true)
+    try {
+      await updateUserMutation.mutateAsync({ id: user.id, data: { is_active: true } })
+      onClose()
+    } finally {
+      setIsReactivating(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      await deleteUserMutation.mutateAsync(user.id)
+      setShowDeleteConfirm(false)
+      onClose()
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -150,12 +174,32 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
           {!isSelf && user.is_active && (
             <button
               onClick={() => setShowDeactivateConfirm(true)}
-              disabled={deactivateUserMutation.isPending}
-              className="px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 disabled:opacity-50 flex items-center gap-2"
+              disabled={isDeactivating}
+              className="px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 rounded-lg hover:bg-amber-100 disabled:opacity-50 flex items-center gap-2"
             >
-              {deactivateUserMutation.isPending ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg">person_off</span>}
-              Deactivate User
+              {isDeactivating ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg">person_off</span>}
+              Deactivate
             </button>
+          )}
+          {!isSelf && !user.is_active && (
+            <>
+              <button
+                onClick={handleReactivate}
+                disabled={isReactivating}
+                className="px-4 py-2 text-sm font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 disabled:opacity-50 flex items-center gap-2"
+              >
+                {isReactivating ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg">how_to_reg</span>}
+                Reactivate
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 disabled:opacity-50 flex items-center gap-2"
+              >
+                {isDeleting ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg">delete_forever</span>}
+                Delete
+              </button>
+            </>
           )}
           <button
             onClick={onClose}
@@ -174,9 +218,27 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
               </p>
               <div className="flex gap-3">
                 <button onClick={() => setShowDeactivateConfirm(false)} className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
-                <button onClick={handleDeactivate} disabled={isDeactivating} className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                <button onClick={handleDeactivate} disabled={isDeactivating} className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 disabled:opacity-50 flex items-center justify-center gap-2">
                   {isDeactivating && <LoadingSpinner size="sm" variant="light" />}
                   Deactivate
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]" role="dialog" aria-modal="true" aria-label="Confirm deletion" onKeyDown={(e) => e.key === 'Escape' && setShowDeleteConfirm(false)}>
+            <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm">
+              <h4 className="font-headline text-base font-semibold text-red-600 mb-2">Delete Permanently?</h4>
+              <p className="text-sm text-slate-600 mb-6">
+                This will permanently delete <strong>{user.username}</strong> and all associated audit logs. This action <strong>cannot be undone</strong>.
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
+                <button onClick={handleDelete} disabled={isDeleting} className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                  {isDeleting && <LoadingSpinner size="sm" variant="light" />}
+                  Delete
                 </button>
               </div>
             </div>
@@ -352,6 +414,10 @@ export function UsersTab() {
     }
     if (!newUser.selectedEmployee.is_active) {
       setCreateError('Cannot create account for inactive employee')
+      return
+    }
+    if (newUser.password.length < 12) {
+      setCreateError('Password must be at least 12 characters')
       return
     }
     try {
@@ -556,7 +622,8 @@ export function UsersTab() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-on-surface mb-1">Password *</label>
-                <input type="password" required value={newUser.password} onChange={(e) => setNewUserField('password', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20" />
+                <input type="password" required minLength={12} value={newUser.password} onChange={(e) => setNewUserField('password', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20" placeholder="Min 12 characters" />
+                <p className="text-xs text-slate-500 mt-1">Password must be at least 12 characters</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-on-surface mb-1">Role *</label>
@@ -591,12 +658,12 @@ export function UsersTab() {
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-on-surface mb-1">New Password *</label>
-                <input type="password" required minLength={8} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20" />
-                <p className="text-xs text-slate-500 mt-1">Password must be at least 8 characters</p>
+                <input type="password" required minLength={12} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20" placeholder="Min 12 characters" />
+                <p className="text-xs text-slate-500 mt-1">Password must be at least 12 characters</p>
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => { setShowResetModal(false); setSelectedUser(null); setNewPassword('') }} className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
-                <button type="submit" disabled={resetPasswordMutation.isPending || newPassword.length < 8} className="flex-1 px-4 py-2 bg-secondary text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
+                <button type="submit" disabled={resetPasswordMutation.isPending || newPassword.length < 12} className="flex-1 px-4 py-2 bg-secondary text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
                   {resetPasswordMutation.isPending && <LoadingSpinner size="sm" variant="light" />}
                   Reset Password
                 </button>

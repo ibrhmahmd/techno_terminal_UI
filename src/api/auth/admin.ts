@@ -30,7 +30,7 @@ export async function updateUser(id: number, request: UpdateUserRequest): Promis
   return response.data.data
 }
 
-export async function deactivateUser(id: number): Promise<void> {
+export async function deleteUser(id: number): Promise<void> {
   await client.delete(`/admin/users/${id}`)
 }
 
