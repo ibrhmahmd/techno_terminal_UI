@@ -216,6 +216,7 @@ export function StudentDetailPage() {
       case 'enrollments':
         return (
           <EnrollmentsTab 
+            studentId={studentId}
             enrollments={details?.enrollments || []}
             currentGroupName={details?.enrollments?.find((e: { status: string; group_name?: string }) => e.status === 'active')?.group_name}
             onEnroll={() => setIsEnrollDialogOpen(true)}

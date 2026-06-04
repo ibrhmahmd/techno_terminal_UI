@@ -4,7 +4,8 @@ import type {
   Enrollment, CreateEnrollmentRequest, CreateEnrollmentResponse,
   TransferEnrollmentRequest, TransferEnrollmentResponse, DeleteEnrollmentResponse,
   ApplyDiscountResponse,
-  StudentEnrollmentSummary
+  StudentEnrollmentSummary,
+  UpdateEnrollmentRequest, UpdateEnrollmentResponse
 } from './types'
 
 // get all enrollments
@@ -16,6 +17,17 @@ export async function getEnrollments(): Promise<Enrollment[]> {
 // enroll a student in a group
 export async function createEnrollment(request: CreateEnrollmentRequest): Promise<Enrollment> {
   const response = await client.post<CreateEnrollmentResponse>('/enrollments', request)
+  return response.data.data
+}
+
+// update an enrollment
+export async function updateEnrollment(
+  enrollmentId: number, 
+  data: UpdateEnrollmentRequest
+): Promise<Enrollment> {
+  const response = await client.patch<UpdateEnrollmentResponse>(
+    `/enrollments/${enrollmentId}`, data
+  )
   return response.data.data
 }
 

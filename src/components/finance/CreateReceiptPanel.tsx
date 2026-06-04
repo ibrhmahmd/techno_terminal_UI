@@ -134,6 +134,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
           discount_applied: initialData.discount_applied,
           amount_paid: initialData.total_paid,
           remaining_balance: initialData.remaining_balance,
+          notes: null,
         }
 
         setPayerName('')

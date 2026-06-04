@@ -150,6 +150,7 @@ function TimelineItem({ item }: { item: ActivityLogResponseDTO }) {
   const getIcon = () => {
     switch (item.activity_type) {
       case 'enrollment':
+      case 'enrollment_change':
         return <BookOpen className="w-4 h-4 text-blue-500" />
       case 'status_change':
         return <AlertCircle className="w-4 h-4 text-amber-500" />
@@ -177,6 +178,11 @@ function TimelineItem({ item }: { item: ActivityLogResponseDTO }) {
         {item.description && (
           <p className="text-sm text-slate-600 mt-1">{item.description}</p>
         )}
+        {typeof item.metadata?.changes_summary === 'string' ? (
+          <div className="mt-2 text-xs text-slate-600 font-mono bg-slate-100/50 border border-slate-200 p-2 rounded whitespace-pre-wrap">
+            {item.metadata.changes_summary as string}
+          </div>
+        ) : null}
         <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
           <span>{new Date(item.created_at).toLocaleTimeString()}</span>
           {item.performed_by_name && <span>by {item.performed_by_name}</span>}

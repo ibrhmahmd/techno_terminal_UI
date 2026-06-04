@@ -10,7 +10,7 @@ export interface Enrollment {
   group_id: number
   level_number: number
   status: 'active' | 'completed' | 'dropped'
-  amount_due: number
+  amount_due: number | null
   discount_applied: number
   payment_status?: 'paid' | 'due' | 'partial' | 'not_paid' | null
   amount_remaining?: number  // API returns this calculated field
@@ -20,10 +20,24 @@ export interface Enrollment {
   student_name?: string
   group_name?: string
   course_name?: string
+  instructor_name?: string
 }
 
 /** Alias for consistency with API docs */
 export type EnrollmentPublic = Enrollment
+
+/** UpdateEnrollmentInput - Request body for editing */
+export interface UpdateEnrollmentRequest {
+  amount_due?: number | null
+  discount_applied?: number
+  notes?: string | null
+}
+
+export interface UpdateEnrollmentResponse {
+  success: boolean
+  data: Enrollment
+  message?: string
+}
 
 /** EnrollStudentInput - Request body for creating enrollment */
 export interface CreateEnrollmentRequest {
