@@ -38,8 +38,8 @@ export function RegisterPage() {
     e.preventDefault()
     setError(null)
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters')
+    if (password.length < 12) {
+      setError('Password must be at least 12 characters')
       return
     }
 
@@ -101,9 +101,9 @@ export function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Min 8 characters"
+              placeholder="Min 12 characters"
               required
-              minLength={8}
+              minLength={12}
               disabled={registerMutation.isPending}
               className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
             />
@@ -120,7 +120,7 @@ export function RegisterPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Re-enter password"
               required
-              minLength={8}
+              minLength={12}
               disabled={registerMutation.isPending}
               className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
             />

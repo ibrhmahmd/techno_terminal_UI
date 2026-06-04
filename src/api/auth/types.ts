@@ -26,3 +26,9 @@ export interface AuditLogEntry {
   details: object | null
   created_at: string
 }
+
+export interface MfaStatus {
+  enrolled: boolean
+  method: string | null
+}
+
