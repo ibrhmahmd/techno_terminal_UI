@@ -50,7 +50,7 @@ function AuditFailedAttemptsSection() {
   const limit = 50
   const hasFrom = from !== ''
   const { data, isLoading, error } = useAuditFailedAttempts(
-    { from, to: to || undefined, skip: page * limit, limit },
+    { from: from, to: to || undefined, skip: page * limit, limit },
   )
   return (
     <>
@@ -176,7 +176,7 @@ export function SettingsPage() {
       </section>
 
       <PageSection>
-        <div role="tabpanel" aria-labelledby={"tab-"+activeTab}>
+        <div role="tabpanel" aria-label={`Settings - ${activeTab.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`}>
           <ErrorBoundary>
             {activeTab === 'profile' && <ProfileTab />}
             {activeTab === 'sessions-activity' && <SessionsActivityTab />}

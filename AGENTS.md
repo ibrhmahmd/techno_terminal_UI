@@ -82,5 +82,5 @@ Reusable hooks: `usePaginatedList`, `usePagination`, `useSearch`, `useDebounce` 
 - Supplementary docs: `ARCHITECTURE.md`, `auth-spec.md`, `competitions-api.md`, `daily-reports.md`, `enrollments-spec.md`, `docs/`
 
 <!-- SPECKIT START -->
-Active plan: `specs/039-fix-directory-audit/plan.md`
+Active plan: `specs/041-fix-dashboard-audit/plan.md`
 <!-- SPECKIT END -->

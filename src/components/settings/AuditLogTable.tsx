@@ -1,3 +1,4 @@
+import { formatDate } from '../../utils/formatting'
 import type { AuditLogEntry } from '../../api/auth/types'
 import { EVENT_LABELS } from '../../constants/auditLabels'
 import { LoadingSpinner } from '../common/LoadingSpinner'
@@ -24,7 +25,7 @@ export function AuditLogTable({ data, total, page, pageSize, onPageChange, isLoa
   }
 
   if (data.length === 0) {
-    return <div className="bg-white rounded-[6px] shadow-sm p-8 text-center font-body"><p className="text-slate-500">No records found.</p></div>
+    return <div className="bg-white rounded-[6px] shadow-sm p-8 text-center font-body" role="status"><p className="text-slate-500">No records found.</p></div>
   }
 
   return (
@@ -33,10 +34,10 @@ export function AuditLogTable({ data, total, page, pageSize, onPageChange, isLoa
         <table className="w-full text-left text-sm font-body">
           <thead className="bg-slate-50/50">
             <tr>
-              <th className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Event</th>
-              <th className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">User ID</th>
-              <th className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">IP Address</th>
-              <th className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Date</th>
+              <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Event</th>
+              <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">User ID</th>
+              <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">IP Address</th>
+              <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Date</th>
             </tr>
           </thead>
           <tbody>
@@ -47,7 +48,7 @@ export function AuditLogTable({ data, total, page, pageSize, onPageChange, isLoa
                 </td>
                 <td className="py-2 px-3 text-slate-500 font-mono">{entry.user_id ?? '\u2014'}</td>
                 <td className="py-2 px-3 text-slate-500 font-mono">{entry.ip_address || '\u2014'}</td>
-                <td className="py-2 px-3 text-slate-500">{new Date(entry.created_at).toLocaleString()}</td>
+                <td className="py-2 px-3 text-slate-500">{formatDate(entry.created_at)}</td>
               </tr>
             ))}
           </tbody>

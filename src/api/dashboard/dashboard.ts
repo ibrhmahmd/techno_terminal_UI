@@ -10,7 +10,7 @@ import { client } from '../client'
 import type { ApiResponse } from '../../types/api'
 import type { DashboardDailyOverviewDTO } from './types'
 
-export interface GetDashboardOverviewParams {
+interface GetDashboardOverviewParams {
   date: string
   include_attendance?: boolean
 }

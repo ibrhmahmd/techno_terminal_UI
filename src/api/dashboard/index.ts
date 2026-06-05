@@ -7,4 +7,3 @@
 
 export * from './types'
 export { getDashboardOverview } from './dashboard'
-export type { GetDashboardOverviewParams } from './dashboard'

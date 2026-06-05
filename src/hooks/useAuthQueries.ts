@@ -86,8 +86,12 @@ export function useMfaStatus() {
 // --- Password ---
 
 export function useChangePassword() {
+  const qc = useQueryClient()
   return useMutation({
     mutationFn: (data: ChangePasswordRequest) => changePassword(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.auth.all })
+    },
   })
 }
 

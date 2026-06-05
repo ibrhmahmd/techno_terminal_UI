@@ -1,11 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-export interface MobileDashboardFABProps {
-  todaySessionCount?: number
-}
-
-export function MobileDashboardFAB(_props: MobileDashboardFABProps) {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export function MobileDashboardFAB() {
   const [isOpen, setIsOpen] = useState(false)
   const fabRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
@@ -21,9 +18,6 @@ export function MobileDashboardFAB(_props: MobileDashboardFABProps) {
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [isOpen])
-
-  // Optional: Do something with todaySessionCount if needed for badging, 
-  // but spec says just pass it. We'll ignore it visually or use it for aria.
 
   return (
     <>

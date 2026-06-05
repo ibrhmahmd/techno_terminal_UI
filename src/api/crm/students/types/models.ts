@@ -94,7 +94,8 @@ export interface EnrollmentInfo {
 
 export interface StudentBalanceSummary {
   total_due: number
-  total_discount: number
+  total_discount?: number
+  total_discounts?: number
   total_paid: number
   net_balance: number
 }

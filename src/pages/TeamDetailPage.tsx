@@ -39,7 +39,7 @@ export function TeamDetailPage() {
   } = useTeamMembers(teamId)
 
   // Payments
-  const { pay, isPaying } = useTeamPayments(teamId)
+  const { pay, isPaying, refund, isRefunding } = useTeamPayments(teamId)
 
   // Placement
   const { update: updatePlacement, isUpdating: placementUpdating } = useTeamPlacement(teamId)
@@ -96,6 +96,9 @@ export function TeamDetailPage() {
   const [selectedMember, setSelectedMember] = useState<TeamMemberRosterDTO | null>(null)
   const [payAmount, setPayAmount] = useState('')
   const [payError, setPayError] = useState<string | null>(null)
+  const [isRefundModalOpen, setIsRefundModalOpen] = useState(false)
+  const [refundAmount, setRefundAmount] = useState('')
+  const [refundError, setRefundError] = useState<string | null>(null)
   const [removeError, setRemoveError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
@@ -155,6 +158,29 @@ export function TeamDetailPage() {
       setParentResults([])
     } catch {
       setPayError('Payment failed. Please try again.')
+    }
+  }
+
+  const handleRefund = async () => {
+    if (!selectedMember) return
+    const amount = parseFloat(refundAmount)
+    if (isNaN(amount) || amount <= 0) {
+      setRefundError('Enter a valid refund amount greater than 0')
+      return
+    }
+    if (amount > selectedMember.amount_paid) {
+      setRefundError(`Refund amount cannot exceed the amount paid (${selectedMember.amount_paid} EGP)`)
+      return
+    }
+
+    setRefundError(null)
+    try {
+      await refund(selectedMember.student_id, { amount })
+      setIsRefundModalOpen(false)
+      setSelectedMember(null)
+      setRefundAmount('')
+    } catch {
+      setRefundError('Refund failed. Please try again.')
     }
   }
 
@@ -403,6 +429,19 @@ export function TeamDetailPage() {
                               className="px-3 py-1 text-xs font-medium text-white bg-secondary rounded hover:bg-secondary/90 transition-colors"
                             >
                               Pay
+                            </button>
+                          )}
+                          {member.amount_paid > 0 && (
+                            <button
+                              onClick={() => {
+                                setSelectedMember(member)
+                                setRefundAmount(member.amount_paid.toString())
+                                setRefundError(null)
+                                setIsRefundModalOpen(true)
+                              }}
+                              className="px-3 py-1 text-xs font-medium text-red-600 border border-red-200 rounded hover:bg-red-50 transition-colors"
+                            >
+                              Refund
                             </button>
                           )}
                         </div>
@@ -724,6 +763,83 @@ export function TeamDetailPage() {
                 className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
               />
               <p className="text-xs text-slate-500">Supports partial payments. Enter any amount greater than 0.</p>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Refund Fee Modal */}
+      <Modal
+        isOpen={isRefundModalOpen}
+        onClose={() => {
+          setIsRefundModalOpen(false)
+          setSelectedMember(null)
+          setRefundAmount('')
+          setRefundError(null)
+        }}
+        title="Refund Competition Fee"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-3 font-body">
+            <button
+              onClick={() => {
+                setIsRefundModalOpen(false)
+                setSelectedMember(null)
+                setRefundAmount('')
+                setRefundError(null)
+              }}
+              disabled={isRefunding}
+              className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleRefund}
+              disabled={isRefunding}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              {isRefunding ? 'Processing...' : 'Refund'}
+            </button>
+          </div>
+        }
+      >
+        {selectedMember && (
+          <div className="space-y-4 font-body">
+            {refundError && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+                <span className="material-symbols-outlined text-lg" aria-hidden="true">error</span>
+                <span>{refundError}</span>
+              </div>
+            )}
+            <p className="text-sm text-slate-600">
+              Refund for <strong>{selectedMember.student_name}</strong>
+            </p>
+            <div className="p-4 bg-slate-50 rounded-lg space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">Amount Due</span>
+                <span className="font-semibold text-on-surface">{selectedMember.amount_due} EGP</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">Already Paid</span>
+                <span className="font-semibold text-green-600">{selectedMember.amount_paid} EGP</span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="refund_amount" className="text-sm font-medium text-on-surface">
+                Refund Amount <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="refund_amount"
+                type="number"
+                value={refundAmount}
+                onChange={(e) => setRefundAmount(e.target.value)}
+                placeholder="Enter amount..."
+                step="0.01"
+                min="0.01"
+                max={selectedMember.amount_paid}
+                className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
+              />
+              <p className="text-xs text-slate-500 font-body">Supports partial refunds. Enter any amount up to {selectedMember.amount_paid} EGP.</p>
             </div>
           </div>
         )}

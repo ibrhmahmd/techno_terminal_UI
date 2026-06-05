@@ -3,8 +3,8 @@
 
 import { client } from '../client'
 import type {
-  AdminSettingsResponse,
   AdminNotificationSettingDTO,
+  AdminSettingsResponse,
   AdditionalRecipientDTO,
   UpdateAdminSettingsRequest,
   ToggleNotificationRequest,
@@ -36,19 +36,6 @@ export async function updateAdminSettings(
 }
 
 /**
- * Get a single notification type setting for current admin
- * GET /api/v1/notifications/admin/settings/me/types/{notification_type}
- */
-export async function getNotificationSetting(
-  notificationType: NotificationType
-): Promise<AdminNotificationSettingDTO> {
-  const response = await client.get<{ data: AdminNotificationSettingDTO }>(
-    `${ADMIN_BASE}/types/${notificationType}`
-  )
-  return response.data.data
-}
-
-/**
  * Enable or disable a specific notification type
  * PUT /api/v1/notifications/admin/settings/me/types/{notification_type}
  */
@@ -59,17 +46,6 @@ export async function toggleNotification(
   const response = await client.put<{ data: AdminNotificationSettingDTO }>(
     `${ADMIN_BASE}/types/${notificationType}`,
     request
-  )
-  return response.data.data
-}
-
-/**
- * List all additional email recipients for current admin
- * GET /api/v1/notifications/admin/settings/me/additional-recipients
- */
-export async function getAdditionalRecipients(): Promise<AdditionalRecipientDTO[]> {
-  const response = await client.get<{ data: AdditionalRecipientDTO[] }>(
-    `${ADMIN_BASE}/additional-recipients`
   )
   return response.data.data
 }

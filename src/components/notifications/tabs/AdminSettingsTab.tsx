@@ -3,10 +3,10 @@
 
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useAdminSettings } from '../../../hooks/notifications'
-import { useAdditionalRecipients, useAddRecipient, useUpdateRecipient, useDeleteRecipient } from '../../../hooks/notifications'
+import { useAdminSettings, useAddRecipient, useUpdateRecipient, useDeleteRecipient } from '../../../hooks/notifications'
 import { toggleNotification } from '../../../api/notifications'
-import { notificationKeys } from '../../../hooks/notifications/queryKeys'
+import { queryKeys } from '../../../hooks/queryKeys'
+const notificationKeys = queryKeys.notifications
 import { LoadingSpinner } from '../../common/LoadingSpinner'
 import { Modal } from '../../common/Modal'
 import { DataTableContainer } from '../../common/DataTableContainer'
@@ -65,7 +65,6 @@ const TYPE_DESCRIPTIONS: Record<NotificationType, string> = {
 export function AdminSettingsTab() {
   const queryClient = useQueryClient()
   const { data: settings, isLoading: settingsLoading } = useAdminSettings()
-  const { data: recipients, isLoading: recipientsLoading } = useAdditionalRecipients()
   const addRecipient = useAddRecipient()
   const updateRecipient = useUpdateRecipient()
   const deleteRecipient = useDeleteRecipient()
@@ -73,8 +72,9 @@ export function AdminSettingsTab() {
   const [isRecipientModalOpen, setIsRecipientModalOpen] = useState(false)
   const [editingRecipient, setEditingRecipient] = useState<AdditionalRecipientDTO | null>(null)
   const [togglingType, setTogglingType] = useState<NotificationType | null>(null)
+  const [toggleError, setToggleError] = useState<string | null>(null)
 
-  const isLoading = settingsLoading || recipientsLoading
+  const isLoading = settingsLoading
 
   if (isLoading) {
     return (
@@ -86,24 +86,32 @@ export function AdminSettingsTab() {
 
   const handleToggle = async (type: NotificationType, enabled: boolean) => {
     setTogglingType(type)
+    setToggleError(null)
     try {
       await toggleNotification(type, { is_enabled: enabled })
       await queryClient.invalidateQueries({ queryKey: notificationKeys.admin.all })
-    } catch (error) {
-      console.error('Failed to toggle notification:', error)
+    } catch {
+      setToggleError(`Failed to toggle ${type.replace(/_/g, ' ')}`)
     } finally {
       setTogglingType(null)
     }
   }
 
+  const recipients = settings?.additional_recipients
   const getSetting = (type: NotificationType) => {
     return settings?.settings.find(s => s.notification_type === type)?.is_enabled ?? false
   }
 
   return (
     <div className="space-y-8">
+      {toggleError && (
+        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+          <span className="material-symbols-outlined text-lg">error</span>
+          <span>{toggleError}</span>
+        </div>
+      )}
       {/* Personal Preferences */}
-      <section className="bg-white rounded-[6px] shadow-sm p-6">
+      <section className="bg-white rounded-[6px] shadow-sm p-6" role="region" aria-label="Personal notification preferences">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-[6px] bg-secondary/10 flex items-center justify-center">
@@ -143,6 +151,7 @@ export function AdminSettingsTab() {
                         checked={getSetting(type)}
                         onChange={(e) => handleToggle(type, e.target.checked)}
                         disabled={togglingType === type}
+                        aria-label={`Toggle ${type.replace(/_/g, ' ')}`}
                       />
                       <div className={`w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-secondary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary ${togglingType === type ? 'opacity-50' : ''}`}></div>
                       {togglingType === type && (
@@ -160,7 +169,7 @@ export function AdminSettingsTab() {
       </section>
 
       {/* Additional Recipients */}
-      <section className="bg-white rounded-[6px] shadow-sm p-6">
+      <section className="bg-white rounded-[6px] shadow-sm p-6" role="region" aria-label="Additional email recipients">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-[6px] bg-secondary/10 flex items-center justify-center">
@@ -184,14 +193,14 @@ export function AdminSettingsTab() {
         </div>
 
         <DataTableContainer>
-          <table className="w-full text-left font-body">
+          <table className="w-full text-left font-body" aria-label="Additional email recipients">
             <thead className="bg-slate-50/50">
               <tr>
-                <th className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
-                <th className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Label</th>
-                <th className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Types</th>
-                <th className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                <th scope="col" className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                <th scope="col" className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Label</th>
+                <th scope="col" className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Types</th>
+                <th scope="col" className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                <th scope="col" className="px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>

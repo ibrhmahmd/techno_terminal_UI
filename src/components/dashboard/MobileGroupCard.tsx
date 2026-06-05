@@ -1,5 +1,5 @@
 import type { GroupInfoDTO } from '../../api/dashboard'
-import { formatInstructorName } from '../../utils/formatting'
+import { formatInstructorName, formatTime } from '../../utils/formatting'
 
 export interface MobileGroupCardProps {
   group: GroupInfoDTO
@@ -11,7 +11,7 @@ export function MobileGroupCard({ group, instructorName, onOpenAttendance }: Mob
   const shortInstructor = formatInstructorName(instructorName)
   const scheduleDay = group.default_day
   const timeRange = group.default_time_start && group.default_time_end
-    ? `${group.default_time_start.slice(0, 5)} – ${group.default_time_end.slice(0, 5)}`
+    ? `${formatTime(group.default_time_start)} – ${formatTime(group.default_time_end)}`
     : null
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

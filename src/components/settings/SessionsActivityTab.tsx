@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSessions, useRevokeAllSessions, useMyActivity } from '../../hooks/useAuthQueries'
+import { formatDate } from '../../utils/formatting'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { EVENT_LABELS } from '../../constants/auditLabels'
 
@@ -75,7 +76,7 @@ function ActiveSessions() {
     <div className="bg-white rounded-[6px] shadow-sm p-6 font-body">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-slate-400">devices</span>
+          <span className="material-symbols-outlined text-slate-400" aria-hidden="true">devices</span>
           <h2 className="font-headline text-xl font-semibold text-on-surface">
             Active Sessions
           </h2>
@@ -90,7 +91,7 @@ function ActiveSessions() {
             {revokeMutation.isPending ? (
               <LoadingSpinner size="sm" />
             ) : (
-              <span className="material-symbols-outlined text-base">logout</span>
+              <span className="material-symbols-outlined text-base" aria-hidden="true">logout</span>
             )}
             Logout All Other Sessions
           </button>
@@ -108,15 +109,15 @@ function ActiveSessions() {
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="material-symbols-outlined text-slate-400 text-base">devices</span>
+                  <span className="material-symbols-outlined text-slate-400 text-base" aria-hidden="true">devices</span>
                   <span className="text-sm font-medium text-on-surface truncate">
                     {session.user_agent?.split('/')[0] || 'Unknown Device'}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 font-mono">
                   <span>IP: {session.ip}</span>
-                  <span>Created: {new Date(session.created_at).toLocaleString()}</span>
-                  <span>Last Active: {new Date(session.last_active_at).toLocaleString()}</span>
+                  <span>Created: {formatDate(session.created_at)}</span>
+                  <span>Last Active: {formatDate(session.last_active_at)}</span>
                 </div>
               </div>
               <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-xs font-semibold bg-secondary/15 text-secondary ml-4 whitespace-nowrap">
@@ -191,7 +192,7 @@ function ActivityLog() {
   return (
     <div className="bg-white rounded-[6px] shadow-sm p-6 font-body">
       <div className="flex items-center gap-3 mb-6">
-        <span className="material-symbols-outlined text-slate-400">history</span>
+        <span className="material-symbols-outlined text-slate-400" aria-hidden="true">history</span>
         <h2 className="font-headline text-xl font-semibold text-on-surface">
           Account Activity
         </h2>
@@ -205,9 +206,9 @@ function ActivityLog() {
             <table className="w-full text-left text-sm font-body">
               <thead className="bg-slate-50/50">
                 <tr>
-                  <th className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Event</th>
-                  <th className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">IP Address</th>
-                  <th className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Date</th>
+                  <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Event</th>
+                  <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">IP Address</th>
+                  <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -218,7 +219,7 @@ function ActivityLog() {
                     </td>
                     <td className="py-2 px-3 text-slate-500 font-mono">{entry.ip_address || '\u2014'}</td>
                     <td className="py-2 px-3 text-slate-500">
-                      {new Date(entry.created_at).toLocaleString()}
+                      {formatDate(entry.created_at)}
                     </td>
                   </tr>
                 ))}

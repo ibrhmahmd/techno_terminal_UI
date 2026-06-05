@@ -109,15 +109,19 @@ export function DashboardPage() {
               </section>
             )}
           </main>
-          <MobileDashboardFAB todaySessionCount={scheduleItems.length} />
-          {openGroupId !== null && (
+          <MobileDashboardFAB />
+          {(() => {
+            const groupInfo = openGroupId ? getGroupInfo(openGroupId) : undefined
+            if (!groupInfo || !openGroupId) return null
+            const groupInstructorId = groupInfo.instructor_id
+            return (
               <AttendanceMobileSheet
               isOpen={true}
               groupId={openGroupId}
-              groupName={getGroupInfo(openGroupId)?.name || 'Unknown Group'}
+              groupName={groupInfo.name || 'Unknown Group'}
               instructorName={
-                getGroupInfo(openGroupId)?.instructor_id 
-                  ? instructors[getGroupInfo(openGroupId)!.instructor_id as number]?.name || 'TBA' 
+                groupInstructorId
+                  ? instructors[groupInstructorId]?.name || 'TBA'
                   : 'TBA'
               }
               sessions={getGroupData(openGroupId).sessions}
@@ -125,7 +129,8 @@ export function DashboardPage() {
               selectedDate={selectedDate}
               onClose={() => setOpenGroupId(null)}
             />
-          )}
+            )
+          })()}
         </>
       ) : (
         <>
@@ -174,7 +179,7 @@ export function DashboardPage() {
                           sessions={groupData.sessions}
                           roster={groupData.roster}
                           groupId={item.group_id}
-                          level={item.current_level.level_number}
+                          level={item.current_level?.level_number ?? 0}
                           selectedDate={selectedDate}
                         />
                       </article>
