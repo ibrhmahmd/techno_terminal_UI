@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { dashboardKeys } from '../../hooks/dashboard/useDashboard'
 import { queryKeys } from '../../hooks/queryKeys'
 import type { UpdateSessionDTO } from '../../api/academics'
 import { cancelSession, updateSession, deleteSession, reactivateSession } from '../../api/academics'
@@ -182,7 +181,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       setHasChanges(true)
       showToast('Session cancelled successfully', 'success')
       if (selectedDate) {
-        await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+        await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       }
       await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
       await refetchData()
@@ -199,7 +198,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       setHasChanges(true)
       showToast('Session deleted successfully', 'success')
       if (selectedDate) {
-        await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+        await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       }
       await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
       await refetchData()
@@ -216,7 +215,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       setHasChanges(true)
       showToast('Session reactivated successfully', 'success')
       if (selectedDate) {
-        await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+        await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       }
       await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
       await refetchData()
@@ -233,7 +232,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       setHasChanges(true)
       showToast('Session marked as completed successfully', 'success')
       if (selectedDate) {
-        await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+        await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       }
       await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
       await refetchData()
@@ -251,7 +250,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       setEditingSession(null)
       showToast('Session updated successfully', 'success')
       if (selectedDate) {
-        await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+        await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       }
       await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
       await refetchData()
@@ -404,7 +403,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       
       // 9. Invalidate caches after save
       if (selectedDate) {
-        await qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+        await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       }
       await qc.invalidateQueries({ queryKey: queryKeys.groupAttendance(groupId, level) })
 

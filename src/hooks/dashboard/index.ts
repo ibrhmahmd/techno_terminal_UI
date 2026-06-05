@@ -1,1 +1,1 @@
-export { useDashboard, dashboardKeys } from './useDashboard'
+export { useDashboard } from './useDashboard'

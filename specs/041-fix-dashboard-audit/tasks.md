@@ -23,7 +23,7 @@
 
 **Purpose**: No project initialization needed — all changes are edits to existing files.
 
-- [ ] T001 Verify `npm run build` and `npm run lint` pass before making changes
+- [X] T001 Verify `npm run build` and `npm run lint` pass before making changes
 
 ---
 
@@ -41,9 +41,9 @@
 
 **Implementation for User Story 1**
 
-- [ ] T002 [US1] Replace inline `.slice(0,5)` with `formatTime()` for time display in `src/components/dashboard/MobileGroupCard.tsx`
-- [ ] T003 [US1] Add optional chaining on `current_level` in `src/pages/DashboardPage.tsx` to prevent null crash
-- [ ] T004 [US1] Extract `getGroupInfo(openGroupId)` to a local variable in `src/pages/DashboardPage.tsx` to fix 4× call redundancy
+- [X] T002 [US1] Replace inline `.slice(0,5)` with `formatTime()` for time display in `src/components/dashboard/MobileGroupCard.tsx`
+- [X] T003 [US1] Add optional chaining on `current_level` in `src/pages/DashboardPage.tsx` to prevent null crash
+- [X] T004 [US1] Extract `getGroupInfo(openGroupId)` to a local variable in `src/pages/DashboardPage.tsx` to fix 4× call redundancy
 
 **Checkpoint**: All session times show consistent 12-hour format. No null crashes. Build passes.
 
@@ -57,12 +57,12 @@
 
 **Implementation for User Story 2**
 
-- [ ] T005 [P] [US2] Delete dead placeholder `src/components/dashboard/DashboardHeader.tsx`
-- [ ] T006 [P] [US2] Delete dead placeholder `src/hooks/dashboard/useAttendance.ts`
-- [ ] T007 [P] [US2] Remove unused `todaySessionCount` prop from `MobileDashboardFABProps` interface and its callers in `src/pages/DashboardPage.tsx`
-- [ ] T008 [P] [US2] Remove dev-only `console.log` block (lines 24-38) from `src/hooks/dashboard/useDashboard.ts`
-- [ ] T009 [P] [US2] Remove unused `GetDashboardOverviewParams` type export from `src/api/dashboard/dashboard.ts`
-- [ ] T010 [P] [US2] Remove unused `schedule` and `sessions` query key entries from `dashboardKeys` in `src/hooks/dashboard/useDashboard.ts`
+- [X] T005 [P] [US2] Delete dead placeholder `src/components/dashboard/DashboardHeader.tsx`
+- [X] T006 [P] [US2] Delete dead placeholder `src/hooks/dashboard/useAttendance.ts`
+- [X] T007 [P] [US2] Remove unused `todaySessionCount` prop from `MobileDashboardFABProps` interface and its callers in `src/pages/DashboardPage.tsx`
+- [X] T008 [P] [US2] Remove dev-only `console.log` block (lines 24-38) from `src/hooks/dashboard/useDashboard.ts`
+- [X] T009 [P] [US2] Remove unused `GetDashboardOverviewParams` type export from `src/api/dashboard/dashboard.ts`
+- [X] T010 [P] [US2] Remove unused `schedule` and `sessions` query key entries from `dashboardKeys` in `src/hooks/dashboard/useDashboard.ts`
 
 **Checkpoint**: No dead placeholders remain. Build passes with zero errors.
 
@@ -78,7 +78,7 @@
 
 **Implementation for User Story 3**
 
-- [ ] T011 [US3] Replace `as number` assertion on `instructor_id` in the edit session panel of `src/pages/DashboardPage.tsx` with safe type narrowing or `Number()` guard
+- [X] T011 [US3] Replace `as number` assertion on `instructor_id` in the edit session panel of `src/pages/DashboardPage.tsx` with safe type narrowing or `Number()` guard
 
 **Checkpoint**: No unsafe type assertions remain in the dashboard. Build passes.
 
@@ -92,12 +92,12 @@
 
 **Implementation for User Story 4**
 
-- [ ] T012 [P] [US4] Add `dashboard` section to `src/hooks/queryKeys.ts` with `overview`, `schedule`, and `sessions` factory functions (key values identical to current `dashboardKeys`)
-- [ ] T013 [P] [US4] Update `src/hooks/dashboard/useDashboard.ts` to import `queryKeys` from `../queryKeys` and use `queryKeys.dashboard.overview(date)` instead of local `dashboardKeys`
-- [ ] T014 [P] [US4] Update `src/hooks/useGroupQueries.ts` to import `queryKeys` from `./queryKeys` instead of importing `dashboardKeys` from `./dashboard/useDashboard`
-- [ ] T015 [P] [US4] Update `src/components/attendance/AttendanceGrid.tsx` to import `queryKeys` from `../../hooks/queryKeys` instead of importing `dashboardKeys` from `../../hooks/dashboard/useDashboard`
-- [ ] T016 [P] [US4] Update `src/components/attendance/AttendanceMobileSheet.tsx` to import `queryKeys` from `../../hooks/queryKeys` instead of importing `dashboardKeys` from `../../hooks/dashboard`
-- [ ] T017 [US4] Remove `dashboardKeys` export from `src/hooks/dashboard/useDashboard.ts` and `src/hooks/dashboard/index.ts` (deleting now-unused re-exports)
+- [X] T012 [P] [US4] Add `dashboard` section to `src/hooks/queryKeys.ts` with `overview`, `schedule`, and `sessions` factory functions (key values identical to current `dashboardKeys`)
+- [X] T013 [P] [US4] Update `src/hooks/dashboard/useDashboard.ts` to import `queryKeys` from `../queryKeys` and use `queryKeys.dashboard.overview(date)` instead of local `dashboardKeys`
+- [X] T014 [P] [US4] Update `src/hooks/useGroupQueries.ts` to import `queryKeys` from `./queryKeys` instead of importing `dashboardKeys` from `./dashboard/useDashboard`
+- [X] T015 [P] [US4] Update `src/components/attendance/AttendanceGrid.tsx` to import `queryKeys` from `../../hooks/queryKeys` instead of importing `dashboardKeys` from `../../hooks/dashboard/useDashboard`
+- [X] T016 [P] [US4] Update `src/components/attendance/AttendanceMobileSheet.tsx` to import `queryKeys` from `../../hooks/queryKeys` instead of importing `dashboardKeys` from `../../hooks/dashboard`
+- [X] T017 [US4] Remove `dashboardKeys` export from `src/hooks/dashboard/useDashboard.ts` and `src/hooks/dashboard/index.ts` (deleting now-unused re-exports)
 
 **Checkpoint**: All dashboard query keys centralized in `queryKeys.ts`. Build passes.
 
@@ -111,9 +111,9 @@
 
 **Implementation for User Story 5**
 
-- [ ] T018 [US5] Add `invisible` class alongside `opacity-0 pointer-events-none` on hidden FAB action buttons in `src/components/dashboard/MobileDashboardFAB.tsx` to prevent keyboard focus; add Escape key handler (`onKeyDown`) to close the FAB menu
-- [ ] T019 [P] [US5] Add arrow key navigation (ArrowLeft/ArrowRight handlers, roving tabindex) to tablist in `src/components/dashboard/DaySelectorBar.tsx`
-- [ ] T020 [P] [US5] Add arrow key navigation (ArrowLeft/ArrowRight handlers, roving tabindex) to tablist in `src/components/dashboard/InstructorSelectorBar.tsx`
+- [X] T018 [US5] Add `invisible` class alongside `opacity-0 pointer-events-none` on hidden FAB action buttons in `src/components/dashboard/MobileDashboardFAB.tsx` to prevent keyboard focus; add Escape key handler (`onKeyDown`) to close the FAB menu
+- [X] T019 [P] [US5] Add arrow key navigation (ArrowLeft/ArrowRight handlers, roving tabindex) to tablist in `src/components/dashboard/DaySelectorBar.tsx`
+- [X] T020 [P] [US5] Add arrow key navigation (ArrowLeft/ArrowRight handlers, roving tabindex) to tablist in `src/components/dashboard/InstructorSelectorBar.tsx`
 
 **Checkpoint**: All tablists support keyboard navigation. Hidden elements are not focusable. Build passes.
 
@@ -127,11 +127,11 @@
 
 **Implementation for User Story 6**
 
-- [ ] T021 [US6] Add `role="alert"` to the error banner in `src/pages/DashboardPage.tsx`
-- [ ] T022 [P] [US6] Add `aria-hidden="true"` to Material Symbols icon spans in `src/components/dashboard/MobileGroupCard.tsx`
-- [ ] T023 [P] [US6] Add `aria-hidden="true"` to Material Symbols icon spans in `src/components/dashboard/InstructorSelectorBar.tsx`
-- [ ] T024 [P] [US6] Add `aria-hidden="true"` to Material Symbols icon spans in `src/components/dashboard/GroupSessionCard.tsx`
-- [ ] T025 [P] [US6] Add `aria-hidden="true"` to Material Symbols icon spans in `src/components/dashboard/DaySelectorBar.tsx`
+- [X] T021 [US6] Add `role="alert"` to the error banner in `src/pages/DashboardPage.tsx`
+- [X] T022 [P] [US6] Add `aria-hidden="true"` to Material Symbols icon spans in `src/components/dashboard/MobileGroupCard.tsx`
+- [X] T023 [P] [US6] Add `aria-hidden="true"` to Material Symbols icon spans in `src/components/dashboard/InstructorSelectorBar.tsx`
+- [X] T024 [P] [US6] Add `aria-hidden="true"` to Material Symbols icon spans in `src/components/dashboard/GroupSessionCard.tsx` (no icon spans found — trivially done)
+- [X] T025 [P] [US6] Add `aria-hidden="true"` to Material Symbols icon spans in `src/components/dashboard/DaySelectorBar.tsx` (no icon spans found — trivially done)
 
 **Checkpoint**: All dashboards icons hidden from screen readers. Error banner announced. Build passes.
 
@@ -141,10 +141,10 @@
 
 **Purpose**: Final verification — build, lint, and grep checks.
 
-- [ ] T026 Run `npm run build` (`tsc -b && vite build`) and fix any TS errors
-- [ ] T027 Run `npm run lint` and fix any errors
-- [ ] T028 Run grep to confirm no remaining 24h inline `.slice(0,5)` patterns in dashboard files
-- [ ] T029 Run grep to confirm no remaining `dashboardKeys` references outside `queryKeys.ts`
+- [X] T026 Run `npm run build` (`tsc -b && vite build`) and fix any TS errors
+- [X] T027 Run `npm run lint` and fix any errors
+- [X] T028 Run grep to confirm no remaining 24h inline `.slice(0,5)` patterns in dashboard files
+- [X] T029 Run grep to confirm no remaining `dashboardKeys` references outside `queryKeys.ts`
 
 ---
 

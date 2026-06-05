@@ -1,10 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getDashboardOverview } from '../../api/dashboard'
 import type { DashboardDailyOverviewDTO } from '../../api/dashboard'
-
-export const dashboardKeys = {
-  overview: (date: string) => ['dashboard', 'overview', date] as const,
-}
+import { queryKeys } from '../queryKeys'
 
 /**
  * Get consolidated dashboard data
@@ -16,7 +13,7 @@ export const dashboardKeys = {
  */
 export function useDashboard(selectedDate: string) {
   const { data, isLoading, error } = useQuery<DashboardDailyOverviewDTO>({
-    queryKey: dashboardKeys.overview(selectedDate),
+    queryKey: queryKeys.dashboard.overview(selectedDate),
     queryFn: () => getDashboardOverview({ date: selectedDate, include_attendance: true }),
     staleTime: 5 * 60 * 1000, // 5 minutes, matching API cache_ttl
     enabled: !!selectedDate,

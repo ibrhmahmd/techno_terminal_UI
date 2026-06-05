@@ -80,7 +80,7 @@ export function DashboardPage() {
                 <LoadingSpinner />
               </div>
             ) : error ? (
-              <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              <div role="alert" className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
                 <span className="material-symbols-outlined" aria-hidden="true">error</span>
                 <span>{error}</span>
               </div>
@@ -151,7 +151,7 @@ export function DashboardPage() {
                 <LoadingSpinner />
               </div>
             ) : error ? (
-              <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              <div role="alert" className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
                 <span className="material-symbols-outlined" aria-hidden="true">error</span>
                 <span>{error}</span>
               </div>

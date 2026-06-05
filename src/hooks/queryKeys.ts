@@ -103,6 +103,13 @@ export const queryKeys = {
     },
   },
 
+  // Dashboard
+  dashboard: {
+    overview: (date: string) => ['dashboard', 'overview', date] as const,
+    schedule: (date: string) => ['dashboard', 'schedule', date] as const,
+    sessions: (groupId: number) => ['dashboard', 'sessions', groupId] as const,
+  },
+
   // Auth
   auth: {
     all: ['auth'] as const,

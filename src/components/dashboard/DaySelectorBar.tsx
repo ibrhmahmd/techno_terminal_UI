@@ -43,16 +43,37 @@ export function DaySelectorBar({ selectedDate, onSelectDate }: DaySelectorBarPro
 
   const weekDates = getWeekDates()
 
+  const handleTablistKeyDown = (e: React.KeyboardEvent) => {
+    const target = e.target as HTMLElement
+    const buttons = Array.from(target.parentElement?.querySelectorAll('[role="tab"]') ?? [])
+    const currentIndex = buttons.indexOf(target)
+    if (currentIndex === -1) return
+
+    let nextIndex = currentIndex
+    if (e.key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % buttons.length
+    } else if (e.key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length
+    } else {
+      return
+    }
+
+    e.preventDefault()
+    ;(buttons[nextIndex] as HTMLElement).focus()
+    onSelectDate(weekDates[nextIndex].date)
+  }
+
   return (
     <section className="w-full pb-4">
       
       <div className="overflow-x-auto">
-        <div role="tablist" aria-label="Select day" className="flex min-w-[320px] lg:min-w-[680px] items-center gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1">
+        <div role="tablist" aria-label="Select day" className="flex min-w-[320px] lg:min-w-[680px] items-center gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1" onKeyDown={handleTablistKeyDown}>
           {weekDates.map(({ dayName, date }) => (
             <button
               key={date}
               role="tab"
               aria-selected={date === selectedDate}
+              tabIndex={date === selectedDate ? 0 : -1}
               className={`flex-1 px-2 lg:px-5 py-2 rounded-md font-headline text-xs lg:text-sm font-medium transition-all ${
                 date === selectedDate
                   ? 'bg-white text-secondary shadow-sm font-bold border border-blue-200'

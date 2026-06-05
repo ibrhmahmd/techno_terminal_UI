@@ -11,7 +11,6 @@ import {
   type GroupFilterOptions,
 } from '../api/academics'
 import { getUpcomingDates } from '../utils/date'
-import { dashboardKeys } from './dashboard/useDashboard'
 import { queryKeys } from './queryKeys'
 
 // ── Query Keys ──────────────────────────────────────────
@@ -76,7 +75,7 @@ export function useCreateGroup() {
       qc.invalidateQueries({ queryKey: groupKeys.all })
       const upcomingDates = getUpcomingDates(7)
       upcomingDates.forEach(date => {
-        qc.invalidateQueries({ queryKey: dashboardKeys.overview(date) })
+        qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(date) })
       })
     },
   })
