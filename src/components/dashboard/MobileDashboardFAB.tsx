@@ -1,29 +1,30 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-export interface MobileDashboardFABProps {
-  todaySessionCount?: number
-}
-
-export function MobileDashboardFAB(_props: MobileDashboardFABProps) {
+export function MobileDashboardFAB() {
   const [isOpen, setIsOpen] = useState(false)
   const fabRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
-  // Close when clicking outside
+  // Close when clicking outside or pressing Escape
   useEffect(() => {
     if (!isOpen) return
-    const handleClick = (e: MouseEvent) => {
+    const handleOutsideInteraction = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent) {
+        if (e.key === 'Escape') setIsOpen(false)
+        return
+      }
       if (fabRef.current && !fabRef.current.contains(e.target as Node)) {
         setIsOpen(false)
       }
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('mousedown', handleOutsideInteraction)
+    document.addEventListener('keydown', handleOutsideInteraction)
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideInteraction)
+      document.removeEventListener('keydown', handleOutsideInteraction)
+    }
   }, [isOpen])
-
-  // Optional: Do something with todaySessionCount if needed for badging, 
-  // but spec says just pass it. We'll ignore it visually or use it for aria.
 
   return (
     <>
@@ -39,8 +40,9 @@ export function MobileDashboardFAB(_props: MobileDashboardFABProps) {
         {/* Action Pills */}
         <div 
           className={`flex flex-col items-end gap-3 transition-all duration-200 origin-bottom ${
-            isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-90 pointer-events-none'
+            isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-90 pointer-events-none invisible'
           }`}
+          aria-hidden={!isOpen}
         >
           <button
             onClick={() => {

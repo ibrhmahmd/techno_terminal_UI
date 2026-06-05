@@ -64,7 +64,7 @@ export function StudentDetailPage() {
   const balanceFromDetails = details?.balance_summary ? {
     student_id: studentId,
     total_amount_due: details.balance_summary.total_due,
-    total_discounts: details.balance_summary.total_discount,
+    total_discounts: details.balance_summary.total_discounts ?? details.balance_summary.total_discount ?? 0,
     total_paid: details.balance_summary.total_paid,
     net_balance: details.balance_summary.net_balance,
     enrollments: [] // Summary doesn't include per-enrollment breakdown

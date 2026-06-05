@@ -8,6 +8,7 @@ import type {
   PlacementUpdateInput,
   PayCompetitionFeeInput,
   PayCompetitionFeeResponseDTO,
+  RefundCompetitionFeeInput,
   TeamListFilters,
   RegisterTeamInput,
   TeamRegistrationResultDTO,
@@ -77,6 +78,18 @@ export async function payCompetitionFee(
 ): Promise<PayCompetitionFeeResponseDTO> {
   const response = await client.post<ApiResponse<PayCompetitionFeeResponseDTO>>(
     `${TEAMS_BASE}/${teamId}/members/${studentId}/pay`,
+    data,
+  )
+  return response.data.data
+}
+
+export async function refundCompetitionFee(
+  teamId: number,
+  studentId: number,
+  data: RefundCompetitionFeeInput,
+): Promise<boolean> {
+  const response = await client.post<ApiResponse<boolean>>(
+    `${TEAMS_BASE}/${teamId}/members/${studentId}/refund`,
     data,
   )
   return response.data.data

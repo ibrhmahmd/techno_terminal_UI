@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { PageHeader, PageSection } from '../components/common'
+import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { AdminSettingsTab } from '../components/notifications/tabs/AdminSettingsTab'
 import { LogsTab } from '../components/notifications/tabs/LogsTab'
 import { BulkMessagingTab } from '../components/notifications/tabs/BulkMessagingTab'
@@ -16,11 +17,9 @@ const tabs = [
 type TabId = typeof tabs[number]['id']
 
 function getInitialTab(searchParams: URLSearchParams): TabId {
-  const tabFromUrl = searchParams.get('tab') as TabId
-  if (tabFromUrl && tabs.some(t => t.id === tabFromUrl)) {
-    return tabFromUrl
-  }
-  return 'admin'
+  const tabFromUrl = searchParams.get('tab')
+  const tab = tabs.find(t => t.id === tabFromUrl)
+  return tab?.id ?? 'admin'
 }
 
 export function NotificationsPage() {
@@ -76,9 +75,9 @@ export function NotificationsPage() {
 
       <PageSection>
         <div className="min-h-[400px]">
-          {activeTab === 'admin' && <AdminSettingsTab />}
-          {activeTab === 'logs' && <LogsTab />}
-          {activeTab === 'bulk' && <BulkMessagingTab />}
+          {activeTab === 'admin' && <ErrorBoundary><AdminSettingsTab /></ErrorBoundary>}
+          {activeTab === 'logs' && <ErrorBoundary><LogsTab /></ErrorBoundary>}
+          {activeTab === 'bulk' && <ErrorBoundary><BulkMessagingTab /></ErrorBoundary>}
         </div>
       </PageSection>
     </div>

@@ -23,9 +23,9 @@
 
 **Independent Test**: Open the notifications page at `/notifications`. Navigate through Admin Settings, Logs tabs. No crashes.
 
-- [ ] T001 [US1] Fix null guard on `template.variables.length` in `src/components/notifications/tabs/TemplatesTab.tsx:82` — change `{template.variables.length}` to `{(template.variables?.length ?? 0)}`
-- [ ] T002 [US1] Fix TestModal variables setter in `src/components/notifications/tabs/TemplatesTab.tsx:361` — change `const [variables] = useState(...)` to `const variables: Record<string, string> = {}`
-- [ ] T003 [P] [US1] Replace `console.error` with toast/error state in `src/components/notifications/tabs/AdminSettingsTab.tsx:93` — remove `console.error('Failed to toggle notification:', error)` and set an inline error state instead
+- [X] T001 [US1] Fix null guard on `template.variables.length` in `src/components/notifications/tabs/TemplatesTab.tsx:82` — change `{template.variables.length}` to `{(template.variables?.length ?? 0)}`
+- [X] T002 [US1] Fix TestModal variables setter in `src/components/notifications/tabs/TemplatesTab.tsx:361` — change `const [variables] = useState(...)` to `const variables: Record<string, string> = {}`
+- [X] T003 [P] [US1] Replace `console.error` with toast/error state in `src/components/notifications/tabs/AdminSettingsTab.tsx:93` — remove `console.error('Failed to toggle notification:', error)` and set an inline error state instead
 
 **Checkpoint**: All runtime crashes prevented. LogsTab error state has retry button if included in scope.
 

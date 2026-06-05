@@ -66,6 +66,10 @@ export interface PayCompetitionFeeResponseDTO {
   amount_due: number
 }
 
+export interface RefundCompetitionFeeInput {
+  amount: number
+}
+
 export interface TeamListFilters {
   competition_id: number
   category?: string

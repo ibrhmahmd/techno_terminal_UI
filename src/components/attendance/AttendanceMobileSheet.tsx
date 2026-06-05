@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashboard'
 import type { AttendanceStatus, AttendanceEntry } from '../../api/attendance'
 import { markAttendance } from '../../api/attendance'
-import { dashboardKeys } from '../../hooks/dashboard'
+import { queryKeys } from '../../hooks/queryKeys'
 import { formatTime, formatInstructorName } from '../../utils/formatting'
 import { sessionStatusColors } from '../../utils/colors'
 import { useToast } from '../common/Toast'
@@ -96,7 +96,7 @@ export function AttendanceMobileSheet({
     try {
       await markAttendance(selectedSession.session_id, pendingEntries)
       // Invalidate dashboard to refresh data
-      qc.invalidateQueries({ queryKey: dashboardKeys.overview(selectedDate) })
+      qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       showToast('Attendance saved successfully', 'success')
       setPendingEntries([])
       setActiveStep('sessions')

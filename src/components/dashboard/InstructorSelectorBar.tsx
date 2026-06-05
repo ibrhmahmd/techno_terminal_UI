@@ -23,47 +23,51 @@ export function InstructorSelectorBar({
 
   const sortedInstructors = [...instructors].sort()
 
+  const isSelected = (name: string | null) => selectedInstructor === name
+  const allButton = { name: null, label: isMobile ? <span className="material-symbols-outlined flex items-center justify-center text-[20px]" aria-hidden="true">groups</span> : 'All Instructors' }
+  const instructorButtons = sortedInstructors.map(name => ({ name, label: isMobile ? formatInstructorName(name) : name }))
+  const allTabs = [allButton, ...instructorButtons]
+
+  const handleTablistKeyDown = (e: React.KeyboardEvent) => {
+    const target = e.target as HTMLElement
+    const buttons = Array.from(target.parentElement?.querySelectorAll('[role="tab"]') ?? [])
+    const currentIndex = buttons.indexOf(target)
+    if (currentIndex === -1) return
+
+    let nextIndex = currentIndex
+    if (e.key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % buttons.length
+    } else if (e.key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length
+    } else {
+      return
+    }
+
+    e.preventDefault()
+    ;(buttons[nextIndex] as HTMLElement).focus()
+    onSelectInstructor(allTabs[nextIndex].name)
+  }
+
   return (
     <section className="w-full pb-6">
       <div className="overflow-x-auto">
-        <div role="tablist" aria-label="Filter by instructor" className="flex min-w-[300px] items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-100 p-1">
-          {/* All Instructors button */}
-          <button
-            key="all"
-            role="tab"
-            aria-selected={selectedInstructor === null}
-            disabled={disabled}
-            className={`flex-1 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all whitespace-nowrap ${
-              selectedInstructor === null
-                ? 'bg-white text-secondary shadow-sm font-bold border border-emerald-200'
-                : 'text-slate-600 hover:text-secondary hover:bg-white/70'
-            } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={() => onSelectInstructor(null)}
-            title="All Instructors"
-          >
-            {isMobile ? (
-              <span className="material-symbols-outlined flex items-center justify-center text-[20px]">groups</span>
-            ) : (
-              'All Instructors'
-            )}
-          </button>
-
-          {/* Individual instructor buttons */}
-          {sortedInstructors.map((instructorName) => (
+        <div role="tablist" aria-label="Filter by instructor" className="flex min-w-[300px] items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-100 p-1" onKeyDown={handleTablistKeyDown}>
+          {allTabs.map(({ name }) => (
             <button
-              key={instructorName}
+              key={name ?? 'all'}
               role="tab"
-              aria-selected={selectedInstructor === instructorName}
+              aria-selected={isSelected(name)}
               disabled={disabled}
+              tabIndex={isSelected(name) ? 0 : -1}
               className={`flex-1 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all whitespace-nowrap ${
-                selectedInstructor === instructorName
+                isSelected(name)
                   ? 'bg-white text-secondary shadow-sm font-bold border border-emerald-200'
                   : 'text-slate-600 hover:text-secondary hover:bg-white/70'
               } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-              onClick={() => onSelectInstructor(instructorName)}
-              title={instructorName}
+              onClick={() => onSelectInstructor(name)}
+              title={name ?? 'All Instructors'}
             >
-              {isMobile ? formatInstructorName(instructorName) : instructorName}
+              {name === null ? allButton.label : (isMobile ? formatInstructorName(name) : name)}
             </button>
           ))}
         </div>

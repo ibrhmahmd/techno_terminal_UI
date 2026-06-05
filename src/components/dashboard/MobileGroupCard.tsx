@@ -1,5 +1,5 @@
 import type { GroupInfoDTO } from '../../api/dashboard'
-import { formatInstructorName } from '../../utils/formatting'
+import { formatInstructorName, formatTime } from '../../utils/formatting'
 
 export interface MobileGroupCardProps {
   group: GroupInfoDTO
@@ -11,7 +11,7 @@ export function MobileGroupCard({ group, instructorName, onOpenAttendance }: Mob
   const shortInstructor = formatInstructorName(instructorName)
   const scheduleDay = group.default_day
   const timeRange = group.default_time_start && group.default_time_end
-    ? `${group.default_time_start.slice(0, 5)} – ${group.default_time_end.slice(0, 5)}`
+    ? `${formatTime(group.default_time_start)} – ${formatTime(group.default_time_end)}`
     : null
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -43,7 +43,7 @@ export function MobileGroupCard({ group, instructorName, onOpenAttendance }: Mob
         </div>
         {/* Attendance indicator badge */}
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 text-xs font-semibold border border-teal-100 shrink-0 ml-2">
-          <span className="material-symbols-outlined text-[14px]">how_to_reg</span>
+          <span className="material-symbols-outlined text-[14px]" aria-hidden="true">how_to_reg</span>
           Attendance
         </span>
       </div>
@@ -72,7 +72,7 @@ export function MobileGroupCard({ group, instructorName, onOpenAttendance }: Mob
           onClick={(e) => { e.stopPropagation(); onOpenAttendance() }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/10 text-secondary text-sm font-semibold hover:bg-secondary/20 transition-colors"
         >
-          <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
+          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">how_to_reg</span>
           Mark Attendance
         </button>
       </div>

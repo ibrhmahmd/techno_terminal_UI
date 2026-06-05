@@ -6,7 +6,6 @@ import type { PaginatedApiResponse } from '../../types/api'
 import type {
   NotificationLogDTO,
   NotificationLogDetailDTO,
-  LogRecipientDTO,
   NotificationLogFilters,
 } from './types'
 
@@ -38,17 +37,6 @@ export async function getLogs(filters?: NotificationLogFilters): Promise<Paginat
  */
 export async function getLog(id: number): Promise<NotificationLogDetailDTO> {
   const response = await client.get<{ data: NotificationLogDetailDTO }>(`${LOGS_BASE}/${id}`)
-  return response.data.data
-}
-
-/**
- * Get recipients for a specific notification log
- * GET /api/v1/notifications/logs/{log_id}/recipients
- */
-export async function getLogRecipients(logId: number): Promise<LogRecipientDTO[]> {
-  const response = await client.get<{ data: LogRecipientDTO[] }>(
-    `${LOGS_BASE}/${logId}/recipients`
-  )
   return response.data.data
 }
 

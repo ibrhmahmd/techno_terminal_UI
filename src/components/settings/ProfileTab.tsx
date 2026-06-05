@@ -116,12 +116,12 @@ export function ProfileTab() {
         </h2>
 
         {profileError && (
-          <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700">
+          <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700" role="alert">
             {profileError}
           </div>
         )}
         {profileSuccess && (
-          <div className="mb-4 p-3 bg-secondary/15 rounded-[6px] text-sm text-secondary">
+          <div className="mb-4 p-3 bg-secondary/15 rounded-[6px] text-sm text-secondary" role="alert">
             {profileSuccess}
           </div>
         )}
@@ -129,8 +129,9 @@ export function ProfileTab() {
         {isEditing ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Username</label>
+              <label htmlFor="edit-username" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Username</label>
               <input
+                id="edit-username"
                 type="text"
                 value={editUsername}
                 onChange={(e) => setEditUsername(e.target.value)}
@@ -138,8 +139,9 @@ export function ProfileTab() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</label>
+              <label htmlFor="edit-email" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</label>
               <input
+                id="edit-email"
                 type="email"
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
@@ -180,7 +182,7 @@ export function ProfileTab() {
                 onClick={startEditing}
                 className="px-4 py-2 bg-slate-100 text-slate-700 rounded-[6px] text-sm font-medium hover:bg-slate-200 transition-colors flex items-center gap-2 duration-120"
               >
-                <span className="material-symbols-outlined text-base">edit</span>
+                <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
                 Edit Profile
               </button>
             </div>
@@ -195,23 +197,24 @@ export function ProfileTab() {
         </h2>
 
         {passwordError && (
-          <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700">
+          <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700" role="alert">
             {passwordError}
           </div>
         )}
 
         {passwordSuccess && (
-          <div className="mb-4 p-3 bg-secondary/15 rounded-[6px] text-sm text-secondary">
+          <div className="mb-4 p-3 bg-secondary/15 rounded-[6px] text-sm text-secondary" role="alert">
             {passwordSuccess}
           </div>
         )}
 
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+            <label htmlFor="current-password" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
               Current Password *
             </label>
             <input
+              id="current-password"
               type="password"
               required
               value={currentPassword}
@@ -222,10 +225,11 @@ export function ProfileTab() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+            <label htmlFor="new-password" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
               New Password *
             </label>
             <input
+              id="new-password"
               type="password"
               required
               minLength={12}
@@ -240,10 +244,11 @@ export function ProfileTab() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+            <label htmlFor="confirm-password" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
               Confirm Password *
             </label>
             <input
+              id="confirm-password"
               type="password"
               required
               minLength={12}
@@ -284,7 +289,7 @@ export function ProfileTab() {
           </div>
         ) : (
           <div className="flex items-start gap-4">
-            <span className="material-symbols-outlined text-4xl text-slate-400 shrink-0 select-none">
+            <span className="material-symbols-outlined text-4xl text-slate-400 shrink-0 select-none" aria-hidden="true">
               shield
             </span>
             <div className="space-y-1.5">

@@ -1,10 +1,39 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import { type CreateUserRequest, type User } from '../../api/auth'
 import { useUsers, useUpdateUser, useDeleteUser, useInviteUser, useCreateUser, useResetPassword } from '../../hooks/useAuthQueries'
+import { useDebounce } from '../../hooks/useDebounce'
+import { formatDate } from '../../utils/formatting'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { InstructorCombobox } from '../common/combobox/InstructorCombobox'
 import type { EmployeeListItem } from '../../api/hr'
+
+const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
+function useFocusTrap(containerRef: React.RefObject<HTMLDivElement | null>, isActive: boolean) {
+  useEffect(() => {
+    if (!isActive || !containerRef.current) return
+    const container = containerRef.current
+    const firstFocusable = container.querySelector<HTMLElement>(FOCUSABLE)
+    firstFocusable?.focus()
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !container) return
+      const focusables = container.querySelectorAll<HTMLElement>(FOCUSABLE)
+      if (focusables.length < 2) return
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [containerRef, isActive])
+}
 
 interface UserDetailModalProps {
   user: User
@@ -33,7 +62,7 @@ function RoleBadge({ role }: { role: string }) {
   const style = ROLE_STYLES[role] || { label: role, bg: 'bg-slate-500/10', text: 'text-slate-600', icon: 'badge' }
   return (
     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[6px] text-xs font-semibold ${style.bg} ${style.text}`}>
-      <span className="material-symbols-outlined text-xs">{style.icon}</span>
+      <span className="material-symbols-outlined text-xs" aria-hidden="true">{style.icon}</span>
       {style.label}
     </span>
   )
@@ -50,6 +79,9 @@ function StatusBadge({ status }: { status: 'Active' | 'Invited' | 'Deactivated' 
 }
 
 function UserDetailModal({ user, onClose }: UserDetailModalProps) {
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const deactivateConfirmRef = useRef<HTMLDivElement>(null)
+  const deleteConfirmRef = useRef<HTMLDivElement>(null)
   const { user: currentUser } = useAuthStore()
   const updateUserMutation = useUpdateUser()
   const deleteUserMutation = useDeleteUser()
@@ -69,7 +101,11 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
-  }, [onClose, showDeactivateConfirm])
+  }, [onClose, showDeactivateConfirm, showDeleteConfirm])
+
+  useFocusTrap(overlayRef, true)
+  useFocusTrap(deactivateConfirmRef, showDeactivateConfirm)
+  useFocusTrap(deleteConfirmRef, showDeleteConfirm)
 
   const handleRoleChange = async () => {
     if (selectedRole === user.role) return
@@ -113,7 +149,7 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label={`User details: ${user.username}`}>
+    <div ref={overlayRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label={`User details: ${user.username}`}>
       <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-lg">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -125,8 +161,8 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
               <p className="text-sm text-slate-500 font-mono">{user.email}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded-[6px] hover:bg-slate-100 transition-colors duration-120">
-            <span className="material-symbols-outlined">close</span>
+          <button onClick={onClose} aria-label="Close" className="text-slate-400 hover:text-slate-600 p-1 rounded-[6px] hover:bg-slate-100 transition-colors duration-120">
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
 
@@ -136,12 +172,13 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
             <p className="text-sm text-on-surface mt-1">{user.employee_id ?? 'N/A'}</p>
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Role</label>
+            <label htmlFor="detail-role" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Role</label>
             <div className="mt-1">
               {isSelf ? (
                 <RoleBadge role={user.role} />
               ) : (
                 <select
+                  id="detail-role"
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value)}
                   onBlur={handleRoleChange}
@@ -162,11 +199,11 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
           </div>
           <div>
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Last Login</label>
-            <p className="text-sm text-slate-500 mt-1">{user.last_login ? new Date(user.last_login).toLocaleString() : 'Never'}</p>
+            <p className="text-sm text-slate-500 mt-1">{user.last_login ? formatDate(user.last_login) : 'Never'}</p>
           </div>
           <div className="col-span-2">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Account Created</label>
-            <p className="text-sm text-slate-500 mt-1">{user.created_at ? new Date(user.created_at).toLocaleString() : 'N/A'}</p>
+            <p className="text-sm text-slate-500 mt-1">{user.created_at ? formatDate(user.created_at) : 'N/A'}</p>
           </div>
         </div>
 
@@ -177,7 +214,7 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
               disabled={isDeactivating}
               className="px-4 py-2 text-sm font-medium text-amber-700 bg-amber-500/10 rounded-[6px] hover:bg-amber-500/15 disabled:opacity-50 flex items-center gap-2 duration-120"
             >
-              {isDeactivating ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg">person_off</span>}
+              {isDeactivating ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg" aria-hidden="true">person_off</span>}
               Deactivate
             </button>
           )}
@@ -188,7 +225,7 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
                 disabled={isReactivating}
                 className="px-4 py-2 text-sm font-medium text-secondary bg-secondary/15 rounded-[6px] hover:bg-secondary/20 disabled:opacity-50 flex items-center gap-2 duration-120"
               >
-                {isReactivating ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg">how_to_reg</span>}
+                {isReactivating ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg" aria-hidden="true">how_to_reg</span>}
                 Reactivate
               </button>
               <button
@@ -196,7 +233,7 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
                 disabled={isDeleting}
                 className="px-4 py-2 text-sm font-medium text-red-700 bg-red-500/10 rounded-[6px] hover:bg-red-500/15 disabled:opacity-50 flex items-center gap-2 duration-120"
               >
-                {isDeleting ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg">delete_forever</span>}
+                {isDeleting ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg" aria-hidden="true">delete_forever</span>}
                 Delete
               </button>
             </>
@@ -210,7 +247,7 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
         </div>
 
         {showDeactivateConfirm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]" role="dialog" aria-modal="true" aria-label="Confirm deactivation" onKeyDown={(e) => e.key === 'Escape' && setShowDeactivateConfirm(false)}>
+          <div ref={deactivateConfirmRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]" role="dialog" aria-modal="true" aria-label="Confirm deactivation" onKeyDown={(e) => e.key === 'Escape' && setShowDeactivateConfirm(false)}>
             <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-sm">
               <h4 className="font-headline text-base font-semibold text-on-surface mb-2">Deactivate User?</h4>
               <p className="text-sm text-slate-600 mb-6 font-body">
@@ -228,7 +265,7 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
         )}
 
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]" role="dialog" aria-modal="true" aria-label="Confirm deletion" onKeyDown={(e) => e.key === 'Escape' && setShowDeleteConfirm(false)}>
+          <div ref={deleteConfirmRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]" role="dialog" aria-modal="true" aria-label="Confirm deletion" onKeyDown={(e) => e.key === 'Escape' && setShowDeleteConfirm(false)}>
             <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-sm">
               <h4 className="font-headline text-base font-semibold text-red-600 mb-2">Delete Permanently?</h4>
               <p className="text-sm text-slate-600 mb-6 font-body">
@@ -254,6 +291,7 @@ interface InviteModalProps {
 }
 
 function InviteModal({ onClose }: InviteModalProps) {
+  const overlayRef = useRef<HTMLDivElement>(null)
   const inviteUserMutation = useInviteUser()
 
   useEffect(() => {
@@ -261,6 +299,7 @@ function InviteModal({ onClose }: InviteModalProps) {
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
   }, [onClose])
+  useFocusTrap(overlayRef, true)
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'admin' | 'system_admin'>('admin')
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeListItem | null>(null)
@@ -296,13 +335,13 @@ function InviteModal({ onClose }: InviteModalProps) {
 
   if (result) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label="Invite sent">
+      <div ref={overlayRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label="Invite sent">
         <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-md">
           <div className="text-center">
-            <span className="material-symbols-outlined text-4xl text-secondary mb-3">mail</span>
+            <span className="material-symbols-outlined text-4xl text-secondary mb-3" aria-hidden="true">mail</span>
             <h3 className="font-headline text-lg font-semibold text-on-surface mb-2">Invite Sent!</h3>
             <p className="text-sm text-slate-600 mb-4">
-              Invite expires at {new Date(result.invite_expires_at).toLocaleString()}
+              Invite expires at {formatDate(result.invite_expires_at)}
             </p>
             <button onClick={onClose} className="px-4 py-2 bg-secondary text-white rounded-[6px] font-medium hover:opacity-90 duration-120">Done</button>
           </div>
@@ -312,11 +351,11 @@ function InviteModal({ onClose }: InviteModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label="Invite user">
+    <div ref={overlayRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label="Invite user">
       <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-md">
         <h3 className="font-headline text-lg font-semibold text-on-surface mb-4">Invite User</h3>
 
-        {error && <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700 font-semibold">{error}</div>}
+        {error && <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700 font-semibold" role="alert">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -328,8 +367,9 @@ function InviteModal({ onClose }: InviteModalProps) {
             {!selectedEmployee && <p className="text-xs text-slate-500 mt-1">Search and select an employee to invite</p>}
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Email *</label>
+            <label htmlFor="invite-email" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Email *</label>
             <input
+              id="invite-email"
               type="email"
               required
               value={email}
@@ -338,8 +378,9 @@ function InviteModal({ onClose }: InviteModalProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Role *</label>
+            <label htmlFor="invite-role" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Role *</label>
             <select
+              id="invite-role"
               value={role}
               onChange={(e) => { const v = e.target.value; if (v === 'admin' || v === 'system_admin') setRole(v as 'admin' | 'system_admin') }}
               className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
@@ -366,14 +407,17 @@ function InviteModal({ onClose }: InviteModalProps) {
 }
 
 export function UsersTab() {
-  const [search, setSearch] = useState('')
+  const createOverlayRef = useRef<HTMLDivElement>(null)
+  const resetOverlayRef = useRef<HTMLDivElement>(null)
+  const [searchInput, setSearchInput] = useState('')
   const [roleFilter, setRoleFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(0)
   const limit = 50
+  const debouncedSearch = useDebounce(searchInput, 350)
 
   const query = {
-    ...(search ? { q: search } : {}),
+    ...(debouncedSearch ? { q: debouncedSearch } : {}),
     ...(roleFilter ? { role: roleFilter } : {}),
     ...(statusFilter ? { is_active: statusFilter === 'active' } : {}),
     skip: page * limit,
@@ -408,14 +452,12 @@ export function UsersTab() {
     setNewUser((prev) => ({ ...prev, [field]: value }))
   }
 
+  useFocusTrap(createOverlayRef, showCreateModal)
+  useFocusTrap(resetOverlayRef, showResetModal)
+
   const users = data?.data ?? []
   const total = data?.total ?? 0
   const totalPages = Math.ceil(total / limit)
-
-  const debouncedSearch = useCallback((value: string) => {
-    setSearch(value)
-    setPage(0)
-  }, [])
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -477,11 +519,11 @@ export function UsersTab() {
         <h2 className="font-headline text-xl font-semibold text-on-surface">User Management</h2>
         <div className="flex gap-2">
           <button onClick={() => setShowInviteModal(true)} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-[6px] font-medium hover:bg-slate-200 transition-colors flex items-center gap-2 text-sm duration-120">
-            <span className="material-symbols-outlined text-base">mail</span>
+            <span className="material-symbols-outlined text-base" aria-hidden="true">mail</span>
             Invite User
           </button>
           <button onClick={() => { setNewUser({ selectedEmployee: null, employee_id: 0, username: '', password: '', role: 'admin' }); setCreateError(null); setCreateSuccess(null); setShowCreateModal(true) }} className="px-4 py-2 bg-secondary text-white rounded-[6px] font-medium hover:opacity-90 transition-colors flex items-center gap-2 text-sm duration-120">
-            <span className="material-symbols-outlined text-base">add</span>
+            <span className="material-symbols-outlined text-base" aria-hidden="true">add</span>
             Create User
           </button>
         </div>
@@ -490,26 +532,27 @@ export function UsersTab() {
       {/* Filters */}
       <div className="flex flex-wrap gap-6">
         <div className="relative flex-1 min-w-[200px] max-w-xs">
-          <span className="material-symbols-outlined absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none">search</span>
+          <span className="material-symbols-outlined absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" aria-hidden="true">search</span>
           <input
             type="text"
             placeholder="Search by username or email..."
             aria-label="Search by username or email"
-            onChange={(e) => debouncedSearch(e.target.value)}
+            id="user-search"
+            onChange={(e) => { setSearchInput(e.target.value); setPage(0) }}
             className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 pl-8 pr-3 py-1.5 text-sm rounded-none outline-none transition-colors"
           />
-          {search && (
+          {searchInput && (
             <button
-              onClick={() => { setSearch(''); setPage(0) }}
+              onClick={() => { setSearchInput(''); setPage(0) }}
               className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
               aria-label="Clear search"
             >
-              <span className="material-symbols-outlined text-sm">close</span>
+              <span className="material-symbols-outlined text-sm" aria-hidden="true">close</span>
             </button>
           )}
         </div>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none">badge</span>
+          <span className="material-symbols-outlined absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" aria-hidden="true">badge</span>
           <select
             value={roleFilter}
             onChange={(e) => { setRoleFilter(e.target.value); setPage(0) }}
@@ -521,10 +564,10 @@ export function UsersTab() {
             <option value="admin">Admin</option>
             <option value="system_admin">System Admin</option>
           </select>
-          <span className="material-symbols-outlined absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">expand_more</span>
+          <span className="material-symbols-outlined absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" aria-hidden="true">expand_more</span>
         </div>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none">circle</span>
+          <span className="material-symbols-outlined absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" aria-hidden="true">circle</span>
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(0) }}
@@ -535,7 +578,7 @@ export function UsersTab() {
             <option value="active">Active</option>
             <option value="inactive">Deactivated</option>
           </select>
-          <span className="material-symbols-outlined absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">expand_more</span>
+          <span className="material-symbols-outlined absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" aria-hidden="true">expand_more</span>
         </div>
       </div>
 
@@ -544,7 +587,7 @@ export function UsersTab() {
       ) : error ? (
         <div className="bg-white rounded-[6px] shadow-sm p-8 text-center"><p className="text-red-600">Failed to load users.</p></div>
       ) : users.length === 0 ? (
-        <div className="bg-white rounded-[6px] shadow-sm p-8 text-center"><p className="text-slate-500">No users found.</p></div>
+        <div className="bg-white rounded-[6px] shadow-sm p-8 text-center" role="status"><p className="text-slate-500">No users found.</p></div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -573,12 +616,12 @@ export function UsersTab() {
                       <RoleBadge role={u.role} />
                     </div>
                     <div className="flex items-center gap-2 text-slate-500">
-                      <span className="material-symbols-outlined text-sm">schedule</span>
-                      <span className="text-sm">{u.last_login ? new Date(u.last_login).toLocaleDateString() : 'Never logged in'}</span>
+                      <span className="material-symbols-outlined text-sm" aria-hidden="true">schedule</span>
+                      <span className="text-sm">{u.last_login ? formatDate(u.last_login) : 'Never logged in'}</span>
                     </div>
                     {u.employee_id && (
                       <div className="flex items-center gap-2 text-slate-500">
-                        <span className="material-symbols-outlined text-sm">badge</span>
+                        <span className="material-symbols-outlined text-sm" aria-hidden="true">badge</span>
                         <span className="text-sm">ID: {u.employee_id}</span>
                       </div>
                     )}
@@ -590,11 +633,11 @@ export function UsersTab() {
 
                   <div className="flex gap-2 pt-4 border-t border-slate-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <button onClick={() => setDetailUser(u)} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 rounded-[6px] hover:bg-slate-200 transition-colors duration-120">
-                      <span className="material-symbols-outlined text-lg">visibility</span>
+                      <span className="material-symbols-outlined text-lg" aria-hidden="true">visibility</span>
                       View
                     </button>
                     <button onClick={() => { setSelectedUser(u); setNewPassword(''); setResetError(null); setResetSuccess(null); setShowResetModal(true) }} disabled={resetPasswordMutation.isPending} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-secondary bg-secondary/15 rounded-[6px] hover:bg-secondary/20 transition-colors duration-120 disabled:opacity-50">
-                      {resetPasswordMutation.isPending ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg">lock_reset</span>}
+                      {resetPasswordMutation.isPending ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg" aria-hidden="true">lock_reset</span>}
                       Reset
                     </button>
                   </div>
@@ -617,11 +660,11 @@ export function UsersTab() {
 
       {/* Create User Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label="Create new user" onKeyDown={(e) => e.key === 'Escape' && setShowCreateModal(false)}>
+        <div ref={createOverlayRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label="Create new user" onKeyDown={(e) => e.key === 'Escape' && setShowCreateModal(false)}>
           <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-md">
             <h3 className="font-headline text-lg font-semibold text-on-surface mb-4">Create New User</h3>
-            {createError && <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700 font-semibold">{createError}</div>}
-            {createSuccess && <div className="mb-4 p-3 bg-secondary/15 rounded-[6px] text-sm text-secondary font-semibold">{createSuccess}</div>}
+            {createError && <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700 font-semibold" role="alert">{createError}</div>}
+            {createSuccess && <div className="mb-4 p-3 bg-secondary/15 rounded-[6px] text-sm text-secondary font-semibold" role="alert">{createSuccess}</div>}
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Employee</label>
@@ -638,8 +681,9 @@ export function UsersTab() {
                 {!newUser.selectedEmployee && <p className="text-xs text-slate-500 mt-1">Search and select an employee</p>}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Username *</label>
+                <label htmlFor="create-username" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Username *</label>
                 <input
+                  id="create-username"
                   type="text"
                   required
                   value={newUser.username}
@@ -648,8 +692,9 @@ export function UsersTab() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Password *</label>
+                <label htmlFor="create-password" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Password *</label>
                 <input
+                  id="create-password"
                   type="password"
                   required
                   minLength={12}
@@ -661,8 +706,9 @@ export function UsersTab() {
                 <p className="text-xs text-slate-500 mt-1">Password must be at least 12 characters</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Role *</label>
+                <label htmlFor="create-role" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Role *</label>
                 <select
+                  id="create-role"
                   value={newUser.role}
                   onChange={(e) => { const v = e.target.value; if (v === 'instructor' || v === 'admin' || v === 'system_admin') setNewUserField('role', v) }}
                   className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
@@ -688,16 +734,17 @@ export function UsersTab() {
 
       {/* Reset Password Modal */}
       {showResetModal && selectedUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label="Reset password" onKeyDown={(e) => e.key === 'Escape' && (setShowResetModal(false), setSelectedUser(null), setNewPassword(''))}>
+        <div ref={resetOverlayRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label="Reset password" onKeyDown={(e) => e.key === 'Escape' && (setShowResetModal(false), setSelectedUser(null), setNewPassword(''))}>
           <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-md">
             <h3 className="font-headline text-lg font-semibold text-on-surface mb-2">Reset Password</h3>
             <p className="text-sm text-slate-600 mb-4 font-body font-normal">Enter a new password for <strong>{selectedUser.username}</strong></p>
-            {resetError && <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700 font-semibold">{resetError}</div>}
-            {resetSuccess && <div className="mb-4 p-3 bg-secondary/15 rounded-[6px] text-sm text-secondary font-semibold">{resetSuccess}</div>}
+            {resetError && <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700 font-semibold" role="alert">{resetError}</div>}
+            {resetSuccess && <div className="mb-4 p-3 bg-secondary/15 rounded-[6px] text-sm text-secondary font-semibold" role="alert">{resetSuccess}</div>}
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">New Password *</label>
+                <label htmlFor="reset-password" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">New Password *</label>
                 <input
+                  id="reset-password"
                   type="password"
                   required
                   minLength={12}

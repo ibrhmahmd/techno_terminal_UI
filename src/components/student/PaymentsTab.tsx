@@ -32,7 +32,7 @@ export function PaymentsTab({ studentId, balance, loading: balanceLoading, error
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
   // Calculate summary stats from balance data
-  const totalPaid = balance?.enrollments?.reduce((sum: number, e) => sum + e.total_paid, 0) || 0
+  const totalPaid = balance?.total_paid ?? balance?.enrollments?.reduce((sum: number, e) => sum + e.total_paid, 0) ?? 0
   const totalAmountDue = balance?.total_amount_due || 0
   const totalDiscounts = balance?.total_discounts || 0
   const netBalance = balance?.net_balance || 0

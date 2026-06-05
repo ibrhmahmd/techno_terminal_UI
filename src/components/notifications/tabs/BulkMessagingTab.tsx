@@ -3,7 +3,7 @@
 
 export function BulkMessagingTab() {
   return (
-    <div className="flex flex-col items-center justify-center py-20 gap-4">
+    <div className="flex flex-col items-center justify-center py-20 gap-4" role="region" aria-label="Bulk messaging">
       <div className="w-16 h-16 rounded-[6px] bg-secondary/10 flex items-center justify-center">
         <span className="material-symbols-outlined text-3xl text-secondary">send</span>
       </div>
