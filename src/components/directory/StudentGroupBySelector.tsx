@@ -59,7 +59,7 @@ export function StudentGroupBySelector({
                         : 'text-slate-500 hover:text-secondary hover:bg-white/50'
                 }`}
               >
-                <span className={`material-symbols-outlined text-[16px] ${isActive && isRedAccent ? 'text-red-500' : ''}`}>{icon}</span>
+                <span aria-hidden="true" className={`material-symbols-outlined text-[16px] ${isActive && isRedAccent ? 'text-red-500' : ''}`}>{icon}</span>
                 {label}
               </button>
             )

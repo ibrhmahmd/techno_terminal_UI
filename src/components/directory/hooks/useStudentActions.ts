@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { isAxiosError } from 'axios'
 import { useToast } from '../../common/Toast'
+import { queryKeys } from '../../../hooks/queryKeys'
 import {
   useCreateStudent,
   useUpdateStudent,
@@ -66,7 +68,7 @@ export function useStudentActions(
 
         if (selectedParent) {
           await linkParentToStudent(newStudent.id, selectedParent.id)
-          queryClient.invalidateQueries({ queryKey: ['directory', 'parents'] })
+          queryClient.invalidateQueries({ queryKey: queryKeys.directory.parents.all })
         }
 
         if (status !== 'active') {
@@ -86,28 +88,28 @@ export function useStudentActions(
       } catch (err: unknown) {
         let message = 'Failed to create student'
 
-        const axiosErr = err as { response?: { data?: { message?: string; errors?: Record<string, unknown> }; status?: number }; message?: string }
+        if (isAxiosError<{ message?: string; errors?: Record<string, unknown> }>(err)) {
+          if (err.response?.data?.message) {
+            message = err.response.data.message
+          }
 
-        if (axiosErr?.response?.data?.message) {
-          message = axiosErr.response.data.message
+          if (err.response?.status === 422 && err.response?.data?.errors) {
+            const validationErrors = err.response.data.errors
+            const errorMessages = Object.entries(validationErrors)
+              .map(([field, msgs]) => {
+                if (Array.isArray(msgs)) {
+                  return `${field}: ${msgs.join(', ')}`
+                }
+                return `${field}: ${msgs}`
+              })
+              .join('; ')
+
+            if (errorMessages) {
+              message = `Validation failed: ${errorMessages}`
+            }
+          }
         } else if (err instanceof Error) {
           message = err.message
-        }
-
-        if (axiosErr?.response?.status === 422 && axiosErr?.response?.data?.errors) {
-          const validationErrors = axiosErr.response.data.errors
-          const errorMessages = Object.entries(validationErrors)
-            .map(([field, msgs]) => {
-              if (Array.isArray(msgs)) {
-                return `${field}: ${msgs.join(', ')}`
-              }
-              return `${field}: ${msgs}`
-            })
-            .join('; ')
-
-          if (errorMessages) {
-            message = `Validation failed: ${errorMessages}`
-          }
         }
 
         showToast(message, 'error')
@@ -133,17 +135,45 @@ export function useStudentActions(
 
         if (selectedParent) {
           await linkParentToStudent(student.id, selectedParent.id)
-          queryClient.invalidateQueries({ queryKey: ['directory', 'parents'] })
         }
 
         if (status !== student.status) {
           await updateStudentStatus(student.id, { status })
         }
 
+        queryClient.invalidateQueries({ queryKey: queryKeys.studentsAll })
+        queryClient.invalidateQueries({ queryKey: queryKeys.directory.parents.all })
+
         showToast('Student updated successfully', 'success')
         closeEditModal()
-      } catch {
-        showToast('Failed to update student', 'error')
+      } catch (err: unknown) {
+        let message = 'Failed to update student'
+
+        if (isAxiosError<{ message?: string; errors?: Record<string, unknown> }>(err)) {
+          if (err.response?.data?.message) {
+            message = err.response.data.message
+          }
+
+          if (err.response?.status === 422 && err.response?.data?.errors) {
+            const validationErrors = err.response.data.errors
+            const errorMessages = Object.entries(validationErrors)
+              .map(([field, msgs]) => {
+                if (Array.isArray(msgs)) {
+                  return `${field}: ${msgs.join(', ')}`
+                }
+                return `${field}: ${msgs}`
+              })
+              .join('; ')
+
+            if (errorMessages) {
+              message = `Validation failed: ${errorMessages}`
+            }
+          }
+        } else if (err instanceof Error) {
+          message = err.message
+        }
+
+        showToast(message, 'error')
       } finally {
         setIsLoading(false)
       }

@@ -21,6 +21,9 @@ export function ParentCard({ parent, actions, loading = false }: ParentCardProps
   return (
     <div
       onClick={() => navigate(`/parents/${parent.id}`)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/parents/${parent.id}`) } }}
+      role="link"
+      tabIndex={0}
       className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30 cursor-pointer flex flex-col"
     >
       <div className="flex-1">

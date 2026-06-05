@@ -30,12 +30,12 @@ export function useStudentsList(page: number, pageSize: number, enabled: boolean
   })
 }
 
-export function useStudentsSearch(term: string) {
+export function useStudentsSearch(term: string, enabled: boolean = true) {
   return useQuery<StudentListItem[]>({
     queryKey: queryKeys.directory.students.search(term),
     queryFn: () => searchStudents(term),
     staleTime: 2 * 60 * 1000,
-    enabled: term.length >= 2,
+    enabled: enabled && term.length >= 2,
   })
 }
 
@@ -59,12 +59,12 @@ export function useParentsList(page: number, pageSize: number, enabled: boolean)
   })
 }
 
-export function useParentsSearch(term: string) {
+export function useParentsSearch(term: string, enabled: boolean = true) {
   return useQuery<ParentListItem[]>({
     queryKey: queryKeys.directory.parents.search(term),
     queryFn: () => searchParents(term),
     staleTime: 2 * 60 * 1000,
-    enabled: term.length >= 2,
+    enabled: enabled && term.length >= 2,
   })
 }
 
@@ -73,8 +73,8 @@ export function useParentsSearch(term: string) {
 function useStudentInvalidator() {
   const qc = useQueryClient()
   return () => {
-    qc.invalidateQueries({ queryKey: ['directory', 'students'] })
-    qc.invalidateQueries({ queryKey: ['students'] })
+    qc.invalidateQueries({ queryKey: queryKeys.directory.students.all })
+    qc.invalidateQueries({ queryKey: queryKeys.studentsGroupedAll })
   }
 }
 

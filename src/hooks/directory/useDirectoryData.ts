@@ -34,7 +34,7 @@ interface UseDirectoryDataProps {
   filterParams?: StudentFilterParams
   filterPage?: number
   filterPageSize?: number
-  filterGroupBy?: 'none' | 'status' | 'age'
+  filterGroupBy?: StudentGroupBy
 }
 
 interface UseDirectoryDataReturn {
@@ -90,7 +90,7 @@ export function useDirectoryData({
   // Grouped data fetching (lazy - only when grouping is active)
   const { data: studentsGroupedResult, isLoading: isLoadingStudentsGrouped, isError: isStudentsGroupedError, error: studentsGroupedError } =
     useStudentsGrouped({
-      groupBy: (studentGroupBy === 'status' || studentGroupBy === 'age' ? studentGroupBy : 'status') as 'status' | 'age',
+      groupBy: studentGroupBy === 'status' || studentGroupBy === 'age' ? studentGroupBy : 'status',
       pagination: { page: studentGroupedPage, pageSize: groupedPageSize },
       tab: 'students',
       enabled: activeTab === 'students' && (studentGroupBy === 'status' || studentGroupBy === 'age') && !isSearching,
@@ -98,7 +98,7 @@ export function useDirectoryData({
 
   const { data: waitingGroupedResult, isLoading: isLoadingWaitingGrouped, isError: isWaitingGroupedError, error: waitingGroupedError } =
     useStudentsGrouped({
-      groupBy: (waitingGroupBy === 'age' ? waitingGroupBy : 'status') as 'status' | 'age',
+      groupBy: waitingGroupBy === 'age' ? waitingGroupBy : 'status',
       pagination: { page: waitingGroupedPage, pageSize: groupedPageSize },
       tab: 'waiting',
       enabled: activeTab === 'waiting' && waitingGroupBy === 'age' && !isSearching,
@@ -112,7 +112,7 @@ export function useDirectoryData({
       !isSearching &&
       studentGroupBy !== 'deleted'
   )
-  const studentsSearchQuery = useStudentsSearch(debouncedSearch)
+  const studentsSearchQuery = useStudentsSearch(debouncedSearch, activeTab === 'students' || activeTab === 'waiting')
   const deletedStudentsQuery = useDeletedStudents(
     currentPage,
     pageSize,
@@ -120,7 +120,7 @@ export function useDirectoryData({
   )
 
   const parentsListQuery = useParentsList(currentPage, pageSize, activeTab === 'parents' && !isSearching)
-  const parentsSearchQuery = useParentsSearch(debouncedSearch)
+  const parentsSearchQuery = useParentsSearch(debouncedSearch, activeTab === 'parents')
 
   // Filter query (advanced search tab)
   const filterQuery = useStudentsFilter(
@@ -135,7 +135,7 @@ export function useDirectoryData({
   // Grouped filter data (when group by is active in advanced search)
   const { data: filteredGroupedResult, isLoading: isLoadingFilteredGrouped, isError: isFilteredGroupedError, error: filteredGroupedError } =
     useStudentsGrouped({
-      groupBy: filterGroupBy === 'none' ? 'status' : filterGroupBy,
+      groupBy: (filterGroupBy === 'age' ? 'age' : 'status') as 'status' | 'age',
       pagination: { page: filterPage, pageSize: filterPageSize },
       tab: 'students',
       enabled: activeTab === 'advanced' && filterGroupBy !== 'none' && !!filterParams,
@@ -148,6 +148,7 @@ export function useDirectoryData({
     : (studentsListQuery.data?.items ?? [])
   const deletedStudents = deletedStudentsQuery.data?.items ?? []
   const students = studentGroupBy === 'deleted' ? deletedStudents : activeStudents
+  // Derived from current page data — not the full dataset total
   const waitingStudents = useMemo(
     () => students.filter((s) => s.status === 'waiting'),
     [students]
@@ -156,13 +157,12 @@ export function useDirectoryData({
     ? (deletedStudentsQuery.data?.total ?? 0)
     : isSearching
       ? students.length
-      : (studentsListQuery.data?.total ?? 0) - waitingStudents.length
+      : (studentsListQuery.data?.total ?? 0)
 
   const parents = isSearching ? (parentsSearchQuery.data ?? []) : (parentsListQuery.data?.items ?? [])
   const totalParents = isSearching ? parents.length : (parentsListQuery.data?.total ?? 0)
 
-  // BUG-23: Use API results directly - no double filtering
-  const displayStudents = students.filter((s) => s.status !== 'waiting')
+  // API results are already filtered — no client-side re-filter needed
 
   // Transform grouped API response → GroupItem<StudentListItem>[] for DataTable
   const studentsGroupedData = useMemo(() => {
@@ -252,7 +252,7 @@ export function useDirectoryData({
   }, [filteredGroupedResult, filterGroupBy])
 
   return {
-    students: displayStudents,
+    students,
     parents,
     waitingStudents,
     deletedStudents,

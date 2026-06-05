@@ -8,7 +8,6 @@ import type {
   ActivityLogResponseDTO,
   ActivitySummaryItem,
   EnrollmentHistoryEntry,
-  CompetitionHistoryEntry,
   ActivityLogRequest,
   ActivityLogUpdateRequest,
   ManualActivityResponseDTO,
@@ -58,26 +57,6 @@ export async function getEnrollmentHistory(
   const { skip = 0, limit = 50 } = params
   const response = await client.get<PaginatedEnrollmentHistory>(
     `/crm/students/${studentId}/enrollment-history`,
-    { params: { skip, limit } }
-  )
-  return response.data
-}
-
-// Get competition participation history with pagination
-export interface PaginatedCompetitionHistory {
-  data: CompetitionHistoryEntry[]
-  total: number
-  skip: number
-  limit: number
-}
-
-export async function getCompetitionHistory(
-  studentId: number,
-  params: { skip?: number; limit?: number } = {}
-): Promise<PaginatedCompetitionHistory> {
-  const { skip = 0, limit = 50 } = params
-  const response = await client.get<PaginatedCompetitionHistory>(
-    `/crm/students/${studentId}/competition-history`,
     { params: { skip, limit } }
   )
   return response.data

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { DualNumberInput, ActiveFilterTagsList } from '../common'
 import { getCoursesPaginated } from '../../api/academics'
+import { queryKeys } from '../../hooks/queryKeys'
 import type { FilterState } from '../../hooks/directory/useAdvancedSearch'
 
 interface AdvancedSearchPanelProps {
@@ -39,7 +40,7 @@ export function AdvancedSearchPanel({
 }: AdvancedSearchPanelProps) {
   // Fetch courses list for inclusion/exclusion filtering
   const { data: coursesData } = useQuery({
-    queryKey: ['courses', 'list-simple-filters'],
+    queryKey: queryKeys.coursesListSimple,
     queryFn: async () => {
       const res = await getCoursesPaginated({ skip: 0, limit: 150 })
       return res.items || []

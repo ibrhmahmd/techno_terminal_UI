@@ -1,4 +1,4 @@
-import type { StudentListItem, StudentFilterItem } from '../../api/crm'
+import type { StudentListItem, StudentFilterItem, StudentStatus } from '../../api/crm'
 import { calculateAge } from '../../api/crm/students/utils'
 import { RowActions } from '../common/RowActions'
 import { CardSkeleton } from './shared/CardSkeleton'
@@ -20,7 +20,7 @@ export interface StudentCardProps {
   loading?: boolean
 }
 
-const statusConfig: Record<string, { label: string; bg: string; text: string; icon: string }> = {
+const statusConfig: Record<StudentStatus, { label: string; bg: string; text: string; icon: string }> = {
   active: { label: 'Active', bg: 'bg-green-100', text: 'text-green-700', icon: 'check_circle' },
   waiting: { label: 'Waiting', bg: 'bg-amber-100', text: 'text-amber-700', icon: 'schedule' },
   inactive: { label: 'Inactive', bg: 'bg-slate-100', text: 'text-slate-600', icon: 'cancel' },
@@ -41,6 +41,9 @@ export function StudentCard({ student, actions, isDeleted = false, loading = fal
   return (
     <div
       onClick={() => navigate(`/students/${student.id}`)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/students/${student.id}`) } }}
+      role="link"
+      tabIndex={0}
       className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30 cursor-pointer flex flex-col"
     >
       <div className="flex items-start justify-between mb-3">

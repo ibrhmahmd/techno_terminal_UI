@@ -27,8 +27,6 @@ export {
 export {
   updateStudentStatus,
   setWaitingPriority,
-  getStudentStatusSummary,
-  getStudentsByStatus,
 } from './status'
 
 // Waiting List
@@ -49,19 +47,15 @@ export {
   getStudentActivityHistory,
   getActivitySummary,
   getEnrollmentHistory,
-  getCompetitionHistory,
   logActivity,
   updateActivity,
   deleteActivity,
   type PaginatedEnrollmentHistory,
-  type PaginatedCompetitionHistory,
 } from './activity'
 
 // Siblings
 export {
   getStudentSiblings,
-  linkSibling,
-  unlinkSibling,
 } from './siblings'
 
 // Enrollments (Lazy-loaded per-enrollment data - TODO: Backend endpoints)
@@ -91,10 +85,6 @@ export {
 // Utils
 export {
   calculateAge,
-  formatStudentDisplay,
-  hasOutstandingBalance,
-  getBalanceDisplay,
-  getStatusColorClass,
   getStatusLabel,
   isStudentDeleted,
 } from './utils'

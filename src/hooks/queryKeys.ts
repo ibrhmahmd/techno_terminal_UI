@@ -19,12 +19,14 @@ export const queryKeys = {
   groupByCourse: (courseId: number) => ['groups', 'by-course', courseId] as const,
   
   // Students
+  studentsAll: ['students'] as const,
   studentDetails: (id: number) => ['students', id, 'details'] as const,
   studentsGroupedAll: ['students', 'grouped'] as const,
   studentsGroupedByParams: (groupBy: string, skip: number, limit: number, tab: string, ageBucketsKey: string) => ['students', 'grouped', groupBy, skip, limit, tab, ageBucketsKey] as const,
   
   // Courses
   courses: ['courses'] as const,
+  coursesListSimple: ['courses', 'list-simple'] as const,
   
   // Competitions
   competitions: ['competitions'] as const,
@@ -84,6 +86,20 @@ export const queryKeys = {
       all:        ['directory', 'parents'] as const,
       list:       (page: number, size: number) => ['directory', 'parents', 'list', page, size] as const,
       search:     (term: string)  => ['directory', 'parents', 'search', term] as const,
+    },
+  },
+
+  // Notifications
+  notifications: {
+    admin: {
+      all: ['notifications', 'admin'] as const,
+      settings: () => ['notifications', 'admin', 'settings'] as const,
+      recipients: () => ['notifications', 'admin', 'recipients'] as const,
+    },
+    logs: {
+      all: ['notifications', 'logs'] as const,
+      list: (filters?: unknown) => ['notifications', 'logs', 'list', filters] as const,
+      detail: (id: number) => ['notifications', 'logs', 'detail', id] as const,
     },
   },
 

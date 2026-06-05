@@ -281,7 +281,7 @@ export function DirectoryPage() {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-red-500">
+      <div role="alert" className="flex flex-col items-center justify-center py-16 text-red-500">
         <span className="material-symbols-outlined text-5xl mb-3" aria-hidden="true">error</span>
         <p className="text-sm">Something went wrong loading data</p>
         <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-secondary text-white rounded-lg">
@@ -449,7 +449,7 @@ export function DirectoryPage() {
                           return (
                             <>
                               <div className="overflow-x-auto mb-4">
-                                <div role="tablist" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
+                                <div role="tablist" aria-label="Student groups" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
                                   {studentsGroupedData.map((group) => (
                                     <button
                                       key={group.key}
@@ -560,7 +560,7 @@ export function DirectoryPage() {
                       return (
                         <>
                           <div className="overflow-x-auto mb-4">
-                            <div role="tablist" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
+                            <div role="tablist" aria-label="Waiting list groups" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
                               {waitingGroupedData.map((group) => (
                                 <button
                                   key={group.key}
@@ -843,7 +843,7 @@ export function DirectoryPage() {
                         return (
                           <>
                             <div className="overflow-x-auto mb-4">
-                              <div role="tablist" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
+                              <div role="tablist" aria-label="Filtered student groups" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
                                 {filteredGroupedData.map((group) => (
                                   <button
                                     key={group.key}
