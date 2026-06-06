@@ -69,10 +69,11 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
         first?.focus()
       }
     }
+    const triggerEl = triggerRef?.current
     dialog.addEventListener('keydown', handleTab)
     return () => {
       dialog.removeEventListener('keydown', handleTab)
-      triggerRef?.current?.focus()
+      triggerEl?.focus()
     }
   }, [isOpen, triggerRef])
 

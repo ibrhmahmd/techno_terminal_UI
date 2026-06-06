@@ -6,6 +6,7 @@ import { DataTable, PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialo
 import { useToast } from '../components/common/Toast'
 import { GroupForm } from '../components/groups/GroupForm'
 import { type EnrichedGroupPublic, type ScheduleGroupInput } from '../api/academics'
+import type { UpdateGroupDTO } from '../api/academics/types/groups'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { GroupsHeader } from '../components/groups/GroupsHeader'
 import { GroupBySelector } from '../components/groups/GroupBySelector'
@@ -14,7 +15,10 @@ import { ViewToggle } from '../components/groups/ViewToggle'
 import { GroupCardGrid } from '../components/groups/GroupCardGrid'
 import { GroupCategoryTabs } from '../components/groups/GroupCategoryTabs'
 import { useGroups } from '../hooks/useGroups'
-import { useCreateGroup, useUpdateGroup, useDeleteGroup } from '../hooks/useGroupQueries'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { createGroup, updateGroup, deleteGroup } from '../api/academics'
+import { queryKeys } from '../hooks/queryKeys'
+import { getUpcomingDates } from '../utils/date'
 import { groupColumns } from '../components/groups/GroupColumns'
 import { GroupFilters } from '../components/groups/GroupFilters'
 import { useCourses } from '../hooks/useCourses'
@@ -58,7 +62,7 @@ export function GroupsPage() {
 
   const { courses } = useCourses()
   const { data: staffData } = useEmployees('', 1, 100)
-  const staff = staffData?.items || []
+  const staff = useMemo(() => staffData?.items || [], [staffData])
 
   const activeFilterTags = useMemo(() => {
     const tags: { id: string; label: string; value: string }[] = []
@@ -120,9 +124,30 @@ export function GroupsPage() {
     navigate(`/groups/${id}`)
   }
 
-  const createGroupMutation = useCreateGroup()
-  const updateGroupMutation = useUpdateGroup()
-  const deleteGroupMutation = useDeleteGroup()
+  const queryClient = useQueryClient()
+  const invalidateGroups = () => queryClient.invalidateQueries({ queryKey: queryKeys.groups })
+
+  const createGroupMutation = useMutation({
+    mutationFn: createGroup,
+    onSuccess: () => {
+      invalidateGroups()
+      const upcomingDates = getUpcomingDates(7)
+      upcomingDates.forEach(date => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.overview(date) })
+      })
+    },
+  })
+
+  const updateGroupMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateGroupDTO }) =>
+      updateGroup(id, data),
+    onSuccess: invalidateGroups,
+  })
+
+  const deleteGroupMutation = useMutation({
+    mutationFn: deleteGroup,
+    onSuccess: invalidateGroups,
+  })
 
   const handleEdit = (group: EnrichedGroupPublic) => {
     setSelectedGroup(group)
@@ -184,7 +209,16 @@ export function GroupsPage() {
     if (!selectedGroup) return
     setMutationError(null)
     try {
-      await updateGroupMutation.mutateAsync({ id: selectedGroup.id, data })
+      const updateData: UpdateGroupDTO = {
+        name: data.name,
+        course_id: data.course_id,
+        max_capacity: data.capacity,
+        instructor_id: data.instructor_id,
+        default_day: data.schedule.day,
+        default_time_start: data.schedule.time_start,
+        default_time_end: data.schedule.time_end,
+      }
+      await updateGroupMutation.mutateAsync({ id: selectedGroup.id, data: updateData })
       setIsEditModalOpen(false)
       setSelectedGroup(null)
     } catch (err: unknown) {
@@ -344,7 +378,7 @@ export function GroupsPage() {
                   {!isLoading && !isGroupedView && (
                     <>
                       {paginatedGroups.length === 0 && !isLoading ? (
-                        <div className="flex flex-col items-center justify-center py-28 gap-4 text-center">
+                        <div className="flex flex-col items-center justify-center py-28 gap-4 text-center" role="status">
                           <span className="material-symbols-outlined text-6xl text-slate-200" aria-hidden="true">search_off</span>
                           <div>
                             <p className="text-slate-500 font-medium">No groups found</p>

@@ -59,11 +59,11 @@ export function useGroups() {
   
   // Grouped query runs if we chose a grouping option
   const groupedQuery = useGroupsGrouped(
-    groupBy!,
+    groupBy as Exclude<GroupByField, null>,
     isGroupedView
   )
 
-  const groups = flatQuery.data?.items ?? []
+  const groups = useMemo(() => flatQuery.data?.items ?? [], [flatQuery.data?.items])
   const totalGroups = flatQuery.data?.total ?? 0
   const groupedData = groupedQuery.data ?? []
   const isLoading = flatQuery.isLoading || groupedQuery.isLoading

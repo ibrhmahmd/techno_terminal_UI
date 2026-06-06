@@ -24,7 +24,7 @@ export interface Group {
   id: number;
   course_id: number;
   name: string;
-  status: 'active' | 'inactive' | 'completed';
+  status: 'active' | 'inactive' | 'archived' | 'completed';
   capacity: number;
   current_level: number;
   instructor_id: number;
@@ -38,7 +38,7 @@ export interface EnrichedGroupPublic {
   name: string;
   course_name: string;
   instructor_name: string;
-  status: 'active' | 'inactive' | 'completed';
+  status: 'active' | 'inactive' | 'archived' | 'completed';
   capacity: number;
   current_level: number;
   schedule?: Schedule;

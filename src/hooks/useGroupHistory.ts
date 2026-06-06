@@ -1,8 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from './queryKeys'
 import { getEnrollmentHistory, getInstructorHistory } from '../api/academics/groups/newEndpoints'
+import type { EnrollmentHistoryResponse, InstructorHistoryResponse } from '../api/academics/groups/newEndpoints'
 
-export function useGroupHistory(groupId: number, enabled = true) {
+interface UseGroupHistoryResult {
+  enrollmentHistory: EnrollmentHistoryResponse | undefined
+  instructorHistory: InstructorHistoryResponse | undefined
+  isLoadingEnrollments: boolean
+  isLoadingInstructors: boolean
+  enrollmentError: string | null
+  instructorError: string | null
+}
+
+export function useGroupHistory(groupId: number, enabled = true): UseGroupHistoryResult {
   const {
     data: enrollmentHistory,
     isLoading: isLoadingEnrollments,

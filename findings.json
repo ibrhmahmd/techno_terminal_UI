@@ -1,74 +1,83 @@
 [
   {
     "severity": "high",
-    "risk": "moderate",
-    "file": "components/groups/LevelsTab.tsx",
-    "line": 30,
-    "finding": "`payment` parameter typed as `any` instead of the proper `PaymentDetailDTO` type. The parameter is passed from the `payments.map()` iterable which has type `PaymentDetailDTO[]`, but the handler discards type safety.",
-    "before": "const handleDownloadPdf = async (payment: any, e: React.MouseEvent) => {",
-    "after": "const handleDownloadPdf = async (payment: PaymentDetailDTO, e: React.MouseEvent) => {"
-  },
-  {
-    "severity": "high",
-    "risk": "moderate",
-    "file": "components/groups/LevelsTab.tsx",
-    "line": 55,
-    "finding": "`payment` parameter typed as `any` instead of `PaymentDetailDTO`. Same pattern as line 30.",
-    "before": "const handleSendWhatsApp = async (payment: any, e: React.MouseEvent) => {",
-    "after": "const handleSendWhatsApp = async (payment: PaymentDetailDTO, e: React.MouseEvent) => {"
-  },
-  {
-    "severity": "medium",
     "risk": "safe",
-    "file": "components/groups/HistoryTab.tsx",
-    "line": 144,
-    "finding": "`enrollmentColumns as any` used to bypass type mismatch between `DataTableColumn<EnrollmentHistoryItem>[]` and the DataTable's expected column type. Likely a generic inference issue in the DataTable component.",
-    "before": "columns={enrollmentColumns as any}",
-    "after": "columns={enrollmentColumns}"
-  },
-  {
-    "severity": "high",
-    "risk": "breaking",
-    "file": "pages/GroupsPage.tsx",
-    "line": 211,
-    "finding": "`as any` cast needed because `GroupBySelectorProps.value` is typed as `GroupByField` but the actual value passed can be `'search'` (a `GroupBySelectorValue`). The component's prop type is wrong — it should accept its own `GroupBySelectorValue` type which includes `'search'`.",
-    "before": "value={((isFiltersOpen || hasActiveFilters) && !isGroupedView ? 'search' : (groupBy ?? null)) as any}",
-    "after": "value={(isFiltersOpen || hasActiveFilters) && !isGroupedView ? 'search' : (groupBy ?? null)}"
-  },
-  {
-    "severity": "high",
-    "risk": "breaking",
-    "file": "components/groups/GroupBySelector.tsx",
-    "line": 7,
-    "finding": "`value` prop typed as `GroupByField` which excludes `'search'`. The component's `OPTIONS` includes `{ value: 'search', ... }` and `onChange` accepts `GroupBySelectorValue` (which includes `'search'`). The value prop must match the full value union to remove the `as any` in GroupsPage.tsx.",
-    "before": "  value: GroupByField",
-    "after": "  value: GroupBySelectorValue"
-  },
-  {
-    "severity": "medium",
-    "risk": "moderate",
-    "file": "hooks/useGroups.ts",
-    "line": 39,
-    "finding": "Unsafe `stored as GroupByField` cast. The stored string is validated via a Set check first, but the cast to pass `has()` erases type safety. A type predicate function would be safer.",
-    "before": "    return valid.has(stored as GroupByField) ? stored as GroupByField : undefined",
-    "after": "    return valid.has(stored as GroupByField) ? stored as GroupByField : undefined"
-  },
-  {
-    "severity": "medium",
-    "risk": "safe",
-    "file": "hooks/useGroups.ts",
-    "line": 79,
-    "finding": "`sortField as keyof EnrichedGroupPublic` — `sortField` is typed as `SortField` which already contains keys that exist on `EnrichedGroupPublic`. This cast is unnecessary and masks a potential type narrowing issue.",
-    "before": "      const aRaw = a[sortField as keyof EnrichedGroupPublic]",
-    "after": "      const aRaw = a[sortField]"
+    "file": "src/components/notifications/tabs/AdminSettingsTab.tsx",
+    "line": 107,
+    "finding": "Error toggle banner has no role=\"alert\" — screen readers won't announce dynamic error feedback. Icon span also missing aria-hidden.",
+    "before": "<div className=\"flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700\">\n  <span className=\"material-symbols-outlined text-lg\">error</span>\n  <span>{toggleError}</span>\n</div>",
+    "after": "<div className=\"flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700\" role=\"alert\">\n  <span className=\"material-symbols-outlined text-lg\" aria-hidden=\"true\">error</span>\n  <span>{toggleError}</span>\n</div>"
   },
   {
     "severity": "low",
     "risk": "safe",
-    "file": "components/groups/TabNavigation.tsx",
-    "line": 1,
-    "finding": "Dead/unused component. `TabNavigation` in `components/groups/` is not exported from the barrel file, not imported by any other file in the codebase, and is shadowed by a different `TabNavigation` in `components/reports/molecules/TabNavigation.tsx`.",
-    "before": "export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {",
-    "after": "/* Unused — consider removing */"
+    "file": "src/components/notifications/tabs/AdminSettingsTab.tsx",
+    "line": 118,
+    "finding": "Decorative Material Symbols icon spans missing aria-hidden=\"true\" (lines 118, 131, 159, 176, 190, 210). These icons provide no information beyond adjacent visible text.",
+    "before": "<span className=\"material-symbols-outlined text-secondary\">notifications</span>",
+    "after": "<span className=\"material-symbols-outlined text-secondary\" aria-hidden=\"true\">notifications</span>"
+  },
+  {
+    "severity": "critical",
+    "risk": "safe",
+    "file": "src/components/notifications/tabs/AdminSettingsTab.tsx",
+    "line": 237,
+    "finding": "Icon-only Edit button lacks aria-label — screen reader users cannot identify or activate this control.",
+    "before": "<button\n  onClick={() => {\n    setEditingRecipient(recipient)\n    setIsRecipientModalOpen(true)\n  }}\n  className=\"p-1 text-slate-400 hover:text-secondary transition-colors\"\n>\n  <span className=\"material-symbols-outlined text-lg\">edit</span>\n</button>",
+    "after": "<button\n  onClick={() => {\n    setEditingRecipient(recipient)\n    setIsRecipientModalOpen(true)\n  }}\n  className=\"p-1 text-slate-400 hover:text-secondary transition-colors\"\n  aria-label=\"Edit recipient\"\n>\n  <span className=\"material-symbols-outlined text-lg\" aria-hidden=\"true\">edit</span>\n</button>"
+  },
+  {
+    "severity": "critical",
+    "risk": "safe",
+    "file": "src/components/notifications/tabs/AdminSettingsTab.tsx",
+    "line": 246,
+    "finding": "Icon-only Delete button lacks aria-label — screen reader users cannot identify or activate this control.",
+    "before": "<button\n  onClick={() => deleteRecipient.mutate(recipient.id)}\n  className=\"p-1 text-slate-400 hover:text-red-600 transition-colors\"\n>\n  <span className=\"material-symbols-outlined text-lg\">delete</span>\n</button>",
+    "after": "<button\n  onClick={() => deleteRecipient.mutate(recipient.id)}\n  className=\"p-1 text-slate-400 hover:text-red-600 transition-colors\"\n  aria-label=\"Delete recipient\"\n>\n  <span className=\"material-symbols-outlined text-lg\" aria-hidden=\"true\">delete</span>\n</button>"
+  },
+  {
+    "severity": "low",
+    "risk": "safe",
+    "file": "src/components/notifications/tabs/BulkMessagingTab.tsx",
+    "line": 8,
+    "finding": "Decorative send icon span missing aria-hidden=\"true\" — produces meaningless screen reader announcement.",
+    "before": "<span className=\"material-symbols-outlined text-3xl text-secondary\">send</span>",
+    "after": "<span className=\"material-symbols-outlined text-3xl text-secondary\" aria-hidden=\"true\">send</span>"
+  },
+  {
+    "severity": "high",
+    "risk": "safe",
+    "file": "src/components/notifications/tabs/LogsTab.tsx",
+    "line": 139,
+    "finding": "Error state banner for failed log fetch has no role=\"alert\" — screen readers won't announce the failure.",
+    "before": "<div className=\"p-6 text-center bg-red-50 text-red-700 rounded-[6px] font-body text-sm\">\n  Failed to load dispatch history logs. Please try again.\n</div>",
+    "after": "<div className=\"p-6 text-center bg-red-50 text-red-700 rounded-[6px] font-body text-sm\" role=\"alert\">\n  Failed to load dispatch history logs. Please try again.\n</div>"
+  },
+  {
+    "severity": "low",
+    "risk": "safe",
+    "file": "src/components/notifications/tabs/LogsTab.tsx",
+    "line": 160,
+    "finding": "Decorative Material Symbols icon spans missing aria-hidden=\"true\" (lines 160, 176, 265, 298). These icons provide no unique information beyond adjacent text.",
+    "before": "<span className=\"material-symbols-outlined text-4xl mb-2 block\">history</span>",
+    "after": "<span className=\"material-symbols-outlined text-4xl mb-2 block\" aria-hidden=\"true\">history</span>"
+  },
+  {
+    "severity": "high",
+    "risk": "moderate",
+    "file": "src/components/common/MetricsStripCards.tsx",
+    "line": 57,
+    "finding": "Tablist (role=\"tablist\") lacks keyboard arrow-key navigation (ArrowLeft/ArrowRight/Home/End). Required by WAI-ARIA authoring practices for tab patterns. Fix in MetricsStripCards.tsx, consumed by NotificationsPage.",
+    "before": "<div className=\"flex flex-wrap gap-4\" role=\"tablist\">\n  {items.map((item, i) => (\n    <MetricCard key={i} {...item} isActive={i === activeIndex} />\n  ))}\n</div>",
+    "after": "<div className=\"flex flex-wrap gap-4\" role=\"tablist\" onKeyDown={handleTabKeyDown}>\n  {items.map((item, i) => (\n    <MetricCard key={i} {...item} isActive={i === activeIndex} />\n  ))}\n</div>"
+  },
+  {
+    "severity": "high",
+    "risk": "safe",
+    "file": "src/pages/NotificationsPage.tsx",
+    "line": 78,
+    "finding": "Tab content sections lack role=\"tabpanel\" and aria-labelledby association with their respective tabs. Screen readers cannot programmatically associate tab content with the activating tab control.",
+    "before": "{activeTab === 'admin' && <ErrorBoundary><AdminSettingsTab /></ErrorBoundary>}",
+    "after": "{activeTab === 'admin' && <ErrorBoundary><div role=\"tabpanel\" id=\"panel-admin\" aria-labelledby=\"tab-admin\"><AdminSettingsTab /></div></ErrorBoundary>}"
   }
 ]

@@ -173,7 +173,7 @@ export function HistoryTab({ groupId }: HistoryTabProps) {
                 <div className="flex items-start gap-3 mb-4">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-medium
                     ${instructor.is_current ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                    <span className="material-symbols-outlined">school</span>
+                    <span className="material-symbols-outlined" aria-hidden="true">school</span>
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-900">{instructor.instructor_name}</h4>

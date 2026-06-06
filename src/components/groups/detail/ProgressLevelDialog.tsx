@@ -50,7 +50,7 @@ export function ProgressLevelDialog({
     isLoadingEmployees,
     isValid,
     toApiRequest,
-  } = useProgressLevelForm(groupId)
+  } = useProgressLevelForm(groupId, undefined, isOpen)
 
   // Reset form with defaults when dialog opens
   useEffect(() => {

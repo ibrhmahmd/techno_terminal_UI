@@ -1,16 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import {
   getGroupsPaginated,
   getGroupsGrouped,
   getGroupsByCourse,
-  createGroup,
-  updateGroup,
-  deleteGroup,
   type GroupByField,
-  type ScheduleGroupInput,
   type GroupFilterOptions,
 } from '../api/academics'
-import { getUpcomingDates } from '../utils/date'
 import { queryKeys } from './queryKeys'
 
 // ── Query Keys ──────────────────────────────────────────
@@ -57,39 +52,4 @@ export function useGroupsByCourse(courseId: number, enabled: boolean = true) {
   })
 }
 
-// ── Mutations ─────────────────────────────────────────────────────────────────
 
-/** Invalidate all group caches after any mutation */
-function useGroupInvalidator() {
-  const qc = useQueryClient()
-  return () => {
-    qc.invalidateQueries({ queryKey: groupKeys.all })
-  }
-}
-
-export function useCreateGroup() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: createGroup,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: groupKeys.all })
-      const upcomingDates = getUpcomingDates(7)
-      upcomingDates.forEach(date => {
-        qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(date) })
-      })
-    },
-  })
-}
-
-export function useUpdateGroup() {
-  const invalidate = useGroupInvalidator()
-  return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ScheduleGroupInput }) => updateGroup(id, data),
-    onSuccess: invalidate,
-  })
-}
-
-export function useDeleteGroup() {
-  const invalidate = useGroupInvalidator()
-  return useMutation({ mutationFn: deleteGroup, onSuccess: invalidate })
-}

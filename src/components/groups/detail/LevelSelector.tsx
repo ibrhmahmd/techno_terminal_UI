@@ -56,7 +56,7 @@ export function LevelSelector({
               onClick={onAddLevel}
               className="flex items-center gap-1.5 px-4 py-2 ml-4 rounded-md transition-all whitespace-nowrap text-secondary hover:bg-secondary/10 font-bold border border-transparent hover:border-secondary/20"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">add</span>
               <span className="font-headline text-sm uppercase tracking-wider">Add Level</span>
             </button>
           )}

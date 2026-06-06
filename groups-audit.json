@@ -1,0 +1,65 @@
+[
+  {
+    "severity": "high",
+    "risk": "breaking",
+    "file": "src/hooks/useGroupQueries.ts",
+    "line": 87,
+    "finding": "useUpdateGroup mutation passes ScheduleGroupInput to updateGroup() which expects UpdateGroupDTO. Fields mismatch: capacity vs max_capacity, schedule vs default_day/default_time_start/default_time_end, start_date not in UpdateGroupDTO. Backend silently ignores unknown fields, so capacity and schedule edits from GroupsPage GroupForm do nothing.",
+    "before": "mutationFn: ({ id, data }: { id: number; data: ScheduleGroupInput }) => updateGroup(id, data),",
+    "after": "mutationFn: ({ id, data }: { id: number; data: UpdateGroupDTO }) => updateGroup(id, data),"
+  },
+  {
+    "severity": "medium",
+    "risk": "moderate",
+    "file": "src/api/academics/types/groups/models.ts",
+    "line": 27,
+    "finding": "Group.status and EnrichedGroupPublic.status typed as 'active' | 'inactive' | 'completed' but missing 'archived'. The archiveGroup endpoint exists, GroupStatusBadge handles 'archived', and edit/filter UIs use it. Backend may return 'archived' at runtime but TypeScript won't flag it.",
+    "before": "status: 'active' | 'inactive' | 'completed';",
+    "after": "status: 'active' | 'inactive' | 'archived' | 'completed';"
+  },
+  {
+    "severity": "low",
+    "risk": "safe",
+    "file": "src/components/groups/LevelsTab.tsx",
+    "line": 193,
+    "finding": "Local formatDate function shadows imported formatDate from '../../utils/formatting'. Both produce identical output but duplicates code and creates drift risk.",
+    "before": "const formatDate = (date: string | null | undefined) => { if (!date) return 'N/A'; return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) }",
+    "after": "Remove local definition; use imported formatDate from '../../utils/formatting'"
+  },
+  {
+    "severity": "low",
+    "risk": "safe",
+    "file": "src/hooks/useProgressLevelForm.ts",
+    "line": 80,
+    "finding": "Uses || instead of ?? for target_level default. If initialData?.target_level is 0 it silently defaults to 1. Not breaking because validation ensures > 0, but inconsistent with ?? used for other fields.",
+    "before": "target_level: initialData?.target_level || 1,",
+    "after": "target_level: initialData?.target_level ?? 1,"
+  },
+  {
+    "severity": "low",
+    "risk": "safe",
+    "file": "src/hooks/useProgressLevelForm.ts",
+    "line": 124,
+    "finding": "Same || vs ?? issue in resetForm for target_level default.",
+    "before": "target_level: defaults?.target_level || 1,",
+    "after": "target_level: defaults?.target_level ?? 1,"
+  },
+  {
+    "severity": "low",
+    "risk": "safe",
+    "file": "src/components/groups/GroupCardGrid.tsx",
+    "line": 30,
+    "finding": "childrenArray.some(Boolean) treats valid falsy React elements (null placeholder) as 'no content'. Safe here because empty map produces [] not [null], but fragile if children ever contains null items.",
+    "before": "const hasContent = childrenArray.some(Boolean)",
+    "after": "const hasContent = React.Children.count(children) > 0"
+  },
+  {
+    "severity": "low",
+    "risk": "safe",
+    "file": "src/components/groups/GroupColumns.tsx",
+    "line": 62,
+    "finding": "statusConfig includes 'archived' key unreachable per current type. If models.ts is fixed to include 'archived', this code is correct. Currently dead code.",
+    "before": "archived: { label: 'Archived', className: 'bg-amber-100 text-amber-700' },",
+    "after": "Remove if type stays unchanged; keep if models.ts is fixed"
+  }
+]

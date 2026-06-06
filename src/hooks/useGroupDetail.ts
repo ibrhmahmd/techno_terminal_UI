@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from './queryKeys'
 import {
@@ -30,7 +30,7 @@ interface UseGroupDetailReturn {
 }
 
 export function useGroupDetail(groupId: number): UseGroupDetailReturn {
-  const [activeLevelId, setActiveLevelId] = useState<number | null>(null)
+  const [userActiveLevelId, setActiveLevelId] = useState<number | null>(null)
   const qc = useQueryClient()
 
   const { data: groupData, isLoading: isLoadingGroup, error: groupError } = useQuery({
@@ -40,38 +40,35 @@ export function useGroupDetail(groupId: number): UseGroupDetailReturn {
     staleTime: 5 * 60 * 1000,
   })
 
-  const { data: levelsResponse, isLoading: isLoadingLevels } = useQuery({
+  const { data: levelsResponse, isLoading: isLoadingLevels, error: levelsError } = useQuery({
     queryKey: queryKeys.groupLevels(groupId),
     queryFn: () => getDetailedLevels(groupId),
     enabled: groupId > 0,
     staleTime: 5 * 60 * 1000,
   })
 
-  const { data: sessionsData, isLoading: isLoadingSessions } = useQuery({
+  const { data: sessionsData, isLoading: isLoadingSessions, error: sessionsError } = useQuery({
     queryKey: queryKeys.groupSessions(groupId),
     queryFn: () => listSessionsForGroup(groupId),
     enabled: groupId > 0,
     staleTime: 5 * 60 * 1000,
   })
 
-  const levels = levelsResponse?.levels ?? []
-  const coursesMap = levelsResponse?.courses ?? {}
-  const instructorsMap = levelsResponse?.instructors ?? {}
+  const levels = useMemo(() => levelsResponse?.levels ?? [], [levelsResponse])
+  const coursesMap = useMemo(() => levelsResponse?.courses ?? {}, [levelsResponse])
+  const instructorsMap = useMemo(() => levelsResponse?.instructors ?? {}, [levelsResponse])
   const sessions = sessionsData ?? []
   const isLoading = isLoadingGroup || isLoadingLevels || isLoadingSessions
-  const error = groupError instanceof Error ? groupError.message : null
+  const combinedError = [groupError, levelsError, sessionsError].find(e => e instanceof Error)
+  const error = combinedError instanceof Error ? combinedError.message : null
 
-  // Set active level to current level by default when levels load
-  useEffect(() => {
-    if (levels.length > 0 && activeLevelId === null) {
-      const current = levels.find((l) => l.status === 'active')
-      if (current) {
-        setActiveLevelId(current.level_id)
-      } else {
-        setActiveLevelId(levels[levels.length - 1].level_id)
-      }
-    }
-  }, [levels, activeLevelId, setActiveLevelId])
+  // Derive active level: user preference, or first active level, or last level
+  const activeLevelId = useMemo(() => {
+    if (userActiveLevelId !== null) return userActiveLevelId
+    if (levels.length === 0) return null
+    const current = levels.find((l) => l.status === 'active')
+    return current ? current.level_id : levels[levels.length - 1].level_id
+  }, [userActiveLevelId, levels])
 
   const currentLevel = useMemo(() => {
     return levels.find((l) => l.level_id === activeLevelId) || null

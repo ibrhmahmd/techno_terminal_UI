@@ -190,15 +190,6 @@ export function LevelsTab({
     }
   }
 
-  const formatDate = (date: string | null | undefined) => {
-    if (!date) return 'N/A'
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
-
   const getDurationString = (start?: string | null, end?: string | null) => {
     if (!start || !end) return ''
     try {
@@ -298,7 +289,7 @@ export function LevelsTab({
                       Start Date
                     </span>
                     <span className="font-headline text-sm font-extrabold text-slate-900 leading-tight block">
-                      {formatDate(selectedLevel.start_date)}
+                      {formatDate(selectedLevel.start_date) || 'N/A'}
                     </span>
                   </div>
                   <span className="text-[11px] text-slate-500 mt-1 block">Level induction</span>
@@ -312,7 +303,7 @@ export function LevelsTab({
                       End Date
                     </span>
                     <span className="font-headline text-sm font-extrabold text-slate-900 leading-tight block">
-                      {formatDate(selectedLevel.end_date)}
+                      {formatDate(selectedLevel.end_date) || 'N/A'}
                     </span>
                   </div>
                   <div>

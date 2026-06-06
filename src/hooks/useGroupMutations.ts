@@ -36,13 +36,6 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     await queryClient.invalidateQueries({ queryKey: queryKeys.groupSessions(groupId) })
   }, [queryClient, groupId])
 
-  // Extended invalidations for mutations that also affect enrollments and payments
-  const invalidateGroupsExtended = useCallback(async () => {
-    await invalidateGroups()
-    await queryClient.invalidateQueries({ queryKey: queryKeys.groupEnrollments(groupId) })
-    await queryClient.invalidateQueries({ queryKey: queryKeys.groupPayments(groupId) })
-  }, [queryClient, groupId, invalidateGroups])
-
   // Update group mutation
   const updateMutation = useMutation({
     mutationFn: async (data: UpdateGroupDTO): Promise<Group> => {
@@ -72,7 +65,7 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     mutationFn: async (): Promise<ProgressGroupLevelResult> => {
       return progressGroupLevel(groupId)
     },
-    onSuccess: invalidateGroupsExtended,
+    onSuccess: invalidateGroups,
   })
 
   // Create new level mutation (full overrides)
@@ -80,7 +73,7 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     mutationFn: async (data: ProgressGroupLevelRequest): Promise<ProgressGroupLevelResult> => {
       return progressGroupLevel(groupId, data)
     },
-    onSuccess: invalidateGroupsExtended,
+    onSuccess: invalidateGroups,
   })
 
   // Combine all pending states

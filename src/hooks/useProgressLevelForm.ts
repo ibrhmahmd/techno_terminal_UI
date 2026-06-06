@@ -44,7 +44,8 @@ export interface UseProgressLevelFormReturn {
 
 export function useProgressLevelForm(
   _groupId: number,
-  initialData?: Partial<ProgressLevelFormData>
+  initialData?: Partial<ProgressLevelFormData>,
+  enabled = true
 ): UseProgressLevelFormReturn {
   // Fetch courses for selector
   const { data: coursesData, isLoading: isLoadingCourses } = useQuery({
@@ -53,6 +54,7 @@ export function useProgressLevelForm(
       const result = await getCoursesPaginated({ skip: 0, limit: 100 })
       return result.items || []
     },
+    enabled,
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
@@ -63,6 +65,7 @@ export function useProgressLevelForm(
       const result = await getEmployees({ page: 1, page_size: 100 })
       return (result.data || []) as EmployeePublic[]
     },
+    enabled,
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 

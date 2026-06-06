@@ -67,7 +67,7 @@ export const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
       const config = statusConfig[group.status] || statusConfig.inactive
       return (
         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${config.className}`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+          <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true"></span>
           {config.label}
         </span>
       )
