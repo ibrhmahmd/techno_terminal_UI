@@ -6,7 +6,6 @@ import type {
   AdminNotificationSettingDTO,
   AdminSettingsResponse,
   AdditionalRecipientDTO,
-  UpdateAdminSettingsRequest,
   ToggleNotificationRequest,
   AddRecipientRequest,
   UpdateRecipientRequest,
@@ -21,17 +20,6 @@ const ADMIN_BASE = '/notifications/admin/settings/me'
  */
 export async function getAdminSettings(): Promise<AdminSettingsResponse> {
   const response = await client.get<{ data: AdminSettingsResponse }>(ADMIN_BASE)
-  return response.data.data
-}
-
-/**
- * Bulk update notification settings for current admin
- * PUT /api/v1/notifications/admin/settings/me
- */
-export async function updateAdminSettings(
-  request: UpdateAdminSettingsRequest
-): Promise<Record<string, boolean>> {
-  const response = await client.put<{ data: Record<string, boolean> }>(ADMIN_BASE, request)
   return response.data.data
 }
 

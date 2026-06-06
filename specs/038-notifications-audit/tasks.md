@@ -39,35 +39,35 @@
 
 ### Step 3a — Remove dead TemplatesTab component
 
-- [ ] T004 [US2] Delete unreachable component `src/components/notifications/tabs/TemplatesTab.tsx` (413 lines, zero imports)
+- [X] T004 [US2] Delete unreachable component `src/components/notifications/tabs/TemplatesTab.tsx` (413 lines, zero imports)
 
 ### Step 3b — Remove dead hooks from hook definition files
 
-- [ ] T005 [US2] Remove dead exports from `src/hooks/notifications/useAdminSettings.ts`: remove `useNotificationSetting` (line 29), `useUpdateAdminSettings` (line 40), `useToggleNotification` (line 55), `useBatchToggleNotifications` (line 71) — keep only `useAdminSettings`
-- [ ] T006 [US2] Remove dead `useToggleRecipientStatus` export from `src/hooks/notifications/useAdditionalRecipients.ts:73` — keep `useAdditionalRecipients`, `useAddRecipient`, `useUpdateRecipient`, `useDeleteRecipient`
-- [ ] T007 [US2] Delete entire file `src/hooks/notifications/useNotificationTemplates.ts` — all 5 exports (`useNotificationTemplates`, `useNotificationTemplate`, `useCreateTemplate`, `useUpdateTemplate`, `useDeleteTemplate`, `useTestTemplate`) are only consumed by dead TemplatesTab
-- [ ] T008 [US2] Remove dead exports from `src/hooks/notifications/useNotificationLogs.ts`: remove `useNotificationLog` (line 28), `useLogRecipients` (line 40), `useRetryFailed` (line 52) — keep only `useNotificationLogs`
-- [ ] T009 [US2] Delete entire file `src/hooks/notifications/useBulkMessaging.ts` — all 5 exports (`usePreviewRecipients`, `useSendBulkMessage`, `useBulkJobStatus`, `useCancelBulkJob`, `useActiveBulkJobs`) have zero consumers
+- [X] T005 [US2] Remove dead exports from `src/hooks/notifications/useAdminSettings.ts`: remove `useNotificationSetting` (line 29), `useUpdateAdminSettings` (line 40), `useToggleNotification` (line 55), `useBatchToggleNotifications` (line 71) — keep only `useAdminSettings`
+- [X] T006 [US2] Remove dead `useToggleRecipientStatus` export from `src/hooks/notifications/useAdditionalRecipients.ts:73` — keep `useAdditionalRecipients`, `useAddRecipient`, `useUpdateRecipient`, `useDeleteRecipient`
+- [X] T007 [US2] Delete entire file `src/hooks/notifications/useNotificationTemplates.ts` — all 5 exports (`useNotificationTemplates`, `useNotificationTemplate`, `useCreateTemplate`, `useUpdateTemplate`, `useDeleteTemplate`, `useTestTemplate`) are only consumed by dead TemplatesTab
+- [X] T008 [US2] Remove dead exports from `src/hooks/notifications/useNotificationLogs.ts`: remove `useNotificationLog` (line 28), `useLogRecipients` (line 40) — keep `useNotificationLogs`, `useRetryFailed`
+- [X] T009 [US2] Delete entire file `src/hooks/notifications/useBulkMessaging.ts` — all 5 exports (`usePreviewRecipients`, `useSendBulkMessage`, `useBulkJobStatus`, `useCancelBulkJob`, `useActiveBulkJobs`) have zero consumers
 
 ### Step 3c — Update barrel export
 
-- [ ] T010 [US2] Update `src/hooks/notifications/index.ts` to keep only: `notificationKeys`, `useAdminSettings`, `useAdditionalRecipients`, `useAddRecipient`, `useUpdateRecipient`, `useDeleteRecipient`, `useNotificationLogs`. Remove all dead re-exports.
+- [X] T010 [US2] Update `src/hooks/notifications/index.ts` to keep only: `notificationKeys`, `useAdminSettings`, `useAdditionalRecipients`, `useAddRecipient`, `useUpdateRecipient`, `useDeleteRecipient`, `useNotificationLogs`. Remove all dead re-exports.
 
 ### Step 3d — Remove dead API functions
 
-- [ ] T011 [P] [US2] Delete entire file `src/api/notifications/templates.ts` — all 6 functions (`getTemplates`, `getTemplate`, `createTemplate`, `updateTemplate`, `deleteTemplate`, `testTemplate`) are only consumed by dead code
-- [ ] T012 [P] [US2] Delete entire file `src/api/notifications/bulk.ts` — all 5 functions (`previewRecipients`, `sendBulkMessage`, `getJobStatus`, `cancelJob`, `getActiveJobs`) have zero consumers
-- [ ] T013 [US2] Remove dead exports from `src/api/notifications/logs.ts`: remove `getLog` (line 39), `getLogRecipients` (line 48), `retryFailed` (line 59) — keep only `getLogs`
-- [ ] T014 [P] [US2] Remove dead exports from `src/api/notifications/admin.ts`: remove `updateAdminSettings` (line 31), `getNotificationSetting` (line 42) — keep `getAdminSettings`, `toggleNotification`, `getAdditionalRecipients`, `addRecipient`, `updateRecipient`, `deleteRecipient`
+- [X] T011 [P] [US2] Delete entire file `src/api/notifications/templates.ts` — all 6 functions (`getTemplates`, `getTemplate`, `createTemplate`, `updateTemplate`, `deleteTemplate`, `testTemplate`) are only consumed by dead code
+- [X] T012 [P] [US2] Delete entire file `src/api/notifications/bulk.ts` — all 5 functions (`previewRecipients`, `sendBulkMessage`, `getJobStatus`, `cancelJob`, `getActiveJobs`) have zero consumers
+- [X] T013 [US2] Remove dead exports from `src/api/notifications/logs.ts`: remove `getLog` (line 39), `getLogRecipients` (line 48) — keep only `getLogs`, `retryFailed` (used by LogsTab)
+- [X] T014 [P] [US2] Remove dead exports from `src/api/notifications/admin.ts`: remove `updateAdminSettings` (line 31), `getNotificationSetting` (line 42) — keep `getAdminSettings`, `toggleNotification`, `getAdditionalRecipients`, `addRecipient`, `updateRecipient`, `deleteRecipient`
 
 ### Step 3e — Update API barrel
 
-- [ ] T015 [US2] Update `src/api/notifications/index.ts` — remove `export * from './templates'` and `export * from './bulk'`
+- [X] T015 [US2] Update `src/api/notifications/index.ts` — remove `export * from './templates'` and `export * from './bulk'`
 
 ### Step 3f — Remove unused types and query keys
 
-- [ ] T016 [P] [US2] Remove unused `LogStatus` type from `src/api/notifications/types.ts:123`
-- [ ] T017 [US2] Remove unused `notificationKeys.bulk.jobs()` query key factory from `src/hooks/notifications/queryKeys.ts:32`
+- [X] T016 [P] [US2] Remove unused `LogStatus` type from `src/api/notifications/types.ts:123`
+- [X] T017 [US2] Remove unused `notificationKeys.bulk.jobs()` query key factory from `src/hooks/notifications/queryKeys.ts:32`
 
 **Checkpoint**: All dead code removed. `npm run build` passes.
 
@@ -79,7 +79,7 @@
 
 **Independent Test**: `npm run build` passes with zero TS errors.
 
-- [ ] T018 [US3] Fix unsafe `as TabId` cast in `src/pages/NotificationsPage.tsx:19` — add runtime guard: `const tabFromUrl = searchParams.get('tab'); const activeTab = tabFromUrl && tabs.some(t => t.id === tabFromUrl) ? tabFromUrl as TabId : 'admin'`
+- [X] T018 [US3] Fix unsafe `as TabId` cast in `src/pages/NotificationsPage.tsx:19` — add runtime guard: `const tabFromUrl = searchParams.get('tab'); const activeTab = tabFromUrl && tabs.some(t => t.id === tabFromUrl) ? tabFromUrl as TabId : 'admin'`
 
 **Note**: Two other TS violations (`data as CreateTemplateRequest` and unused `templateId` prop) are in the now-deleted `TemplatesTab.tsx` — automatically resolved.
 
@@ -93,13 +93,13 @@
 
 **Independent Test**: Notifications page loads with only one settings API call (`GET /notifications/admin/settings/me`). Query keys are in centralized factory.
 
-- [ ] T019 [US4] Eliminate duplicate `useAdditionalRecipients` call in `src/components/notifications/tabs/AdminSettingsTab.tsx:67-68` — remove `useAdditionalRecipients()` import and call; read `settings?.additional_recipients` instead (already present in `AdminSettingsResponse`)
-- [ ] T020 [US4] Refactor the `handleToggle` function in `src/components/notifications/tabs/AdminSettingsTab.tsx:87-97` — wrap `toggleNotification` API call in `useMutation` inline or extract to a local mutation, ensuring `queryClient.invalidateQueries` is called on success and errors are surfaced via toast (remove `console.error`)
-- [ ] T021 [US4] Add `notifications` domain to centralized query keys in `src/hooks/queryKeys.ts` — add: `notifications: { admin: { all, setting }, templates: { all, detail }, logs: { list, detail, recipients }, bulk: { all, job } }`
-- [ ] T022 [US4] Update import in `src/components/notifications/tabs/AdminSettingsTab.tsx` to import `notificationKeys` from `../../hooks/queryKeys` instead of `../../hooks/notifications/queryKeys`
-- [ ] T023 [P] [US4] Update import in `src/hooks/notifications/useAdminSettings.ts` to import `notificationKeys` from `../queryKeys` instead of `./queryKeys`
-- [ ] T024 [P] [US4] Update import in `src/hooks/notifications/useNotificationLogs.ts` to import `notificationKeys` from `../queryKeys` instead of `./queryKeys`
-- [ ] T025 [US4] Delete the now-unused local `src/hooks/notifications/queryKeys.ts`
+- [X] T019 [US4] Eliminate duplicate `useAdditionalRecipients` call in `src/components/notifications/tabs/AdminSettingsTab.tsx:67-68` — remove `useAdditionalRecipients()` import and call; read `settings?.additional_recipients` instead (already present in `AdminSettingsResponse`)
+- [X] T020 [US4] Refactor the `handleToggle` function in `src/components/notifications/tabs/AdminSettingsTab.tsx:87-97` — wrap `toggleNotification` API call in `useMutation` inline or extract to a local mutation, ensuring `queryClient.invalidateQueries` is called on success and errors are surfaced via toast (remove `console.error`)
+- [X] T021 [US4] Add `notifications` domain to centralized query keys in `src/hooks/queryKeys.ts` — add: `notifications: { admin: { all, setting }, templates: { all, detail }, logs: { list, detail, recipients }, bulk: { all, job } }`
+- [X] T022 [US4] Update import in `src/components/notifications/tabs/AdminSettingsTab.tsx` to import `notificationKeys` from `../../hooks/queryKeys` instead of `../../hooks/notifications/queryKeys`
+- [X] T023 [P] [US4] Update import in `src/hooks/notifications/useAdminSettings.ts` to import `notificationKeys` from `../queryKeys` instead of `./queryKeys`
+- [X] T024 [P] [US4] Update import in `src/hooks/notifications/useNotificationLogs.ts` to import `notificationKeys` from `../queryKeys` instead of `./queryKeys`
+- [X] T025 [US4] Delete the now-unused local `src/hooks/notifications/queryKeys.ts`
 
 **Checkpoint**: Data fetching follows project conventions. No duplicate API calls.
 
@@ -111,17 +111,17 @@
 
 **Independent Test**: Navigate `/notifications` with screen reader (VoiceOver/NVDA). All buttons have distinct labels. Icons don't announce. Tab panels are announced correctly.
 
-- [ ] T026 [P] [US5] Add `aria-label` to icon-only edit button in `src/components/notifications/tabs/AdminSettingsTab.tsx:228` — add `aria-label="Edit recipient"` and `aria-hidden="true"` on icon
-- [ ] T027 [P] [US5] Add `aria-label` to icon-only delete button in `src/components/notifications/tabs/AdminSettingsTab.tsx:237` — add `aria-label="Delete recipient"` and `aria-hidden="true"` on icon
-- [ ] T028 [P] [US5] Add `aria-hidden="true"` to decorative section header icons in `src/components/notifications/tabs/AdminSettingsTab.tsx:110, 123, 167, 201`
-- [ ] T029 [P] [US5] Add `aria-hidden="true"` to decorative icon in `src/components/notifications/tabs/BulkMessagingTab.tsx:8`
-- [ ] T030 [P] [US5] Add `aria-hidden="true"` to decorative/empty-state icons in `src/components/notifications/tabs/LogsTab.tsx:158, 174, 263`
-- [ ] T031 [US5] Wire `<label htmlFor>` to `<input id>` for logs search in `src/components/notifications/tabs/LogsTab.tsx:61`
-- [ ] T032 [US5] Wire `<label htmlFor>` to `<select id>` for logs status, channel, recipient type filters in `src/components/notifications/tabs/LogsTab.tsx:74, 89, 104`
-- [ ] T033 [US5] Wire `<label htmlFor>` to `<input id>` for recipient email and label in `src/components/notifications/tabs/AdminSettingsTab.tsx:326, 338`
-- [ ] T034 [US5] Add `role="tabpanel"` and `aria-labelledby` to tab content panels in `src/pages/NotificationsPage.tsx:79` — wrap each tab condition in `<div role="tabpanel" id="panel-{id}" aria-labelledby="tab-{id}">`
-- [ ] T035 [US5] Wrap each tab panel in `<ErrorBoundary>` in `src/pages/NotificationsPage.tsx:79` — import `ErrorBoundary` from `../components/common/ErrorBoundary` and wrap `AdminSettingsTab`, `LogsTab`, `BulkMessagingTab`
-- [ ] T036 [US5] Add retry button to LogsTab error state in `src/components/notifications/tabs/LogsTab.tsx:136` — add `<button onClick={() => refetch()}>Retry</button>` inside the error div
+- [X] T026 [P] [US5] Add `aria-label` to icon-only edit button in `src/components/notifications/tabs/AdminSettingsTab.tsx:228` — add `aria-label="Edit recipient"` and `aria-hidden="true"` on icon
+- [X] T027 [P] [US5] Add `aria-label` to icon-only delete button in `src/components/notifications/tabs/AdminSettingsTab.tsx:237` — add `aria-label="Delete recipient"` and `aria-hidden="true"` on icon
+- [X] T028 [P] [US5] Add `aria-hidden="true"` to decorative section header icons in `src/components/notifications/tabs/AdminSettingsTab.tsx:110, 123, 167, 201`
+- [X] T029 [P] [US5] Add `aria-hidden="true"` to decorative icon in `src/components/notifications/tabs/BulkMessagingTab.tsx:8`
+- [X] T030 [P] [US5] Add `aria-hidden="true"` to decorative/empty-state icons in `src/components/notifications/tabs/LogsTab.tsx:158, 174, 263`
+- [X] T031 [US5] Wire `<label htmlFor>` to `<input id>` for logs search in `src/components/notifications/tabs/LogsTab.tsx:61`
+- [X] T032 [US5] Wire `<label htmlFor>` to `<select id>` for logs status, channel, recipient type filters in `src/components/notifications/tabs/LogsTab.tsx:74, 89, 104`
+- [X] T033 [US5] Wire `<label htmlFor>` to `<input id>` for recipient email and label in `src/components/notifications/tabs/AdminSettingsTab.tsx:326, 338`
+- [X] T034 [US5] Add `role="tabpanel"` and `aria-labelledby` to tab content panels in `src/pages/NotificationsPage.tsx:79` — wrap each tab condition in `<div role="tabpanel" id="panel-{id}" aria-labelledby="tab-{id}">`
+- [X] T035 [US5] Wrap each tab panel in `<ErrorBoundary>` in `src/pages/NotificationsPage.tsx:79` — import `ErrorBoundary` from `../components/common/ErrorBoundary` and wrap `AdminSettingsTab`, `LogsTab`, `BulkMessagingTab`
+- [X] T036 [US5] Add retry button to LogsTab error state in `src/components/notifications/tabs/LogsTab.tsx:136` — add `<button onClick={() => refetch()}>Retry</button>` inside the error div
 
 **Checkpoint**: Accessibility review passes. No icon-only buttons without labels. All form controls have associated labels.
 
@@ -133,10 +133,10 @@
 
 **Independent Test**: Build and lint commands succeed.
 
-- [ ] T037 Run `npm run build` and fix any compilation errors
-- [ ] T038 Run `npm run lint` and fix any lint errors
-- [ ] T039 Verify zero `console.*` statements remain in notification feature files
-- [ ] T040 Clean up any leftover imports or references to removed files
+- [X] T037 Run `npm run build` and fix any compilation errors
+- [X] T038 Run `npm run lint` and fix any lint errors
+- [X] T039 Verify zero `console.*` statements remain in notification feature files
+- [X] T040 Clean up any leftover imports or references to removed files
 
 **Checkpoint**: Feature is production-ready.
 

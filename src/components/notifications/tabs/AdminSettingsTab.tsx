@@ -2,7 +2,7 @@
 // Manage personal notification preferences and additional recipients
 
 import { useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAdminSettings, useAddRecipient, useUpdateRecipient, useDeleteRecipient } from '../../../hooks/notifications'
 import { toggleNotification } from '../../../api/notifications'
 import { queryKeys } from '../../../hooks/queryKeys'
@@ -15,7 +15,7 @@ import type { NotificationType, AdditionalRecipientDTO } from '../../../api/noti
 const NOTIFICATION_GROUPS = {
   enrollment: {
     label: 'Enrollment',
-    types: ['enrollment_created', 'enrollment_completed', 'enrollment_dropped', 'enrollment_transferred'] as NotificationType[],
+    types: ['enrollment_created', 'enrollment_dropped', 'enrollment_transferred'] as NotificationType[],
     icon: 'school',
   },
   reports: {
@@ -25,18 +25,13 @@ const NOTIFICATION_GROUPS = {
   },
   payments: {
     label: 'Payments',
-    types: ['payment_received', 'payment_reminder'] as NotificationType[],
+    types: ['payment_received'] as NotificationType[],
     icon: 'payments',
   },
   competitions: {
     label: 'Competitions',
     types: ['competition_team_registration', 'competition_fee_payment', 'competition_placement'] as NotificationType[],
     icon: 'emoji_events',
-  },
-  progression: {
-    label: 'Progression',
-    types: ['level_progression'] as NotificationType[],
-    icon: 'trending_up',
   },
   security: {
     label: 'Security & Auth',
@@ -47,12 +42,9 @@ const NOTIFICATION_GROUPS = {
 
 const TYPE_DESCRIPTIONS: Record<NotificationType, string> = {
   enrollment_created: 'When a new enrollment is created',
-  enrollment_completed: 'When an enrollment is marked complete',
   enrollment_dropped: 'When a student drops an enrollment',
   enrollment_transferred: 'When a student transfers groups',
-  level_progression: 'When a student advances to next level',
   payment_received: 'When a payment is received',
-  payment_reminder: 'Scheduled payment reminders',
   daily_report: 'Daily summary of activities',
   weekly_report: 'Weekly summary of activities',
   monthly_report: 'Monthly summary of activities',
@@ -74,6 +66,20 @@ export function AdminSettingsTab() {
   const [togglingType, setTogglingType] = useState<NotificationType | null>(null)
   const [toggleError, setToggleError] = useState<string | null>(null)
 
+  const toggleMutation = useMutation({
+    mutationFn: ({ type, enabled }: { type: NotificationType; enabled: boolean }) =>
+      toggleNotification(type, { is_enabled: enabled }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: notificationKeys.admin.all })
+    },
+    onError: (_error, variables) => {
+      setToggleError(`Failed to toggle ${variables.type.replace(/_/g, ' ')}`)
+    },
+    onSettled: () => {
+      setTogglingType(null)
+    },
+  })
+
   const isLoading = settingsLoading
 
   if (isLoading) {
@@ -84,17 +90,10 @@ export function AdminSettingsTab() {
     )
   }
 
-  const handleToggle = async (type: NotificationType, enabled: boolean) => {
+  const handleToggle = (type: NotificationType, enabled: boolean) => {
     setTogglingType(type)
     setToggleError(null)
-    try {
-      await toggleNotification(type, { is_enabled: enabled })
-      await queryClient.invalidateQueries({ queryKey: notificationKeys.admin.all })
-    } catch {
-      setToggleError(`Failed to toggle ${type.replace(/_/g, ' ')}`)
-    } finally {
-      setTogglingType(null)
-    }
+    toggleMutation.mutate({ type, enabled })
   }
 
   const recipients = settings?.additional_recipients
@@ -106,7 +105,7 @@ export function AdminSettingsTab() {
     <div className="space-y-8">
       {toggleError && (
         <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
-          <span className="material-symbols-outlined text-lg">error</span>
+          <span className="material-symbols-outlined text-lg" aria-hidden="true">error</span>
           <span>{toggleError}</span>
         </div>
       )}
@@ -115,7 +114,7 @@ export function AdminSettingsTab() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-[6px] bg-secondary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-secondary">notifications</span>
+              <span className="material-symbols-outlined text-secondary" aria-hidden="true">notifications</span>
             </div>
             <div>
               <h3 className="font-headline text-lg font-semibold text-on-surface">Personal Preferences</h3>
@@ -128,7 +127,7 @@ export function AdminSettingsTab() {
           {Object.entries(NOTIFICATION_GROUPS).map(([key, group]) => (
             <div key={key} className="pb-6 last:pb-0">
               <div className="flex items-center gap-2 mb-4">
-                <span className="material-symbols-outlined text-slate-400">{group.icon}</span>
+                <span className="material-symbols-outlined text-slate-400" aria-hidden="true">{group.icon}</span>
                 <h4 className="font-headline font-semibold text-sm text-slate-700">{group.label}</h4>
               </div>
 
@@ -173,7 +172,7 @@ export function AdminSettingsTab() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-[6px] bg-secondary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-secondary">people</span>
+              <span className="material-symbols-outlined text-secondary" aria-hidden="true">people</span>
             </div>
             <div>
               <h3 className="font-headline text-lg font-semibold text-on-surface">Additional Recipients</h3>
@@ -207,7 +206,7 @@ export function AdminSettingsTab() {
               {recipients?.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                    <span className="material-symbols-outlined text-3xl mb-1 block">inbox</span>
+                    <span className="material-symbols-outlined text-3xl mb-1 block" aria-hidden="true">inbox</span>
                     No active channels defined.
                   </td>
                 </tr>
@@ -240,14 +239,16 @@ export function AdminSettingsTab() {
                             setIsRecipientModalOpen(true)
                           }}
                           className="p-1 text-slate-400 hover:text-secondary transition-colors"
+                          aria-label="Edit recipient"
                         >
-                          <span className="material-symbols-outlined text-lg">edit</span>
+                          <span className="material-symbols-outlined text-lg" aria-hidden="true">edit</span>
                         </button>
                         <button
                           onClick={() => deleteRecipient.mutate(recipient.id)}
                           className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+                          aria-label="Delete recipient"
                         >
-                          <span className="material-symbols-outlined text-lg">delete</span>
+                          <span className="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
                         </button>
                       </div>
                     </td>
@@ -332,8 +333,9 @@ function RecipientModal({ isOpen, onClose, recipient, onSave }: RecipientModalPr
     >
       <form onSubmit={handleSubmit} className="space-y-6 font-body">
         <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Email Address *</label>
+          <label htmlFor="recipient-email" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Email Address *</label>
           <input
+            id="recipient-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -344,8 +346,9 @@ function RecipientModal({ isOpen, onClose, recipient, onSave }: RecipientModalPr
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Label (Optional)</label>
+          <label htmlFor="recipient-label" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Label (Optional)</label>
           <input
+            id="recipient-label"
             type="text"
             value={label}
             onChange={(e) => setLabel(e.target.value)}

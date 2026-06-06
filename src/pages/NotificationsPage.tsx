@@ -75,9 +75,21 @@ export function NotificationsPage() {
 
       <PageSection>
         <div className="min-h-[400px]">
-          {activeTab === 'admin' && <ErrorBoundary><AdminSettingsTab /></ErrorBoundary>}
-          {activeTab === 'logs' && <ErrorBoundary><LogsTab /></ErrorBoundary>}
-          {activeTab === 'bulk' && <ErrorBoundary><BulkMessagingTab /></ErrorBoundary>}
+          {activeTab === 'admin' && (
+            <div role="tabpanel" id="panel-admin" aria-labelledby="tab-admin">
+              <ErrorBoundary><AdminSettingsTab /></ErrorBoundary>
+            </div>
+          )}
+          {activeTab === 'logs' && (
+            <div role="tabpanel" id="panel-logs" aria-labelledby="tab-logs">
+              <ErrorBoundary><LogsTab /></ErrorBoundary>
+            </div>
+          )}
+          {activeTab === 'bulk' && (
+            <div role="tabpanel" id="panel-bulk" aria-labelledby="tab-bulk">
+              <ErrorBoundary><BulkMessagingTab /></ErrorBoundary>
+            </div>
+          )}
         </div>
       </PageSection>
     </div>

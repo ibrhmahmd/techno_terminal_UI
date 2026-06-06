@@ -5,7 +5,7 @@ export function BulkMessagingTab() {
   return (
     <div className="flex flex-col items-center justify-center py-20 gap-4" role="region" aria-label="Bulk messaging">
       <div className="w-16 h-16 rounded-[6px] bg-secondary/10 flex items-center justify-center">
-        <span className="material-symbols-outlined text-3xl text-secondary">send</span>
+        <span className="material-symbols-outlined text-3xl text-secondary" aria-hidden="true">send</span>
       </div>
       <h3 className="font-headline text-lg font-semibold text-slate-700">Bulk Messaging</h3>
       <p className="font-body text-sm text-slate-500 text-center max-w-md">
