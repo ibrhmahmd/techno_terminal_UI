@@ -15,7 +15,7 @@ import type { NotificationType, AdditionalRecipientDTO } from '../../../api/noti
 const NOTIFICATION_GROUPS = {
   enrollment: {
     label: 'Enrollment',
-    types: ['enrollment_created', 'enrollment_dropped', 'enrollment_transferred'] as NotificationType[],
+    types: ['enrollment_created', 'enrollment_completed', 'enrollment_dropped', 'enrollment_transferred', 'level_progression'] as NotificationType[],
     icon: 'school',
   },
   reports: {
@@ -25,7 +25,7 @@ const NOTIFICATION_GROUPS = {
   },
   payments: {
     label: 'Payments',
-    types: ['payment_received'] as NotificationType[],
+    types: ['payment_received', 'payment_reminder'] as NotificationType[],
     icon: 'payments',
   },
   competitions: {
@@ -42,9 +42,12 @@ const NOTIFICATION_GROUPS = {
 
 const TYPE_DESCRIPTIONS: Record<NotificationType, string> = {
   enrollment_created: 'When a new enrollment is created',
+  enrollment_completed: 'When an enrollment is marked completed',
   enrollment_dropped: 'When a student drops an enrollment',
   enrollment_transferred: 'When a student transfers groups',
+  level_progression: 'When a student progresses to the next level',
   payment_received: 'When a payment is received',
+  payment_reminder: 'When a payment reminder is sent',
   daily_report: 'Daily summary of activities',
   weekly_report: 'Weekly summary of activities',
   monthly_report: 'Monthly summary of activities',

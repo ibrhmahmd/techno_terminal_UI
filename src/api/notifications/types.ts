@@ -114,6 +114,11 @@ export interface NotificationLogFilters {
   channel?: string
   search?: string
   recipient_type?: string
+  start_date?: string
+  end_date?: string
+  template_id?: number
+  sort_by?: string
+  sort_order?: string
   limit?: number
   offset?: number
 }

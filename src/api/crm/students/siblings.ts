@@ -7,7 +7,7 @@ import type { SiblingInfo } from './types/models'
 
 // Get Student Siblings
 export async function getStudentSiblings(studentId: number): Promise<SiblingInfo[]> {
-  const response = await client.get<ApiResponse<SiblingInfo[]>>(`/students/${studentId}/siblings`)
+  const response = await client.get<ApiResponse<SiblingInfo[]>>(`/crm/students/${studentId}/siblings`)
   return response.data.data || []
 }
 

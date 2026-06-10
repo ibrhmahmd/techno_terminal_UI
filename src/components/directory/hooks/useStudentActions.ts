@@ -64,15 +64,14 @@ export function useStudentActions(
     ) => {
       setIsLoading(true)
       try {
-        const newStudent = await createStudentMutation.mutateAsync(data)
+        const newStudent = await createStudentMutation.mutateAsync({
+          ...data,
+          status,
+        })
 
         if (selectedParent) {
           await linkParentToStudent(newStudent.id, selectedParent.id)
           queryClient.invalidateQueries({ queryKey: queryKeys.directory.parents.all })
-        }
-
-        if (status !== 'active') {
-          await updateStudentStatus(newStudent.id, { status })
         }
 
         if (initialActivity && initialActivity.description) {

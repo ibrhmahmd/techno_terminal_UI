@@ -5,7 +5,7 @@ import { StatWidget } from './StatWidget'
 import { Modal } from '../common'
 import { StudentForm } from '../crm/StudentForm'
 import { useCreateStudent } from '../../hooks/useDirectory'
-import { linkParentToStudent, updateStudentStatus } from '../../api/crm'
+import { linkParentToStudent } from '../../api/crm'
 import { useToast } from '../common/Toast'
 import type { ParentListItem, CreateStudentDTO, StudentStatus } from '../../api/crm'
 import { logActivity } from '../../api/crm/students/activity'
@@ -32,14 +32,13 @@ export function QuickActionsGrid({ todaySessionCount }: QuickActionsGridProps) {
     initialActivity?: { activity_type: string; description: string }
   ) => {
     try {
-      const newStudent = await createStudentMutation.mutateAsync(data)
+      const newStudent = await createStudentMutation.mutateAsync({
+        ...data,
+        status,
+      })
 
       if (selectedParent) {
         await linkParentToStudent(newStudent.id, selectedParent.id)
-      }
-
-      if (status && status !== 'active') {
-        await updateStudentStatus(newStudent.id, { status })
       }
 
       if (initialActivity && initialActivity.description) {

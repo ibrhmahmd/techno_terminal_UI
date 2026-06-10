@@ -1,3 +1,5 @@
+import type { StudentStatus } from './models'
+
 // Input DTOs for Student API - Create/Update payloads
 
 export interface CreateStudentDTO {
@@ -7,6 +9,7 @@ export interface CreateStudentDTO {
   phone?: string | null
   parent_id?: number | null
   notes?: string | null
+  status?: StudentStatus
 }
 
 export interface UpdateStudentDTO {
@@ -57,7 +60,5 @@ export interface ParentUpdate {
   relation?: string | null
   notes?: string | null
 }
-
 // Re-export status type for use in DTOs
-import type { StudentStatus } from './models'
 export type { StudentStatus }
