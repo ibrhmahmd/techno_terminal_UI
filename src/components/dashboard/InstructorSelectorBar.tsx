@@ -24,7 +24,7 @@ export function InstructorSelectorBar({
   const sortedInstructors = [...instructors].sort()
 
   const isSelected = (name: string | null) => selectedInstructor === name
-  const allButton = { name: null, label: isMobile ? <span className="material-symbols-outlined flex items-center justify-center text-[20px]" aria-hidden="true">groups</span> : 'All Instructors' }
+  const allButton = { name: null, label: isMobile ? <span className="material-symbols-outlined flex items-center justify-center text-[20px]" aria-hidden="true">groups</span> : 'All' }
   const instructorButtons = sortedInstructors.map(name => ({ name, label: isMobile ? formatInstructorName(name) : name }))
   const allTabs = [allButton, ...instructorButtons]
 
@@ -65,7 +65,7 @@ export function InstructorSelectorBar({
                   : 'text-slate-600 hover:text-secondary hover:bg-white/70'
               } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => onSelectInstructor(name)}
-              title={name ?? 'All Instructors'}
+              title={name ?? 'All'}
             >
               {name === null ? allButton.label : (isMobile ? formatInstructorName(name) : name)}
             </button>

@@ -55,7 +55,7 @@ scheduleItems.map((item, index) => {
 ### 2.1 Feature Requirements
 - **InstructorSelectorBar**: Horizontal selector similar to DaySelectorBar
 - **Filter Logic**: Frontend-only filtering on existing `enrichedGroups`
-- **UX**: "All Instructors" + individual instructor names
+- **UX**: "All" + individual instructor names
 - **State**: New `selectedInstructor` state, null = show all
 - **Reset**: Clear instructor filter when date changes
 
@@ -79,7 +79,7 @@ scheduleItems.map((item, index) => {
 ```typescript
 interface InstructorSelectorBarProps {
   instructors: string[]        // Unique instructor names from enrichedGroups
-  selectedInstructor: string | null  // null = "All Instructors"
+  selectedInstructor: string | null  // null = "All"
   onSelectInstructor: (instructor: string | null) => void
   disabled?: boolean          // Disable during loading
 }
@@ -87,7 +87,7 @@ interface InstructorSelectorBarProps {
 
 **Design Spec:**
 - Same styling as DaySelectorBar (bg-slate-100, rounded-lg, p-1)
-- First button: "All Instructors" 
+- First button: "All" 
 - Subsequent buttons: Unique instructor names sorted alphabetically
 - Active state: bg-white, text-secondary, shadow-sm, font-bold
 - Inactive state: text-slate-500, hover:text-secondary
@@ -101,14 +101,14 @@ export function InstructorSelectorBar({
   onSelectInstructor,
   disabled = false
 }: InstructorSelectorBarProps) {
-  const allInstructors = ['All Instructors', ...instructors.sort()]
+  const allInstructors = ['All', ...instructors.sort()]
   
   return (
     <section className="w-full pb-6">
       <div className="overflow-x-auto">
         <div className="flex min-w-[300px] items-center gap-1 rounded-lg bg-slate-100 p-1">
           {allInstructors.map((name) => {
-            const isAll = name === 'All Instructors'
+            const isAll = name === 'All'
             const isSelected = isAll 
               ? selectedInstructor === null 
               : selectedInstructor === name
@@ -245,7 +245,7 @@ interface QuickActionsGridProps {
 | Empty filter result | Show "No groups for this instructor" message |
 | Very long instructor name | Use `whitespace-nowrap` + `max-width` with truncate |
 | 10+ instructors | Keep horizontal scroll behavior from DaySelectorBar |
-| Date change with active filter | Reset to "All Instructors" automatically |
+| Date change with active filter | Reset to "All" automatically |
 
 ---
 

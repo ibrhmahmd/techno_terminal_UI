@@ -1,0 +1,74 @@
+[
+  {
+    "severity": "critical",
+    "risk": "breaking",
+    "file": "src/components/enrollments/DropEnrollmentPanel.tsx",
+    "line": 48,
+    "finding": "Manual useEffect+useState fetch instead of React Query hook — bypasses caching, deduplication, staleTime, cache invalidation, and retry logic. Groups are fetched via raw API call and stored in local state, so mutations on other pages (create/update/delete group) never refresh this panel's data.",
+    "before": "const [allGroups, setAllGroups] = useState<EnrichedGroupPublic[]>([])\nconst [groupsLoading, setGroupsLoading] = useState(false)\n\nuseEffect(() => {\n  async function fetchGroups() {\n    setGroupsLoading(true)\n    try {\n      const data = await getEnrichedGroups()\n      setAllGroups(data || [])\n    } catch {\n      setAllGroups([])\n    } finally {\n      setGroupsLoading(false)\n    }\n  }\n  fetchGroups()\n}, [])",
+    "after": "// Replace with React Query hook:\nconst { data: allGroups = [], isLoading: groupsLoading } = useGroupsFlat(\n  { limit: 200 },\n  true\n)"
+  },
+  {
+    "severity": "medium",
+    "risk": "moderate",
+    "file": "src/hooks/useGroupQueries.ts",
+    "line": 27,
+    "finding": "staleTime overridden to 10 min (10 * 60 * 1000) instead of project default 5 min. Users may see stale group data for up to 10 minutes after mutations.",
+    "before": "staleTime: 10 * 60 * 1000,",
+    "after": "staleTime: 5 * 60 * 1000,"
+  },
+  {
+    "severity": "medium",
+    "risk": "safe",
+    "file": "src/api/academics/groups/core.ts",
+    "line": 80,
+    "finding": "Dead export: `getGroups()` is never imported by any consumer. All callers use `getGroupsPaginated`, `getGroupsGrouped`, or `getGroupsByCourse` instead. Adds maintenance burden.",
+    "before": "export async function getGroups(): Promise<EnrichedGroupPublic[]> { ... }",
+    "after": "// Remove function and its barrel export"
+  },
+  {
+    "severity": "medium",
+    "risk": "safe",
+    "file": "src/api/academics/groups/core.ts",
+    "line": 160,
+    "finding": "Dead export: `searchGroups()` is never imported by any consumer. All filtering is done via `getGroupsPaginated` with `GroupFilterOptions.q`.",
+    "before": "export async function searchGroups(...) { ... }",
+    "after": "// Remove function and its barrel export"
+  },
+  {
+    "severity": "medium",
+    "risk": "safe",
+    "file": "src/api/academics/groups/core.ts",
+    "line": 179,
+    "finding": "Dead export: `getArchivedGroups()` is never imported by any consumer. Filtering archived groups can be done via `getGroupsPaginated({ status: 'archived' })`.",
+    "before": "export async function getArchivedGroups(...) { ... }",
+    "after": "// Remove function and its barrel export"
+  },
+  {
+    "severity": "medium",
+    "risk": "moderate",
+    "file": "src/api/academics/groups/core.ts",
+    "line": 80,
+    "finding": "Duplicated endpoint logic: 6 functions (`getGroups`, `getGroupsPaginated`, `getEnrichedGroups`, `searchGroups`, `getArchivedGroups`, `getGroupsByCourse`) all call `GET /academics/groups/filter` with overlapping parameter serialization. Changes to endpoint or params must be replicated across every function.",
+    "before": "6 separate functions each calling `/academics/groups/filter` with duplicated paramsSerializer logic",
+    "after": "Consolidate into a single `getGroupsPaginated`; wrap with default-parameter convenience fns if needed"
+  },
+  {
+    "severity": "low",
+    "risk": "safe",
+    "file": "src/hooks/useGroupQueries.ts",
+    "line": 13,
+    "finding": "Unnecessary `groupKeys` wrapper around `queryKeys` factory functions. Adds indirection and could diverge from centralized keys. Prefer using `queryKeys` directly.",
+    "before": "export const groupKeys = {\n  all:     queryKeys.groups,\n  flat:    queryKeys.groupFlat,\n  grouped: queryKeys.groupGrouped,\n  byCourse: queryKeys.groupByCourse,\n}",
+    "after": "// Remove groupKeys; use queryKeys.groupFlat(filters), queryKeys.groupGrouped(by), etc. directly"
+  },
+  {
+    "severity": "low",
+    "risk": "safe",
+    "file": "src/components/enrollments/DropEnrollmentPanel.tsx",
+    "line": 54,
+    "finding": "Silent error swallowing: `getEnrichedGroups()` catch block sets empty array but provides no user feedback (no toast, no error state). If the API fails, the group combobox shows nothing with no explanation.",
+    "before": "} catch {\n  setAllGroups([])\n}",
+    "after": "} catch (err) {\n  setAllGroups([])\n  showToast?.('Failed to load groups', 'error')\n}"
+  }
+]
