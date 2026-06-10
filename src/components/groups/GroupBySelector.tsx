@@ -19,19 +19,22 @@ const OPTIONS: Array<{ value: GroupBySelectorValue; label: string; icon: string 
 
 export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorProps) {
   const handleKeyDown = (index: number) => (e: React.KeyboardEvent) => {
+    if (OPTIONS.length === 0) return
     let next = index
     if (e.key === 'ArrowRight') next = (index + 1) % OPTIONS.length
     else if (e.key === 'ArrowLeft') next = (index - 1 + OPTIONS.length) % OPTIONS.length
     else if (e.key === 'Home') next = 0
     else if (e.key === 'End') next = OPTIONS.length - 1
     else return
+    const option = OPTIONS[next]
+    if (!option) return
     e.preventDefault()
-    onChange(OPTIONS[next].value)
+    onChange(option.value)
   }
 
   return (
     <section className="w-full">
-      <div className="flex w-full items-stretch gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1" role="tablist" aria-label="Group by">
+      <div className="flex w-full items-stretch gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1" role="radiogroup" aria-label="Group by">
         {OPTIONS.map(({ value: optVal, label, icon }, index) => {
           const isActive = value === optVal
           const isSearch = optVal === 'search'
@@ -44,8 +47,8 @@ export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorP
               <button
                 onClick={() => onChange(optVal)}
                 onKeyDown={handleKeyDown(index)}
-                role="tab"
-                aria-selected={isActive}
+                role="radio"
+                aria-checked={isActive}
                 className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all focus-visible:ring-2 focus-visible:ring-secondary/30 focus-visible:outline-none ${
                   isActive
                     ? isSearch

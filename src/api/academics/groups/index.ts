@@ -14,8 +14,6 @@
 
 // Core router functions
 export {
-  getGroupDetails,
-  getGroups,
   getGroupsPaginated,
   getEnrichedGroups,
   getEnrichedGroup,
@@ -26,8 +24,6 @@ export {
   progressGroupLevel,
   listSessionsForGroup,
   getGroupsGrouped,
-  searchGroups,
-  getArchivedGroups,
   getGroupsByCourse,
   type GroupFilterOptions,
 } from './core';

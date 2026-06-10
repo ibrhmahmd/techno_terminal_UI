@@ -58,14 +58,6 @@ function normalizeEnrichedGroup(raw: RawEnrichedGroupPublic): EnrichedGroupPubli
   };
 }
 
-// get group details by ID
-export async function getGroupDetails(groupId: number): Promise<Group> {
-  const response = await client.get<ApiResponse<Group>>(
-    `/academics/groups/${groupId}`,
-  );
-  return response.data.data;
-}
-
 // get enriched group by ID
 export async function getEnrichedGroup(
   groupId: number,
@@ -74,15 +66,6 @@ export async function getEnrichedGroup(
     `/academics/groups/${groupId}/enriched`,
   );
   return normalizeEnrichedGroup(response.data.data);
-}
-
-// get all active groups (flat list, no pagination)
-export async function getGroups(): Promise<EnrichedGroupPublic[]> {
-  const response = await client.get<ApiResponse<GroupFilterResult>>(
-    '/academics/groups/filter',
-    { params: { limit: 200 } },
-  );
-  return (response.data.data?.groups || []).map(normalizeEnrichedGroup);
 }
 
 // get groups paginated
@@ -154,45 +137,6 @@ export async function getEnrichedGroups(options?: GroupFilterOptions): Promise<E
     },
   );
   return (response.data.data?.groups || []).map(normalizeEnrichedGroup);
-}
-
-// search groups by name across all statuses
-export async function searchGroups(
-  query: string,
-  status?: 'active' | 'inactive' | 'completed',
-): Promise<EnrichedGroupPublic[]> {
-  const params: Record<string, string | boolean> = { q: query };
-  if (status) {
-    params.status = status;
-  } else {
-    // Without an explicit status filter, search across all statuses
-    params.include_inactive = true;
-  }
-  const response = await client.get<ApiResponse<GroupFilterResult>>(
-    '/academics/groups/filter',
-    { params },
-  );
-  return (response.data.data?.groups || []).map(normalizeEnrichedGroup);
-}
-
-// get archived groups (paginated)
-export async function getArchivedGroups(
-  params: PaginationParams = {},
-): Promise<PaginationResult<EnrichedGroupPublic>> {
-  const { skip = 0, limit = 50 } = params;
-  const cappedLimit = Math.min(limit, 100);
-  const response = await client.get<ApiResponse<GroupFilterResult>>(
-    '/academics/groups/filter',
-    { params: { status: 'archived', skip, limit: cappedLimit } },
-  );
-  const result = response.data.data;
-  const items = (result?.groups || []).map(normalizeEnrichedGroup);
-  const total = result?.total || 0;
-  return {
-    items,
-    total,
-    hasMore: total > skip + items.length,
-  };
 }
 
 // get groups for a specific course

@@ -58,13 +58,13 @@ export const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
     key: 'status',
     header: 'Status',
     cell: (group) => {
-      const statusConfig = {
+      const statusConfig: Record<string, { label: string; className: string }> = {
         active: { label: 'Active', className: 'bg-green-100 text-green-700' },
         inactive: { label: 'Inactive', className: 'bg-slate-100 text-slate-600' },
         archived: { label: 'Archived', className: 'bg-amber-100 text-amber-700' },
         completed: { label: 'Completed', className: 'bg-blue-100 text-blue-700' },
       }
-      const config = statusConfig[group.status] || statusConfig.inactive
+      const config = statusConfig[group.status] ?? { label: 'Unknown', className: 'bg-gray-100 text-gray-600' }
       return (
         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${config.className}`}>
           <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true"></span>

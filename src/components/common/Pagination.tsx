@@ -40,6 +40,7 @@ export function Pagination({
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
             disabled={loading}
+            aria-label="Page size"
             className="px-2 py-1 text-sm border border-slate-200 rounded bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary disabled:opacity-50"
           >
             {pageSizeOptions.map((opt) => (
@@ -55,18 +56,20 @@ export function Pagination({
         <button
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1 || loading}
+          aria-label="First Page"
           className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           title="First Page"
         >
-          <span className="material-symbols-outlined text-[18px]">first_page</span>
+          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">first_page</span>
         </button>
         <button
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1 || loading}
+          aria-label="Previous Page"
           className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           title="Previous Page"
         >
-          <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">chevron_left</span>
         </button>
 
         {pageNumbers.map((pageNum) => (
@@ -74,6 +77,7 @@ export function Pagination({
             key={pageNum}
             onClick={() => onPageChange(pageNum)}
             disabled={loading}
+            aria-current={currentPage === pageNum ? 'page' : undefined}
             className={`w-8 cursor-pointer h-8 text-sm font-medium rounded transition-colors ${
               currentPage === pageNum
                 ? 'bg-secondary text-white shadow-sm'
@@ -87,18 +91,20 @@ export function Pagination({
         <button
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages || loading}
+          aria-label="Next Page"
           className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           title="Next Page"
         >
-          <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">chevron_right</span>
         </button>
         <button
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages || loading}
+          aria-label="Last Page"
           className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           title="Last Page"
         >
-          <span className="material-symbols-outlined text-[18px]">last_page</span>
+          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">last_page</span>
         </button>
       </div>
 

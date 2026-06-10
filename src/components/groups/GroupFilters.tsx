@@ -88,7 +88,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
       case 'instructor': return tempInstructors.length
       case 'level': return tempLevels.length
       case 'day': return tempDays.length
-      case 'status': return tempStatuses.filter(s => s !== 'active').length
+      case 'status': return tempStatuses.length
       default: return 0
     }
   }
@@ -112,7 +112,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
   }
 
   return (
-    <div className="bg-white/95 backdrop-blur-sm border-b border-blue-100 px-4 sm:px-6 lg:px-8 py-3 animate-in slide-in-from-top-2">
+    <div role="region" aria-label="Filter groups" className="bg-white/95 backdrop-blur-sm border-b border-blue-100 px-4 sm:px-6 lg:px-8 py-3 animate-in slide-in-from-top-2">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Filter Groups</h3>
         <button
@@ -154,7 +154,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
       </div>
 
       {expandedCategory && (
-        <div className="bg-white rounded-lg p-3 border border-blue-100 mb-3">
+        <div className="bg-white rounded-lg p-3 border border-blue-100 mb-3" aria-live="polite">
           {expandedCategory === 'course' && (
             <div>
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2 text-center">Course</span>

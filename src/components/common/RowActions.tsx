@@ -98,9 +98,9 @@ export function RowActions({
           className={`p-1.5 rounded transition-colors ${getVariantClasses(action.variant || 'default')}`}
         >
           {isLucideIcon(action.icon) ? (
-            <action.icon className="w-4 h-4" />
+            <action.icon className="w-4 h-4" aria-hidden="true" />
           ) : (
-            <span className="material-symbols-outlined text-lg">{action.icon}</span>
+            <span className="material-symbols-outlined text-lg" aria-hidden="true">{action.icon}</span>
           )}
         </button>
       ))}

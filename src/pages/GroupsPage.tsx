@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DataTable, PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialog } from '../components/common'
 
+import { isAxiosError } from 'axios'
 import { useToast } from '../components/common/Toast'
 import { GroupForm } from '../components/groups/GroupForm'
 import { type EnrichedGroupPublic, type ScheduleGroupInput } from '../api/academics'
@@ -187,9 +188,7 @@ export function GroupsPage() {
       await createGroupMutation.mutateAsync(data)
       setIsCreateModalOpen(false)
     } catch (err: unknown) {
-      const detail = err instanceof Error && 'response' in err
-        ? (err as { response?: { data?: { detail?: unknown } } }).response?.data?.detail
-        : undefined
+      const detail = isAxiosError(err) ? err.response?.data?.detail : undefined
       let errorMsg = 'Failed to create group.'
       
       if (Array.isArray(detail)) {
@@ -239,7 +238,7 @@ export function GroupsPage() {
       />
 
       <PageSection>
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center gap-4 mb-4 flex-wrap">
           <div className="flex-1 min-w-0">
             <GroupBySelector
               value={(isFiltersOpen || hasActiveFilters) && !isGroupedView ? 'search' : (groupBy ?? null)}
@@ -249,19 +248,19 @@ export function GroupsPage() {
                   setIsFiltersOpen(prev => !prev)
                   if (groupBy !== null) {
                     setGroupBy(null)
+                    setActiveCategoryKey(null)
                   }
                 } else if (field === null) {
                   // "All" view: switch to flat view, close filters, clear filters
                   setGroupBy(null)
+                  setActiveCategoryKey(null)
                   setIsFiltersOpen(false)
                   handleClearAllFilters()
                 } else {
                   // Grouped view: switch to grouped view, close filters
                   setGroupBy(field)
+                  setActiveCategoryKey(null)
                   setIsFiltersOpen(false)
-                  // Optional: handleClearAllFilters() here if we want to reset filters 
-                  // when leaving search view, but preserving them is often better UX 
-                  // so they can return to "Filter Groups" and see their filters.
                 }
                 setCurrentPage(1)
               }}
@@ -283,7 +282,6 @@ export function GroupsPage() {
           onClearAllFilters={handleClearAllFilters}
         />
 
-        <ErrorBoundary>
           {error && !isLoading && (
             <div role="alert" className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-center">{error}</div>
           )}
@@ -298,7 +296,7 @@ export function GroupsPage() {
           )}
 
           {groupBy !== undefined && !error && (
-            <>
+            <div aria-live="polite">
               {mutationError && (
                 <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 flex items-center gap-2">
                   <span className="material-symbols-outlined text-lg" aria-hidden="true">error</span>
@@ -306,20 +304,42 @@ export function GroupsPage() {
                 </div>
               )}
               {viewMode === 'cards' ? (
-                isGroupedView ? (
-                  <>
-                    <GroupCategoryTabs
-                      categories={groupedData.map(g => ({ key: g.key, label: g.label, count: g.count }))}
-                      activeKey={activeCategoryKey ?? groupedData[0]?.key ?? ''}
-                      onChange={setActiveCategoryKey}
-                    />
-                    <div role="tabpanel" id={`panel-${activeCategoryKey ?? groupedData[0]?.key ?? ''}`} aria-labelledby={`tab-${activeCategoryKey ?? groupedData[0]?.key ?? ''}`}>
+                <ErrorBoundary>
+                  {isGroupedView ? (
+                    <>
+                      <GroupCategoryTabs
+                        categories={groupedData.map(g => ({ key: g.key, label: g.label, count: g.count }))}
+                        activeKey={activeCategoryKey ?? groupedData[0]?.key ?? ''}
+                        onChange={setActiveCategoryKey}
+                      />
+                      <div role="tabpanel" id={`panel-${activeCategoryKey ?? groupedData[0]?.key ?? ''}`} aria-labelledby={`tab-${activeCategoryKey ?? groupedData[0]?.key ?? ''}`}>
+                        <GroupCardGrid
+                          isLoading={isLoading}
+                          emptyMessage="No groups matched your selection"
+                          emptyIcon="grid_view"
+                        >
+                          {(groupedData.find(g => g.key === (activeCategoryKey ?? groupedData[0]?.key))?.groups ?? []).map((g) => (
+                            <GroupCard
+                              key={g.id}
+                              group={g}
+                              actions={{
+                                onView: () => handleView(g.id),
+                                onEdit: () => handleEdit(g),
+                                onDelete: () => handleDeleteClick(g.id),
+                              }}
+                            />
+                          ))}
+                        </GroupCardGrid>
+                      </div>
+                    </>
+                  ) : (
+                    <>
                       <GroupCardGrid
                         isLoading={isLoading}
                         emptyMessage="No groups matched your selection"
                         emptyIcon="grid_view"
                       >
-                        {(groupedData.find(g => g.key === (activeCategoryKey ?? groupedData[0]?.key))?.groups ?? []).map((g) => (
+                        {isLoading ? null : paginatedGroups.map((g) => (
                           <GroupCard
                             key={g.id}
                             group={g}
@@ -331,49 +351,29 @@ export function GroupsPage() {
                           />
                         ))}
                       </GroupCardGrid>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <GroupCardGrid
-                      isLoading={isLoading}
-                      emptyMessage="No groups matched your selection"
-                      emptyIcon="grid_view"
-                    >
-                      {isLoading ? null : paginatedGroups.map((g) => (
-                        <GroupCard
-                          key={g.id}
-                          group={g}
-                          actions={{
-                            onView: () => handleView(g.id),
-                            onEdit: () => handleEdit(g),
-                            onDelete: () => handleDeleteClick(g.id),
-                          }}
-                        />
-                      ))}
-                    </GroupCardGrid>
-                    {totalPages > 0 && paginatedGroups.length > 0 && (
-                      <div className="mt-6 pt-4 border-t border-slate-200 flex flex-col items-center">
-                        <Pagination
-                          currentPage={currentPage}
-                          totalPages={totalPages}
-                          pageSize={pageSize}
-                          onPageSizeChange={(newSize) => {
-                            setPageSize(newSize)
-                            setCurrentPage(1)
-                          }}
-                          onPageChange={setCurrentPage}
-                          pageSizeOptions={[10, 20, 50, 100]}
-                          showTotalInfo={true}
-                          loading={isLoading}
-                          totalRecords={totalGroups}
-                        />
-                      </div>
-                    )}
-                  </>
-                )
+                      {totalPages > 0 && paginatedGroups.length > 0 && (
+                        <div className="mt-6 pt-4 border-t border-slate-200 flex flex-col items-center">
+                          <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            pageSize={pageSize}
+                            onPageSizeChange={(newSize) => {
+                              setPageSize(newSize)
+                              setCurrentPage(1)
+                            }}
+                            onPageChange={setCurrentPage}
+                            pageSizeOptions={[10, 20, 50, 100]}
+                            showTotalInfo={true}
+                            loading={isLoading}
+                            totalRecords={totalGroups}
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </ErrorBoundary>
               ) : (
-                <>
+                <ErrorBoundary>
                   {isLoading && (
                     <div className="flex items-center justify-center py-20"><LoadingSpinner /></div>
                   )}
@@ -454,11 +454,10 @@ export function GroupsPage() {
                       )}
                     </>
                   )}
-                </>
+                </ErrorBoundary>
               )}
-            </>
+            </div>
           )}
-        </ErrorBoundary>
       </PageSection>
 
       {/* Create Modal */}

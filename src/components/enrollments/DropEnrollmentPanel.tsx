@@ -5,7 +5,7 @@ import { StudentCombobox, GroupCombobox } from '../common/combobox'
 import { transferEnrollment, deleteEnrollment } from '../../api/enrollments'
 import { useStudentEnrollments } from '../../hooks/finance/useStudentEnrollments'
 import { useStudentsSearch } from '../../hooks/useDirectory'
-import { getEnrichedGroups } from '../../api/academics'
+import { useGroupsFlat } from '../../hooks/useGroupQueries'
 import type { StudentListItem } from '../../api/crm'
 import type { EnrichedGroupPublic } from '../../api/academics'
 import type { StudentEnrollmentInfo } from '../../hooks/finance/useStudentEnrollments'
@@ -39,26 +39,10 @@ export function DropEnrollmentPanel({ isLoading, setIsLoading }: DropEnrollmentP
   // Transfer state
   const [groupSearch, setGroupSearch] = useState('')
   const [destinationGroup, setDestinationGroup] = useState<EnrichedGroupPublic | null>(null)
-  const [allGroups, setAllGroups] = useState<EnrichedGroupPublic[]>([])
-  const [groupsLoading, setGroupsLoading] = useState(false)
+  const { data: allGroupsData, isLoading: groupsLoading } = useGroupsFlat(undefined, true)
 
   // Drop state
   const [dropNotes, setDropNotes] = useState('')
-
-  useEffect(() => {
-    async function fetchGroups() {
-      setGroupsLoading(true)
-      try {
-        const data = await getEnrichedGroups()
-        setAllGroups(data || [])
-      } catch {
-        setAllGroups([])
-      } finally {
-        setGroupsLoading(false)
-      }
-    }
-    fetchGroups()
-  }, [])
 
   // Auto-select if only one enrollment
   useEffect(() => {
@@ -271,7 +255,7 @@ export function DropEnrollmentPanel({ isLoading, setIsLoading }: DropEnrollmentP
                       setSearch={setGroupSearch}
                       isLoading={groupsLoading}
                       recentGroupIds={[]}
-                      groups={allGroups.filter(g => g.id !== selectedEnrollment.group_id)}
+                      groups={(allGroupsData?.items ?? []).filter(g => g.id !== selectedEnrollment.group_id)}
                     />
                   </div>
                   <button

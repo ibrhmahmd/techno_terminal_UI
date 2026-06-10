@@ -10,7 +10,7 @@ import { queryKeys } from './queryKeys'
 
 // ── Query Keys ──────────────────────────────────────────
 
-export const groupKeys = {
+const groupKeys = {
   all:     queryKeys.groups,
   flat:    queryKeys.groupFlat,
   grouped: queryKeys.groupGrouped,
@@ -24,7 +24,7 @@ export function useGroupsFlat(filters: GroupFilterOptions | undefined, enabled: 
   return useQuery({
     queryKey: groupKeys.flat(filters),
     queryFn: () => getGroupsPaginated(filters),
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
     enabled,
   })
 }

@@ -1,10 +1,17 @@
 import { useState, useMemo } from 'react'
 import { useGroupsFlat, useGroupsGrouped } from './useGroupQueries'
 import {
-  type EnrichedGroupPublic,
   type GroupByField,
   type GroupFilterOptions,
 } from '../api/academics'
+
+function isGroupByField(value: string | null): value is GroupByField {
+  return value === null
+    || value === 'day'
+    || value === 'course'
+    || value === 'instructor'
+    || value === 'status'
+}
 
 export type SortField = 'name' | 'course_name' | 'instructor_name' | 'current_student_count'
 export type SortDirection = 'asc' | 'desc'
@@ -35,8 +42,7 @@ export function useGroups() {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored === null) return undefined
     if (stored === 'null') return null
-    const valid = new Set<GroupByField>(['day', 'course', 'instructor', 'status', null])
-    return valid.has(stored as GroupByField) ? stored as GroupByField : undefined
+    return isGroupByField(stored) ? stored : undefined
   })
   
   const isAllView = groupBy === null
@@ -64,8 +70,10 @@ export function useGroups() {
   )
 
   const groups = useMemo(() => flatQuery.data?.items ?? [], [flatQuery.data?.items])
-  const totalGroups = flatQuery.data?.total ?? 0
   const groupedData = groupedQuery.data ?? []
+  const totalGroups = isGroupedView
+    ? groupedData.reduce((sum, cat) => sum + cat.count, 0)
+    : (flatQuery.data?.total ?? 0)
   const isLoading = flatQuery.isLoading || groupedQuery.isLoading
   const error = flatQuery.error?.message || groupedQuery.error?.message || null
 
@@ -76,8 +84,8 @@ export function useGroups() {
 
   const paginatedGroups = useMemo(() => {
     return [...groups].sort((a, b) => {
-      const aRaw = a[sortField as keyof EnrichedGroupPublic]
-      const bRaw = b[sortField as keyof EnrichedGroupPublic]
+      const aRaw = a[sortField]
+      const bRaw = b[sortField]
 
       const aValue = sortField === 'current_student_count' ? Number(aRaw) : aRaw
       const bValue = sortField === 'current_student_count' ? Number(bRaw) : bRaw
@@ -110,13 +118,13 @@ export function useGroups() {
   }
 
   // Expose filter setters
-  const filters = {
+  const filters = useMemo(() => ({
     selectedCourses, setSelectedCourses,
     selectedInstructors, setSelectedInstructors,
     selectedDays, setSelectedDays,
     selectedLevels, setSelectedLevels,
     selectedStatuses, setSelectedStatuses,
-  }
+  }), [selectedCourses, selectedInstructors, selectedDays, selectedLevels, selectedStatuses])
 
   return {
     groups,
