@@ -55,6 +55,14 @@ function OptionPill({ selected, onClick, children }: { selected: boolean; onClic
 
 export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTags, onRemoveFilter, onClearAllFilters }: GroupFiltersProps) {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+
+  // Local temp state — initialized from committed filter values on mount (sync ensured by GroupsPage `key` prop)
+  const [tempCourses, setTempCourses] = useState<number[]>(filters.selectedCourses)
+  const [tempInstructors, setTempInstructors] = useState<number[]>(filters.selectedInstructors)
+  const [tempDays, setTempDays] = useState<string[]>(filters.selectedDays)
+  const [tempLevels, setTempLevels] = useState<number[]>(filters.selectedLevels)
+  const [tempStatuses, setTempStatuses] = useState<string[]>(filters.selectedStatuses)
+
   const { courses } = useCourses()
   const { data: staffData } = useEmployees('', 1, 100)
   const staff = staffData?.items || []
@@ -76,26 +84,31 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
 
   const getFilterCount = (categoryId: string): number => {
     switch (categoryId) {
-      case 'course': return filters.selectedCourses.length
-      case 'instructor': return filters.selectedInstructors.length
-      case 'level': return filters.selectedLevels.length
-      case 'day': return filters.selectedDays.length
-      case 'status': return filters.selectedStatuses.filter(s => s !== 'active').length
+      case 'course': return tempCourses.length
+      case 'instructor': return tempInstructors.length
+      case 'level': return tempLevels.length
+      case 'day': return tempDays.length
+      case 'status': return tempStatuses.filter(s => s !== 'active').length
       default: return 0
     }
   }
 
   const handleApply = () => {
+    filters.setSelectedCourses(tempCourses)
+    filters.setSelectedInstructors(tempInstructors)
+    filters.setSelectedDays(tempDays)
+    filters.setSelectedLevels(tempLevels)
+    filters.setSelectedStatuses(tempStatuses)
     onApply?.()
     onClose()
   }
 
   const handleReset = () => {
-    filters.setSelectedCourses([])
-    filters.setSelectedInstructors([])
-    filters.setSelectedDays([])
-    filters.setSelectedLevels([])
-    filters.setSelectedStatuses(['active'])
+    setTempCourses(filters.selectedCourses)
+    setTempInstructors(filters.selectedInstructors)
+    setTempDays(filters.selectedDays)
+    setTempLevels(filters.selectedLevels)
+    setTempStatuses(filters.selectedStatuses)
   }
 
   return (
@@ -149,12 +162,12 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
                 {sortedCourses.map(course => (
                   <OptionPill
                     key={course.id}
-                    selected={filters.selectedCourses.includes(course.id)}
+                    selected={tempCourses.includes(course.id)}
                     onClick={() => {
-                      const newIds = filters.selectedCourses.includes(course.id)
-                        ? filters.selectedCourses.filter(id => id !== course.id)
-                        : [...filters.selectedCourses, course.id]
-                      filters.setSelectedCourses(newIds)
+                      const newIds = tempCourses.includes(course.id)
+                        ? tempCourses.filter(id => id !== course.id)
+                        : [...tempCourses, course.id]
+                      setTempCourses(newIds)
                     }}
                   >
                     {course.name}
@@ -174,12 +187,12 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
                 {sortedStaff.map(instructor => (
                   <OptionPill
                     key={instructor.id}
-                    selected={filters.selectedInstructors.includes(instructor.id)}
+                    selected={tempInstructors.includes(instructor.id)}
                     onClick={() => {
-                      const newIds = filters.selectedInstructors.includes(instructor.id)
-                        ? filters.selectedInstructors.filter(id => id !== instructor.id)
-                        : [...filters.selectedInstructors, instructor.id]
-                      filters.setSelectedInstructors(newIds)
+                      const newIds = tempInstructors.includes(instructor.id)
+                        ? tempInstructors.filter(id => id !== instructor.id)
+                        : [...tempInstructors, instructor.id]
+                      setTempInstructors(newIds)
                     }}
                   >
                     {instructor.full_name}
@@ -199,12 +212,12 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
                 {LEVELS.map(level => (
                   <OptionPill
                     key={level}
-                    selected={filters.selectedLevels.includes(level)}
+                    selected={tempLevels.includes(level)}
                     onClick={() => {
-                      const newLevels = filters.selectedLevels.includes(level)
-                        ? filters.selectedLevels.filter(l => l !== level)
-                        : [...filters.selectedLevels, level]
-                      filters.setSelectedLevels(newLevels)
+                      const newLevels = tempLevels.includes(level)
+                        ? tempLevels.filter(l => l !== level)
+                        : [...tempLevels, level]
+                      setTempLevels(newLevels)
                     }}
                   >
                     Level {level}
@@ -221,12 +234,12 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
                 {DAYS.map(day => (
                   <OptionPill
                     key={day}
-                    selected={filters.selectedDays.includes(day)}
+                    selected={tempDays.includes(day)}
                     onClick={() => {
-                      const newDays = filters.selectedDays.includes(day)
-                        ? filters.selectedDays.filter(d => d !== day)
-                        : [...filters.selectedDays, day]
-                      filters.setSelectedDays(newDays)
+                      const newDays = tempDays.includes(day)
+                        ? tempDays.filter(d => d !== day)
+                        : [...tempDays, day]
+                      setTempDays(newDays)
                     }}
                   >
                     {day.slice(0, 3)}
@@ -243,12 +256,12 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
                 {STATUSES.map(status => (
                   <OptionPill
                     key={status}
-                    selected={filters.selectedStatuses.includes(status)}
+                    selected={tempStatuses.includes(status)}
                     onClick={() => {
-                      const newStatuses = filters.selectedStatuses.includes(status)
-                        ? filters.selectedStatuses.filter(s => s !== status)
-                        : [...filters.selectedStatuses, status]
-                      filters.setSelectedStatuses(newStatuses)
+                      const newStatuses = tempStatuses.includes(status)
+                        ? tempStatuses.filter(s => s !== status)
+                        : [...tempStatuses, status]
+                      setTempStatuses(newStatuses)
                     }}
                   >
                     {status.charAt(0).toUpperCase() + status.slice(1)}

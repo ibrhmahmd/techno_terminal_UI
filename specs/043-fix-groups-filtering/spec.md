@@ -83,13 +83,13 @@ The pagination component renders "Page X of Y" but never shows "Showing X-Y of Z
 ### Functional Requirements
 
 - **FR-001**: Pagination controls MUST be rendered in both table view and card view when there are multiple pages of results.
-- **FR-002**: The current page MUST reset to 1 whenever any filter selection changes (course, instructor, day, level, status, or search text).
+- **FR-002**: The current page MUST reset to 1 whenever the user confirms filter changes via the Apply button, removes a filter tag, or clears all filters. Individual pill toggles do NOT reset the page — the reset happens on confirmation to avoid scroll-jump during multi-select.
 - **FR-003**: The current page MUST reset to 1 when switching between flat view and grouped view.
 - **FR-004**: Removing a filter tag MUST reset the current page to 1.
-- **FR-005**: The grouped view MUST accept filter options (course, instructor, day, level, status) so users can scope results within a grouped category — via backend API changes.
-- **FR-006**: The grouped query MUST support pagination (skip/limit params) instead of the current hardcoded limit, so that all groups are reachable regardless of count.
+- ~~**FR-005**: The grouped view MUST accept filter options — deferred to backend track.~~
+- ~~**FR-006**: The grouped query MUST support pagination — deferred to backend track.~~
 - **FR-007**: The pagination footer MUST display the total record count (e.g., "Showing 1–50 of 173 records") when `totalRecords` is available.
-- **FR-008**: The filter panel MUST NOT be hidden when in grouped view — all filter categories (course, instructor, day, level, status) must be available regardless of the grouping key. When a filter is applied in grouped view, the API receives the filter params and returns results already scoped.
+- ~~**FR-008**: The filter panel MUST NOT be hidden when in grouped view — deferred to backend track.~~
 - **FR-009**: The search input MUST reset the current page to 1 whenever the user types or clears the search term.
 
 ### Key Entities
@@ -104,9 +104,9 @@ The pagination component renders "Page X of Y" but never shows "Showing X-Y of Z
 ### Measurable Outcomes
 
 - **SC-001**: Users can browse all groups in card view with working pagination — 100% of groups are reachable regardless of view mode.
-- **SC-002**: Filtering no longer produces empty-page bugs — any filter change correctly resets to page 1 and shows matching results.
+- **SC-002**: Filtering no longer produces empty-page bugs — page resets to 1 on Apply/tag-remove/clear-all and shows matching results.
 - **SC-003**: The total record count is visible in the pagination footer on every page, for every view mode that supports pagination.
-- **SC-004**: The grouped view respects at least status filters (if not all filter categories) — users can narrow results within grouped categories.
+- ~~**SC-004**: The grouped view respects at least status filters — deferred to backend track.~~
 
 ## Clarifications
 
@@ -114,10 +114,15 @@ The pagination component renders "Page X of Y" but never shows "Showing X-Y of Z
 
 - Q: Should backend changes be allowed for grouped view filtering? → A: Yes — the grouped endpoint will be updated to accept GroupFilterOptions params so filtering happens server-side.
 
+### Session 2026-06-10
+
+- Q: Should the page reset on every filter pill click (immediate) or only on Apply/tag-remove/clear-all? → A: Option B — page resets on Apply, tag-remove, or clear-all. Individual pill toggles do not reset the page to avoid scroll-jump during multi-select.
+- Q: US3 (grouped view filters + pagination) deferred — should FR-005/FR-006/FR-008/SC-004 remain in scope? → A: No. Struck through in spec.
+
 ## Assumptions
 
-- Filter state (selectedCourses, selectedInstructors, etc.) is managed in the `useGroups` hook as individual useState arrays — changes to any of these should trigger a page reset.
+- Filter state (selectedCourses, selectedInstructors, etc.) is managed in the `useGroups` hook as individual useState arrays — changes to any of these should trigger a page reset. The page reset happens on Apply/tag-remove/clear-all (not on individual pill click).
 - The backend API (getGroupsPaginated) supports the full GroupFilterOptions contract including skip/limit — no backend changes are needed.
-- The grouped query (getGroupsGrouped) will be updated to accept GroupFilterOptions params — backend changes are allowed. (Confirmed via clarification.)
+- The grouped query (getGroupsGrouped) support for filter params is deferred to the backend track — not in scope for this implementation.
 - Users expect pagination behavior to be consistent across both view modes (table and cards).
 - The existing Pagination component is reusable and does not need modification — only the GroupsPage rendering logic needs to pass the right props.

@@ -273,6 +273,7 @@ export function GroupsPage() {
         </div>
 
         <GroupFilters 
+          key={isFiltersOpen ? 'filters-open' : 'filters-closed'}
           isOpen={isFiltersOpen && !isGroupedView} 
           onClose={() => setIsFiltersOpen(false)}
           onApply={() => setCurrentPage(1)}
@@ -333,23 +334,43 @@ export function GroupsPage() {
                     </div>
                   </>
                 ) : (
-                  <GroupCardGrid
-                    isLoading={isLoading}
-                    emptyMessage="No groups matched your selection"
-                    emptyIcon="grid_view"
-                  >
-                    {isLoading ? null : paginatedGroups.map((g) => (
-                      <GroupCard
-                        key={g.id}
-                        group={g}
-                        actions={{
-                          onView: () => handleView(g.id),
-                          onEdit: () => handleEdit(g),
-                          onDelete: () => handleDeleteClick(g.id),
-                        }}
-                      />
-                    ))}
-                  </GroupCardGrid>
+                  <>
+                    <GroupCardGrid
+                      isLoading={isLoading}
+                      emptyMessage="No groups matched your selection"
+                      emptyIcon="grid_view"
+                    >
+                      {isLoading ? null : paginatedGroups.map((g) => (
+                        <GroupCard
+                          key={g.id}
+                          group={g}
+                          actions={{
+                            onView: () => handleView(g.id),
+                            onEdit: () => handleEdit(g),
+                            onDelete: () => handleDeleteClick(g.id),
+                          }}
+                        />
+                      ))}
+                    </GroupCardGrid>
+                    {totalPages > 0 && paginatedGroups.length > 0 && (
+                      <div className="mt-6 pt-4 border-t border-slate-200 flex flex-col items-center">
+                        <Pagination
+                          currentPage={currentPage}
+                          totalPages={totalPages}
+                          pageSize={pageSize}
+                          onPageSizeChange={(newSize) => {
+                            setPageSize(newSize)
+                            setCurrentPage(1)
+                          }}
+                          onPageChange={setCurrentPage}
+                          pageSizeOptions={[10, 20, 50, 100]}
+                          showTotalInfo={true}
+                          loading={isLoading}
+                          totalRecords={totalGroups}
+                        />
+                      </div>
+                    )}
+                  </>
                 )
               ) : (
                 <>
@@ -427,6 +448,7 @@ export function GroupsPage() {
                             pageSizeOptions={[10, 20, 50, 100]}
                             showTotalInfo={true}
                             loading={isLoading}
+                            totalRecords={totalGroups}
                           />
                         </div>
                       )}
