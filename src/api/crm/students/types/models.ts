@@ -25,6 +25,7 @@ export interface StudentListItem {
   gender?: 'male' | 'female'  | null
   grade?: string | null
   has_unpaid_balance?: boolean
+  current_group_name?: string | null
 }
 
 export interface StudentWithDetails extends Student {
@@ -182,14 +183,15 @@ export interface StudentFilterItem {
   gender: 'male' | 'female' | 'unknown' | null
   phone: string | null
   grade?: string | null
+  date_of_birth?: string | null
   current_group_id: number | null
   current_group_name: string | null
   group_default_day: string | null
   instructor_id: number | null
   instructor_name: string | null
-  enrollment_count: number
+  current_enrollment_count?: number
   enrolled_courses: number[]
-  unpaid_balance: number | null
+  has_unpaid_balance?: boolean
 }
 
 // Filter result wrapper (matches StudentFilterResultDTO from backend docs)

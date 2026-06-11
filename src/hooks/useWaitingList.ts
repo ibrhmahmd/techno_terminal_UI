@@ -1,21 +1,10 @@
 // Waiting List Management Hook
 // Provides data and operations for waiting list students
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  getWaitingList,
-  updateStudentStatus,
-  setWaitingPriority,
-  type StudentWithDetails,
-  type UpdateStudentStatusDTO,
-} from '../api/crm'
+import { useQuery } from '@tanstack/react-query'
+import { getWaitingList, type StudentWithDetails } from '../api/crm'
+import { queryKeys } from './queryKeys'
 import type { PaginationParams } from '../types/pagination'
-
-export const waitingListKeys = {
-  all: ['waiting-list'] as const,
-  list: (params: PaginationParams) => ['waiting-list', 'list', params] as const,
-  student: (id: number) => ['waiting-list', 'student', id] as const,
-}
 
 interface UseWaitingListReturn {
   students: StudentWithDetails[]
@@ -27,9 +16,12 @@ interface UseWaitingListReturn {
 }
 
 // Get waiting list students
-export function useWaitingList(params: PaginationParams = { skip: 0, limit: 50 }): UseWaitingListReturn {
+export function useWaitingList(
+  params: PaginationParams = { skip: 0, limit: 50 },
+  enabled = true
+): UseWaitingListReturn {
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: waitingListKeys.list(params),
+    queryKey: queryKeys.directory.waitingList.list(params),
     queryFn: async () => {
       const students = await getWaitingList(params)
       // Returns StudentWithDetails[] directly from dedicated waiting-list endpoint
@@ -39,7 +31,8 @@ export function useWaitingList(params: PaginationParams = { skip: 0, limit: 50 }
         hasMore: false,
       }
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 3 * 60 * 1000, // 3 minutes
+    enabled,
   })
 
   return {
@@ -48,48 +41,8 @@ export function useWaitingList(params: PaginationParams = { skip: 0, limit: 50 }
     hasMore: data?.hasMore || false,
     isLoading,
     isError,
-    error: error as Error | null,
+    error: error ?? null,
   }
 }
 
-// Update student status (e.g., waiting -> active)
-export function useUpdateStudentStatus() {
-  const queryClient = useQueryClient()
 
-  return useMutation({
-    mutationFn: ({ studentId, data }: { studentId: number; data: UpdateStudentStatusDTO }) =>
-      updateStudentStatus(studentId, data),
-    onSuccess: () => {
-      // Invalidate waiting list and student queries
-      queryClient.invalidateQueries({ queryKey: waitingListKeys.all })
-    },
-  })
-}
-
-// Set waiting priority
-export function useSetWaitingPriority() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ studentId, priority }: { studentId: number; priority: number }) =>
-      setWaitingPriority(studentId, { priority }),
-    onSuccess: (_data, variables) => {
-      // Invalidate specific student and list
-      queryClient.invalidateQueries({ queryKey: waitingListKeys.student(variables.studentId) })
-      queryClient.invalidateQueries({ queryKey: waitingListKeys.all })
-    },
-  })
-}
-
-// Move student from waiting to active
-export function useActivateStudent() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ studentId, notes }: { studentId: number; notes?: string }) =>
-      updateStudentStatus(studentId, { status: 'active', notes }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: waitingListKeys.all })
-    },
-  })
-}

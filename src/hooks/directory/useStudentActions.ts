@@ -1,15 +1,15 @@
 import { useState, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useToast } from '../../common/Toast'
-import { queryKeys } from '../../../hooks/queryKeys'
+import { useToast } from '../../components/common/Toast'
+import { queryKeys } from '../queryKeys'
 import {
   useCreateStudent,
   useUpdateStudent,
   useSoftDeleteStudent,
   useRestoreStudent,
   useHardDeleteStudent,
-} from '../../../hooks/useDirectory'
+} from '../useDirectory'
 import {
   linkParentToStudent,
   updateStudentStatus,
@@ -18,8 +18,8 @@ import {
   type CreateStudentDTO,
   type UpdateStudentDTO,
   type StudentStatus,
-} from '../../../api/crm'
-import { logActivity } from '../../../api/crm/students/activity'
+} from '../../api/crm'
+import { logActivity } from '../../api/crm/students/activity'
 
 interface UseStudentActionsReturn {
   handleCreateStudent: (
@@ -69,16 +69,19 @@ export function useStudentActions(
           status,
         })
 
+        const postCreationCalls: Promise<unknown>[] = []
         if (selectedParent) {
-          await linkParentToStudent(newStudent.id, selectedParent.id)
-          queryClient.invalidateQueries({ queryKey: queryKeys.directory.parents.all })
+          postCreationCalls.push(linkParentToStudent(newStudent.id, selectedParent.id))
         }
-
         if (initialActivity && initialActivity.description) {
-          await logActivity(newStudent.id, {
+          postCreationCalls.push(logActivity(newStudent.id, {
             activity_type: initialActivity.activity_type,
             description: initialActivity.description,
-          })
+          }))
+        }
+        await Promise.all(postCreationCalls)
+        if (selectedParent) {
+          queryClient.invalidateQueries({ queryKey: queryKeys.directory.parents.all })
         }
 
         showToast('Student created successfully', 'success')
@@ -112,8 +115,6 @@ export function useStudentActions(
         }
 
         showToast(message, 'error')
-
-        throw new Error(message)
       } finally {
         setIsLoading(false)
       }
@@ -130,49 +131,31 @@ export function useStudentActions(
     ) => {
       setIsLoading(true)
       try {
-        await updateStudentMutation.mutateAsync({ id: student.id, data })
-
+        const calls: Promise<unknown>[] = [
+          updateStudentMutation.mutateAsync({ id: student.id, data }),
+        ]
         if (selectedParent) {
-          await linkParentToStudent(student.id, selectedParent.id)
+          calls.push(linkParentToStudent(student.id, selectedParent.id))
         }
-
         if (status !== student.status) {
-          await updateStudentStatus(student.id, { status })
+          calls.push(updateStudentStatus(student.id, { status }))
         }
 
-        queryClient.invalidateQueries({ queryKey: queryKeys.studentsAll })
+        const results = await Promise.allSettled(calls)
+        const failures = results.filter((r) => r.status === 'rejected')
+
+        if (failures.length > 0) {
+          showToast('Failed to update student', 'error')
+          setIsLoading(false)
+          return
+        }
+
         queryClient.invalidateQueries({ queryKey: queryKeys.directory.parents.all })
 
         showToast('Student updated successfully', 'success')
         closeEditModal()
-      } catch (err: unknown) {
-        let message = 'Failed to update student'
-
-        if (isAxiosError<{ message?: string; errors?: Record<string, unknown> }>(err)) {
-          if (err.response?.data?.message) {
-            message = err.response.data.message
-          }
-
-          if (err.response?.status === 422 && err.response?.data?.errors) {
-            const validationErrors = err.response.data.errors
-            const errorMessages = Object.entries(validationErrors)
-              .map(([field, msgs]) => {
-                if (Array.isArray(msgs)) {
-                  return `${field}: ${msgs.join(', ')}`
-                }
-                return `${field}: ${msgs}`
-              })
-              .join('; ')
-
-            if (errorMessages) {
-              message = `Validation failed: ${errorMessages}`
-            }
-          }
-        } else if (err instanceof Error) {
-          message = err.message
-        }
-
-        showToast(message, 'error')
+      } catch {
+        showToast('Failed to update student', 'error')
       } finally {
         setIsLoading(false)
       }

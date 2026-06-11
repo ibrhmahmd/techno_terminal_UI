@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import type { StudentGroupBy, WaitingGroupBy, GroupOption } from '../../config/studentGrouping'
 
 interface StudentGroupBySelectorProps {
@@ -7,13 +8,20 @@ interface StudentGroupBySelectorProps {
   disabled?: boolean
 }
 
+const STUDENT_VALUES: readonly string[] = ['none', 'status', 'age', 'competition', 'deleted']
+const WAITING_VALUES: readonly string[] = ['none', 'age', 'competition']
+
+function isValidGroupBy(v: string): v is StudentGroupBy | WaitingGroupBy {
+  return STUDENT_VALUES.includes(v) || WAITING_VALUES.includes(v)
+}
+
 export function StudentGroupBySelector({
   value,
   onChange,
   mode,
   disabled = false,
 }: StudentGroupBySelectorProps) {
-  const options: GroupOption[] =
+  const options: GroupOption[] = useMemo(() =>
     mode === 'students'
       ? [
           { value: 'none', label: 'All', icon: 'grid_view' },
@@ -26,7 +34,9 @@ export function StudentGroupBySelector({
           { value: 'none', label: 'All', icon: 'grid_view' },
           { value: 'age', label: 'Age', icon: 'cake' },
           { value: 'competition', label: 'Competition', icon: 'emoji_events', disabled: true },
-        ]
+        ],
+    [mode]
+  )
 
   return (
     <section className="w-full pb-4">
@@ -44,16 +54,20 @@ export function StudentGroupBySelector({
             return (
               <button
                 key={optVal}
-                onClick={() => !isDisabled && onChange(optVal as StudentGroupBy | WaitingGroupBy)}
+                onClick={() => {
+                  if (!isDisabled && isValidGroupBy(optVal)) {
+                    onChange(optVal)
+                  }
+                }}
                 disabled={isDisabled}
                 title={optDisabled ? 'Coming soon' : undefined}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md font-headline text-sm font-medium transition-all focus-visible:ring-2 focus-visible:ring-cyan-400/70 ${
                   isActive
                     ? isRedAccent
                       ? 'bg-red-50 text-red-600 shadow-sm font-bold border border-red-200'
                       : 'bg-white text-secondary shadow-sm font-bold'
                     : isDisabled
-                      ? 'text-slate-300 cursor-not-allowed'
+                        ? 'text-slate-500 cursor-not-allowed'
                       : isRedAccent
                         ? 'text-red-500 hover:text-red-600 hover:bg-red-50/50'
                         : 'text-slate-500 hover:text-secondary hover:bg-white/50'

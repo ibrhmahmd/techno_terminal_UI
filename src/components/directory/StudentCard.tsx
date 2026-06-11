@@ -1,4 +1,4 @@
-import type { StudentListItem, StudentFilterItem, StudentStatus } from '../../api/crm'
+import type { StudentListItem, StudentFilterItem, StudentStatus } from '../../api/crm/students/types/models'
 import { calculateAge } from '../../api/crm/students/utils'
 import { RowActions } from '../common/RowActions'
 import { CardSkeleton } from './shared/CardSkeleton'
@@ -20,10 +20,10 @@ export interface StudentCardProps {
   loading?: boolean
 }
 
-const statusConfig: Record<StudentStatus, { label: string; bg: string; text: string; icon: string }> = {
-  active: { label: 'Active', bg: 'bg-green-100', text: 'text-green-700', icon: 'check_circle' },
-  waiting: { label: 'Waiting', bg: 'bg-amber-100', text: 'text-amber-700', icon: 'schedule' },
-  inactive: { label: 'Inactive', bg: 'bg-slate-100', text: 'text-slate-600', icon: 'cancel' },
+const statusConfig: Record<StudentStatus, { bg: string; text: string; icon: string }> = {
+  active: { bg: 'bg-green-100', text: 'text-green-700', icon: 'check_circle' },
+  waiting: { bg: 'bg-amber-100', text: 'text-amber-700', icon: 'schedule' },
+  inactive: { bg: 'bg-slate-100', text: 'text-slate-600', icon: 'cancel' },
 }
 
 export function StudentCard({ student, actions, isDeleted = false, loading = false }: StudentCardProps) {
@@ -44,11 +44,11 @@ export function StudentCard({ student, actions, isDeleted = false, loading = fal
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/students/${student.id}`) } }}
       role="link"
       tabIndex={0}
-      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30 cursor-pointer flex flex-col"
+      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30 cursor-pointer flex flex-col focus-visible:ring-2 focus-visible:ring-cyan-400/70"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-headline font-semibold text-on-surface text-base truncate">
+          <h3 className="font-headline font-semibold text-on-surface text-base">
             {student.full_name}
           </h3>
           {student.phone && (
@@ -64,9 +64,8 @@ export function StudentCard({ student, actions, isDeleted = false, loading = fal
             </p>
           )}
         </div>
-        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${status.bg} ${status.text}`}>
-          <span aria-hidden="true" className="material-symbols-outlined text-sm">{status.icon}</span>
-          {status.label}
+        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0 ${status.bg} ${status.text}`} title={student.status}>
+          <span aria-hidden="true" className="material-symbols-outlined text-lg">{status.icon}</span>
         </span>
       </div>
 

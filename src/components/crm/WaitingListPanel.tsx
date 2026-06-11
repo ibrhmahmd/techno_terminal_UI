@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useWaitingList } from '../../hooks/useWaitingList'
 import { WaitingStudentCard } from './WaitingStudentCard'
 import { Users, Search, Calendar } from 'lucide-react'
-import type { StudentWithDetails } from '../../api/crm'
+import type { StudentWithDetails } from '../../api/crm/students/types/models'
 
 interface WaitingListPanelProps {
   onEnrollStudent?: (student: StudentWithDetails) => void
@@ -53,7 +53,7 @@ export function WaitingListPanel({ onEnrollStudent }: WaitingListPanelProps) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {[...Array(8)].map((_, i) => (
-          <div key={i} className="bg-surface-container-low rounded-xl h-48 animate-pulse" />
+          <div key={i} className="bg-surface-container-low rounded-xl h-48 motion-safe:animate-pulse" />
         ))}
       </div>
     )
@@ -71,7 +71,7 @@ export function WaitingListPanel({ onEnrollStudent }: WaitingListPanelProps) {
   if (students.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-on-surface-variant">
-        <Users className="w-12 h-12 mb-4 opacity-50" />
+        <Users className="w-12 h-12 mb-4 opacity-50" aria-hidden="true" />
         <p className="text-lg font-medium">No students in waiting list</p>
         <p className="text-sm mt-2">Students added to waiting list will appear here</p>
       </div>
@@ -83,10 +83,11 @@ export function WaitingListPanel({ onEnrollStudent }: WaitingListPanelProps) {
       {/* Header with filters */}
       <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant" aria-hidden="true" />
           <input
             type="text"
             placeholder="Search by name or phone..."
+            aria-label="Search waiting list"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
@@ -94,7 +95,7 @@ export function WaitingListPanel({ onEnrollStudent }: WaitingListPanelProps) {
         </div>
         
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-on-surface-variant" />
+          <Calendar className="w-4 h-4 text-on-surface-variant" aria-hidden="true" />
           <div className="flex gap-1">
             {DATE_FILTERS.map((filter) => (
               <button

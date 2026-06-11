@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import type { StudentFilterParams } from '../../api/crm'
 
 export interface FilterState {
@@ -79,7 +79,7 @@ export function useAdvancedSearch(): UseAdvancedSearchReturn {
     setFilters(initialFilters)
   }, [])
 
-  const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
+  const hasActiveFilters = useMemo(() => Object.entries(filters).some(([key, value]) => {
     if (key === 'ageMin' || key === 'ageMax') return value !== ''
     if (key === 'enrollmentCountMin' || key === 'enrollmentCountMax') return value !== ''
     if (key === 'minActivityCount' || key === 'maxActivityCount') return value !== ''
@@ -87,7 +87,7 @@ export function useAdvancedSearch(): UseAdvancedSearchReturn {
     if (Array.isArray(value)) return value.length > 0
     if (typeof value === 'string') return value !== ''
     return false
-  })
+  }), [filters])
 
   const convertToApiParams = useCallback((): StudentFilterParams => {
     const params: StudentFilterParams = {}
@@ -102,7 +102,7 @@ export function useAdvancedSearch(): UseAdvancedSearchReturn {
       params.group_default_day = filters.groupDays.map(day => DAY_NAME_MAP[day] || day)
     }
     if (filters.instructorName.trim()) params.instructor_name = filters.instructorName.trim()
-    if (filters.hasUnpaidBalance !== null) params.has_unpaid_balance = filters.hasUnpaidBalance
+    if (filters.hasUnpaidBalance !== null) params.has_any_outstanding_balance = filters.hasUnpaidBalance
     if (filters.enrollmentCountMin !== '') params.min_enrollments = Number(filters.enrollmentCountMin)
     if (filters.enrollmentCountMax !== '') params.max_enrollments = Number(filters.enrollmentCountMax)
     if (filters.enrollmentDateFrom) params.enrollment_date_from = filters.enrollmentDateFrom

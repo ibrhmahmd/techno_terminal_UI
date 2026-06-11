@@ -66,7 +66,7 @@ export async function getStudentsGrouped(
           course_ids: filters.filterParams.course_ids?.join(','),
           group_default_day: filters.filterParams.group_default_day,
           instructor_name: filters.filterParams.instructor_name,
-          has_unpaid_balance: filters.filterParams.has_unpaid_balance,
+          has_any_outstanding_balance: filters.filterParams.has_any_outstanding_balance,
           enrollment_date_from: filters.filterParams.enrollment_date_from,
           enrollment_date_to: filters.filterParams.enrollment_date_to,
           min_enrollments: filters.filterParams.min_enrollments,
@@ -97,7 +97,7 @@ export interface StudentFilterParams {
   course_ids?: number[]
   group_default_day?: string[]
   instructor_name?: string
-  has_unpaid_balance?: boolean
+  has_any_outstanding_balance?: boolean
   enrollment_date_from?: string  // YYYY-MM-DD
   enrollment_date_to?: string    // YYYY-MM-DD
   min_enrollments?: number
@@ -130,7 +130,7 @@ export async function filterStudents(
         course_ids: params.course_ids?.join(','),
         group_default_day: params.group_default_day,
         instructor_name: params.instructor_name,
-        has_unpaid_balance: params.has_unpaid_balance,
+          has_any_outstanding_balance: params.has_any_outstanding_balance,
         enrollment_date_from: params.enrollment_date_from,
         enrollment_date_to: params.enrollment_date_to,
         min_enrollments: params.min_enrollments,

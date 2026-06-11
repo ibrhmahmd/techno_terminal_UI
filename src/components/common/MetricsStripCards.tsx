@@ -5,6 +5,8 @@ interface MetricItem {
   color: 'secondary' | 'emerald' | 'amber' | 'blue' | 'slate'
   isLoading?: boolean
   isActive?: boolean
+  id?: string
+  controls?: string
   onClick?: () => void
 }
 
@@ -21,7 +23,7 @@ const colorMap: Record<MetricItem['color'], { bg: string; text: string; iconBg: 
   slate: { bg: 'bg-slate-50', text: 'text-slate-400', iconBg: 'bg-slate-100' },
 }
 
-function MetricCard({ label, value, icon, color, isLoading, isActive, onClick }: MetricItem) {
+function MetricCard({ label, value, icon, color, isLoading, isActive, id, controls, onClick }: MetricItem) {
   const styles = colorMap[color]
 
   if (isLoading) {
@@ -38,6 +40,8 @@ function MetricCard({ label, value, icon, color, isLoading, isActive, onClick }:
       type="button"
       role="tab"
       aria-selected={isActive || false}
+      aria-controls={controls}
+      id={id}
       onClick={onClick}
       className={`bg-white rounded-xl border shadow-sm p-4 flex-1 min-w-[160px] text-left transition-all hover:shadow-md hover:border-slate-300 ${onClick ? 'cursor-pointer' : 'cursor-default'} ${isActive ? 'ring-2 ring-secondary bg-secondary/5 border-secondary/30' : 'border-slate-200'}`}
     >
@@ -52,9 +56,43 @@ function MetricCard({ label, value, icon, color, isLoading, isActive, onClick }:
   )
 }
 
+function handleTablistKeyDown(
+  e: React.KeyboardEvent,
+  items: MetricItem[],
+  activeIndex: number = 0
+) {
+  const count = items.length
+  let newIndex: number | undefined
+  switch (e.key) {
+    case 'ArrowRight':
+      newIndex = (activeIndex + 1) % count
+      break
+    case 'ArrowLeft':
+      newIndex = (activeIndex - 1 + count) % count
+      break
+    case 'Home':
+      newIndex = 0
+      break
+    case 'End':
+      newIndex = count - 1
+      break
+  }
+  if (newIndex !== undefined) {
+    e.preventDefault()
+    const target = document.getElementById(items[newIndex].id ?? '')
+    target?.click()
+    target?.focus()
+  }
+}
+
 export function MetricsStripCards({ items, activeIndex }: MetricsStripCardsProps) {
   return (
-    <div className="flex flex-wrap gap-4" role="tablist">
+    <div
+      className="flex flex-wrap gap-4"
+      role="tablist"
+      aria-orientation="horizontal"
+      onKeyDown={(e) => handleTablistKeyDown(e, items, activeIndex)}
+    >
       {items.map((item, i) => (
         <MetricCard key={i} {...item} isActive={i === activeIndex} />
       ))}

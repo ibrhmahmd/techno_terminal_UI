@@ -5,7 +5,6 @@ import { queryKeys } from './queryKeys'
 import type { StudentFilterParams } from '../api/crm'
 
 const studentsGroupedKeys = {
-  all: queryKeys.studentsGroupedAll,
   byParams: queryKeys.studentsGroupedByParams,
 }
 
@@ -53,6 +52,6 @@ export function useStudentsGrouped({
         }
       ),
     enabled,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
   })
 }

@@ -1,4 +1,4 @@
-import type { ParentListItem } from '../../api/crm'
+import type { ParentListItem } from '../../api/crm/students/types/models'
 import { RowActions } from '../common/RowActions'
 import { CardSkeleton } from './shared/CardSkeleton'
 import { useNavigate } from 'react-router-dom'
@@ -24,7 +24,7 @@ export function ParentCard({ parent, actions, loading = false }: ParentCardProps
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/parents/${parent.id}`) } }}
       role="link"
       tabIndex={0}
-      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30 cursor-pointer flex flex-col"
+      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30 cursor-pointer flex flex-col focus-visible:ring-2 focus-visible:ring-cyan-400/70"
     >
       <div className="flex-1">
         <h3 className="font-headline font-semibold text-on-surface text-base truncate">

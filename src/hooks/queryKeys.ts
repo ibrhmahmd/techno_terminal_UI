@@ -87,6 +87,11 @@ export const queryKeys = {
       list:       (page: number, size: number) => ['directory', 'parents', 'list', page, size] as const,
       search:     (term: string)  => ['directory', 'parents', 'search', term] as const,
     },
+    waitingList: {
+      all:      ['directory', 'waitingList'] as const,
+      list:     (params: import('../types/pagination').PaginationParams) => ['directory', 'waitingList', 'list', params] as const,
+      student:  (id: number) => ['directory', 'waitingList', 'student', id] as const,
+    },
   },
 
   // Notifications

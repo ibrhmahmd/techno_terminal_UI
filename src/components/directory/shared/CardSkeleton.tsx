@@ -1,6 +1,6 @@
 export function CardSkeleton() {
   return (
-    <div aria-hidden="true" className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm animate-pulse">
+    <div aria-hidden="true" className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm motion-safe:animate-pulse">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="h-5 bg-slate-200 rounded w-3/4 mb-2" />

@@ -15,13 +15,6 @@ export {
   getStudentParents,
 } from './core'
 
-// Finance
-export {
-  getStudentBalance,
-  getEnrollmentBalance,
-  getUnpaidEnrollments,
-  adjustStudentBalance,
-} from './finance'
 
 // Status
 export {
@@ -87,6 +80,8 @@ export {
   calculateAge,
   getStatusLabel,
   isStudentDeleted,
+  isStudentListItem,
+  toStudentListItem,
 } from './utils'
 
 // Types

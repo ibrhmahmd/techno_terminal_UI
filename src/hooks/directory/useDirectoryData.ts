@@ -8,8 +8,10 @@ import {
   useStudentsFilter,
 } from '../useDirectory'
 import { useStudentsGrouped } from '../useStudentsGrouped'
+import { useWaitingList } from '../useWaitingList'
 import { formatAgeGroupLabel } from '../../config/studentGrouping'
-import type { StudentListItem, ParentListItem, StudentFilterParams, StudentFilterItem } from '../../api/crm'
+import type { StudentListItem, StudentFilterItem, ParentListItem } from '../../api/crm/students/types/models'
+import type { StudentFilterParams } from '../../api/crm/students/search'
 import type { StudentGroupBy, WaitingGroupBy } from '../../config/studentGrouping'
 
 export interface GroupItem<T> {
@@ -34,7 +36,7 @@ interface UseDirectoryDataProps {
   filterParams?: StudentFilterParams
   filterPage?: number
   filterPageSize?: number
-  filterGroupBy?: StudentGroupBy
+  filterGroupBy?: 'none' | 'status' | 'age'
 }
 
 interface UseDirectoryDataReturn {
@@ -69,6 +71,7 @@ interface UseDirectoryDataReturn {
   // Counts
   totalStudents: number
   totalParents: number
+  totalWaiting: number
 }
 
 export function useDirectoryData({
@@ -135,12 +138,15 @@ export function useDirectoryData({
   // Grouped filter data (when group by is active in advanced search)
   const { data: filteredGroupedResult, isLoading: isLoadingFilteredGrouped, isError: isFilteredGroupedError, error: filteredGroupedError } =
     useStudentsGrouped({
-      groupBy: (filterGroupBy === 'age' ? 'age' : 'status') as 'status' | 'age',
+      groupBy: filterGroupBy === 'age' ? 'age' : 'status',
       pagination: { page: filterPage, pageSize: filterPageSize },
       tab: 'students',
       enabled: activeTab === 'advanced' && filterGroupBy !== 'none' && !!filterParams,
       filterParams,
     })
+
+  // Dedicated waiting list query for accurate total count (always enabled for metrics strip)
+  const waitingListQuery = useWaitingList({ skip: 0, limit: 50 }, true)
 
   // Derived data
   const activeStudents = isSearching
@@ -270,5 +276,6 @@ export function useDirectoryData({
     error,
     totalStudents,
     totalParents,
+    totalWaiting: waitingListQuery.total,
   }
 }

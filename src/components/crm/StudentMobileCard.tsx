@@ -1,13 +1,29 @@
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import type { StudentStatus } from '../../api/crm'
 
 export interface StudentMobileCardProps {
   id: number
   name: string
   gender: string
   grade?: string | null
-  status: string
+  status: StudentStatus
   billingStatus?: string
+  current_group_name?: string | null
 }
+
+const STATUS_ICONS: Record<StudentStatus, string> = {
+  active: 'check_circle',
+  waiting: 'schedule',
+  inactive: 'cancel',
+}
+
+const STATUS_COLORS: Record<StudentStatus, string> = {
+  active: 'text-green-600',
+  waiting: 'text-amber-600',
+  inactive: 'text-slate-400',
+}
+
+const VALID_STATUSES: StudentStatus[] = ['active', 'waiting', 'inactive']
 
 export function StudentMobileCard({
   id,
@@ -15,43 +31,54 @@ export function StudentMobileCard({
   gender,
   grade,
   status,
-  billingStatus
+  billingStatus,
+  current_group_name,
 }: StudentMobileCardProps) {
-  const navigate = useNavigate()
+  const validStatus: StudentStatus = VALID_STATUSES.includes(status as StudentStatus)
+    ? (status as StudentStatus)
+    : 'inactive'
+  const iconName = STATUS_ICONS[validStatus]
+  const iconColor = STATUS_COLORS[validStatus]
 
   return (
-    <button
-      onClick={() => navigate(`/students/${id}`)}
-      className="w-full bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between text-left transition-colors active:bg-slate-50"
+    <Link
+      to={`/students/${id}`}
+      className="w-full bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between text-left transition-colors hover:bg-slate-50 active:bg-slate-100"
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
           gender === 'male' ? 'bg-blue-50 text-blue-500' : 'bg-pink-50 text-pink-500'
         }`}>
-          <span className="material-symbols-outlined text-[20px]">
+          <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
             {gender === 'male' ? 'face' : 'face_3'}
           </span>
         </div>
         
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <h3 className="font-semibold text-slate-900 truncate">{name}</h3>
+            <span className={`${iconColor} shrink-0`} title={status}>
+              <span aria-hidden="true" className="material-symbols-outlined text-lg">{iconName}</span>
+            </span>
+            <h3 className="font-headline font-semibold text-slate-900">{name}</h3>
             {billingStatus === 'due' && (
               <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Payment Due" />
             )}
-            {status === 'inactive' && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 uppercase tracking-wider shrink-0">
-                Inactive
+          </div>
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            {current_group_name && (
+              <span className="flex items-center gap-1">
+                <span aria-hidden="true" className="material-symbols-outlined text-[14px]">school</span>
+                <span className="truncate max-w-[140px]">{current_group_name}</span>
               </span>
             )}
+            {grade && (
+              <span className="text-slate-500">{grade}</span>
+            )}
           </div>
-          <p className="text-sm text-slate-500 font-medium truncate">
-            {grade || 'No grade specified'}
-          </p>
         </div>
       </div>
       
-      <span className="material-symbols-outlined text-slate-300 shrink-0 ml-2">chevron_right</span>
-    </button>
+      <span className="material-symbols-outlined text-slate-400 shrink-0 ml-2" aria-hidden="true">chevron_right</span>
+    </Link>
   )
 }

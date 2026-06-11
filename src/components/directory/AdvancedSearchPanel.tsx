@@ -57,7 +57,11 @@ export function AdvancedSearchPanel({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter' && hasActiveFilters) {
-        onApplyRef.current()
+        const target = e.target as HTMLElement
+        const tag = target.tagName
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+          onApplyRef.current()
+        }
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -70,7 +74,7 @@ export function AdvancedSearchPanel({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Column 1: Student Profile */}
-        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-5 hover:shadow-md transition-all duration-200 space-y-5">
+        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-5 hover:shadow-md motion-safe:transition-all motion-safe:duration-200 space-y-5">
           <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
             <span aria-hidden="true" className="material-symbols-outlined text-secondary font-semibold">person</span>
             <h4 className="font-headline font-semibold text-slate-800">Student Profile</h4>
@@ -93,7 +97,7 @@ export function AdvancedSearchPanel({
                         : [...filters.status, value]
                       onFilterChange('status', newStatus)
                     }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-medium transition-all ${
                       isSelected
                         ? 'bg-secondary text-white shadow-sm'
                         : 'bg-white text-slate-600 border border-slate-200 hover:border-secondary'
@@ -184,7 +188,7 @@ export function AdvancedSearchPanel({
         </div>
 
         {/* Column 2: Academics & Courses */}
-        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-5 hover:shadow-md transition-all duration-200 space-y-5">
+        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-5 hover:shadow-md motion-safe:transition-all motion-safe:duration-200 space-y-5">
           <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
             <span aria-hidden="true" className="material-symbols-outlined text-secondary font-semibold">school</span>
             <h4 className="font-headline font-semibold text-slate-800">Courses & Groups</h4>
@@ -313,7 +317,7 @@ export function AdvancedSearchPanel({
         </div>
 
         {/* Column 3: Finances & Activities */}
-        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-5 hover:shadow-md transition-all duration-200 space-y-5">
+        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-5 hover:shadow-md motion-safe:transition-all motion-safe:duration-200 space-y-5">
           <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
             <span aria-hidden="true" className="material-symbols-outlined text-secondary font-semibold">timeline</span>
             <h4 className="font-headline font-semibold text-slate-800">Finances & Logs</h4>
@@ -325,7 +329,7 @@ export function AdvancedSearchPanel({
             <button
               type="button"
               onClick={() => onFilterChange('hasUnpaidBalance', filters.hasUnpaidBalance === true ? null : true)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all w-full justify-center ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all w-full justify-center ${
                 filters.hasUnpaidBalance === true
                   ? 'bg-red-50 text-red-600 border border-red-200 shadow-sm'
                   : 'bg-white text-slate-600 border border-slate-200 hover:border-red-300'
@@ -419,7 +423,7 @@ export function AdvancedSearchPanel({
                 aria-label="Activity search term"
                 value={filters.activitySearchTerm}
                 onChange={(e) => onFilterChange('activitySearchTerm', e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
+                className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
               />
             </div>
           </div>

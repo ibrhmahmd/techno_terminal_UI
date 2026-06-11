@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getStudentById, getStudentWithDetails } from '../../api/crm/students/core'
-import { getStudentBalance } from '../../api/crm/students/finance'
+import { getStudentBalance } from '../../api/finance/balance'
 import { getStudentSiblings } from '../../api/crm/students/siblings'
 import { getUnpaidCompetitionFees } from '../../api/finance'
 import type { Student, StudentWithDetails } from '../../api/crm/students/types/models'

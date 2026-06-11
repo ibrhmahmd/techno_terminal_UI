@@ -78,9 +78,13 @@ Reusable hooks: `usePaginatedList`, `usePagination`, `useSearch`, `useDebounce` 
 - ESLint: flat config `eslint.config.js`, ignores `dist/`
 - No `.env`, no CI (`.github/`), no pre-commit hooks (`.husky/`)
 - Gitignored: `.opencode/*`, `.specify/*`
-- Specs: `specs/<NNN>-<name>/plan.md` for active feature plans. Highest: `036-*`
+- Specs: `specs/<NNN>-<name>/plan.md` for active feature plans. Highest: `045-*`
 - Supplementary docs: `ARCHITECTURE.md`, `auth-spec.md`, `competitions-api.md`, `daily-reports.md`, `enrollments-spec.md`, `docs/`
 
 <!-- SPECKIT START -->
-Active plan: `specs/044-groups-filtering-audit/plan.md`
+Active plan: `specs/047-directory-page-audit/plan.md`
 <!-- SPECKIT END -->
+
+---
+**Note**: The frontend-feature-audit skill development has moved to its own repo:
+→ `~/Desktop/frontend-feature-audit/` — https://github.com/YOUR_USER/frontend-feature-audit

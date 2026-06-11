@@ -1,19 +1,24 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, lazy, Suspense } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '../hooks/queryKeys'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { Pagination, PageHeader, PageSection, ActionButton, SearchBar, Modal, ConfirmDialog } from '../components/common'
 import { useToast } from '../components/common/Toast'
-import { StudentForm } from '../components/crm/StudentForm'
-import { ParentForm } from '../components/crm/ParentForm'
+const StudentForm = lazy(() => import('../components/crm/StudentForm').then(m => ({ default: m.StudentForm })))
+const ParentForm = lazy(() => import('../components/crm/ParentForm').then(m => ({ default: m.ParentForm })))
 import { WaitingListPanel } from '../components/crm/WaitingListPanel'
-import { EnrollPanel } from '../components/enrollments/EnrollPanel'
+const EnrollPanel = lazy(() => import('../components/enrollments/EnrollPanel').then(m => ({ default: m.EnrollPanel })))
 import { useSearch } from '../hooks/useSearch'
 import { useDirectoryData } from '../hooks/directory/useDirectoryData'
-import { useStudentActions } from '../components/directory/hooks/useStudentActions'
+import { useStudentActions } from '../hooks/directory/useStudentActions'
 import { useAdvancedSearch } from '../hooks/directory/useAdvancedSearch'
 import { AdvancedSearchPanel } from '../components/directory/AdvancedSearchPanel'
-import { createParent, searchParents, type StudentListItem, type StudentFilterItem, type StudentFilterParams, type StudentWithDetails, type CreateStudentDTO, type ParentListItem, type StudentStatus } from '../api/crm'
+import { createParent, searchParents } from '../api/crm/parents'
+import type { StudentListItem, StudentFilterItem, StudentWithDetails, ParentListItem, StudentStatus } from '../api/crm/students/types/models'
+import type { StudentFilterParams } from '../api/crm/students/search'
+import type { CreateStudentDTO } from '../api/crm/students/types/inputs'
 
+import { isStudentListItem, toStudentListItem } from '../api/crm/students/utils'
 import { StudentCard } from '../components/directory/StudentCard'
 import { StudentMobileCard } from '../components/crm/StudentMobileCard'
 import { ParentCard } from '../components/directory/ParentCard'
@@ -24,12 +29,15 @@ import { CardSkeleton } from '../components/directory/shared/CardSkeleton'
 import { MetricsStripCards } from '../components/common/MetricsStripCards'
 import { AlphabetSlider } from '../components/directory/AlphabetSlider'
 import { StudentGroupBySelector } from '../components/directory/StudentGroupBySelector'
+import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import type { StudentGroupBy, WaitingGroupBy } from '../config/studentGrouping'
+
+const PANEL_ORDER = ['students', 'parents', 'waiting', 'advanced'] as const
 
 export function DirectoryPage() {
   const isMobile = useIsMobile()
   const { showToast, ToastComponent } = useToast()
-  const [activeTab, setActiveTab] = useState<'students' | 'parents' | 'waiting' | 'advanced'>('students')
+  const [activeTab, setActiveTab] = useState<(typeof PANEL_ORDER)[number]>(() => 'students')
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -80,6 +88,7 @@ export function DirectoryPage() {
     isLoadingFilteredGrouped,
     totalStudents,
     totalParents,
+    totalWaiting,
     isError,
   } = useDirectoryData({
     activeTab,
@@ -148,13 +157,13 @@ export function DirectoryPage() {
     confirmText: 'Confirm',
   })
   // Filter active vs deleted students
-  const displayStudents = students.filter((s) => s.status !== 'waiting')
+  const displayStudents = useMemo(() => students.filter((s) => s.status !== 'waiting'), [students])
 
   const qc = useQueryClient()
   const createParentMutation = useMutation({
     mutationFn: createParent,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['directory', 'parents'] })
+      qc.invalidateQueries({ queryKey: queryKeys.directory.parents.all })
       showToast('Parent created successfully', 'success')
       setIsCreateParentModalOpen(false)
     },
@@ -180,7 +189,9 @@ export function DirectoryPage() {
         variant: 'warning',
         confirmText: 'Move to Trash',
         onConfirm: () => {
-          handleSoftDeleteStudent(student as StudentListItem)
+          if (isStudentListItem(student)) {
+            handleSoftDeleteStudent(student)
+          }
           setConfirmDialog((prev) => ({ ...prev, isOpen: false }))
         },
       })
@@ -198,7 +209,9 @@ export function DirectoryPage() {
         variant: 'danger',
         confirmText: 'Delete Permanently',
         onConfirm: () => {
-          handleHardDeleteStudent(student as StudentListItem)
+          if (isStudentListItem(student)) {
+            handleHardDeleteStudent(student)
+          }
           setConfirmDialog((prev) => ({ ...prev, isOpen: false }))
         },
       })
@@ -241,8 +254,37 @@ export function DirectoryPage() {
     setSelectedLetter(null)
   }, [resetFilters])
 
-  const PANEL_ORDER = ['students', 'parents', 'waiting', 'advanced'] as const
   const activeIndex = PANEL_ORDER.indexOf(activeTab)
+
+  function handleGroupTabKeyDown<T extends { key: string }>(
+    e: React.KeyboardEvent,
+    groups: readonly T[],
+    activeKey: string,
+    setActive: (key: string) => void
+  ) {
+    const count = groups.length
+    if (count === 0) return
+    const currentIndex = groups.findIndex(g => g.key === activeKey)
+    let newIndex: number | undefined
+    switch (e.key) {
+      case 'ArrowRight':
+        newIndex = (currentIndex + 1) % count
+        break
+      case 'ArrowLeft':
+        newIndex = (currentIndex - 1 + count) % count
+        break
+      case 'Home':
+        newIndex = 0
+        break
+      case 'End':
+        newIndex = count - 1
+        break
+    }
+    if (newIndex !== undefined) {
+      e.preventDefault()
+      setActive(groups[newIndex].key)
+    }
+  }
 
   const metricItems = useMemo(() => [
     {
@@ -251,6 +293,8 @@ export function DirectoryPage() {
       icon: 'school',
       color: 'secondary' as const,
       isLoading: isLoading && students.length === 0,
+      id: 'tab-btn-students',
+      controls: 'tabpanel-students',
       onClick: () => handleTabChange('students'),
     },
     {
@@ -259,22 +303,28 @@ export function DirectoryPage() {
       icon: 'family_restroom',
       color: 'emerald' as const,
       isLoading: isLoading && parents.length === 0,
+      id: 'tab-btn-parents',
+      controls: 'tabpanel-parents',
       onClick: () => handleTabChange('parents'),
     },
     {
       label: 'Waiting List',
-      value: String(waitingStudents.length),
+      value: String(totalWaiting),
       icon: 'schedule',
       color: 'amber' as const,
       isLoading: isLoading && waitingStudents.length === 0,
+      id: 'tab-btn-waiting',
+      controls: 'tabpanel-waiting',
       onClick: () => handleTabChange('waiting'),
     },
     {
       label: 'Filter Students',
-      value: appliedFilters ? `${filteredTotal ?? 0} matches` : 'Configure',
+      value: undefined,
       icon: 'tune',
       color: 'blue' as const,
-      isLoading: isLoadingFiltered,
+      isLoading: false,
+      id: 'tab-btn-advanced',
+      controls: 'tabpanel-advanced',
       onClick: () => handleTabChange('advanced'),
     },
   ], [totalStudents, totalParents, waitingStudents.length, appliedFilters, filteredTotal, isLoading, isLoadingFiltered, handleTabChange, students.length, parents.length])
@@ -335,7 +385,8 @@ export function DirectoryPage() {
         {/* Content */}
         <PageSection>
           {activeTab === 'students' && (
-            <>
+            <div role="tabpanel" id="tabpanel-students" aria-labelledby="tab-btn-students">
+              <ErrorBoundary>
               {/* Group by selector and deleted toggle */}
               <div className="flex justify-end items-center mb-4">
                 <StudentGroupBySelector
@@ -395,34 +446,35 @@ export function DirectoryPage() {
                           }
                           return (
                             <CardGrid>
-                              {items.map((s) => (
-                                isMobile ? (
-                                  <StudentMobileCard
-                                    key={s.id}
-                                    id={s.id}
-                                    name={s.full_name}
-                                    gender={s.gender || 'male'}
-                                    grade={s.grade}
-                                    status={s.status}
-                                    billingStatus={s.has_unpaid_balance ? 'due' : 'paid'}
-                                  />
-                                ) : (
-                                  <StudentCard
-                                    key={s.id}
-                                    student={s}
-                                    isDeleted={studentGroupBy === 'deleted'}
-                                    actions={{
-                                      onEdit: () => {
-                                        setEditingStudent(s)
-                                        setIsEditStudentModalOpen(true)
-                                      },
-                                      onDelete: () => handleSoftDeleteWithConfirm(s),
-                                      onRestore: () => handleRestoreStudent(s),
-                                      onPermanentDelete: () => handleHardDeleteWithConfirm(s),
-                                    }}
-                                  />
-                                )
-                              ))}
+{items.map((s) => (
+                isMobile ? (
+                  <StudentMobileCard
+                    key={s.id}
+                    id={s.id}
+                    name={s.full_name}
+                    gender={s.gender || 'male'}
+                    grade={s.grade}
+                    status={s.status}
+                    billingStatus={s.has_unpaid_balance ? 'due' : 'paid'}
+                    current_group_name={'current_group_name' in s ? s.current_group_name : undefined}
+                  />
+                ) : (
+                  <StudentCard
+                    key={s.id}
+                    student={s}
+                    isDeleted={studentGroupBy === 'deleted'}
+                    actions={{
+                      onEdit: () => {
+                        setEditingStudent(s)
+                        setIsEditStudentModalOpen(true)
+                      },
+                      onDelete: () => handleSoftDeleteWithConfirm(s),
+                      onRestore: () => handleRestoreStudent(s),
+                      onPermanentDelete: () => handleHardDeleteWithConfirm(s),
+                    }}
+                  />
+                )
+              ))}
                             </CardGrid>
                           )
                         })()
@@ -441,22 +493,24 @@ export function DirectoryPage() {
                         </div>
                       ) : (
                         (() => {
+                          const groupMap = new Map(studentsGroupedData.map(g => [g.key, g]))
                           const defaultKey = studentsGroupedData[0]?.key ?? ''
-                          const activeKey = (activeStudentGroup || defaultKey) && studentsGroupedData.some(g => g.key === (activeStudentGroup || defaultKey))
+                          const activeKey = (activeStudentGroup || defaultKey) && groupMap.has(activeStudentGroup || defaultKey)
                             ? (activeStudentGroup || defaultKey)
                             : defaultKey
-                          const activeItems = studentsGroupedData.find(g => g.key === activeKey)?.items ?? []
+                          const activeItems = groupMap.get(activeKey)?.items ?? []
                           return (
                             <>
                               <div className="overflow-x-auto mb-4">
-                                <div role="tablist" aria-label="Student groups" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
+                                <div role="tablist" aria-label="Student groups" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-2"
+                                  onKeyDown={(e) => handleGroupTabKeyDown(e, studentsGroupedData, activeKey, setActiveStudentGroup)}>
                                   {studentsGroupedData.map((group) => (
                                     <button
                                       key={group.key}
                                       role="tab"
                                       aria-selected={activeKey === group.key}
                                       onClick={() => setActiveStudentGroup(group.key)}
-                                      className={`flex-1 flex justify-center items-center gap-2.5 min-w-[120px] px-5 py-2 rounded-lg text-sm font-medium transition-all select-none ${
+                                      className={`flex-1 flex justify-center items-center gap-3 min-w-[120px] px-5 py-2 rounded-lg text-sm font-medium transition-all select-none ${
                                         activeKey === group.key
                                           ? 'bg-secondary text-white font-bold shadow-lg shadow-secondary/20'
                                           : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
@@ -485,6 +539,7 @@ export function DirectoryPage() {
                                       grade={s.grade}
                                       status={s.status}
                                       billingStatus={s.has_unpaid_balance ? 'due' : 'paid'}
+                                      current_group_name={s.current_group_name}
                                     />
                                   ) : (
                                     <StudentCard
@@ -511,13 +566,15 @@ export function DirectoryPage() {
                   )}
                 </div>
               </div>
-            </>
+              </ErrorBoundary>
+            </div>
           )}
           {activeTab === 'waiting' && (
-            <>
+            <div role="tabpanel" id="tabpanel-waiting" aria-labelledby="tab-btn-waiting">
+              <ErrorBoundary>
               {/* Group by selector for waiting list */}
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-on-surface">
+                <h2 className="text-lg font-semibold text-on-surface font-headline">
                   Waiting List ({waitingStudents.length} students)
                 </h2>
                 <StudentGroupBySelector
@@ -552,22 +609,24 @@ export function DirectoryPage() {
                     </div>
                   ) : (
                     (() => {
+                      const groupMap = new Map(waitingGroupedData.map(g => [g.key, g]))
                       const defaultKey = waitingGroupedData[0]?.key ?? ''
-                      const activeKey = (activeStudentGroup || defaultKey) && waitingGroupedData.some(g => g.key === (activeStudentGroup || defaultKey))
+                      const activeKey = (activeStudentGroup || defaultKey) && groupMap.has(activeStudentGroup || defaultKey)
                         ? (activeStudentGroup || defaultKey)
                         : defaultKey
-                      const activeItems = waitingGroupedData.find(g => g.key === activeKey)?.items ?? []
+                      const activeItems = groupMap.get(activeKey)?.items ?? []
                       return (
                         <>
                           <div className="overflow-x-auto mb-4">
-                            <div role="tablist" aria-label="Waiting list groups" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
+                            <div role="tablist" aria-label="Waiting list groups" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-2"
+                              onKeyDown={(e) => handleGroupTabKeyDown(e, waitingGroupedData, activeKey, setActiveStudentGroup)}>
                               {waitingGroupedData.map((group) => (
                                 <button
                                   key={group.key}
                                   role="tab"
                                   aria-selected={activeKey === group.key}
                                   onClick={() => setActiveStudentGroup(group.key)}
-                                  className={`flex-1 flex justify-center items-center gap-2.5 min-w-[120px] px-5 py-2 rounded-lg text-sm font-medium transition-all select-none ${
+                                  className={`flex-1 flex justify-center items-center gap-3 min-w-[120px] px-5 py-2 rounded-lg text-sm font-medium transition-all select-none ${
                                     activeKey === group.key
                                       ? 'bg-secondary text-white font-bold shadow-lg shadow-secondary/20'
                                       : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
@@ -596,6 +655,7 @@ export function DirectoryPage() {
                                   grade={s.grade}
                                   status={s.status}
                                   billingStatus={s.has_unpaid_balance ? 'due' : 'paid'}
+                                  current_group_name={s.current_group_name}
                                 />
                               ) : (
                                 <StudentCard
@@ -618,10 +678,12 @@ export function DirectoryPage() {
                   )}
                 </>
               )}
-            </>
+              </ErrorBoundary>
+            </div>
           )}
           {activeTab === 'parents' && (
-            <>
+            <div role="tabpanel" id="tabpanel-parents" aria-labelledby="tab-btn-parents">
+              <ErrorBoundary>
               {isLoading ? (
                 <CardGrid>
                   {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
@@ -654,10 +716,11 @@ export function DirectoryPage() {
                   ))}
                 </CardGrid>
               )}
-            </>
+              </ErrorBoundary>
+            </div>
           )}
           {activeTab === 'advanced' && (
-            <div className="space-y-4">
+            <div role="tabpanel" id="tabpanel-advanced" aria-labelledby="tab-btn-advanced" className="space-y-4">
               {/* Filter Panel - Horizontal Pills */}
               <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                 {/* Top Action Bar */}
@@ -798,7 +861,8 @@ export function DirectoryPage() {
                               gender={s.gender || 'male'}
                               grade={s.grade}
                               status={s.status}
-                              billingStatus={s.unpaid_balance ? 'due' : 'paid'}
+                              billingStatus={s.has_unpaid_balance ? 'due' : 'paid'}
+                              current_group_name={s.current_group_name}
                             />
                           ) : (
                             <StudentCard
@@ -806,7 +870,7 @@ export function DirectoryPage() {
                               student={s}
                               actions={{
                                 onEdit: () => {
-                                  setEditingStudent(s as unknown as StudentListItem)
+                                  setEditingStudent(toStudentListItem(s))
                                   setIsEditStudentModalOpen(true)
                                 },
                                 onDelete: () => handleSoftDeleteWithConfirm(s),
@@ -835,22 +899,24 @@ export function DirectoryPage() {
                       </div>
                     ) : (
                       (() => {
+                        const groupMap = new Map(filteredGroupedData.map(g => [g.key, g]))
                         const defaultKey = filteredGroupedData[0]?.key ?? ''
-                        const activeKey = (activeFilterGroup || defaultKey) && filteredGroupedData.some(g => g.key === (activeFilterGroup || defaultKey))
+                        const activeKey = (activeFilterGroup || defaultKey) && groupMap.has(activeFilterGroup || defaultKey)
                           ? (activeFilterGroup || defaultKey)
                           : defaultKey
-                        const activeItems = filteredGroupedData.find(g => g.key === activeKey)?.items ?? []
+                        const activeItems = groupMap.get(activeKey)?.items ?? []
                         return (
                           <>
                             <div className="overflow-x-auto mb-4">
-                              <div role="tablist" aria-label="Filtered student groups" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-1.5">
+                              <div role="tablist" aria-label="Filtered student groups" className="flex min-w-full w-max items-center gap-1 rounded-xl bg-slate-800 p-2"
+                                onKeyDown={(e) => handleGroupTabKeyDown(e, filteredGroupedData, activeKey, setActiveFilterGroup)}>
                                 {filteredGroupedData.map((group) => (
                                   <button
                                     key={group.key}
                                     role="tab"
                                     aria-selected={activeKey === group.key}
                                     onClick={() => setActiveFilterGroup(group.key)}
-                                    className={`flex-1 flex justify-center items-center gap-2.5 min-w-[120px] px-5 py-2 rounded-lg text-sm font-medium transition-all select-none ${
+                                    className={`flex-1 flex justify-center items-center gap-3 min-w-[120px] px-5 py-2 rounded-lg text-sm font-medium transition-all select-none ${
                                       activeKey === group.key
                                         ? 'bg-secondary text-white font-bold shadow-lg shadow-secondary/20'
                                         : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
@@ -879,6 +945,7 @@ export function DirectoryPage() {
                                     grade={s.grade}
                                     status={s.status}
                                     billingStatus={s.has_unpaid_balance ? 'due' : 'paid'}
+                                    current_group_name={s.current_group_name}
                                   />
                                 ) : (
                                   <StudentCard
@@ -910,8 +977,8 @@ export function DirectoryPage() {
             <div className="mt-6 pt-4 border-t border-slate-200">
               <Pagination
                 currentPage={currentPage}
-                totalPages={Math.ceil((activeTab === 'students' ? totalStudents : totalParents) / pageSize)}
-                totalRecords={activeTab === 'students' ? totalStudents : totalParents}
+                totalPages={Math.ceil((activeTab === 'students' ? totalStudents : activeTab === 'waiting' ? waitingStudents.length : totalParents) / pageSize)}
+                totalRecords={activeTab === 'students' ? totalStudents : activeTab === 'waiting' ? waitingStudents.length : totalParents}
                 pageSize={pageSize}
                 onPageChange={setCurrentPage}
                 onPageSizeChange={(newSize) => {
@@ -932,14 +999,16 @@ export function DirectoryPage() {
         onClose={() => setIsCreateStudentModalOpen(false)}
         title="Create Student"
       >
-        <StudentForm
-          onSubmit={(data, parent, status, initialActivity) =>
-            handleCreateStudentAndRedirect(data, parent, status, initialActivity)
-          }
-          onCancel={() => setIsCreateStudentModalOpen(false)}
-          mode="create"
-          onSearchParents={searchParents}
-        />
+        <Suspense fallback={<div className="h-64 bg-slate-50 rounded-xl animate-pulse" />}>
+          <StudentForm
+            onSubmit={(data: CreateStudentDTO, parent: ParentListItem | null, status: StudentStatus, initialActivity?: { activity_type: string; description: string }) =>
+              handleCreateStudentAndRedirect(data, parent, status, initialActivity)
+            }
+            onCancel={() => setIsCreateStudentModalOpen(false)}
+            mode="create"
+            onSearchParents={searchParents}
+          />
+        </Suspense>
       </Modal>
 
       {/* Edit Student Modal */}
@@ -951,18 +1020,21 @@ export function DirectoryPage() {
         }}
         title="Edit Student"
       >
-        <StudentForm
-          initialData={editingStudent || undefined}
-          initialStatus={editingStudent?.status || 'active'}
-          onSubmit={(data, parent, status) =>
-            handleEditStudent(editingStudent!, data, parent, status)
-          }
-          onCancel={() => {
-            setIsEditStudentModalOpen(false)
-            setEditingStudent(null)
-          }}
-          mode="edit"
-        />
+        <Suspense fallback={<div className="h-64 bg-slate-50 rounded-xl animate-pulse" />}>
+          <StudentForm
+            initialData={editingStudent || undefined}
+            initialStatus={editingStudent?.status || 'active'}
+            onSubmit={async (data: CreateStudentDTO, parent: ParentListItem | null, status: StudentStatus) => {
+              if (!editingStudent) return
+              await handleEditStudent(editingStudent, data, parent, status)
+            }}
+            onCancel={() => {
+              setIsEditStudentModalOpen(false)
+              setEditingStudent(null)
+            }}
+            mode="edit"
+          />
+        </Suspense>
       </Modal>
 
       {/* Create Parent Modal */}
@@ -971,11 +1043,13 @@ export function DirectoryPage() {
         onClose={() => setIsCreateParentModalOpen(false)}
         title="Create Parent"
       >
-        <ParentForm
-          onSubmit={handleCreateParent}
-          onCancel={() => setIsCreateParentModalOpen(false)}
-          mode="create"
-        />
+        <Suspense fallback={<div className="h-64 bg-slate-50 rounded-xl animate-pulse" />}>
+          <ParentForm
+            onSubmit={handleCreateParent}
+            onCancel={() => setIsCreateParentModalOpen(false)}
+            mode="create"
+          />
+        </Suspense>
       </Modal>
 
       {/* Confirm Dialog */}
@@ -1000,17 +1074,19 @@ export function DirectoryPage() {
         title={`Enroll ${selectedWaitingStudent?.full_name || 'Student'}`}
         size="xl"
       >
-        <EnrollPanel
-          useMockData={false}
-          isLoading={isEnrollPanelLoading}
-          setIsLoading={setIsEnrollPanelLoading}
-          preSelectedStudent={selectedWaitingStudent}
-          onEnrollmentSuccess={() => {
-            setIsWaitingEnrollModalOpen(false)
-            setSelectedWaitingStudent(null)
+        <Suspense fallback={<div className="h-64 bg-slate-50 rounded-xl animate-pulse" />}>
+          <EnrollPanel
+            useMockData={false}
+            isLoading={isEnrollPanelLoading}
+            setIsLoading={setIsEnrollPanelLoading}
+            preSelectedStudent={selectedWaitingStudent}
+            onEnrollmentSuccess={() => {
+              setIsWaitingEnrollModalOpen(false)
+              setSelectedWaitingStudent(null)
             showToast('Student enrolled successfully!', 'success')
           }}
-        />
+          />
+        </Suspense>
       </Modal>
 
       {/* Toast Notifications */}

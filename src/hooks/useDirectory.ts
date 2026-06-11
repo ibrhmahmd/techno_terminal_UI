@@ -34,7 +34,7 @@ export function useStudentsSearch(term: string, enabled: boolean = true) {
   return useQuery<StudentListItem[]>({
     queryKey: queryKeys.directory.students.search(term),
     queryFn: () => searchStudents(term),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
     enabled: enabled && term.length >= 2,
   })
 }
@@ -43,7 +43,7 @@ export function useStudentsFilter(params: StudentFilterParams, enabled: boolean 
   return useQuery<StudentFilterResult>({
     queryKey: queryKeys.directory.students.filter(params),
     queryFn: () => filterStudents(params),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
     enabled,
   })
 }
@@ -63,7 +63,7 @@ export function useParentsSearch(term: string, enabled: boolean = true) {
   return useQuery<ParentListItem[]>({
     queryKey: queryKeys.directory.parents.search(term),
     queryFn: () => searchParents(term),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
     enabled: enabled && term.length >= 2,
   })
 }

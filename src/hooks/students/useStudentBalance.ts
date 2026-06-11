@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getStudentBalance } from '../../api/crm/students/finance'
+import { getStudentBalance } from '../../api/finance/balance'
 import type { StudentBalance } from '../../api/crm/students/types'
 import { AxiosError } from 'axios'
 
