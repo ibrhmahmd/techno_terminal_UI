@@ -6,8 +6,7 @@ interface UnpaidEnrollmentsFiltersProps {
   selectedGroup: EnrichedGroupPublic | null
   minBalance: number | ''
   ageFilter: 'all' | 'lt30' | '30to60' | 'gt60'
-  groups: EnrichedGroupPublic[]
-  isLoadingGroups: boolean
+  // groups and isLoadingGroups removed — GroupCombobox owns its own data fetching
   onGroupChange: (group: EnrichedGroupPublic | null) => void
   onMinBalanceChange: (value: number | '') => void
   onAgeFilterChange: (value: 'all' | 'lt30' | '30to60' | 'gt60') => void
@@ -24,14 +23,11 @@ export function UnpaidEnrollmentsFilters({
   selectedGroup,
   minBalance,
   ageFilter,
-  groups,
-  isLoadingGroups,
   onGroupChange,
   onMinBalanceChange,
   onAgeFilterChange,
 }: UnpaidEnrollmentsFiltersProps) {
   const [groupSearch, setGroupSearch] = useState('')
-  const recentGroupIds: number[] = [] // Could be enhanced with localStorage later
 
   return (
     <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
@@ -45,9 +41,6 @@ export function UnpaidEnrollmentsFilters({
               onChange={onGroupChange}
               search={groupSearch}
               setSearch={setGroupSearch}
-              groups={groups}
-              isLoading={isLoadingGroups}
-              recentGroupIds={recentGroupIds}
             />
           </div>
         </div>

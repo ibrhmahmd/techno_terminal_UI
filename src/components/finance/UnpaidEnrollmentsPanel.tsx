@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useBalance } from '../../hooks/finance'
-import { useGroupsFlat } from '../../hooks/useGroupQueries'
 import { UnpaidEnrollmentCard } from './UnpaidEnrollmentCard'
 import { UnpaidEnrollmentsFilters } from './UnpaidEnrollmentsFilters'
 import { Pagination } from '../common'
@@ -40,7 +39,6 @@ export function UnpaidEnrollmentsPanel({ onError, onPay, onNavigateToCreate }: U
   const hasActiveFilters = minBalance !== '' || ageFilter !== 'all' || selectedGroup !== null
 
   const { fetchUnpaidEnrollments, unpaidEnrollments, isLoadingUnpaidEnrollments, unpaidEnrollmentsError } = useBalance()
-  const { data: groupsData, isLoading: isLoadingGroups } = useGroupsFlat(undefined, true)
 
   // Fetch unpaid enrollments - fetch all when filtering, paginated otherwise
   useEffect(() => {
@@ -156,8 +154,6 @@ export function UnpaidEnrollmentsPanel({ onError, onPay, onNavigateToCreate }: U
         selectedGroup={selectedGroup}
         minBalance={minBalance}
         ageFilter={ageFilter}
-        groups={groupsData?.items || []}
-        isLoadingGroups={isLoadingGroups}
         onGroupChange={setSelectedGroup}
         onMinBalanceChange={setMinBalance}
         onAgeFilterChange={setAgeFilter}

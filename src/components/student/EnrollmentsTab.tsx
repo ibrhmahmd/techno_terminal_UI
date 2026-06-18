@@ -17,12 +17,11 @@ interface EnrollDialogProps {
   isOpen: boolean
   onClose: () => void
   onEnroll: (groupId: number) => Promise<void>
-  availableGroups: EnrichedGroupPublic[]
-  isLoading?: boolean
+  excludeGroupIds?: number[]
   recentGroupIds?: number[]
 }
 
-export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoading, recentGroupIds = [] }: EnrollDialogProps) {
+export function EnrollDialog({ isOpen, onClose, onEnroll, excludeGroupIds }: EnrollDialogProps) {
   const [selectedGroup, setSelectedGroup] = useState<EnrichedGroupPublic | null>(null)
   const [search, setSearch] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -63,7 +62,7 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
           </button>
           <button
             onClick={handleEnroll}
-            disabled={!selectedGroup || isSubmitting || isLoading}
+            disabled={!selectedGroup || isSubmitting}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
           >
             {isSubmitting ? (
@@ -85,30 +84,13 @@ export function EnrollDialog({ isOpen, onClose, onEnroll, availableGroups, isLoa
         <p className="text-sm text-slate-600">
           Search and select a group to enroll this student in:
         </p>
-        
-        {isLoading ? (
-          <div className="py-8 text-center">
-            <div className="w-8 h-8 border-2 border-slate-200 border-t-secondary rounded-full animate-spin mx-auto mb-2" />
-            <p className="text-sm text-slate-500">Loading groups...</p>
-          </div>
-        ) : availableGroups.length === 0 ? (
-          <div className="py-8 text-center bg-slate-50 rounded-lg">
-            <p className="text-sm text-slate-500">No available groups found</p>
-            <p className="text-xs text-slate-400 mt-1">
-              All groups may be at capacity or already enrolled
-            </p>
-          </div>
-        ) : (
-          <GroupCombobox
-            value={selectedGroup}
-            onChange={setSelectedGroup}
-            search={search}
-            setSearch={setSearch}
-            groups={availableGroups}
-            isLoading={isLoading || false}
-            recentGroupIds={recentGroupIds}
-          />
-        )}
+        <GroupCombobox
+          value={selectedGroup}
+          onChange={setSelectedGroup}
+          search={search}
+          setSearch={setSearch}
+          excludeGroupIds={excludeGroupIds}
+        />
       </div>
     </Modal>
   )

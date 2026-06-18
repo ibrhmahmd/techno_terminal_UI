@@ -29,7 +29,6 @@ import { useStudentCourses } from '../hooks/students/useStudentCourses'
 import { useStudentCompetitions } from '../hooks/students/useStudentCompetitions'
 import { useStudentTeams } from '../hooks/students/useStudentTeams'
 import { enrollStudent } from '../api/academics'
-import { useGroupsFlat } from '../hooks/useGroupQueries'
 
 
 export function StudentDetailPage() {
@@ -83,21 +82,14 @@ export function StudentDetailPage() {
   const [isLinkParentModalOpen, setIsLinkParentModalOpen] = useState(false)
   const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [recentGroupIds, setRecentGroupIds] = useState<number[]>([])
 
   // Check if student is soft-deleted
   const studentIsDeleted = student ? isStudentDeleted(student) : false
   
-  // Available groups for enrollment
-  const { data: groups, isLoading: isLoadingGroups } = useGroupsFlat(undefined, isEnrollDialogOpen)
-
   // Filter out groups the student is already enrolled in
   const enrolledGroupIds = details?.enrollments
     ?.filter(e => e.status === 'active')
     .map(e => e.group_id) || []
-    
-  const availableGroups = (groups?.items || [])
-    .filter(g => !enrolledGroupIds.includes(g.id))
 
   // Refresh data after successful operations
   const handleRefresh = async () => {
@@ -188,8 +180,6 @@ export function StudentDetailPage() {
         group_id: groupId,
       }
       await enrollStudent(enrollData)
-      // Add to recent groups
-      setRecentGroupIds(prev => [groupId, ...prev.filter(id => id !== groupId)].slice(0, 5))
       // Refresh student data to get updated enrollments
       await handleRefresh()
     } catch (err) {
@@ -471,9 +461,7 @@ export function StudentDetailPage() {
         isOpen={isEnrollDialogOpen}
         onClose={() => setIsEnrollDialogOpen(false)}
         onEnroll={handleEnroll}
-        availableGroups={availableGroups}
-        isLoading={isLoadingGroups}
-        recentGroupIds={recentGroupIds}
+        excludeGroupIds={enrolledGroupIds}
       />
 
       {ToastComponent}

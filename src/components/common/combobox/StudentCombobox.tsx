@@ -1,7 +1,5 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import type { StudentListItem } from '../../../api/crm'
-import { SpyCombobox } from '../SpyCombobox'
-import type { SpyCategory } from '../SpyCombobox'
 import { getRecentItems, addRecentItem, type RecentItem } from '../../../utils/recentCache'
 
 export interface StudentComboboxProps {
@@ -22,12 +20,75 @@ export function StudentCombobox({
   isLoading 
 }: StudentComboboxProps) {
   const [groupByMode, setGroupByMode] = useState<'alphabetical' | 'status' | 'gender'>('alphabetical')
-  const [recentStudents, setRecentStudents] = useState<RecentItem[]>(() => getRecentItems('techno_recent_students'))
+  const [recentStudents, setRecentStudents] = useState<RecentItem[]>(() =>
+    getRecentItems('techno_recent_students')
+  )
+  const [isOpen, setIsOpen] = useState(false)
+  const [dropdownAbove, setDropdownAbove] = useState(false)
+  const [selectedCategoryKey, setSelectedCategoryKey] = useState<string>('')
 
-  const categories = useMemo<SpyCategory<StudentListItem>[]>(() => {
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Smart viewport flip when dropdown opens or search results change
+  const updatePosition = () => {
+    if (wrapperRef.current) {
+      const rect = wrapperRef.current.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      if (spaceBelow < 350 && rect.top > spaceBelow) {
+        setDropdownAbove(true)
+      } else {
+        setDropdownAbove(false)
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (isOpen) {
+      const handle = requestAnimationFrame(() => {
+        updatePosition()
+      })
+      return () => cancelAnimationFrame(handle)
+    }
+  }, [isOpen, search, students])
+
+  // Get categories and their items
+  const groupedData = useMemo(() => {
+    // Search length < 2: show recents only
+    if (search.length < 2) {
+      let list = recentStudents.map(r => ({
+        id: Number(r.id),
+        full_name: r.name,
+        status: 'active' as const,
+        phone: 'Recently Selected',
+      } as StudentListItem))
+
+      if (search.length === 1) {
+        const query = search.toLowerCase()
+        list = list.filter(s => s.full_name.toLowerCase().includes(query))
+      }
+
+      return [{
+        key: 'recents',
+        label: 'Recently Selected',
+        groups: list,
+      }]
+    }
+
+    // Search length >= 2: group students by active mode
+    if (!students || students.length === 0) return []
+
     const grouped: Record<string, StudentListItem[]> = {}
-    if (!students) return []
-    
     students.forEach(s => {
       let groupKey = 'Other'
       if (groupByMode === 'alphabetical') {
@@ -50,54 +111,64 @@ export function StudentCombobox({
 
     const sortedKeys = Object.keys(grouped).sort()
     return sortedKeys.map(k => ({
-      id: k,
-      title: k,
-      icon: groupByMode === 'alphabetical' ? 'sort_by_alpha' : groupByMode === 'status' ? 'info' : 'group',
-      items: grouped[k]
+      key: k,
+      label: k,
+      groups: grouped[k],
     }))
-  }, [students, groupByMode])
+  }, [students, search, groupByMode, recentStudents])
 
-  // Compute active categories for empty/focus/1-char browse mode
-  const activeCategories = useMemo<SpyCategory<StudentListItem>[]>(() => {
-    if (search.length >= 2) {
-      return categories
-    }
-    
-    const itemsToShow = search.length === 1
-      ? recentStudents.filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
-      : recentStudents
+  // Automatically pick the first category key as active if current one doesn't exist
+  const categories = useMemo(() => {
+    return groupedData.map(g => ({
+      key: g.key,
+      label: g.label,
+      count: g.groups.length
+    }))
+  }, [groupedData])
 
-    if (itemsToShow.length === 0) return []
+  const activeCategoryKey = useMemo(() => {
+    if (categories.length === 0) return ''
+    const exists = categories.some(c => c.key === selectedCategoryKey)
+    return exists ? selectedCategoryKey : categories[0].key
+  }, [categories, selectedCategoryKey])
 
-    return [{
-      id: 'recent',
-      title: 'Recently Selected',
-      icon: 'history',
-      items: itemsToShow.map(r => ({
-        id: Number(r.id),
-        full_name: r.name,
-        status: 'active' as const,
-        phone: 'Recently Selected'
-      } as StudentListItem)),
-      isSpecial: true
-    }]
-  }, [search, recentStudents, categories])
+  // Get students in active category
+  const activeCategoryStudents = useMemo(() => {
+    const matched = groupedData.find(g => g.key === activeCategoryKey)
+    return matched ? matched.groups : []
+  }, [groupedData, activeCategoryKey])
 
-  const totalItemsCount = useMemo(() => {
-    if (search.length >= 2) {
-      return students.length
-    }
-    return activeCategories.length > 0 ? activeCategories[0].items.length : 0
-  }, [search, students, activeCategories])
-
+  // ── Selected state ─────────────────────────────────────────────────────────
   if (value) {
     return (
-      <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-        <span className="font-medium text-on-surface">{value.full_name}</span>
-        <button 
+      <div className="flex items-center justify-between p-3.5 bg-green-50/50 border border-green-100 rounded-xl shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-green-700">
+            <span className="material-symbols-outlined text-[22px]" aria-hidden="true">person</span>
+          </div>
+          <div>
+            <span className="font-headline font-semibold text-slate-800 text-sm flex items-center gap-1.5">
+              {value.full_name}
+              {value.has_unpaid_balance && (
+                <span className="material-symbols-outlined text-[16px] text-amber-500 font-bold" aria-hidden="true" title="Has unpaid balance">warning</span>
+              )}
+            </span>
+            <div className="flex gap-2 text-xs text-slate-500 mt-0.5">
+              <span>{value.phone || 'No phone'}</span>
+              <span>•</span>
+              <span className="capitalize">{value.status}</span>
+            </div>
+          </div>
+        </div>
+        <button
           type="button"
-          onClick={() => { onChange(null); setSearch(''); setGroupByMode('alphabetical') }}
-          className="text-sm font-medium text-red-600 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-100 rounded"
+          onClick={() => {
+            onChange(null)
+            setSearch('')
+            setGroupByMode('alphabetical')
+          }}
+          aria-label={`Change student selection (currently ${value.full_name})`}
+          className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
         >
           Change
         </button>
@@ -105,59 +176,195 @@ export function StudentCombobox({
     )
   }
 
+  const isSearching = search.length >= 2
+
   return (
-    <SpyCombobox<StudentListItem>
-      search={search}
-      onSearchChange={setSearch}
-      placeholder="Search student (min 2 chars)..."
-      isLoading={isLoading}
-      noResultsText={
-        search.length === 0
-          ? "No recently selected students. Type to search."
-          : search.length === 1
-            ? "No matching recently selected students. Type at least 2 chars to search."
-            : `No students found matching "${search}"`
-      }
-      modes={search.length >= 2 ? ['alphabetical', 'status', 'gender'] : undefined}
-      activeMode={groupByMode}
-      onModeChange={(mode) => setGroupByMode(mode as 'alphabetical' | 'status' | 'gender')}
-      categories={activeCategories}
-      totalItemsCount={totalItemsCount}
-      onSelect={(student) => {
-        addRecentItem('techno_recent_students', { id: student.id, name: student.full_name })
-        setRecentStudents(getRecentItems('techno_recent_students'))
-        onChange(student)
-        setSearch('')
-      }}
-      renderItem={(s, isHighlighted) => (
+    <div ref={wrapperRef} className="relative w-full">
+      {/* Search Input Trigger */}
+      <div className="relative">
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[20px] text-slate-400" aria-hidden="true">search</span>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value)
+            setIsOpen(true)
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder="Search student (min 2 chars)..."
+          className="w-full pl-10 pr-10 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all placeholder:text-slate-400"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearch('')
+              setIsOpen(true)
+            }}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 flex items-center justify-center"
+          >
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
+          </button>
+        )}
+      </div>
+
+      {/* Dropdown Panel */}
+      {isOpen && (
         <div
-          className={`w-full px-4 py-2.5 text-left cursor-pointer border-b border-slate-100 last:border-0 transition-colors ${
-            isHighlighted ? 'bg-secondary/10' : 'hover:bg-slate-50'
+          className={`absolute z-50 left-0 right-0 md:w-[550px] w-screen max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
+            dropdownAbove ? 'bottom-full mb-2' : 'top-full mt-2'
           }`}
         >
-          <div className="flex justify-between items-center mb-0.5">
-            <p className="font-medium text-sm text-on-surface leading-tight flex items-center gap-1.5">
-              {s.full_name}
-              {s.has_unpaid_balance && (
-                <span 
-                  className="material-symbols-outlined text-[16px] text-amber-500 font-bold" 
-                  title="Has unpaid balance"
-                >
-                  warning
-                </span>
-              )}
-            </p>
-            <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold border shadow-sm ${
-              s.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
-              s.status === 'inactive' ? 'bg-slate-100 text-slate-600 border-slate-200' :
-              'bg-yellow-50 text-yellow-700 border-yellow-200'
-            }`}>
-              {s.status ? s.status.charAt(0).toUpperCase() + s.status.slice(1) : 'Unknown'}
-            </span>
-          </div>
-          <p className="text-xs text-slate-500">{s.phone || 'No phone'}</p>
+          {/* GroupBy Options Selector (Only when searching) */}
+          {isSearching && (
+            <div className="flex items-center gap-1.5 p-0.5 rounded-lg bg-blue-50/50 border border-blue-100/50 text-[11px] w-fit">
+              <span className="text-slate-400 px-2 font-medium">Group by:</span>
+              {(['alphabetical', 'status', 'gender'] as const).map((mode) => {
+                const isActive = groupByMode === mode
+                const labels = { alphabetical: 'A-Z', status: 'status', gender: 'gender' }
+                const icons = { alphabetical: 'sort_by_alpha', status: 'info', gender: 'group' }
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setGroupByMode(mode)}
+                    className={`px-2.5 py-1 rounded-md font-headline font-semibold capitalize flex items-center gap-1 transition-all ${
+                      isActive
+                        ? 'bg-white text-secondary shadow-sm border border-blue-100'
+                        : 'text-slate-500 hover:bg-white/50 hover:text-secondary'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[13px]" aria-hidden="true">{icons[mode]}</span>
+                    {labels[mode]}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Category Tabs (Always show if > 0) */}
+          {categories.length > 0 && (
+            <div className="flex items-center gap-1 border-b border-slate-100 pb-2 overflow-x-auto scrollbar-none py-1">
+              {categories.map((cat) => {
+                const isActive = cat.key === activeCategoryKey
+                return (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => setSelectedCategoryKey(cat.key)}
+                    className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      isActive
+                        ? 'bg-slate-800 text-white font-bold'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                    }`}
+                  >
+                    <span className="font-headline">{cat.label}</span>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold tabular-nums ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {cat.count}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Shimmer/Loader State */}
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto py-1">
+              {[1, 2, 3, 4].map(n => (
+                <div key={n} className="animate-pulse border border-slate-100 rounded-xl p-3.5 flex flex-col gap-2 bg-slate-50/50">
+                  <div className="h-4 bg-slate-200 rounded w-2/3" />
+                  <div className="h-3 bg-slate-200 rounded w-1/2" />
+                  <div className="flex gap-2 mt-1">
+                    <div className="h-3 bg-slate-200 rounded w-1/4" />
+                    <div className="h-3 bg-slate-200 rounded w-1/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : categories.length === 0 ? (
+            /* Empty State */
+            <div className="flex flex-col items-center justify-center py-8 px-4 text-center text-slate-400 gap-1.5">
+              <span className="material-symbols-outlined text-4xl text-slate-200" aria-hidden="true">grid_view</span>
+              <p className="text-sm font-medium">
+                {search.length === 0
+                  ? "No recently selected students. Type to search."
+                  : search.length === 1
+                    ? "Type at least 2 characters to search students."
+                    : `No students found matching "${search}"`}
+              </p>
+            </div>
+          ) : (
+            /* Results Card Grid */
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto py-1 scrollbar-thin">
+              {activeCategoryStudents.map((s) => {
+                return (
+                  <div
+                    key={s.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      addRecentItem('techno_recent_students', { id: s.id, name: s.full_name })
+                      setRecentStudents(getRecentItems('techno_recent_students'))
+                      onChange(s)
+                      setSearch('')
+                      setIsOpen(false)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        addRecentItem('techno_recent_students', { id: s.id, name: s.full_name })
+                        setRecentStudents(getRecentItems('techno_recent_students'))
+                        onChange(s)
+                        setSearch('')
+                        setIsOpen(false)
+                      }
+                    }}
+                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-3.5 rounded-xl cursor-pointer transition-all flex flex-col justify-between gap-2 shadow-sm hover:shadow-md"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start gap-2">
+                        <h4 className="font-headline font-semibold text-slate-800 text-sm leading-tight line-clamp-1 flex items-center gap-1.5">
+                          {s.full_name}
+                          {s.has_unpaid_balance && (
+                            <span className="material-symbols-outlined text-[16px] text-amber-500 font-bold" aria-hidden="true" title="Has unpaid balance">warning</span>
+                          )}
+                        </h4>
+                        {recentStudents.some(r => String(r.id) === String(s.id)) && (
+                          <span className="material-symbols-outlined text-[15px] text-amber-500 font-bold font-headline" aria-hidden="true" title="Recently used">history</span>
+                        )}
+                      </div>
+                      {s.phone && (
+                        <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px]" aria-hidden="true">phone</span>
+                          <span className="truncate">{s.phone}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100/60">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold border shadow-sm ${
+                        s.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
+                        s.status === 'inactive' ? 'bg-slate-100 text-slate-600 border-slate-200' :
+                        'bg-yellow-50 text-yellow-700 border-yellow-200'
+                      }`}>
+                        {s.status ? s.status.charAt(0).toUpperCase() + s.status.slice(1) : 'Unknown'}
+                      </span>
+                      {s.gender && (
+                        <span className="text-[10px] text-slate-400 capitalize">{s.gender}</span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
-    />
+    </div>
   )
 }

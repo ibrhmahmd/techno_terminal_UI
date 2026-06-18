@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useToast } from '../common/Toast'
 import { useStudentsSearch } from '../../hooks/useDirectory'
-import { useGroupsFlat } from '../../hooks/useGroupQueries'
-import { useRecentGroups } from '../../hooks/useRecentGroups'
 import { useStudentSiblings } from '../../hooks/students/useStudentSiblings'
 import { createEnrollment } from '../../api/enrollments'
 import { StudentCombobox, GroupCombobox } from '../common/combobox'
+import { addRecentItem } from '../../utils/recentCache'
 import { Users, X, MapPin, Calendar, Info } from 'lucide-react'
 import type { StudentListItem } from '../../api/crm'
 import type { EnrichedGroupPublic } from '../../api/academics'
@@ -60,13 +59,9 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
     }
   }, [selectedGroup])
 
-  // Hook into caches
   const { data: studentsData, isLoading: isSearchingStudents } = useStudentsSearch(studentSearch)
-  const { data: groupsData, isLoading: isLoadingGroups } = useGroupsFlat(undefined, true)
-  const { recentGroupIds, addRecentGroup } = useRecentGroups()
 
   const students = studentsData || []
-  const groups = groupsData?.items || []
 
   const handleStudentChange = (student: StudentListItem | null) => {
     setSelectedStudent(student)
@@ -109,7 +104,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
         })
         showToast(`Successfully enrolled ${selectedStudent.full_name}`, 'success')
         // Cache the group selection for quick reuse
-        addRecentGroup(selectedGroup.id)
+        addRecentItem('techno_recent_groups', { id: selectedGroup.id, name: selectedGroup.name })
         // Callback for parent component
         onEnrollmentSuccess?.()
       }
@@ -187,9 +182,6 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
               onChange={handleGroupChange}
               search={groupSearch}
               setSearch={setGroupSearch}
-              groups={groups}
-              isLoading={isLoadingGroups}
-              recentGroupIds={recentGroupIds}
             />
           ) : (
             <div className="p-4 bg-surface-container-low border border-slate-200 rounded-xl">

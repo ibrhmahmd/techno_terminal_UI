@@ -4,7 +4,6 @@ import { LoadingSpinner } from '../common/LoadingSpinner'
 import { StudentMultiSelector, type StudentSelection } from '../common/StudentMultiSelector'
 import { GroupCombobox } from '../common/combobox/GroupCombobox'
 import { InstructorCombobox } from '../common/combobox/InstructorCombobox'
-import { useGroupsFlat } from '../../hooks/useGroupQueries'
 import type { EnrichedGroupPublic } from '../../api/academics'
 import type { EmployeeListItem } from '../../api/hr'
 import type { RegisterTeamInput } from '../../api/teams'
@@ -32,8 +31,6 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
   const [selectedInstructor, setSelectedInstructor] = useState<EmployeeListItem | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const { data: groups, isLoading: groupsLoading } = useGroupsFlat(undefined, selectionMode === 'group' && isOpen)
 
   useEffect(() => {
     if (isOpen) {
@@ -317,9 +314,6 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
               onChange={setSelectedGroup}
               search={groupSearch}
               setSearch={setGroupSearch}
-              groups={groups?.items ?? []}
-              isLoading={groupsLoading}
-              recentGroupIds={[]}
             />
           )}
         </div>

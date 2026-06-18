@@ -14,6 +14,8 @@ interface SpyComboboxProps<T> {
   onSearchChange: (val: string) => void
   placeholder?: string
   isLoading?: boolean
+  /** True while a server request is in-flight (shows skeleton shimmer) */
+  isFetching?: boolean
   noResultsText?: string
 
   // Grouping Options
@@ -28,9 +30,26 @@ interface SpyComboboxProps<T> {
   // Renderers
   renderItem: (item: T, isHighlighted: boolean, index: number) => ReactNode
   renderCategoryHeader?: (category: SpyCategory<T>) => ReactNode
-  
+
   // Interactions
   onSelect: (item: T) => void
+}
+
+// Skeleton shimmer for loading state
+function SkeletonRows() {
+  return (
+    <div className="p-3 space-y-2 animate-pulse" aria-hidden="true">
+      {[1, 2, 3].map(i => (
+        <div key={i} className="px-1 py-2.5 border-b border-slate-100 last:border-0">
+          <div className="flex justify-between items-start mb-1.5">
+            <div className="h-3.5 bg-slate-200 rounded w-2/5" />
+            <div className="h-3 bg-slate-100 rounded w-10" />
+          </div>
+          <div className="h-2.5 bg-slate-100 rounded w-3/5" />
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export function SpyCombobox<T>({
@@ -38,6 +57,7 @@ export function SpyCombobox<T>({
   onSearchChange,
   placeholder = 'Search...',
   isLoading = false,
+  isFetching = false,
   noResultsText = 'No items found.',
   modes,
   activeMode,
@@ -53,13 +73,17 @@ export function SpyCombobox<T>({
   const [activeCategoryId, setActiveCategoryId] = useState<string>('')
   const [visibleLimit, setVisibleLimit] = useState(40)
   const [inputValue, setInputValue] = useState(search)
-  
+  const [dropdownAbove, setDropdownAbove] = useState(false)
+
   const wrapperRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const lastScrollCheckRef = useRef<number>(0)
 
   // Extract navigation categories (non-special ones)
   const navCategories = categories.filter(c => !c.isSpecial && c.items.length > 0)
+
+  // Sidebar is only useful when there are multiple categories and enough items
+  const showSidebar = navCategories.length > 1 && totalItemsCount >= 10
 
   // Click outside to close
   useEffect(() => {
@@ -108,9 +132,18 @@ export function SpyCombobox<T>({
     }
   }, [isOpen])
 
+  // Measure available space and decide if dropdown should flip above the input
+  useEffect(() => {
+    if (isOpen && wrapperRef.current) {
+      const rect = wrapperRef.current.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      setDropdownAbove(spaceBelow < 300)
+    }
+  }, [isOpen])
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const container = e.currentTarget
-    
+
     // 1. Progressive Rendering: Scroll near bottom trigger
     const threshold = 100 // px from bottom
     const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < threshold
@@ -125,11 +158,10 @@ export function SpyCombobox<T>({
 
     const headers = container.querySelectorAll('.spy-category-header')
     let currentActive = activeCategoryId
-    
+
     headers.forEach(header => {
       const parentRect = container.getBoundingClientRect()
       const rect = header.getBoundingClientRect()
-      // If the top of the header is very close to or above the container's top boundary
       if (rect.top <= parentRect.top + 30) {
         currentActive = header.getAttribute('data-category-id') || currentActive
       }
@@ -168,7 +200,6 @@ export function SpyCombobox<T>({
       case 'Enter':
         e.preventDefault()
         if (highlightedIndex >= 0 && highlightedIndex < totalItemsCount) {
-          // Resolve highlighted flat index to nested item
           let relativeIndex = highlightedIndex
           for (const cat of categories) {
             if (relativeIndex < cat.items.length) {
@@ -186,13 +217,13 @@ export function SpyCombobox<T>({
     }
   }
 
-  // Auto scroll highlighted item container scroll position directly (avoids window layout shifts)
+  // Auto scroll highlighted item into view
   useEffect(() => {
     if (highlightedIndex >= 0) {
       if (highlightedIndex >= visibleLimit) {
         setVisibleLimit(prev => Math.min(totalItemsCount, Math.max(prev + 40, highlightedIndex + 1)))
       }
-      
+
       if (listRef.current) {
         const element = listRef.current.querySelector(`[data-index="${highlightedIndex}"]`) as HTMLElement
         if (element) {
@@ -201,7 +232,7 @@ export function SpyCombobox<T>({
           const elemBottom = elemTop + element.offsetHeight
           const containerTop = container.scrollTop
           const containerBottom = containerTop + container.clientHeight
-          
+
           if (elemTop < containerTop) {
             container.scrollTop = elemTop
           } else if (elemBottom > containerBottom) {
@@ -214,10 +245,21 @@ export function SpyCombobox<T>({
 
   let globalIndexCounter = 0
 
+  // Dropdown position classes — flip above the input when near bottom of viewport
+  const dropdownPositionClasses = dropdownAbove
+    ? 'bottom-full mb-1 rounded-t-lg border-b rounded-b-none border-b-transparent'
+    : 'top-full mt-1 rounded-b-lg border-t-0'
+
   return (
     <div ref={wrapperRef} className="relative w-full">
       {/* Search Input */}
-      <div className={`flex items-center gap-2 px-4 py-2 bg-slate-100 border transition-colors ${isOpen ? 'rounded-t-lg rounded-b-none border-b-transparent border-slate-200' : 'rounded-lg border-slate-200'}`}>
+      <div className={`flex items-center gap-2 px-4 py-2 bg-slate-100 border transition-colors ${
+        isOpen
+          ? dropdownAbove
+            ? 'rounded-b-lg rounded-t-none border-t-transparent border-slate-200'
+            : 'rounded-t-lg rounded-b-none border-b-transparent border-slate-200'
+          : 'rounded-lg border-slate-200'
+      }`}>
         <span className="material-symbols-outlined text-slate-500">search</span>
         <input
           type="text"
@@ -232,8 +274,8 @@ export function SpyCombobox<T>({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full min-w-0 sm:min-w-[400px] max-w-[100vw] left-0 sm:left-auto bg-white border border-t-0 border-slate-200 rounded-b-lg shadow-2xl overflow-hidden mt-1">
-          
+        <div className={`absolute z-50 w-full min-w-0 sm:min-w-[400px] max-w-[100vw] left-0 sm:left-auto bg-white border border-slate-200 shadow-2xl overflow-hidden ${dropdownPositionClasses}`}>
+
           {/* Dynamic Grouping Toolbar */}
           {modes && modes.length > 0 && onModeChange && (
             <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
@@ -245,8 +287,8 @@ export function SpyCombobox<T>({
                     type="button"
                     onClick={() => onModeChange(mode)}
                     className={`px-3 py-1.5 text-xs font-semibold rounded capitalize transition-all ${
-                      activeMode === mode 
-                        ? 'bg-white text-secondary shadow-sm ring-1 ring-black/5' 
+                      activeMode === mode
+                        ? 'bg-white text-secondary shadow-sm ring-1 ring-black/5'
                         : 'text-slate-500 hover:text-slate-700'
                     }`}
                   >
@@ -257,14 +299,17 @@ export function SpyCombobox<T>({
             </div>
           )}
 
-          {totalItemsCount > 0 ? (
+          {/* Skeleton shimmer while server request is in-flight with no current results */}
+          {isFetching && totalItemsCount === 0 ? (
+            <SkeletonRows />
+          ) : totalItemsCount > 0 ? (
             <div className="flex w-full h-full">
-              
-              {/* Left Sidebar: Categories */}
-              {navCategories.length > 0 && (
+
+              {/* Left Sidebar: Categories — only shown when multi-category + enough items */}
+              {showSidebar && (
                 <div className="hidden sm:block w-auto min-w-[max-content] md:max-w-[40%] flex-shrink-0 bg-slate-50/50 border-r border-slate-100 overflow-y-auto no-scrollbar py-2">
                   {navCategories.map(cat => (
-                    <div 
+                    <div
                       key={`nav-${cat.id}`}
                       onClick={() => scrollToCategory(cat.id)}
                       className={`px-4 py-2.5 text-xs font-medium cursor-pointer transition-colors border-l-2 ${
@@ -281,6 +326,10 @@ export function SpyCombobox<T>({
 
               {/* Right Pane: Main List */}
               <div ref={listRef} className="flex-1 overflow-y-auto outline-none relative no-scrollbar" onScroll={handleScroll}>
+                {/* Subtle shimmer overlay when re-fetching existing results */}
+                {isFetching && (
+                  <div className="absolute inset-0 bg-white/50 z-20 pointer-events-none" aria-hidden="true" />
+                )}
                 {categories.map(cat => {
                   if (cat.items.length === 0) return null
 
@@ -298,7 +347,7 @@ export function SpyCombobox<T>({
                           {renderCategoryHeader(cat)}
                         </div>
                       ) : (
-                        <div 
+                        <div
                           data-category-id={cat.id}
                           className="spy-category-header sticky top-0 z-10 px-4 py-1.5 bg-white/95 backdrop-blur-sm border-b border-slate-100 text-[11px] font-bold text-slate-800 flex items-center gap-1.5 shadow-sm"
                         >
@@ -306,17 +355,17 @@ export function SpyCombobox<T>({
                           {cat.title}
                         </div>
                       )}
-                      
+
                       {/* Items */}
                       {cat.items.map(item => {
                         const currentIndex = globalIndexCounter++
                         const isHighlighted = highlightedIndex === currentIndex
-                        
+
                         if (currentIndex >= visibleLimit) return null
 
                         return (
-                          <div 
-                            key={`item-${currentIndex}`} 
+                          <div
+                            key={`item-${currentIndex}`}
                             data-index={currentIndex}
                             onClick={() => {
                               onSelect(item)

@@ -5,7 +5,6 @@ import { StudentCombobox, GroupCombobox } from '../common/combobox'
 import { transferEnrollment, deleteEnrollment } from '../../api/enrollments'
 import { useStudentEnrollments } from '../../hooks/finance/useStudentEnrollments'
 import { useStudentsSearch } from '../../hooks/useDirectory'
-import { useGroupsFlat } from '../../hooks/useGroupQueries'
 import type { StudentListItem } from '../../api/crm'
 import type { EnrichedGroupPublic } from '../../api/academics'
 import type { StudentEnrollmentInfo } from '../../hooks/finance/useStudentEnrollments'
@@ -39,7 +38,6 @@ export function DropEnrollmentPanel({ isLoading, setIsLoading }: DropEnrollmentP
   // Transfer state
   const [groupSearch, setGroupSearch] = useState('')
   const [destinationGroup, setDestinationGroup] = useState<EnrichedGroupPublic | null>(null)
-  const { data: allGroupsData, isLoading: groupsLoading } = useGroupsFlat(undefined, true)
 
   // Drop state
   const [dropNotes, setDropNotes] = useState('')
@@ -253,9 +251,6 @@ export function DropEnrollmentPanel({ isLoading, setIsLoading }: DropEnrollmentP
                       onChange={setDestinationGroup}
                       search={groupSearch}
                       setSearch={setGroupSearch}
-                      isLoading={groupsLoading}
-                      recentGroupIds={[]}
-                      groups={(allGroupsData?.items ?? []).filter(g => g.id !== selectedEnrollment.group_id)}
                     />
                   </div>
                   <button
