@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useToast } from '../common/Toast'
-import { StudentCombobox } from '../common/combobox'
+import { StudentCombobox } from '../student/StudentCombobox'
 import { useStudentEnrollments } from '../../hooks/finance/useStudentEnrollments'
 import { useStudentsSearch } from '../../hooks/useDirectory'
 import { useUpdateEnrollment } from '../../hooks/useEnrollmentMutations'

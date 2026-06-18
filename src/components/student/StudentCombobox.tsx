@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, memo } from 'react'
-import type { StudentListItem } from '../../../api/crm'
-import { getRecentItems, addRecentItem, type RecentItem } from '../../../utils/recentCache'
+import type { StudentListItem } from '../../api/crm'
+import { getRecentItems, addRecentItem, type RecentItem } from '../../utils/recentCache'
 
 export interface StudentComboboxProps {
   value: StudentListItem | null

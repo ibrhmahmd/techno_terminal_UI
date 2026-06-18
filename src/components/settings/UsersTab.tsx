@@ -5,7 +5,7 @@ import { useUsers, useUpdateUser, useDeleteUser, useInviteUser, useCreateUser, u
 import { useDebounce } from '../../hooks/useDebounce'
 import { formatDate } from '../../utils/formatting'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import { InstructorCombobox } from '../common/combobox/InstructorCombobox'
+import { InstructorCombobox } from '../staff/InstructorCombobox'
 import type { EmployeeListItem } from '../../api/hr'
 
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'

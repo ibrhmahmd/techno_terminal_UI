@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef, memo } from 'react'
-import { useEmployees } from '../../../hooks/useStaff'
-import type { EmployeeListItem } from '../../../api/hr'
-import { getRecentItems, addRecentItem, type RecentItem } from '../../../utils/recentCache'
+import { useEmployees } from '../../hooks/useStaff'
+import type { EmployeeListItem } from '../../api/hr'
+import { getRecentItems, addRecentItem, type RecentItem } from '../../utils/recentCache'
 
 export interface InstructorComboboxProps {
   value: EmployeeListItem | null

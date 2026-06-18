@@ -203,21 +203,21 @@
 
 ### Implementation for User Story 8
 
-- [ ] T074 [US8] Move `src/components/common/combobox/StudentCombobox.tsx` → `src/components/student/StudentCombobox.tsx`
-- [ ] T075 [US8] Move `src/components/common/combobox/GroupCombobox.tsx` → `src/components/groups/GroupCombobox.tsx`
-- [ ] T076 [US8] Move `src/components/common/combobox/InstructorCombobox.tsx` → `src/components/staff/InstructorCombobox.tsx`
-- [ ] T077 [US8] Update `src/components/common/combobox/index.ts` — remove relocated component exports, keep only SpyCombobox
-- [ ] T078 [US8] Update imports in `src/pages/TeamDetailPage.tsx` — StudentCombobox from new location
-- [ ] T079 [US8] Update imports in `src/components/enrollments/ModifyEnrollmentPanel.tsx` — StudentCombobox from new location
-- [ ] T080 [US8] Update imports in `src/components/enrollments/EnrollPanel.tsx` — StudentCombobox, GroupCombobox from new locations
-- [ ] T081 [US8] Update imports in `src/components/enrollments/DropEnrollmentPanel.tsx` — StudentCombobox, GroupCombobox from new locations
-- [ ] T082 [US8] Update imports in `src/components/teams/TeamEditModal.tsx` — InstructorCombobox from new location
-- [ ] T083 [US8] Update imports in `src/components/competitions/TeamRegistrationModal.tsx` — GroupCombobox, InstructorCombobox from new locations
-- [ ] T084 [US8] Update imports in `src/components/student/EnrollmentsTab.tsx` — GroupCombobox from new location
-- [ ] T085 [US8] Update imports in `src/components/settings/UsersTab.tsx` — InstructorCombobox from new location
-- [ ] T086 [US8] Update imports in `src/components/finance/UnpaidEnrollmentsFilters.tsx` — GroupCombobox from new location
-- [ ] T087 [US8] Update imports in `src/components/finance/CreateReceipt/ReceiptLineItemRow.tsx` — StudentCombobox from new location
-- [ ] T088 [US8] Fix relative import paths in moved files — adjust `../../../` to correct depth
+- [x] T074 [US8] Move `src/components/common/combobox/StudentCombobox.tsx` → `src/components/student/StudentCombobox.tsx`
+- [x] T075 [US8] Move `src/components/common/combobox/GroupCombobox.tsx` → `src/components/groups/GroupCombobox.tsx`
+- [x] T076 [US8] Move `src/components/common/combobox/InstructorCombobox.tsx` → `src/components/staff/InstructorCombobox.tsx`
+- [x] T077 [US8] Update `src/components/common/combobox/index.ts` — remove relocated component exports, keep only SpyCombobox
+- [x] T078 [US8] Update imports in `src/pages/TeamDetailPage.tsx` — StudentCombobox from new location
+- [x] T079 [US8] Update imports in `src/components/enrollments/ModifyEnrollmentPanel.tsx` — StudentCombobox from new location
+- [x] T080 [US8] Update imports in `src/components/enrollments/EnrollPanel.tsx` — StudentCombobox, GroupCombobox from new locations
+- [x] T081 [US8] Update imports in `src/components/enrollments/DropEnrollmentPanel.tsx` — StudentCombobox, GroupCombobox from new locations
+- [x] T082 [US8] Update imports in `src/components/teams/TeamEditModal.tsx` — InstructorCombobox from new location
+- [x] T083 [US8] Update imports in `src/components/competitions/TeamRegistrationModal.tsx` — GroupCombobox, InstructorCombobox from new locations
+- [x] T084 [US8] Update imports in `src/components/student/EnrollmentsTab.tsx` — GroupCombobox from new location
+- [x] T085 [US8] Update imports in `src/components/settings/UsersTab.tsx` — InstructorCombobox from new location
+- [x] T086 [US8] Update imports in `src/components/finance/UnpaidEnrollmentsFilters.tsx` — GroupCombobox from new location
+- [x] T087 [US8] Update imports in `src/components/finance/CreateReceipt/ReceiptLineItemRow.tsx` — StudentCombobox from new location
+- [x] T088 [US8] Fix relative import paths in moved files — adjust `../../../` to correct depth
 
 **Checkpoint**: Architecture compliant, domain components in domain directories
 

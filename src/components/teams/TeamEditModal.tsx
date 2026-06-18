@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import { InstructorCombobox } from '../common/combobox/InstructorCombobox'
+import { InstructorCombobox } from '../staff/InstructorCombobox'
 import type { UpdateTeamInput, TeamDTO } from '../../api/teams'
 import type { EmployeeListItem } from '../../api/hr'
 import { extractErrorMessage } from '../../utils/apiErrors'

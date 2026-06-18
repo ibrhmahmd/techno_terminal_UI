@@ -2,7 +2,7 @@ import { PaymentMethodPills } from '../PaymentMethodPills'
 import type { StudentListItem } from '../../../api/crm'
 import type { StudentEnrollmentInfo } from '../../../hooks/finance/useStudentEnrollments'
 import { EnrollmentSelection } from './EnrollmentSelection'
-import { StudentCombobox } from '../../common/combobox'
+import { StudentCombobox } from '../../student/StudentCombobox'
 
 export interface ReceiptLineItem {
   id: string

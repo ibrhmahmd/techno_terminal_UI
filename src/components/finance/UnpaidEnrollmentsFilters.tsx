@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GroupCombobox } from '../common/combobox/GroupCombobox'
+import { GroupCombobox } from '../groups/GroupCombobox'
 import type { EnrichedGroupPublic } from '../../api/academics'
 
 interface UnpaidEnrollmentsFiltersProps {

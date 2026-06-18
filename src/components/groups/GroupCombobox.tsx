@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef, memo } from 'react'
-import type { EnrichedGroupPublic } from '../../../api/academics'
-import { getRecentItems, addRecentItem, type RecentItem } from '../../../utils/recentCache'
-import { useGroupSearch } from '../../../hooks/useGroupSearch'
+import type { EnrichedGroupPublic } from '../../api/academics'
+import { getRecentItems, addRecentItem, type RecentItem } from '../../utils/recentCache'
+import { useGroupSearch } from '../../hooks/useGroupSearch'
 
 export interface GroupComboboxProps {
   value: EnrichedGroupPublic | null
@@ -63,7 +63,6 @@ export function GroupComboboxInner({
     if (wrapperRef.current) {
       const rect = wrapperRef.current.getBoundingClientRect()
       const spaceBelow = window.innerHeight - rect.bottom
-      // If less than 350px below, and there is more space above, open above
       if (spaceBelow < 350 && rect.top > spaceBelow) {
         setDropdownAbove(true)
       } else {

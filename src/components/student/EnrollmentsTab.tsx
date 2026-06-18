@@ -3,7 +3,7 @@ import { Users, Plus, Calendar, CheckCircle2, XCircle, Clock, MapPin } from 'luc
 import type { EnrollmentInfo } from '../../api/crm/students'
 import type { EnrichedGroupPublic } from '../../api/academics'
 import { EmptyState, EntityDetailCard, Modal } from '../common'
-import { GroupCombobox } from '../common/combobox/GroupCombobox'
+import { GroupCombobox } from '../groups/GroupCombobox'
 import { EditEnrollmentModal } from '../enrollments/EditEnrollmentModal'
 
 interface EnrollmentsTabProps {

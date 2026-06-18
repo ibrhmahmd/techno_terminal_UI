@@ -39,7 +39,7 @@ interface SpyComboboxProps<T> {
 // Skeleton shimmer for loading state
 function SkeletonRows() {
   return (
-    <div className="p-3 space-y-2 animate-pulse" aria-hidden="true">
+    <div className="p-3 space-y-2 motion-safe:animate-pulse" aria-hidden="true">
       {[1, 2, 3].map(i => (
         <div key={i} className="px-1 py-2.5 border-b border-slate-100 last:border-0">
           <div className="flex justify-between items-start mb-1.5">
@@ -175,7 +175,7 @@ export function SpyCombobox<T>({
 
   const scrollToCategory = (categoryId: string) => {
     if (!listRef.current) return
-    const target = listRef.current.querySelector(`[data-category-id="${categoryId}"]`)
+    const target = listRef.current.querySelector(`[data-category-id="${CSS.escape(categoryId)}"]`)
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' })
       setActiveCategoryId(categoryId)
@@ -261,7 +261,7 @@ export function SpyCombobox<T>({
             : 'rounded-t-lg rounded-b-none border-b-transparent border-slate-200'
           : 'rounded-lg border-slate-200'
       }`}>
-        <span className="material-symbols-outlined text-slate-500">search</span>
+        <span className="material-symbols-outlined text-slate-500" aria-hidden="true">search</span>
         <input
           type="text"
           placeholder={placeholder}
@@ -269,13 +269,14 @@ export function SpyCombobox<T>({
           onChange={(e) => setInputValue(e.target.value)}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
+          aria-label="Search"
           className="bg-transparent border-none outline-none text-sm text-on-surface flex-1"
         />
         {isLoading && <LoadingSpinner size="sm" />}
       </div>
 
       {isOpen && (
-        <div className={`absolute z-50 w-full min-w-0 sm:min-w-[400px] max-w-[100vw] left-0 sm:left-auto bg-white border border-slate-200 shadow-2xl overflow-hidden ${dropdownPositionClasses}`}>
+        <div className={`absolute z-50 w-full min-w-0 sm:min-w-[400px] max-w-[100vw] left-0 sm:left-auto bg-white/70 backdrop-blur-xl border border-slate-200/60 shadow-2xl overflow-hidden ${dropdownPositionClasses}`}>
 
           {/* Dynamic Grouping Toolbar */}
           {modes && modes.length > 0 && onModeChange && (
