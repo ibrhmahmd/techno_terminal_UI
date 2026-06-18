@@ -311,17 +311,18 @@ export function SpyCombobox<T>({
               {showSidebar && (
                 <div className="hidden sm:block w-auto min-w-[max-content] md:max-w-[40%] flex-shrink-0 bg-slate-50/50 border-r border-slate-100 overflow-y-auto no-scrollbar py-2">
                   {navCategories.map(cat => (
-                    <div
+                    <button
                       key={`nav-${cat.id}`}
+                      type="button"
                       onClick={() => scrollToCategory(cat.id)}
-                      className={`px-4 py-2.5 text-xs font-medium cursor-pointer transition-colors border-l-2 ${
+                      className={`w-full text-left px-4 py-2.5 text-xs font-medium cursor-pointer transition-colors border-l-2 ${
                         (activeCategoryId === cat.id || (!activeCategoryId && navCategories[0].id === cat.id))
                           ? 'border-secondary bg-secondary/5 text-secondary'
                           : 'border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                       }`}
                     >
                       {cat.title}
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -366,17 +367,19 @@ export function SpyCombobox<T>({
                         if (currentIndex >= visibleLimit) return null
 
                         return (
-                          <div
+                          <button
                             key={`item-${currentIndex}`}
+                            type="button"
                             data-index={currentIndex}
                             onClick={() => {
                               onSelect(item)
                               setIsOpen(false)
                             }}
                             onMouseEnter={() => setHighlightedIndex(currentIndex)}
+                            className="w-full text-left"
                           >
                             {renderItem(item, isHighlighted, currentIndex)}
-                          </div>
+                          </button>
                         )
                       })}
                     </div>

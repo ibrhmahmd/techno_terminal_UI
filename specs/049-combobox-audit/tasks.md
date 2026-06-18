@@ -126,8 +126,8 @@
 - [x] T033 [P] [US5] Add `role="tablist"` to category tab containers in all 3 comboboxes
 - [x] T034 [P] [US5] Add `role="tab"` and `aria-selected` to category tab buttons in all 3 comboboxes
 - [x] T035 [P] [US5] Add `aria-hidden="true"` to decorative search icons in SpyCombobox.tsx:263 and category header icons
-- [ ] T036 [P] [US5] Add `role="button"`, `tabIndex={0}`, keyboard handlers to sidebar nav items in SpyCombobox.tsx:312
-- [ ] T037 [P] [US5] Add `role="button"`, `tabIndex={-1}`, keyboard handlers to result items in SpyCombobox.tsx:367
+- [x] T036 [P] [US5] Add `role="button"`, `tabIndex={0}`, keyboard handlers to sidebar nav items in SpyCombobox.tsx:312
+- [x] T037 [P] [US5] Add `role="button"`, `tabIndex={-1}`, keyboard handlers to result items in SpyCombobox.tsx:367
 - [x] T038 [P] [US5] Add `role="listbox"` and `aria-label` to dropdown panels in all 3 comboboxes
 - [x] T039 [US5] Add `aria-label="Select student {name}"` to result card buttons in StudentCombobox.tsx:306
 - [x] T040 [US5] Add `aria-label="Select group {name}"` to result card buttons in GroupCombobox.tsx:348
@@ -227,12 +227,12 @@
 
 **Purpose**: Final validation and cleanup
 
-- [ ] T089 Run `npm run build` — verify zero TypeScript errors
-- [ ] T090 Run `npm run lint` — verify zero ESLint errors
-- [ ] T091 Verify no remaining `: any` types in combobox files
-- [ ] T092 Verify no remaining `console.*` statements in combobox files
-- [ ] T093 Verify no remaining `export default` in combobox files
-- [ ] T094 Verify no remaining `useEffect.*get` patterns in combobox files
+- [x] T089 Run `npm run build` — verify zero TypeScript errors
+- [x] T090 Run `npm run lint` — verify zero ESLint errors
+- [x] T091 Verify no remaining `: any` types in combobox files
+- [x] T092 Verify no remaining `console.*` statements in combobox files
+- [x] T093 Verify no remaining `export default` in combobox files
+- [x] T094 Verify no remaining `useEffect.*get` patterns in combobox files
 
 ---
 
