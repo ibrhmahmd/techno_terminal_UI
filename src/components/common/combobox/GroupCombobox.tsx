@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, memo } from 'react'
 import type { EnrichedGroupPublic } from '../../../api/academics'
 import { getRecentItems, addRecentItem, type RecentItem } from '../../../utils/recentCache'
 import { useGroupSearch } from '../../../hooks/useGroupSearch'
@@ -9,10 +9,6 @@ export interface GroupComboboxProps {
   search: string
   setSearch: (search: string) => void
   excludeGroupIds?: number[]
-  // Kept for API compatibility — not used internally anymore
-  groups?: EnrichedGroupPublic[]
-  isLoading?: boolean
-  recentGroupIds?: number[]
 }
 
 const DAY_ORDER: Record<string, number> = {
@@ -20,7 +16,7 @@ const DAY_ORDER: Record<string, number> = {
   Tuesday: 4, Wednesday: 5, Thursday: 6, Friday: 7,
 }
 
-export function GroupCombobox({
+export function GroupComboboxInner({
   value,
   onChange,
   search,
@@ -31,6 +27,7 @@ export function GroupCombobox({
   const [recentGroups, setRecentGroups] = useState<RecentItem[]>(() =>
     getRecentItems('techno_recent_groups')
   )
+  const recentIdSet = useMemo(() => new Set(recentGroups.map(r => r.id)), [recentGroups])
   const [isOpen, setIsOpen] = useState(false)
   const [dropdownAbove, setDropdownAbove] = useState(false)
 
@@ -85,13 +82,11 @@ export function GroupCombobox({
   }, [isOpen, search, serverGroups])
 
   // Filter searchResult items based on excludeGroupIds
+  const excludeSet = useMemo(() => new Set(excludeGroupIds), [excludeGroupIds])
   const filteredSearchGroups = useMemo(() => {
-    let list = serverGroups
-    if (excludeGroupIds && excludeGroupIds.length > 0) {
-      list = list.filter(g => !excludeGroupIds.includes(g.id))
-    }
-    return list
-  }, [serverGroups, excludeGroupIds])
+    if (excludeSet.size === 0) return serverGroups
+    return serverGroups.filter(g => !excludeSet.has(g.id))
+  }, [serverGroups, excludeSet])
 
   // Get categories and their items
   const groupedData = useMemo(() => {
@@ -104,10 +99,11 @@ export function GroupCombobox({
         status: 'active',
         capacity: 0,
         current_level: 1,
-      } as EnrichedGroupPublic))
+        instructor_name: '',
+      } satisfies EnrichedGroupPublic))
 
-      if (excludeGroupIds && excludeGroupIds.length > 0) {
-        list = list.filter(g => !excludeGroupIds.includes(g.id))
+      if (excludeSet.size > 0) {
+        list = list.filter(g => !excludeSet.has(g.id))
       }
 
       if (search.length === 1) {
@@ -149,7 +145,7 @@ export function GroupCombobox({
       label: k,
       groups: grouped[k],
     }))
-  }, [filteredSearchGroups, search, groupByMode, recentGroups, excludeGroupIds])
+  }, [filteredSearchGroups, search, groupByMode, recentGroups, excludeSet])
 
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<string>('')
 
@@ -177,7 +173,7 @@ export function GroupCombobox({
   // ── Selected state ─────────────────────────────────────────────────────────
   if (value) {
     return (
-      <div className="flex items-center justify-between p-3.5 bg-blue-50/50 border border-blue-100 rounded-xl shadow-sm">
+      <div className="flex items-center justify-between p-4 bg-blue-50/50 border border-blue-100 rounded-xl shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-secondary">
             <span className="material-symbols-outlined text-[22px]" aria-hidden="true">group</span>
@@ -230,7 +226,8 @@ export function GroupCombobox({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder="Search groups by name, course, or instructor..."
-          className="w-full pl-10 pr-10 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all placeholder:text-slate-400"
+          aria-label="Search group"
+          className="w-full pl-10 pr-10 py-3 text-sm border border-slate-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20 focus-visible:border-secondary transition-colors placeholder:text-slate-400"
         />
         {search && (
           <button
@@ -239,6 +236,7 @@ export function GroupCombobox({
               setSearch('')
               setIsOpen(true)
             }}
+            aria-label="Clear search"
             className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 flex items-center justify-center"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
@@ -249,7 +247,9 @@ export function GroupCombobox({
       {/* Dropdown Panel */}
       {isOpen && (
         <div
-          className={`absolute z-50 left-0 right-0 md:w-[600px] w-screen max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
+          role="listbox"
+          aria-label="Group results"
+          className={`absolute z-50 left-0 right-0 md:w-[600px] w-screen max-w-[calc(100vw-2rem)] bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
             dropdownAbove ? 'bottom-full mb-2' : 'top-full mt-2'
           }`}
         >
@@ -281,13 +281,15 @@ export function GroupCombobox({
 
           {/* Category Tabs (Always show if > 0) */}
           {categories.length > 0 && (
-            <div className="flex items-center gap-1 border-b border-slate-100 pb-2 overflow-x-auto scrollbar-none py-1">
+            <div role="tablist" className="flex items-center gap-1 border-b border-slate-100 pb-2 overflow-x-auto scrollbar-none py-1">
               {categories.map((cat) => {
                 const isActive = cat.key === activeCategoryKey
                 return (
                   <button
                     key={cat.key}
                     type="button"
+                    role="tab"
+                    aria-selected={isActive}
                     onClick={() => setSelectedCategoryKey(cat.key)}
                     className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                       isActive
@@ -313,7 +315,7 @@ export function GroupCombobox({
           {(isLoading || (isFetching && isSearching)) ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto py-1">
               {[1, 2, 3, 4].map(n => (
-                <div key={n} className="animate-pulse border border-slate-100 rounded-xl p-3.5 flex flex-col gap-2 bg-slate-50/50">
+                <div key={n} className="motion-safe:animate-pulse border border-slate-100 rounded-xl p-4 flex flex-col gap-2 bg-slate-50/50">
                   <div className="h-4 bg-slate-200 rounded w-2/3" />
                   <div className="h-3 bg-slate-200 rounded w-1/2" />
                   <div className="flex gap-2 mt-1">
@@ -345,10 +347,10 @@ export function GroupCombobox({
                   : null
 
                 return (
-                  <div
+                  <button
                     key={g.id}
-                    role="button"
-                    tabIndex={0}
+                    type="button"
+                    aria-label={`Select group ${g.name}`}
                     onClick={() => {
                       addRecentItem('techno_recent_groups', { id: g.id, name: g.name })
                       setRecentGroups(getRecentItems('techno_recent_groups'))
@@ -356,22 +358,12 @@ export function GroupCombobox({
                       setSearch('')
                       setIsOpen(false)
                     }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        addRecentItem('techno_recent_groups', { id: g.id, name: g.name })
-                        setRecentGroups(getRecentItems('techno_recent_groups'))
-                        onChange(g)
-                        setSearch('')
-                        setIsOpen(false)
-                      }
-                    }}
-                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-3.5 rounded-xl cursor-pointer transition-all flex flex-col justify-between gap-2 shadow-sm hover:shadow-md"
+                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-4 rounded-xl cursor-pointer transition-colors flex flex-col justify-between gap-2 shadow-sm hover:shadow-md text-left w-full"
                   >
                     <div>
                       <div className="flex justify-between items-start gap-2">
                         <h4 className="font-headline font-semibold text-slate-800 text-sm leading-tight line-clamp-1">{g.name}</h4>
-                        {recentGroups.some(r => String(r.id) === String(g.id)) && (
+                        {recentIdSet.has(g.id) && (
                           <span className="material-symbols-outlined text-[15px] text-amber-500 font-bold" aria-hidden="true" title="Recently used">history</span>
                         )}
                       </div>
@@ -403,7 +395,7 @@ export function GroupCombobox({
                         </div>
                       )}
                     </div>
-                  </div>
+                  </button>
                 )
               })}
             </div>
@@ -413,3 +405,5 @@ export function GroupCombobox({
     </div>
   )
 }
+
+export const GroupCombobox = memo(GroupComboboxInner)

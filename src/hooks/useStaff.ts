@@ -10,12 +10,14 @@ export const staffKeys = {
 }
 
 export function useEmployees(search: string, page: number, pageSize: number, employmentType?: string) {
+  const trimmed = search.trim()
   return useQuery({
-    queryKey: staffKeys.list({ search, page, pageSize, employment_type: employmentType }),
+    queryKey: staffKeys.list({ search: trimmed, page, pageSize, employment_type: employmentType }),
     queryFn: async () => {
-      const result = await fetchEmployeesPaginated({ skip: (page - 1) * pageSize, limit: pageSize, q: search || undefined, employment_type: employmentType })
+      const result = await fetchEmployeesPaginated({ skip: (page - 1) * pageSize, limit: pageSize, q: trimmed || undefined, employment_type: employmentType })
       return result
     },
+    enabled: trimmed.length >= 2,
     staleTime: 5 * 60 * 1000,
   })
 }

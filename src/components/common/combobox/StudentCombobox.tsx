@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, memo } from 'react'
 import type { StudentListItem } from '../../../api/crm'
 import { getRecentItems, addRecentItem, type RecentItem } from '../../../utils/recentCache'
 
@@ -11,7 +11,7 @@ export interface StudentComboboxProps {
   isLoading: boolean
 }
 
-export function StudentCombobox({ 
+export function StudentComboboxInner({ 
   value, 
   onChange, 
   search, 
@@ -23,6 +23,7 @@ export function StudentCombobox({
   const [recentStudents, setRecentStudents] = useState<RecentItem[]>(() =>
     getRecentItems('techno_recent_students')
   )
+  const recentIdSet = useMemo(() => new Set(recentStudents.map(r => r.id)), [recentStudents])
   const [isOpen, setIsOpen] = useState(false)
   const [dropdownAbove, setDropdownAbove] = useState(false)
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<string>('')
@@ -71,7 +72,9 @@ export function StudentCombobox({
         full_name: r.name,
         status: 'active' as const,
         phone: 'Recently Selected',
-      } as StudentListItem))
+        has_unpaid_balance: false,
+        gender: null,
+      }))
 
       if (search.length === 1) {
         const query = search.toLowerCase()
@@ -141,7 +144,7 @@ export function StudentCombobox({
   // ── Selected state ─────────────────────────────────────────────────────────
   if (value) {
     return (
-      <div className="flex items-center justify-between p-3.5 bg-green-50/50 border border-green-100 rounded-xl shadow-sm">
+      <div className="flex items-center justify-between p-4 bg-green-50/50 border border-green-100 rounded-xl shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-green-700">
             <span className="material-symbols-outlined text-[22px]" aria-hidden="true">person</span>
@@ -192,7 +195,8 @@ export function StudentCombobox({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder="Search student (min 2 chars)..."
-          className="w-full pl-10 pr-10 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all placeholder:text-slate-400"
+          aria-label="Search student"
+          className="w-full pl-10 pr-10 py-3 text-sm border border-slate-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20 focus-visible:border-secondary transition-colors placeholder:text-slate-400"
         />
         {search && (
           <button
@@ -201,6 +205,7 @@ export function StudentCombobox({
               setSearch('')
               setIsOpen(true)
             }}
+            aria-label="Clear search"
             className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 flex items-center justify-center"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
@@ -211,7 +216,9 @@ export function StudentCombobox({
       {/* Dropdown Panel */}
       {isOpen && (
         <div
-          className={`absolute z-50 left-0 right-0 md:w-[550px] w-screen max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
+          role="listbox"
+          aria-label="Student results"
+          className={`absolute z-50 left-0 right-0 md:w-[550px] w-screen max-w-[calc(100vw-2rem)] bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
             dropdownAbove ? 'bottom-full mb-2' : 'top-full mt-2'
           }`}
         >
@@ -244,13 +251,15 @@ export function StudentCombobox({
 
           {/* Category Tabs (Always show if > 0) */}
           {categories.length > 0 && (
-            <div className="flex items-center gap-1 border-b border-slate-100 pb-2 overflow-x-auto scrollbar-none py-1">
+            <div role="tablist" className="flex items-center gap-1 border-b border-slate-100 pb-2 overflow-x-auto scrollbar-none py-1">
               {categories.map((cat) => {
                 const isActive = cat.key === activeCategoryKey
                 return (
                   <button
                     key={cat.key}
                     type="button"
+                    role="tab"
+                    aria-selected={isActive}
                     onClick={() => setSelectedCategoryKey(cat.key)}
                     className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                       isActive
@@ -276,7 +285,7 @@ export function StudentCombobox({
           {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto py-1">
               {[1, 2, 3, 4].map(n => (
-                <div key={n} className="animate-pulse border border-slate-100 rounded-xl p-3.5 flex flex-col gap-2 bg-slate-50/50">
+                <div key={n} className="motion-safe:animate-pulse border border-slate-100 rounded-xl p-4 flex flex-col gap-2 bg-slate-50/50">
                   <div className="h-4 bg-slate-200 rounded w-2/3" />
                   <div className="h-3 bg-slate-200 rounded w-1/2" />
                   <div className="flex gap-2 mt-1">
@@ -303,10 +312,10 @@ export function StudentCombobox({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto py-1 scrollbar-thin">
               {activeCategoryStudents.map((s) => {
                 return (
-                  <div
+                  <button
                     key={s.id}
-                    role="button"
-                    tabIndex={0}
+                    type="button"
+                    aria-label={`Select student ${s.full_name}`}
                     onClick={() => {
                       addRecentItem('techno_recent_students', { id: s.id, name: s.full_name })
                       setRecentStudents(getRecentItems('techno_recent_students'))
@@ -314,17 +323,7 @@ export function StudentCombobox({
                       setSearch('')
                       setIsOpen(false)
                     }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        addRecentItem('techno_recent_students', { id: s.id, name: s.full_name })
-                        setRecentStudents(getRecentItems('techno_recent_students'))
-                        onChange(s)
-                        setSearch('')
-                        setIsOpen(false)
-                      }
-                    }}
-                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-3.5 rounded-xl cursor-pointer transition-all flex flex-col justify-between gap-2 shadow-sm hover:shadow-md"
+                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-4 rounded-xl cursor-pointer transition-colors flex flex-col justify-between gap-2 shadow-sm hover:shadow-md text-left w-full"
                   >
                     <div>
                       <div className="flex justify-between items-start gap-2">
@@ -334,7 +333,7 @@ export function StudentCombobox({
                             <span className="material-symbols-outlined text-[16px] text-amber-500 font-bold" aria-hidden="true" title="Has unpaid balance">warning</span>
                           )}
                         </h4>
-                        {recentStudents.some(r => String(r.id) === String(s.id)) && (
+                        {recentIdSet.has(s.id) && (
                           <span className="material-symbols-outlined text-[15px] text-amber-500 font-bold font-headline" aria-hidden="true" title="Recently used">history</span>
                         )}
                       </div>
@@ -358,7 +357,7 @@ export function StudentCombobox({
                         <span className="text-[10px] text-slate-400 capitalize">{s.gender}</span>
                       )}
                     </div>
-                  </div>
+                  </button>
                 )
               })}
             </div>
@@ -368,3 +367,5 @@ export function StudentCombobox({
     </div>
   )
 }
+
+export const StudentCombobox = memo(StudentComboboxInner)

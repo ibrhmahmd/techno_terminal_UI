@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect, type ReactNode } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import type { ReactNode, UIEvent, KeyboardEvent } from 'react'
 import { LoadingSpinner } from './LoadingSpinner'
 
 export interface SpyCategory<T> {
@@ -141,7 +142,7 @@ export function SpyCombobox<T>({
     }
   }, [isOpen])
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const handleScroll = (e: UIEvent<HTMLDivElement>) => {
     const container = e.currentTarget
 
     // 1. Progressive Rendering: Scroll near bottom trigger
@@ -181,7 +182,7 @@ export function SpyCombobox<T>({
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (!isOpen && e.key === 'ArrowDown') {
       setIsOpen(true)
       return

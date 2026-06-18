@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, memo } from 'react'
 import { useEmployees } from '../../../hooks/useStaff'
 import type { EmployeeListItem } from '../../../api/hr'
 import { getRecentItems, addRecentItem, type RecentItem } from '../../../utils/recentCache'
@@ -8,18 +8,28 @@ export interface InstructorComboboxProps {
   onChange: (instructor: EmployeeListItem | null) => void
 }
 
-export function InstructorCombobox({ value, onChange }: InstructorComboboxProps) {
+export function InstructorComboboxInner({ value, onChange }: InstructorComboboxProps) {
   const [search, setSearch] = useState('')
   const [isOpen, setIsOpen] = useState(false)
-  const [dropdownAbove, setDropdownAbove] = useState(false)
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<string>('')
+  const [debouncedSearch, setDebouncedSearch] = useState(search)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const [dropdownAbove, setDropdownAbove] = useState(false)
 
-  const { data, isLoading } = useEmployees(search, 1, 50)
+  const { data, isLoading } = useEmployees(debouncedSearch, 1, 50)
   const [recentInstructors, setRecentInstructors] = useState<RecentItem[]>(() =>
     getRecentItems('techno_recent_instructors')
   )
+  const recentIdSet = useMemo(() => new Set(recentInstructors.map(r => r.id)), [recentInstructors])
 
   const wrapperRef = useRef<HTMLDivElement>(null)
+
+  // Debounce search
+  useEffect(() => {
+    clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(debounceRef.current)
+  }, [search])
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -33,22 +43,14 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
   }, [])
 
   // Smart viewport flip when dropdown opens or search results change
-  const updatePosition = () => {
-    if (wrapperRef.current) {
-      const rect = wrapperRef.current.getBoundingClientRect()
-      const spaceBelow = window.innerHeight - rect.bottom
-      if (spaceBelow < 350 && rect.top > spaceBelow) {
-        setDropdownAbove(true)
-      } else {
-        setDropdownAbove(false)
-      }
-    }
-  }
-
   useEffect(() => {
     if (isOpen) {
       const handle = requestAnimationFrame(() => {
-        updatePosition()
+        if (wrapperRef.current) {
+          const rect = wrapperRef.current.getBoundingClientRect()
+          const spaceBelow = window.innerHeight - rect.bottom
+          setDropdownAbove(spaceBelow < 350 && rect.top > spaceBelow)
+        }
       })
       return () => cancelAnimationFrame(handle)
     }
@@ -66,8 +68,9 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
           id: Number(r.id),
           full_name: r.name,
           job_title: 'Recently Used',
+          employment_type: 'full_time' as const,
           is_active: true
-        } as EmployeeListItem)
+        } satisfies EmployeeListItem)
       })
 
       if (search.length === 1) {
@@ -125,7 +128,7 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
   // ── Selected state ─────────────────────────────────────────────────────────
   if (value) {
     return (
-      <div className="flex items-center justify-between p-3.5 bg-blue-50/50 border border-blue-100 rounded-xl shadow-sm">
+      <div className="flex items-center justify-between p-4 bg-blue-50/50 border border-blue-100 rounded-xl shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-secondary">
             <span className="material-symbols-outlined text-[22px]" aria-hidden="true">person</span>
@@ -164,7 +167,8 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
           }}
           onFocus={() => setIsOpen(true)}
           placeholder="Search instructor by name..."
-          className="w-full pl-10 pr-10 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all placeholder:text-slate-400"
+          aria-label="Search instructor"
+          className="w-full pl-10 pr-10 py-3 text-sm border border-slate-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20 focus-visible:border-secondary transition-colors placeholder:text-slate-400"
         />
         {search && (
           <button
@@ -173,6 +177,7 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
               setSearch('')
               setIsOpen(true)
             }}
+            aria-label="Clear search"
             className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 flex items-center justify-center"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
@@ -183,19 +188,23 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
       {/* Dropdown Panel */}
       {isOpen && (
         <div
-          className={`absolute z-50 left-0 right-0 md:w-[500px] w-screen max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
+          role="listbox"
+          aria-label="Instructor results"
+          className={`absolute z-50 left-0 right-0 md:w-[500px] w-screen max-w-[calc(100vw-2rem)] bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
             dropdownAbove ? 'bottom-full mb-2' : 'top-full mt-2'
           }`}
         >
           {/* Category Tabs (Always show if > 0) */}
           {categories.length > 0 && (
-            <div className="flex items-center gap-1 border-b border-slate-100 pb-2 overflow-x-auto scrollbar-none py-1">
+            <div role="tablist" className="flex items-center gap-1 border-b border-slate-100 pb-2 overflow-x-auto scrollbar-none py-1">
               {categories.map((cat) => {
                 const isActive = cat.key === activeCategoryKey
                 return (
                   <button
                     key={cat.key}
                     type="button"
+                    role="tab"
+                    aria-selected={isActive}
                     onClick={() => setSelectedCategoryKey(cat.key)}
                     className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                       isActive
@@ -221,7 +230,7 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
           {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto py-1">
               {[1, 2, 3, 4].map(n => (
-                <div key={n} className="animate-pulse border border-slate-100 rounded-xl p-3.5 flex flex-col gap-2 bg-slate-50/50">
+                <div key={n} className="motion-safe:animate-pulse border border-slate-100 rounded-xl p-4 flex flex-col gap-2 bg-slate-50/50">
                   <div className="h-4 bg-slate-200 rounded w-2/3" />
                   <div className="h-3 bg-slate-200 rounded w-1/2" />
                   <div className="flex gap-2 mt-1">
@@ -248,10 +257,10 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto py-1 scrollbar-thin">
               {activeCategoryInstructors.map((i) => {
                 return (
-                  <div
+                  <button
                     key={i.id}
-                    role="button"
-                    tabIndex={0}
+                    type="button"
+                    aria-label={`Select instructor ${i.full_name}`}
                     onClick={() => {
                       addRecentItem('techno_recent_instructors', { id: i.id, name: i.full_name })
                       setRecentInstructors(getRecentItems('techno_recent_instructors'))
@@ -259,22 +268,12 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
                       setSearch('')
                       setIsOpen(false)
                     }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        addRecentItem('techno_recent_instructors', { id: i.id, name: i.full_name })
-                        setRecentInstructors(getRecentItems('techno_recent_instructors'))
-                        onChange(i)
-                        setSearch('')
-                        setIsOpen(false)
-                      }
-                    }}
-                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-3.5 rounded-xl cursor-pointer transition-all flex flex-col justify-between gap-2 shadow-sm hover:shadow-md"
+                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-4 rounded-xl cursor-pointer transition-colors flex flex-col justify-between gap-2 shadow-sm hover:shadow-md text-left w-full"
                   >
                     <div>
                       <div className="flex justify-between items-start gap-2">
                         <h4 className="font-headline font-semibold text-slate-800 text-sm leading-tight line-clamp-1">{i.full_name}</h4>
-                        {recentInstructors.some(r => String(r.id) === String(i.id)) && (
+                        {recentIdSet.has(i.id) && (
                           <span className="material-symbols-outlined text-[15px] text-amber-500 font-bold" aria-hidden="true" title="Recently used">history</span>
                         )}
                       </div>
@@ -293,7 +292,7 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
                         {i.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </div>
-                  </div>
+                  </button>
                 )
               })}
             </div>
@@ -303,3 +302,5 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
     </div>
   )
 }
+
+export const InstructorCombobox = memo(InstructorComboboxInner)

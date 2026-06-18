@@ -82,7 +82,7 @@ Reusable hooks: `usePaginatedList`, `usePagination`, `useSearch`, `useDebounce` 
 - Supplementary docs: `ARCHITECTURE.md`, `auth-spec.md`, `competitions-api.md`, `daily-reports.md`, `enrollments-spec.md`, `docs/`
 
 <!-- SPECKIT START -->
-Active plan: `specs/048-combobox-ui-ux-performance/plan.md`
+Active plan: `specs/049-combobox-audit/plan.md`
 <!-- SPECKIT END -->
 
 ---
