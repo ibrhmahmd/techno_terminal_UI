@@ -45,9 +45,9 @@
 ### Implementation for User Story 1
 
 - [x] T006 [US1] Add debounce to `src/components/common/combobox/InstructorCombobox.tsx` — add `debouncedSearch` state with 300ms delay
-- [ ] T007 [US1] Fix CSS.escape in `src/components/common/SpyCombobox.tsx:177` — escape category IDs in querySelector
-- [ ] T008 [US1] Fix stale-closure in `src/components/common/combobox/StudentCombobox.tsx:56` — inline position logic in useEffect
-- [ ] T009 [US1] Fix stale-closure in `src/components/common/combobox/GroupCombobox.tsx:78` — inline position logic in useEffect
+- [x] T007 [US1] Fix CSS.escape in `src/components/common/SpyCombobox.tsx:177` — escape category IDs in querySelector
+- [x] T008 [US1] Fix stale-closure in `src/components/common/combobox/StudentCombobox.tsx:56` — inline position logic in useEffect
+- [x] T009 [US1] Fix stale-closure in `src/components/common/combobox/GroupCombobox.tsx:78` — inline position logic in useEffect
 - [x] T010 [US1] Fix stale-closure in `src/components/common/combobox/InstructorCombobox.tsx:48` — inline position logic in useEffect
 
 **Checkpoint**: Runtime bugs fixed - application is stable
@@ -121,11 +121,11 @@
 - [x] T028 [P] [US5] Add `aria-label="Search student"` to input in `src/components/common/combobox/StudentCombobox.tsx:186`
 - [x] T029 [P] [US5] Add `aria-label="Search group"` to input in `src/components/common/combobox/GroupCombobox.tsx:224`
 - [x] T030 [P] [US5] Add `aria-label="Search instructor"` to input in `src/components/common/combobox/InstructorCombobox.tsx:158`
-- [ ] T031 [P] [US5] Add `aria-label="Search"` to input in `src/components/common/SpyCombobox.tsx:264`
+- [x] T031 [P] [US5] Add `aria-label="Search"` to input in `src/components/common/SpyCombobox.tsx:264`
 - [x] T032 [P] [US5] Add `aria-label="Clear search"` to clear buttons in StudentCombobox, GroupCombobox, InstructorCombobox
 - [x] T033 [P] [US5] Add `role="tablist"` to category tab containers in all 3 comboboxes
 - [x] T034 [P] [US5] Add `role="tab"` and `aria-selected` to category tab buttons in all 3 comboboxes
-- [ ] T035 [P] [US5] Add `aria-hidden="true"` to decorative search icons in SpyCombobox.tsx:263 and category header icons
+- [x] T035 [P] [US5] Add `aria-hidden="true"` to decorative search icons in SpyCombobox.tsx:263 and category header icons
 - [ ] T036 [P] [US5] Add `role="button"`, `tabIndex={0}`, keyboard handlers to sidebar nav items in SpyCombobox.tsx:312
 - [ ] T037 [P] [US5] Add `role="button"`, `tabIndex={-1}`, keyboard handlers to result items in SpyCombobox.tsx:367
 - [x] T038 [P] [US5] Add `role="listbox"` and `aria-label` to dropdown panels in all 3 comboboxes
@@ -171,7 +171,7 @@
 - [x] T052 [P] [US7] Apply glassmorphism `bg-white/70 backdrop-blur-xl` to dropdown in `src/components/common/combobox/StudentCombobox.tsx:214`
 - [x] T053 [P] [US7] Apply glassmorphism `bg-white/70 backdrop-blur-xl` to dropdown in `src/components/common/combobox/GroupCombobox.tsx:252`
 - [x] T054 [P] [US7] Apply glassmorphism `bg-white/70 backdrop-blur-xl` to dropdown in `src/components/common/combobox/InstructorCombobox.tsx:186`
-- [ ] T055 [P] [US7] Apply glassmorphism `bg-white/70 backdrop-blur-xl` to dropdown in `src/components/common/SpyCombobox.tsx:277`
+- [x] T055 [P] [US7] Apply glassmorphism `bg-white/70 backdrop-blur-xl` to dropdown in `src/components/common/SpyCombobox.tsx:277`
 - [x] T056 [P] [US7] Replace `focus:outline-none focus:ring-2` with `focus-visible:ring-2 focus-visible:outline-none` in StudentCombobox.tsx:195
 - [x] T057 [P] [US7] Replace `focus:outline-none focus:ring-2` with `focus-visible:ring-2 focus-visible:outline-none` in GroupCombobox.tsx:233
 - [x] T058 [P] [US7] Replace `focus:outline-none focus:ring-2` with `focus-visible:ring-2 focus-visible:outline-none` in InstructorCombobox.tsx:167
@@ -183,7 +183,7 @@
 - [x] T064 [P] [US7] Add `motion-safe:` prefix to `animate-pulse` in StudentCombobox.tsx:280
 - [x] T065 [P] [US7] Add `motion-safe:` prefix to `animate-pulse` in GroupCombobox.tsx:316
 - [x] T066 [P] [US7] Add `motion-safe:` prefix to `animate-pulse` in InstructorCombobox.tsx:224
-- [ ] T067 [P] [US7] Add `motion-safe:` prefix to `animate-pulse` in SpyCombobox.tsx:41
+- [x] T067 [P] [US7] Add `motion-safe:` prefix to `animate-pulse` in SpyCombobox.tsx:41
 - [x] T068 [P] [US7] Fix spacing `p-3.5` → `p-4` in StudentCombobox.tsx (lines 144, 327)
 - [x] T069 [P] [US7] Fix spacing `p-3.5` → `p-4` in GroupCombobox.tsx (lines 180, 369)
 - [x] T070 [P] [US7] Fix spacing `p-3.5` → `p-4` in InstructorCombobox.tsx (lines 128, 272)
