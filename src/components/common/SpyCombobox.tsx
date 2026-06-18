@@ -51,9 +51,12 @@ export function SpyCombobox<T>({
   const [isOpen, setIsOpen] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const [activeCategoryId, setActiveCategoryId] = useState<string>('')
+  const [visibleLimit, setVisibleLimit] = useState(40)
+  const [inputValue, setInputValue] = useState(search)
   
   const wrapperRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const lastScrollCheckRef = useRef<number>(0)
 
   // Extract navigation categories (non-special ones)
   const navCategories = categories.filter(c => !c.isSpecial && c.items.length > 0)
@@ -69,20 +72,57 @@ export function SpyCombobox<T>({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Reset states on search or mode change
+  // Sync internal state with external search prop when it changes
+  useEffect(() => {
+    setInputValue(search)
+  }, [search])
+
+  // Debounce input value changes to trigger onSearchChange
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (inputValue !== search) {
+        onSearchChange(inputValue)
+      }
+    }, 250)
+
+    return () => clearTimeout(handler)
+  }, [inputValue, search, onSearchChange])
+
+  // Reset states on input change
   useEffect(() => {
     setHighlightedIndex(-1)
-    if (search.trim().length > 0) {
+    setVisibleLimit(40)
+    if (inputValue.trim().length > 0) {
       setIsOpen(true)
     }
-  }, [search])
+  }, [inputValue])
 
   useEffect(() => {
     setActiveCategoryId('')
+    setVisibleLimit(40)
   }, [activeMode])
+
+  useEffect(() => {
+    if (!isOpen) {
+      setVisibleLimit(40)
+    }
+  }, [isOpen])
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const container = e.currentTarget
+    
+    // 1. Progressive Rendering: Scroll near bottom trigger
+    const threshold = 100 // px from bottom
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < threshold
+    if (isNearBottom && visibleLimit < totalItemsCount) {
+      setVisibleLimit(prev => Math.min(totalItemsCount, prev + 40))
+    }
+
+    // 2. Throttled Scrollspy Logic (limit check to once every 100ms)
+    const now = Date.now()
+    if (now - lastScrollCheckRef.current < 100) return
+    lastScrollCheckRef.current = now
+
     const headers = container.querySelectorAll('.spy-category-header')
     let currentActive = activeCategoryId
     
@@ -146,15 +186,31 @@ export function SpyCombobox<T>({
     }
   }
 
-  // Auto scroll highlighted item
+  // Auto scroll highlighted item container scroll position directly (avoids window layout shifts)
   useEffect(() => {
-    if (highlightedIndex >= 0 && listRef.current) {
-      const element = listRef.current.querySelector(`[data-index="${highlightedIndex}"]`) as HTMLElement
-      if (element) {
-        element.scrollIntoView({ block: 'nearest' })
+    if (highlightedIndex >= 0) {
+      if (highlightedIndex >= visibleLimit) {
+        setVisibleLimit(prev => Math.min(totalItemsCount, Math.max(prev + 40, highlightedIndex + 1)))
+      }
+      
+      if (listRef.current) {
+        const element = listRef.current.querySelector(`[data-index="${highlightedIndex}"]`) as HTMLElement
+        if (element) {
+          const container = listRef.current
+          const elemTop = element.offsetTop
+          const elemBottom = elemTop + element.offsetHeight
+          const containerTop = container.scrollTop
+          const containerBottom = containerTop + container.clientHeight
+          
+          if (elemTop < containerTop) {
+            container.scrollTop = elemTop
+          } else if (elemBottom > containerBottom) {
+            container.scrollTop = elemBottom - container.clientHeight
+          }
+        }
       }
     }
-  }, [highlightedIndex])
+  }, [highlightedIndex, visibleLimit, totalItemsCount])
 
   let globalIndexCounter = 0
 
@@ -166,8 +222,8 @@ export function SpyCombobox<T>({
         <input
           type="text"
           placeholder={placeholder}
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           className="bg-transparent border-none outline-none text-sm text-on-surface flex-1"
@@ -175,9 +231,8 @@ export function SpyCombobox<T>({
         {isLoading && <LoadingSpinner size="sm" />}
       </div>
 
-      {/* Dropdown Logic */}
       {isOpen && (
-        <div className="absolute z-50 w-full min-w-[400px] bg-white border border-t-0 border-slate-200 rounded-b-lg shadow-2xl overflow-hidden mt-1">
+        <div className="absolute z-50 w-full min-w-0 sm:min-w-[400px] max-w-[100vw] left-0 sm:left-auto bg-white border border-t-0 border-slate-200 rounded-b-lg shadow-2xl overflow-hidden mt-1">
           
           {/* Dynamic Grouping Toolbar */}
           {modes && modes.length > 0 && onModeChange && (
@@ -207,7 +262,7 @@ export function SpyCombobox<T>({
               
               {/* Left Sidebar: Categories */}
               {navCategories.length > 0 && (
-                <div className="w-auto min-w-[max-content] md:max-w-[40%] flex-shrink-0 bg-slate-50/50 border-r border-slate-100 overflow-y-auto no-scrollbar py-2">
+                <div className="hidden sm:block w-auto min-w-[max-content] md:max-w-[40%] flex-shrink-0 bg-slate-50/50 border-r border-slate-100 overflow-y-auto no-scrollbar py-2">
                   {navCategories.map(cat => (
                     <div 
                       key={`nav-${cat.id}`}
@@ -228,6 +283,12 @@ export function SpyCombobox<T>({
               <div ref={listRef} className="flex-1 overflow-y-auto outline-none relative no-scrollbar" onScroll={handleScroll}>
                 {categories.map(cat => {
                   if (cat.items.length === 0) return null
+
+                  const categoryStartIndex = globalIndexCounter
+                  if (categoryStartIndex >= visibleLimit) {
+                    globalIndexCounter += cat.items.length
+                    return null
+                  }
 
                   return (
                     <div key={cat.id}>
@@ -250,6 +311,9 @@ export function SpyCombobox<T>({
                       {cat.items.map(item => {
                         const currentIndex = globalIndexCounter++
                         const isHighlighted = highlightedIndex === currentIndex
+                        
+                        if (currentIndex >= visibleLimit) return null
+
                         return (
                           <div 
                             key={`item-${currentIndex}`} 

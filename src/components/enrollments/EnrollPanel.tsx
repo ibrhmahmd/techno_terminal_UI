@@ -60,17 +60,8 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
     }
   }, [selectedGroup])
 
-  // Debounce the student search for React Query
-  const [debouncedStudentSearch, setDebouncedStudentSearch] = useState('')
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedStudentSearch(studentSearch)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [studentSearch])
-
   // Hook into caches
-  const { data: studentsData, isLoading: isSearchingStudents } = useStudentsSearch(debouncedStudentSearch)
+  const { data: studentsData, isLoading: isSearchingStudents } = useStudentsSearch(studentSearch)
   const { data: groupsData, isLoading: isLoadingGroups } = useGroupsFlat(undefined, true)
   const { recentGroupIds, addRecentGroup } = useRecentGroups()
 

@@ -1,0 +1,26 @@
+{
+  "phases": {
+    "bug": true,
+    "dead-code": true,
+    "ts-quality": true,
+    "data-fetch": true,
+    "a11y-ux": true,
+    "react-perf": true,
+    "arch-compliance": true,
+    "ui-polish": true,
+    "db-perf": false
+  },
+  "polish": {
+    "enabled": false,
+    "design_system_path": "AGENTS.md",
+    "max_iterations": 3
+  },
+  "output": {
+    "spec": true,
+    "report": true
+  },
+  "exclusions": [
+    "src/tests/",
+    "src/vite-env.d.ts"
+  ]
+}

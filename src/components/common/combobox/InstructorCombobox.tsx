@@ -3,6 +3,7 @@ import { useEmployees } from '../../../hooks/useStaff'
 import type { EmployeeListItem } from '../../../api/hr'
 import { SpyCombobox } from '../SpyCombobox'
 import type { SpyCategory } from '../SpyCombobox'
+import { getRecentItems, addRecentItem, type RecentItem } from '../../../utils/recentCache'
 
 export interface InstructorComboboxProps {
   value: EmployeeListItem | null
@@ -12,27 +13,52 @@ export interface InstructorComboboxProps {
 export function InstructorCombobox({ value, onChange }: InstructorComboboxProps) {
   const [search, setSearch] = useState('')
   const { data, isLoading } = useEmployees(search, 1, 50)
-
-  const instructors = data?.items ?? []
+  const [recentInstructors, setRecentInstructors] = useState<RecentItem[]>(() => getRecentItems('techno_recent_instructors'))
 
   const categories = useMemo<SpyCategory<EmployeeListItem>[]>(() => {
-    const active = instructors.filter(i => i.is_active)
-    const grouped: Record<string, EmployeeListItem[]> = {}
-    active.forEach(i => {
-      const key = i.full_name.charAt(0).toUpperCase()
-      if (!grouped[key]) grouped[key] = []
-      grouped[key].push(i)
-    })
+    const instructorsList = data?.items ?? []
+    if (search.length >= 2) {
+      const active = instructorsList.filter(i => i.is_active)
+      const grouped: Record<string, EmployeeListItem[]> = {}
+      active.forEach(i => {
+        const key = i.full_name.charAt(0).toUpperCase()
+        if (!grouped[key]) grouped[key] = []
+        grouped[key].push(i)
+      })
 
-    return Object.keys(grouped)
-      .sort()
-      .map(k => ({
-        id: k,
-        title: k,
-        icon: 'sort_by_alpha',
-        items: grouped[k],
-      }))
-  }, [instructors])
+      return Object.keys(grouped)
+        .sort()
+        .map(k => ({
+          id: k,
+          title: k,
+          icon: 'sort_by_alpha',
+          items: grouped[k],
+        }))
+    } else {
+      const itemsToShow = search.length === 1
+        ? recentInstructors.filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
+        : recentInstructors
+
+      if (itemsToShow.length === 0) return []
+
+      const mapped = itemsToShow.map(r => {
+        const fullInstructor = instructorsList.find(i => String(i.id) === String(r.id))
+        return fullInstructor || ({
+          id: Number(r.id),
+          full_name: r.name,
+          job_title: 'Recently Used',
+          is_active: true
+        } as EmployeeListItem)
+      })
+
+      return [{
+        id: 'recents',
+        title: 'Recently Used',
+        isSpecial: true,
+        items: mapped
+      }]
+    }
+  }, [data?.items, search, recentInstructors])
 
   if (value) {
     return (
@@ -60,10 +86,18 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
       onSearchChange={setSearch}
       placeholder="Search instructor by name..."
       isLoading={isLoading}
-      noResultsText={search.length < 2 ? 'Type at least 2 characters to search' : `No instructors found matching "${search}"`}
-      categories={search.length >= 2 ? categories : []}
-      totalItemsCount={search.length >= 2 ? totalCount : 0}
+      noResultsText={
+        search.length === 0
+          ? "No recently used instructors. Type to search."
+          : search.length === 1
+            ? "No matching recently used instructors. Type at least 2 chars to search."
+            : `No instructors found matching "${search}"`
+      }
+      categories={categories}
+      totalItemsCount={totalCount}
       onSelect={(instructor) => {
+        addRecentItem('techno_recent_instructors', { id: instructor.id, name: instructor.full_name })
+        setRecentInstructors(getRecentItems('techno_recent_instructors'))
         onChange(instructor)
         setSearch('')
       }}
@@ -74,7 +108,12 @@ export function InstructorCombobox({ value, onChange }: InstructorComboboxProps)
           }`}
         >
           <div className="flex justify-between items-center mb-0.5">
-            <p className="font-medium text-sm text-on-surface leading-tight">{i.full_name}</p>
+            <p className="font-medium text-sm text-on-surface leading-tight flex items-center gap-2">
+              {i.full_name}
+              {recentInstructors.some(r => String(r.id) === String(i.id)) && (
+                <span className="material-symbols-outlined text-[14px] text-yellow-500 font-bold" aria-hidden="true">history</span>
+              )}
+            </p>
             <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold border shadow-sm ${
               i.is_active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'
             }`}>

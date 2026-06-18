@@ -87,7 +87,8 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
   const [localOverpaymentRisk, setLocalOverpaymentRisk] = useState<{ has_risk: boolean; message?: string } | null>(null)
 
   const [activeSearchItemId, setActiveSearchItemId] = useState<string | null>(null)
-  const [activeSearchQuery, setActiveSearchQuery] = useState('')
+  const activeItem = lineItems.find(item => item.id === activeSearchItemId)
+  const activeSearchQuery = activeItem ? activeItem.studentSearch : ''
   const { data: searchResults, isLoading: isSearchingStudents } = useStudentsSearch(activeSearchQuery)
   const [draftRestored] = useState(() => !!getSessionDraft())
 
@@ -189,7 +190,6 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
 
       if (updates.studentSearch !== undefined && updates.studentSearch !== item.studentSearch) {
         setActiveSearchItemId(id)
-        setActiveSearchQuery(updates.studentSearch)
         return { ...item, ...updates, students: [] }
       }
 

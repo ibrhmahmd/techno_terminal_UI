@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import type { EnrichedGroupPublic } from '../../../api/academics'
 import { SpyCombobox } from '../SpyCombobox'
 import type { SpyCategory } from '../SpyCombobox'
+import { getRecentItems, addRecentItem, type RecentItem } from '../../../utils/recentCache'
 
 export interface GroupComboboxProps {
   value: EnrichedGroupPublic | null
@@ -10,7 +11,7 @@ export interface GroupComboboxProps {
   setSearch: (search: string) => void
   groups: EnrichedGroupPublic[]
   isLoading: boolean
-  recentGroupIds: number[]
+  recentGroupIds?: number[] // Maintained for prop compatibility
 }
 
 export function GroupCombobox({
@@ -20,30 +21,49 @@ export function GroupCombobox({
   setSearch,
   groups,
   isLoading,
-  recentGroupIds
 }: GroupComboboxProps) {
   const [groupByMode, setGroupByMode] = useState<'course' | 'instructor' | 'day'>('course')
+  const [recentGroups, setRecentGroups] = useState<RecentItem[]>(() => getRecentItems('techno_recent_groups'))
 
   const categories = useMemo<SpyCategory<EnrichedGroupPublic>[]>(() => {
     let filtered = groups || []
     if (!filtered) return []
 
-    if (search.trim()) {
+    if (search.length >= 2) {
       const searchLower = search.toLowerCase()
       filtered = filtered.filter(g => 
         g.name?.toLowerCase().includes(searchLower) ||
         g.course_name?.toLowerCase().includes(searchLower) ||
         g.instructor_name?.toLowerCase().includes(searchLower)
       )
+    } else {
+      // For empty or 1-char browse mode, display only recently selected matching groups
+      const itemsToShow = search.length === 1
+        ? recentGroups.filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
+        : recentGroups
+
+      if (itemsToShow.length === 0) return []
+
+      const mapped = itemsToShow.map(r => {
+        const fullGroup = groups.find(g => String(g.id) === String(r.id))
+        return fullGroup || ({
+          id: Number(r.id),
+          name: r.name,
+          course_name: 'Recently Used',
+        } as EnrichedGroupPublic)
+      })
+
+      return [{
+        id: 'recents',
+        title: 'Recently Used',
+        isSpecial: true,
+        items: mapped
+      }]
     }
 
-    const recents = filtered.filter(g => recentGroupIds.includes(g.id))
-    recents.sort((a, b) => recentGroupIds.indexOf(a.id) - recentGroupIds.indexOf(b.id))
-
-    const othersRaw = filtered.filter(g => !recentGroupIds.includes(g.id)).slice(0, 50)
-    
+    // Full grouping for 2+ characters
     const othersGrouped: Record<string, EnrichedGroupPublic[]> = {}
-    othersRaw.forEach(g => {
+    filtered.forEach(g => {
       let groupKey = 'Others'
       if (groupByMode === 'course') {
         groupKey = g.course_name || 'Uncategorized Course'
@@ -73,15 +93,6 @@ export function GroupCombobox({
     
     const catArray: SpyCategory<EnrichedGroupPublic>[] = []
     
-    if (recents.length > 0) {
-      catArray.push({
-        id: 'recents',
-        title: 'Recently Used',
-        isSpecial: true,
-        items: recents
-      })
-    }
-
     sortedOtherKeys.forEach(k => {
       catArray.push({
         id: k,
@@ -92,7 +103,7 @@ export function GroupCombobox({
     })
 
     return catArray
-  }, [groups, search, groupByMode, recentGroupIds])
+  }, [groups, search, groupByMode, recentGroups])
 
   if (value) {
     return (
@@ -121,12 +132,21 @@ export function GroupCombobox({
       onSearchChange={setSearch}
       placeholder="Search groups by name, course, or instructor..."
       isLoading={isLoading}
-      modes={['course', 'instructor', 'day']}
+      noResultsText={
+        search.length === 0
+          ? "No recently used groups. Type to search."
+          : search.length === 1
+            ? "No matching recently used groups. Type at least 2 chars to search."
+            : `No groups found matching "${search}"`
+      }
+      modes={search.length >= 2 ? ['course', 'instructor', 'day'] : undefined}
       activeMode={groupByMode}
       onModeChange={(mode) => setGroupByMode(mode as 'course' | 'instructor' | 'day')}
       categories={categories}
       totalItemsCount={totalCount}
       onSelect={(group) => {
+        addRecentItem('techno_recent_groups', { id: group.id, name: group.name })
+        setRecentGroups(getRecentItems('techno_recent_groups'))
         onChange(group)
         setSearch('')
       }}
@@ -158,7 +178,7 @@ export function GroupCombobox({
             <div>
               <p className="font-medium text-sm text-on-surface leading-tight flex items-center gap-2">
                 {g.name}
-                {categories.find(c => c.id === 'recents')?.items.some(r => r.id === g.id) && (
+                {recentGroups.some(r => String(r.id) === String(g.id)) && (
                    <span className="material-symbols-outlined text-[14px] text-yellow-500" aria-hidden="true">history</span>
                 )}
               </p>

@@ -78,11 +78,11 @@ Reusable hooks: `usePaginatedList`, `usePagination`, `useSearch`, `useDebounce` 
 - ESLint: flat config `eslint.config.js`, ignores `dist/`
 - No `.env`, no CI (`.github/`), no pre-commit hooks (`.husky/`)
 - Gitignored: `.opencode/*`, `.specify/*`
-- Specs: `specs/<NNN>-<name>/plan.md` for active feature plans. Highest: `045-*`
+- Specs: `specs/<NNN>-<name>/plan.md` for active feature plans. Highest: `048-*`
 - Supplementary docs: `ARCHITECTURE.md`, `auth-spec.md`, `competitions-api.md`, `daily-reports.md`, `enrollments-spec.md`, `docs/`
 
 <!-- SPECKIT START -->
-Active plan: `specs/047-directory-page-audit/plan.md`
+Active plan: `specs/048-combobox-ui-ux-performance/plan.md`
 <!-- SPECKIT END -->
 
 ---

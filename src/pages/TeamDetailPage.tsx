@@ -51,7 +51,6 @@ export function TeamDetailPage() {
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(null)
   const [studentSearch, setStudentSearch] = useState('')
-  const [debouncedStudentSearch, setDebouncedStudentSearch] = useState('')
   const [addMemberError, setAddMemberError] = useState<string | null>(null)
   const [isAddingMember, setIsAddingMember] = useState(false)
 
@@ -60,11 +59,6 @@ export function TeamDetailPage() {
   const [parentResults, setParentResults] = useState<ParentListItem[]>([])
   const [selectedParent, setSelectedParent] = useState<ParentListItem | null>(null)
   const [isSearchingParents, setIsSearchingParents] = useState(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedStudentSearch(studentSearch), 300)
-    return () => clearTimeout(timer)
-  }, [studentSearch])
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedParentSearch(parentSearch), 300)
@@ -92,7 +86,7 @@ export function TeamDetailPage() {
     return () => { cancelled = true }
   }, [debouncedParentSearch])
 
-  const { data: studentResults, isLoading: isSearchingStudents } = useStudentsSearch(debouncedStudentSearch)
+  const { data: studentResults, isLoading: isSearchingStudents } = useStudentsSearch(studentSearch)
   const [selectedMember, setSelectedMember] = useState<TeamMemberRosterDTO | null>(null)
   const [payAmount, setPayAmount] = useState('')
   const [payError, setPayError] = useState<string | null>(null)
