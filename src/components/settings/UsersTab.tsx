@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import { type CreateUserRequest, type User } from '../../api/auth'
-import { useUsers, useUpdateUser, useDeleteUser, useInviteUser, useCreateUser, useResetPassword } from '../../hooks/useAuthQueries'
+import { useUsers, useUpdateUser, useInviteUser, useCreateUser, useResetPassword } from '../../hooks/useAuthQueries'
 import { useDebounce } from '../../hooks/useDebounce'
 import { formatDate } from '../../utils/formatting'
 import { LoadingSpinner } from '../common/LoadingSpinner'
@@ -33,11 +33,6 @@ function useFocusTrap(containerRef: React.RefObject<HTMLDivElement | null>, isAc
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [containerRef, isActive])
-}
-
-interface UserDetailModalProps {
-  user: User
-  onClose: () => void
 }
 
 const ROLE_STYLES: Record<string, { label: string; bg: string; text: string; icon: string }> = {
@@ -78,34 +73,21 @@ function StatusBadge({ status }: { status: 'Active' | 'Invited' | 'Deactivated' 
   )
 }
 
-function UserDetailModal({ user, onClose }: UserDetailModalProps) {
-  const overlayRef = useRef<HTMLDivElement>(null)
-  const deactivateConfirmRef = useRef<HTMLDivElement>(null)
-  const deleteConfirmRef = useRef<HTMLDivElement>(null)
-  const { user: currentUser } = useAuthStore()
-  const updateUserMutation = useUpdateUser()
-  const deleteUserMutation = useDeleteUser()
-  const [selectedRole, setSelectedRole] = useState(user.role)
-  const [isDeactivating, setIsDeactivating] = useState(false)
-  const [isReactivating, setIsReactivating] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+interface UserCardProps {
+  user: User
+  currentUser: User | null
+  onReset: (user: User) => void
+  onDeactivate: (user: User) => void
+  onReactivate: (user: User) => void
+}
 
+const ROLE_OPTIONS = ['instructor', 'admin', 'system_admin'] as const
+
+function UserCard({ user, currentUser, onReset, onDeactivate, onReactivate }: UserCardProps) {
+  const updateUserMutation = useUpdateUser()
+  const [selectedRole, setSelectedRole] = useState(user.role)
   const isSelf = currentUser?.id === user.id
   const status = getUserStatus(user)
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !showDeactivateConfirm && !showDeleteConfirm) onClose()
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [onClose, showDeactivateConfirm, showDeleteConfirm])
-
-  useFocusTrap(overlayRef, true)
-  useFocusTrap(deactivateConfirmRef, showDeactivateConfirm)
-  useFocusTrap(deleteConfirmRef, showDeleteConfirm)
 
   const handleRoleChange = async () => {
     if (selectedRole === user.role) return
@@ -116,171 +98,83 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
     }
   }
 
-  const handleDeactivate = async () => {
-    setIsDeactivating(true)
-    try {
-      await updateUserMutation.mutateAsync({ id: user.id, data: { is_active: false } })
-      setShowDeactivateConfirm(false)
-      onClose()
-    } finally {
-      setIsDeactivating(false)
-    }
-  }
-
-  const handleReactivate = async () => {
-    setIsReactivating(true)
-    try {
-      await updateUserMutation.mutateAsync({ id: user.id, data: { is_active: true } })
-      onClose()
-    } finally {
-      setIsReactivating(false)
-    }
-  }
-
-  const handleDelete = async () => {
-    setIsDeleting(true)
-    try {
-      await deleteUserMutation.mutateAsync(user.id)
-      setShowDeleteConfirm(false)
-      onClose()
-    } finally {
-      setIsDeleting(false)
-    }
-  }
-
   return (
-    <div ref={overlayRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label={`User details: ${user.username}`}>
-      <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-lg">
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-[6px] bg-secondary/10 flex items-center justify-center text-secondary font-semibold text-xl">
-              {user.username.slice(0, 2).toUpperCase()}
-            </div>
-            <div>
-              <h3 className="font-headline text-lg font-semibold text-on-surface">{user.username}</h3>
-              <p className="text-sm text-slate-500 font-mono">{user.email}</p>
-            </div>
+    <div className="bg-white rounded-[6px] shadow-sm p-5 hover:shadow-md hover:translate-y-[-1px] transition-all duration-120">
+      {/* Compact header: name, role edit, ID, status */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <h3 className="font-headline font-semibold text-on-surface truncate">{user.username}</h3>
+            {isSelf && (
+              <span className="text-[10px] px-1.5 py-0.5 bg-secondary/10 text-secondary rounded-[6px] font-semibold shrink-0">You</span>
+            )}
           </div>
-          <button onClick={onClose} aria-label="Close" className="text-slate-400 hover:text-slate-600 p-1 rounded-[6px] hover:bg-slate-100 transition-colors duration-120">
-            <span className="material-symbols-outlined" aria-hidden="true">close</span>
-          </button>
+          <p className="text-sm text-on-surface-variant truncate font-mono">{user.email}</p>
         </div>
-
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Employee ID</label>
-            <p className="text-sm text-on-surface mt-1">{user.employee_id ?? 'N/A'}</p>
-          </div>
-          <div>
-            <label htmlFor="detail-role" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Role</label>
-            <div className="mt-1">
-              {isSelf ? (
-                <RoleBadge role={user.role} />
-              ) : (
-                <select
-                  id="detail-role"
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value)}
-                  onBlur={handleRoleChange}
-                  className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1 text-sm rounded-none outline-none transition-colors"
-                >
-                  <option value="instructor">Instructor</option>
-                  <option value="admin">Admin</option>
-                  <option value="system_admin">System Admin</option>
-                </select>
-              )}
-            </div>
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</label>
-            <div className="mt-1">
-              <StatusBadge status={status} />
-            </div>
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Last Login</label>
-            <p className="text-sm text-slate-500 mt-1">{user.last_login ? formatDate(user.last_login) : 'Never'}</p>
-          </div>
-          <div className="col-span-2">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Account Created</label>
-            <p className="text-sm text-slate-500 mt-1">{user.created_at ? formatDate(user.created_at) : 'N/A'}</p>
-          </div>
-        </div>
-
-        <div className="flex gap-3 pt-4 border-t border-slate-100">
-          {!isSelf && user.is_active && (
-            <button
-              onClick={() => setShowDeactivateConfirm(true)}
-              disabled={isDeactivating}
-              className="px-4 py-2 text-sm font-medium text-amber-700 bg-amber-500/10 rounded-[6px] hover:bg-amber-500/15 disabled:opacity-50 flex items-center gap-2 duration-120"
+        <div className="flex items-center gap-2 shrink-0 ml-2">
+          {isSelf ? (
+            <RoleBadge role={user.role} />
+          ) : (
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              onBlur={handleRoleChange}
+              className="bg-transparent border border-slate-200 rounded-[6px] px-2 py-1 text-xs font-semibold outline-none focus:border-secondary transition-colors"
             >
-              {isDeactivating ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg" aria-hidden="true">person_off</span>}
-              Deactivate
-            </button>
+              {ROLE_OPTIONS.map((r) => (
+                <option key={r} value={r}>{ROLE_STYLES[r]?.label ?? r}</option>
+              ))}
+            </select>
           )}
-          {!isSelf && !user.is_active && (
-            <>
-              <button
-                onClick={handleReactivate}
-                disabled={isReactivating}
-                className="px-4 py-2 text-sm font-medium text-secondary bg-secondary/15 rounded-[6px] hover:bg-secondary/20 disabled:opacity-50 flex items-center gap-2 duration-120"
-              >
-                {isReactivating ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg" aria-hidden="true">how_to_reg</span>}
-                Reactivate
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                disabled={isDeleting}
-                className="px-4 py-2 text-sm font-medium text-red-700 bg-red-500/10 rounded-[6px] hover:bg-red-500/15 disabled:opacity-50 flex items-center gap-2 duration-120"
-              >
-                {isDeleting ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg" aria-hidden="true">delete_forever</span>}
-                Delete
-              </button>
-            </>
+          {user.employee_id && (
+            <span className="text-xs text-slate-400 font-mono">#{user.employee_id}</span>
           )}
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium bg-slate-100 text-slate-700 rounded-[6px] hover:bg-slate-200 transition-colors duration-120 ml-auto"
-          >
-            Close
-          </button>
+          <StatusBadge status={status} />
         </div>
+      </div>
 
-        {showDeactivateConfirm && (
-          <div ref={deactivateConfirmRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]" role="dialog" aria-modal="true" aria-label="Confirm deactivation" onKeyDown={(e) => e.key === 'Escape' && setShowDeactivateConfirm(false)}>
-            <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-sm">
-              <h4 className="font-headline text-base font-semibold text-on-surface mb-2">Deactivate User?</h4>
-              <p className="text-sm text-slate-600 mb-6 font-body">
-                This will soft-deactivate <strong>{user.username}</strong>. They will not be able to log in. This action can be reversed.
-              </p>
-              <div className="flex gap-3">
-                <button onClick={() => setShowDeactivateConfirm(false)} className="flex-1 px-4 py-2 bg-slate-100 text-slate-600 rounded-[6px] text-sm font-medium hover:bg-slate-200 duration-120">Cancel</button>
-                <button onClick={handleDeactivate} disabled={isDeactivating} className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-[6px] text-sm font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 duration-120">
-                  {isDeactivating && <LoadingSpinner size="sm" variant="light" />}
-                  Deactivate
-                </button>
-              </div>
-            </div>
+      {/* Info rows */}
+      <div className="space-y-1 mb-4">
+        <div className="flex items-center gap-2 text-on-surface-variant">
+          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">schedule</span>
+          <span className="text-sm">{user.last_login ? formatDate(user.last_login) : 'Never logged in'}</span>
+        </div>
+        {user.created_at && (
+          <div className="flex items-center gap-2 text-on-surface-variant">
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">calendar_today</span>
+            <span className="text-sm">Joined {formatDate(user.created_at)}</span>
           </div>
         )}
+      </div>
 
-        {showDeleteConfirm && (
-          <div ref={deleteConfirmRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]" role="dialog" aria-modal="true" aria-label="Confirm deletion" onKeyDown={(e) => e.key === 'Escape' && setShowDeleteConfirm(false)}>
-            <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-sm">
-              <h4 className="font-headline text-base font-semibold text-red-600 mb-2">Delete Permanently?</h4>
-              <p className="text-sm text-slate-600 mb-6 font-body">
-                This will permanently delete <strong>{user.username}</strong> and all associated audit logs. This action <strong>cannot be undone</strong>.
-              </p>
-              <div className="flex gap-3">
-                <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 px-4 py-2 bg-slate-100 text-slate-600 rounded-[6px] text-sm font-medium hover:bg-slate-200 duration-120">Cancel</button>
-                <button onClick={handleDelete} disabled={isDeleting} className="flex-1 px-4 py-2 bg-red-600 text-white rounded-[6px] text-sm font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 duration-120">
-                  {isDeleting && <LoadingSpinner size="sm" variant="light" />}
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
+      {/* Action buttons — always visible */}
+      <div className="flex gap-2 pt-3 border-t border-slate-100">
+        {!isSelf && user.is_active && (
+          <button
+            onClick={() => onDeactivate(user)}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-amber-700 bg-amber-500/10 rounded-lg hover:bg-amber-500/15 transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg" aria-hidden="true">person_off</span>
+            Deactivate
+          </button>
         )}
+        {!isSelf && !user.is_active && (
+          <button
+            onClick={() => onReactivate(user)}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-secondary bg-secondary/15 rounded-lg hover:bg-secondary/20 transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg" aria-hidden="true">how_to_reg</span>
+            Reactivate
+          </button>
+        )}
+        <button
+          onClick={() => onReset(user)}
+          disabled={updateUserMutation.isPending}
+          className={`flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${isSelf || !user.is_active ? 'flex-1' : ''} ${!isSelf && !user.is_active ? 'text-slate-700 bg-slate-50 hover:bg-slate-100' : 'flex-1 text-secondary bg-secondary-container/30 hover:bg-secondary-container/50'}`}
+        >
+          <span className="material-symbols-outlined text-lg" aria-hidden="true">lock_reset</span>
+          Reset
+        </button>
       </div>
     </div>
   )
@@ -409,6 +303,7 @@ function InviteModal({ onClose }: InviteModalProps) {
 export function UsersTab() {
   const createOverlayRef = useRef<HTMLDivElement>(null)
   const resetOverlayRef = useRef<HTMLDivElement>(null)
+  const deactivateConfirmRef = useRef<HTMLDivElement>(null)
   const [searchInput, setSearchInput] = useState('')
   const [roleFilter, setRoleFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -426,12 +321,15 @@ export function UsersTab() {
 
   const { data, isLoading, error } = useUsers(query)
   const createUserMutation = useCreateUser()
+  const updateUserMutation = useUpdateUser()
   const resetPasswordMutation = useResetPassword()
+  const { user: currentUser } = useAuthStore()
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [showResetModal, setShowResetModal] = useState(false)
-  const [detailUser, setDetailUser] = useState<User | null>(null)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [deactivatingUser, setDeactivatingUser] = useState<User | null>(null)
+  const [isDeactivating, setIsDeactivating] = useState(false)
 
   // Create user state
   const [newPassword, setNewPassword] = useState('')
@@ -454,6 +352,7 @@ export function UsersTab() {
 
   useFocusTrap(createOverlayRef, showCreateModal)
   useFocusTrap(resetOverlayRef, showResetModal)
+  useFocusTrap(deactivateConfirmRef, deactivatingUser !== null)
 
   const users = data?.data ?? []
   const total = data?.total ?? 0
@@ -510,6 +409,25 @@ export function UsersTab() {
       } else {
         setResetError('Failed to reset password. Please try again.')
       }
+    }
+  }
+
+  const handleDeactivate = async () => {
+    if (!deactivatingUser) return
+    setIsDeactivating(true)
+    try {
+      await updateUserMutation.mutateAsync({ id: deactivatingUser.id, data: { is_active: false } })
+      setDeactivatingUser(null)
+    } finally {
+      setIsDeactivating(false)
+    }
+  }
+
+  const handleReactivate = async (user: User) => {
+    try {
+      await updateUserMutation.mutateAsync({ id: user.id, data: { is_active: true } })
+    } catch {
+      // error handled by query client
     }
   }
 
@@ -591,59 +509,16 @@ export function UsersTab() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {users.map((u) => {
-              const status = getUserStatus(u)
-
-              return (
-                <div key={u.id} className="bg-white rounded-[6px] shadow-sm p-5 hover:shadow-md hover:translate-y-[-1px] transition-all duration-120 group">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-[6px] bg-secondary/10 flex items-center justify-center text-secondary font-semibold text-lg flex-shrink-0">
-                      {u.username.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <h3 className="font-semibold text-slate-900 truncate">{u.username}</h3>
-                        {u.id === useAuthStore.getState().user?.id && (
-                          <span className="text-[10px] px-1.5 py-0.5 bg-secondary/10 text-secondary rounded-[6px] font-semibold">You</span>
-                        )}
-                      </div>
-                      <p className="text-sm text-slate-500 truncate font-mono">{u.email}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2">
-                      <RoleBadge role={u.role} />
-                    </div>
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <span className="material-symbols-outlined text-sm" aria-hidden="true">schedule</span>
-                      <span className="text-sm">{u.last_login ? formatDate(u.last_login) : 'Never logged in'}</span>
-                    </div>
-                    {u.employee_id && (
-                      <div className="flex items-center gap-2 text-slate-500">
-                        <span className="material-symbols-outlined text-sm" aria-hidden="true">badge</span>
-                        <span className="text-sm">ID: {u.employee_id}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mb-4">
-                    <StatusBadge status={status} />
-                  </div>
-
-                  <div className="flex gap-2 pt-4 border-t border-slate-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <button onClick={() => setDetailUser(u)} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 rounded-[6px] hover:bg-slate-200 transition-colors duration-120">
-                      <span className="material-symbols-outlined text-lg" aria-hidden="true">visibility</span>
-                      View
-                    </button>
-                    <button onClick={() => { setSelectedUser(u); setNewPassword(''); setResetError(null); setResetSuccess(null); setShowResetModal(true) }} disabled={resetPasswordMutation.isPending} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-secondary bg-secondary/15 rounded-[6px] hover:bg-secondary/20 transition-colors duration-120 disabled:opacity-50">
-                      {resetPasswordMutation.isPending ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-lg" aria-hidden="true">lock_reset</span>}
-                      Reset
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
+            {users.map((u) => (
+              <UserCard
+                key={u.id}
+                user={u}
+                currentUser={currentUser}
+                onReset={(user) => { setSelectedUser(user); setNewPassword(''); setResetError(null); setResetSuccess(null); setShowResetModal(true) }}
+                onDeactivate={setDeactivatingUser}
+                onReactivate={handleReactivate}
+              />
+            ))}
           </div>
 
           {totalPages > 1 && (
@@ -767,8 +642,24 @@ export function UsersTab() {
         </div>
       )}
 
-      {/* User Detail Modal */}
-      {detailUser && <UserDetailModal user={detailUser} onClose={() => setDetailUser(null)} />}
+      {/* Deactivation Confirmation */}
+      {deactivatingUser && (
+        <div ref={deactivateConfirmRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label="Confirm deactivation" onKeyDown={(e) => e.key === 'Escape' && setDeactivatingUser(null)}>
+          <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-sm">
+            <h4 className="font-headline text-base font-semibold text-on-surface mb-2">Deactivate User?</h4>
+            <p className="text-sm text-slate-600 mb-6 font-body">
+              This will soft-deactivate <strong>{deactivatingUser.username}</strong>. They will not be able to log in. This action can be reversed.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setDeactivatingUser(null)} className="flex-1 px-4 py-2 bg-slate-100 text-slate-600 rounded-[6px] text-sm font-medium hover:bg-slate-200 duration-120">Cancel</button>
+              <button onClick={handleDeactivate} disabled={isDeactivating} className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-[6px] text-sm font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 duration-120">
+                {isDeactivating && <LoadingSpinner size="sm" variant="light" />}
+                Deactivate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Invite Modal */}
       {showInviteModal && <InviteModal onClose={() => setShowInviteModal(false)} />}

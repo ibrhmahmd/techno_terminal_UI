@@ -58,7 +58,7 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
               </div>
             ))}
           </div>
-          <div className="p-4 bg-blue-50 rounded-lg space-y-3">
+          <div className="p-4 bg-surface-container-low rounded-lg space-y-3">
             <Skeleton className="h-4 w-1/4" />
             <div className="grid grid-cols-2 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -86,13 +86,13 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
               <span className="material-symbols-outlined text-3xl text-secondary">person</span>
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-slate-900">{employee.full_name}</h3>
-              <p className="text-slate-600">{employee.job_title || 'No job title set'}</p>
+              <h3 className="text-xl font-headline font-semibold text-on-surface">{employee.full_name}</h3>
+              <p className="text-on-surface-variant">{employee.job_title || 'No job title set'}</p>
               <div className="flex items-center gap-2 mt-2">
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${employee.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
                   {employee.is_active ? 'Active' : 'Inactive'}
                 </span>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-on-surface-variant">
                   {getEmploymentTypeLabel(employee.employment_type)}
                 </span>
               </div>
@@ -101,7 +101,7 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
 
           {/* Personal Information */}
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-3">Personal Information</h4>
+            <h4 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-3">Personal Information</h4>
             <div className="grid grid-cols-2 gap-4">
               <FieldLabel label="National ID" value={employee.national_id} icon="badge" fallback="Not provided" />
               <FieldLabel label="Employee ID" value={`#${employee.id}`} icon="tag" />
@@ -111,7 +111,7 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
 
           {/* Contact */}
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-3">Contact</h4>
+            <h4 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-3">Contact</h4>
             <div className="grid grid-cols-2 gap-4">
               <FieldLabel label="Email" value={employee.email} icon="mail" />
               <FieldLabel label="Phone" value={employee.phone} icon="call" />
@@ -119,38 +119,38 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
           </div>
 
           {/* Employment Details */}
-          <div className="p-4 bg-blue-50 rounded-lg">
-            <h4 className="text-sm font-semibold text-blue-900 uppercase tracking-wider mb-3">Employment Details</h4>
+          <div className="p-4 bg-surface-container-low rounded-lg">
+            <h4 className="text-sm font-semibold text-on-surface uppercase tracking-wider mb-3">Employment Details</h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-blue-700 mb-1">Job Title</p>
-                <p className="text-sm font-medium text-slate-900">{employee.job_title || 'Not set'}</p>
+                <p className="text-xs text-on-surface-variant mb-1">Job Title</p>
+                <p className="text-sm font-medium text-on-surface">{employee.job_title || 'Not set'}</p>
               </div>
               <div>
-                <p className="text-xs text-blue-700 mb-1">Status</p>
-                <p className="text-sm font-medium text-slate-900">{employee.is_active ? 'Active' : 'Inactive'}</p>
+                <p className="text-xs text-on-surface-variant mb-1">Status</p>
+                <p className="text-sm font-medium text-on-surface">{employee.is_active ? 'Active' : 'Inactive'}</p>
               </div>
               <div>
-                <p className="text-xs text-blue-700 mb-1">University</p>
-                <p className="text-sm font-medium text-slate-900">{employee.university || 'Not specified'}</p>
+                <p className="text-xs text-on-surface-variant mb-1">University</p>
+                <p className="text-sm font-medium text-on-surface">{employee.university || 'Not specified'}</p>
               </div>
               <div>
-                <p className="text-xs text-blue-700 mb-1">Major</p>
-                <p className="text-sm font-medium text-slate-900">{employee.major || 'Not specified'}</p>
+                <p className="text-xs text-on-surface-variant mb-1">Major</p>
+                <p className="text-sm font-medium text-on-surface">{employee.major || 'Not specified'}</p>
               </div>
               <div>
-                <p className="text-xs text-blue-700 mb-1">Graduate</p>
-                <p className="text-sm font-medium text-slate-900">
+                <p className="text-xs text-on-surface-variant mb-1">Graduate</p>
+                <p className="text-sm font-medium text-on-surface">
                   {employee.is_graduate === undefined ? 'Not specified' : employee.is_graduate ? 'Yes' : 'No'}
                 </p>
               </div>
               {/* <div>
-                <p className="text-xs text-blue-700 mb-1">Monthly Salary</p>
-                <p className="text-sm font-medium text-slate-900">{formatCurrency(employee.monthly_salary) || 'Not set'}</p>
+                <p className="text-xs text-on-surface-variant mb-1">Monthly Salary</p>
+                <p className="text-sm font-medium text-on-surface">{formatCurrency(employee.monthly_salary) || 'Not set'}</p>
               </div>
               <div>
-                <p className="text-xs text-blue-700 mb-1">Contract Percentage</p>
-                <p className="text-sm font-medium text-slate-900">{formatPercentage(employee.contract_percentage) || 'Not set'}</p>
+                <p className="text-xs text-on-surface-variant mb-1">Contract Percentage</p>
+                <p className="text-sm font-medium text-on-surface">{formatPercentage(employee.contract_percentage) || 'Not set'}</p>
               </div> */}
             </div>
           </div>
