@@ -41,6 +41,7 @@ Guards wait for Zustand persist rehydration before deciding auth state.
 - **Global state**: Zustand (`src/store/authStore.ts`, persist key `auth-storage`, cross-tab sync via `storage` event)
 - **Server state**: React Query (`src/lib/queryClient.ts`): `staleTime: 5min`, `gcTime: 30min`, `retry: 1`, `refetchOnWindowFocus: false`; mutations `retry: 0`
 - **Query keys**: Centralized in `src/hooks/queryKeys.ts` — use factory functions, never inline arrays
+- **Query key duplication**: `queryKeys.employeesAll` in `queryKeys.ts` is unused; staff hooks define their own `staffKeys` in `useStaff.ts`. Invalidation via `queryKeys.employeesAll` will miss staff caches.
 - **API client**: `src/api/client.ts` (Axios, base `/api/v1`); Bearer token from `authStore` (skips `/auth/login`, `/auth/refresh`)
 - **401 handling**: Queues concurrent requests → `POST /auth/refresh` → retries. Falls back to logout + redirect to `/login`
 - **Debug**: `localStorage.setItem('api_debug', 'true')` logs all requests; auto-enabled in DEV
@@ -59,6 +60,8 @@ Data flow: Page → custom hook (React Query) → API fn → server → cache �
 
 Reusable hooks: `usePaginatedList`, `usePagination`, `useSearch`, `useDebounce` in `src/hooks/`.
 
+**Hooks structure**: `src/hooks/useStaff.ts` — implements its own `staffKeys` + all employee hooks. `src/hooks/useDirectory.ts` — base queries for students/parents; `src/hooks/directory/` — composed hooks (`useDirectoryData`, `useAdvancedSearch`, `useStudentActions`).
+
 ---
 
 ## 6. Testing (Vitest)
@@ -68,17 +71,23 @@ Reusable hooks: `usePaginatedList`, `usePagination`, `useSearch`, `useDebounce` 
 
 ---
 
-## 7. Vercel Deploy
+## 7. Common Pitfalls
+
+- **Query `enabled` guard blocking initial load**: Setting `enabled: term.length >= 2` on a listing query that also serves as the unfiltered page load (like `useEmployees`) prevents the query from ever firing when search is empty. If the hook serves double duty (listing + search), allow empty strings: `enabled: term.length === 0 || term.length >= 2`. Purely search-only hooks (`useStudentsSearch`, `useParentsSearch`) are safe because a separate list query handles initial load.
+
+---
+
+## 8. Vercel Deploy
 - `vercel.json`: `/api/*` → `https://techno-terminal-5c255cfe.fastapicloud.dev/api/*`, all other routes → `/index.html` (SPA fallback)
 - Build: `npm run build`, output `dist/`
 
 ---
 
-## 8. Config & Specs
+## 9. Config & Specs
 - ESLint: flat config `eslint.config.js`, ignores `dist/`
 - No `.env`, no CI (`.github/`), no pre-commit hooks (`.husky/`)
 - Gitignored: `.opencode/*`, `.specify/*`
-- Specs: `specs/<NNN>-<name>/plan.md` for active feature plans. Highest: `048-*`
+- Specs: `specs/<NNN>-<name>/plan.md` for active feature plans. Highest: `049-*`
 - Supplementary docs: `ARCHITECTURE.md`, `auth-spec.md`, `competitions-api.md`, `daily-reports.md`, `enrollments-spec.md`, `docs/`
 
 <!-- SPECKIT START -->

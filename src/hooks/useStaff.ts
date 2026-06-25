@@ -17,7 +17,7 @@ export function useEmployees(search: string, page: number, pageSize: number, emp
       const result = await fetchEmployeesPaginated({ skip: (page - 1) * pageSize, limit: pageSize, q: trimmed || undefined, employment_type: employmentType })
       return result
     },
-    enabled: trimmed.length >= 2,
+    enabled: trimmed.length === 0 || trimmed.length >= 2,
     staleTime: 5 * 60 * 1000,
   })
 }
