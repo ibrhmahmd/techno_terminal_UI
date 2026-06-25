@@ -27,7 +27,7 @@ The login page (`src/pages/LoginPage.tsx`) is functionally complete but visually
 
 ### Pain points
 
-1. **No visual identity** — entirely text-based branding, no logo or illustration
+1. **No visual identity** — entirely text-based branding, no logo, illustration, or background decoration
 2. **Sibling pages don't share a layout component** — each page duplicates the card wrapper markup (`min-h-screen flex items-center justify-center bg-surface px-4` + card + form)
 3. **No loading skeleton** — during initial auth check (before redirect), the page flashes empty
 4. **No "Remember Me" checkbox** — common UX pattern for session persistence
@@ -60,8 +60,8 @@ An admin navigates to the login page and sees a polished, branded experience tha
 
 **Acceptance Scenarios**:
 1. **Given** the login page loads, **When** viewing the page, **Then** there is a visible brand element beyond plain text (logo, illustration, or background graphic)
-2. **Given** the login page loads, **When** viewing on desktop, **Then** the layout uses the full viewport with visual depth (background gradient, pattern, or illustration)
-3. **Given** the login page loads, **When** viewing on mobile (< 640px), **Then** the layout remains usable with no horizontal scroll
+2. **Given** the login page loads, **When** viewing on desktop, **Then** the layout uses the full viewport with a terminal/grid dot pattern in the secondary color accent on the `bg-surface` background
+3. **Given** the login page loads, **When** viewing on mobile (< 640px), **Then** the card goes full-width with 16px padding and no horizontal scroll
 
 ### User Story 2 — Auth Pages Share a Common Layout Shell (P2)
 
@@ -92,6 +92,16 @@ Login errors (invalid credentials, rate limiting, network failure) are displayed
 
 ---
 
+## Clarifications
+
+### Session 2026-06-25
+
+- Q: Should we add accessibility requirements to the login page redesign? → A: Yes, include full a11y requirements.
+- Q: What background visual treatment should replace the flat surface? → A: Terminal/grid dot pattern with secondary color accent — ties into "TechnoTerminal" brand name.
+- Q: What should the auth check loading state look like? → A: Full-page branded skeleton mimicking the login card layout (placeholder blocks for logo, fields, and button), rendered via the AuthLayout component.
+- Q: Should network/server errors be distinguished from invalid credential errors? → A: Yes — network errors show a connection-oriented message, auth errors show credential message.
+- Q: How should the AuthLayout card behave on mobile (< 640px)? → A: Card goes full-width with 16px padding, no max-width constraint; background terminal dot pattern scales proportionally.
+
 ## Requirements
 
 ### Functional Requirements
@@ -99,12 +109,20 @@ Login errors (invalid credentials, rate limiting, network failure) are displayed
 - **FR-001**: Create a shared `AuthLayout` component in `src/components/auth/AuthLayout.tsx` that wraps all auth pages with consistent branding (logo/wordmark, background treatment, card positioning)
 - **FR-002**: Login page MUST include a password visibility toggle (`material-symbols-outlined: visibility` / `visibility_off`)
 - **FR-003**: Login page MUST auto-focus the email input on mount
-- **FR-004**: Auth check loading state (before redirect) MUST show a skeleton or branded loading screen, not a blank page
+- **FR-004**: Auth check loading state (before redirect) MUST render a full-page branded skeleton via AuthLayout that mirrors the login card layout (placeholder blocks for logo, fields, and button), not a blank page
 - **FR-005**: ForgotPassword, Register, and ResetPassword pages MUST be migrated to use `AuthLayout`
 - **FR-006**: Login form MUST preserve input values on error (do not clear fields on failed submit)
 - **FR-007**: Rate-limit countdown MUST be reflected in the submit button text (e.g., "Try again in 45s") in addition to the banner
 - **FR-008**: All auth pages MUST remain fully responsive (mobile-first)
 - **FR-009**: Login page MUST support "Remember Me" checkbox (stored in localStorage, pre-fills email on return)
+- **FR-010**: Error messages MUST distinguish network/server failures from invalid credentials — network errors display "Unable to connect. Please check your internet connection and try again."; authentication failures display "Invalid email or password."
+- **FR-011**: Login page MUST meet WCAG 2.1 AA accessibility requirements:
+  - Error banners MUST use `role="alert"` for screen reader announcement
+  - Password visibility toggle MUST have an `aria-label` (e.g., "Show password" / "Hide password")
+  - Auth check loading state MUST use `role="status"` or `aria-live="polite"`
+  - All interactive elements MUST have visible focus indicators (already present — confirm preserved)
+  - Keyboard navigation MUST follow a logical tab order (email → password → submit → forgot password)
+  - Rate-limit countdown text MUST be announced by screen readers (`aria-live="polite"` on the countdown element)
 
 ### Design Token Migration
 
@@ -124,8 +142,9 @@ No token migration needed — login page already uses design tokens. The focus i
 - **SC-001**: `AuthLayout` is used by all 4 auth pages; no duplicated card wrapper markup remains
 - **SC-002**: Login page has a visible brand identity element (logo/illustration/graphic) beyond plain text
 - **SC-003**: Password field has a working visibility toggle
-- **SC-004**: Auth check loading shows a non-blank state
+- **SC-004**: Auth check loading renders a branded card skeleton via AuthLayout (not a blank page or flash of unstyled content)
 - **SC-005**: Login form maintains input values on error
+- **SC-006**: WCAG 2.1 AA — all FR-011 checkpoints pass automated aXe audit (no critical/serious violations)
 
 ### Non-Goals
 
@@ -161,8 +180,8 @@ No token migration needed — login page already uses design tokens. The focus i
 3. Add auth-check loading skeleton (show branded skeleton while checking `isAuthenticated`)
 4. Add "Remember Me" checkbox (persist email in localStorage)
 5. Rate-limit countdown in submit button text
-6. Visual polish — background gradient or subtle pattern
-7. Brand illustration or logo placeholder
+6. Visual polish — terminal/grid dot pattern background with secondary accent (CSS `background-image` radial-gradient dot grid)
+7. Brand illustration or logo placeholder in the card header
 
 ### Phase 3 — Sibling Page Migration
 
