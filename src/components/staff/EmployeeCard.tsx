@@ -1,6 +1,7 @@
 import type { EmployeeListItem } from '../../api/hr/types'
 import { employeeStatusColors } from '../../utils/colors'
-import { Skeleton } from '../common/Skeleton'
+import { CardSkeleton } from '../directory/shared/CardSkeleton'
+import { RowActions } from '../common/RowActions'
 
 interface EmployeeCardProps {
   employee: EmployeeListItem
@@ -12,31 +13,7 @@ interface EmployeeCardProps {
 
 export function EmployeeCard({ employee, onView, onEdit, onCreateAccount, isLoading }: EmployeeCardProps) {
   if (isLoading) {
-    return (
-      <div className="bg-white rounded-xl border border-slate-200 p-5">
-        <div className="flex items-start gap-4 mb-4">
-          <Skeleton variant="circular" width={48} height={48} />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-5 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
-        </div>
-        <div className="space-y-2 mb-4">
-          <Skeleton className="h-4 w-2/3" />
-          <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-4 w-1/2" />
-          <Skeleton className="h-4 w-1/2" />
-        </div>
-        <div className="mb-4">
-          <Skeleton className="h-6 w-16 rounded-full" />
-        </div>
-        <div className="flex gap-2 pt-4 border-t border-slate-100">
-          <Skeleton className="h-9 flex-1 rounded-lg" />
-          <Skeleton className="h-9 flex-1 rounded-lg" />
-          <Skeleton className="h-9 flex-1 rounded-lg" />
-        </div>
-      </div>
-    )
+    return <CardSkeleton />
   }
 
   const initials = employee.full_name
@@ -55,40 +32,54 @@ export function EmployeeCard({ employee, onView, onEdit, onCreateAccount, isLoad
   const statusKey = employee.is_active ? 'active' : 'inactive'
   const statusClass = employeeStatusColors[statusKey] ?? 'bg-gray-100 text-gray-700'
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onView()
+    }
+  }
+
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-lg transition-shadow">
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`View ${employee.full_name} details`}
+      onClick={onView}
+      onKeyDown={handleKeyDown}
+      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30 cursor-pointer flex flex-col focus-visible:ring-2 focus-visible:ring-cyan-400/70"
+    >
       {/* Header with avatar and name */}
       <div className="flex items-start gap-4 mb-4">
         <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-semibold text-lg flex-shrink-0">
           {initials}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-slate-900 truncate">{employee.full_name}</h3>
+          <h3 className="font-headline font-semibold text-on-surface truncate">{employee.full_name}</h3>
         </div>
       </div>
 
       {/* Job info */}
       <div className="space-y-2 mb-4">
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-slate-400 text-sm">work</span>
-          <span className="text-sm text-slate-700">{employee.job_title}</span>
+        <div className="flex items-center gap-2 text-on-surface-variant">
+          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">work</span>
+          <span className="text-sm">{employee.job_title}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-slate-400 text-sm">schedule</span>
-          <span className="text-sm text-slate-500">
+        <div className="flex items-center gap-2 text-on-surface-variant">
+          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">schedule</span>
+          <span className="text-sm">
             {employmentTypeLabels[employee.employment_type] || employee.employment_type}
           </span>
         </div>
         {employee.phone && (
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-slate-400 text-sm">call</span>
-            <span className="text-sm text-slate-600">{employee.phone}</span>
+          <div className="flex items-center gap-2 text-on-surface-variant">
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">call</span>
+            <span className="text-sm">{employee.phone}</span>
           </div>
         )}
         {employee.email && (
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-slate-400 text-sm">mail</span>
-            <span className="text-sm text-slate-600 truncate">{employee.email}</span>
+          <div className="flex items-center gap-2 text-on-surface-variant">
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">mail</span>
+            <span className="text-sm truncate">{employee.email}</span>
           </div>
         )}
       </div>
@@ -102,31 +93,15 @@ export function EmployeeCard({ employee, onView, onEdit, onCreateAccount, isLoad
       </div>
 
       {/* Action buttons */}
-      <div className="flex gap-2 pt-4 border-t border-slate-100">
-        <button
-          onClick={onView}
-          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
-          title="View Details"
-        >
-          <span className="material-symbols-outlined text-lg">visibility</span>
-          View
-        </button>
-        <button
-          onClick={onEdit}
-          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-secondary bg-secondary-container/30 rounded-lg hover:bg-secondary-container/50 transition-colors"
-          title="Edit"
-        >
-          <span className="material-symbols-outlined text-lg">edit</span>
-          Edit
-        </button>
-        <button
-          onClick={onCreateAccount}
-          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-          title="Create Account"
-        >
-          <span className="material-symbols-outlined text-lg">person_add</span>
-          Account
-        </button>
+      <div className="mt-auto pt-3 border-t border-slate-100 flex justify-end" onClick={(e) => e.stopPropagation()}>
+        <RowActions
+          visible="always"
+          actions={[
+            { icon: 'visibility', label: 'View', onClick: () => onView(), variant: 'primary' },
+            { icon: 'edit', label: 'Edit', onClick: () => onEdit() },
+            { icon: 'person_add', label: 'Create Account', onClick: () => onCreateAccount() },
+          ]}
+        />
       </div>
     </div>
   )

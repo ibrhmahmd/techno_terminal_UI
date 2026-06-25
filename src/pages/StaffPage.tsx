@@ -6,6 +6,8 @@ import { EmployeeForm } from '../components/staff/EmployeeForm'
 import { CreateAccountModal } from '../components/staff/CreateAccountModal'
 import { EmployeeDetailModal } from '../components/staff/EmployeeDetailModal'
 import { EmployeeCard } from '../components/staff/EmployeeCard'
+import { CardGrid } from '../components/directory/CardGrid'
+import { CardSkeleton } from '../components/directory/shared/CardSkeleton'
 import { useToast } from '../components/common/Toast'
 import { useEmployees, useEmployee, useCreateEmployee, useUpdateEmployee } from '../hooks/useStaff'
 import { useCreateEmployeeAccount } from '../hooks/useStaffAccounts'
@@ -28,6 +30,8 @@ export function StaffPage() {
   // Sync search input if url search parameter changes
   useEffect(() => {
     const searchVal = searchParams.get('search') || ''
+    // setState in effect is required here to sync URL param changes to local state
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchInput(searchVal)
     setDebouncedSearch(searchVal)
     setPage(1)
@@ -143,18 +147,11 @@ export function StaffPage() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <CardGrid>
             {Array.from({ length: 8 }).map((_, i) => (
-              <EmployeeCard
-                key={`skeleton-${i}`}
-                employee={{ id: 0, full_name: '', job_title: '', employment_type: 'full_time', is_active: false }}
-                onView={() => {}}
-                onEdit={() => {}}
-                onCreateAccount={() => {}}
-                isLoading
-              />
+              <CardSkeleton key={`skeleton-${i}`} />
             ))}
-          </div>
+          </CardGrid>
         ) : employees.length === 0 ? (
           <EmptyState
             icon="inbox"
@@ -164,7 +161,7 @@ export function StaffPage() {
         ) : (
           <>
             {/* Employee Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <CardGrid>
               {employees.map((employee) => (
                 <EmployeeCard
                   key={employee.id}
@@ -174,7 +171,7 @@ export function StaffPage() {
                   onCreateAccount={() => setCreatingAccountFor(employee.id)}
                 />
               ))}
-            </div>
+            </CardGrid>
 
             {/* Pagination Controls */}
             <div className="mt-6 flex justify-center">
