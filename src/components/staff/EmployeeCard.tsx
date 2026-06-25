@@ -1,5 +1,4 @@
 import type { EmployeeListItem } from '../../api/hr/types'
-import { employeeStatusColors } from '../../utils/colors'
 import { CardSkeleton } from '../directory/shared/CardSkeleton'
 import { RowActions } from '../common/RowActions'
 
@@ -16,21 +15,11 @@ export function EmployeeCard({ employee, onView, onEdit, onCreateAccount, isLoad
     return <CardSkeleton />
   }
 
-  const initials = employee.full_name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-
   const employmentTypeLabels: Record<string, string> = {
     full_time: 'Full Time',
     part_time: 'Part Time',
     contract: 'Contract'
   }
-
-  const statusKey = employee.is_active ? 'active' : 'inactive'
-  const statusClass = employeeStatusColors[statusKey] ?? 'bg-gray-100 text-gray-700'
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -48,28 +37,34 @@ export function EmployeeCard({ employee, onView, onEdit, onCreateAccount, isLoad
       onKeyDown={handleKeyDown}
       className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30 cursor-pointer flex flex-col focus-visible:ring-2 focus-visible:ring-cyan-400/70"
     >
-      {/* Header with avatar and name */}
-      <div className="flex items-start gap-4 mb-4">
-        <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-semibold text-lg flex-shrink-0">
-          {initials}
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-headline font-semibold text-on-surface truncate">{employee.full_name}</h3>
+      {/* Header with name, ID, and status */}
+      <div className="flex items-start justify-between mb-4">
+        <h3 className="font-headline font-semibold text-on-surface truncate">{employee.full_name}</h3>
+        <div className="flex items-center gap-3 shrink-0 ml-2">
+          <span className="text-xs text-slate-400 font-mono">#{employee.id}</span>
+          <span className={`flex items-center gap-1 ${employee.is_active ? 'text-green-600' : 'text-slate-400'}`}>
+            <span className={`w-2 h-2 rounded-full ${employee.is_active ? 'bg-green-500' : 'bg-gray-400'}`} />
+            <span className="text-xs font-medium">{employee.is_active ? 'Active' : 'Inactive'}</span>
+          </span>
         </div>
       </div>
 
-      {/* Job info */}
-      <div className="space-y-2 mb-4">
-        <div className="flex items-center gap-2 text-on-surface-variant">
+      {/* Job info — compact two-column row */}
+      <div className="flex items-center gap-4 text-on-surface-variant flex-wrap mb-4">
+        <span className="flex items-center gap-2">
           <span className="material-symbols-outlined text-[16px]" aria-hidden="true">work</span>
           <span className="text-sm">{employee.job_title}</span>
-        </div>
-        <div className="flex items-center gap-2 text-on-surface-variant">
+        </span>
+        <span className="flex items-center gap-2">
           <span className="material-symbols-outlined text-[16px]" aria-hidden="true">schedule</span>
           <span className="text-sm">
             {employmentTypeLabels[employee.employment_type] || employee.employment_type}
           </span>
-        </div>
+        </span>
+      </div>
+
+      {/* Additional info */}
+      <div className="space-y-2 mb-4">
         {employee.phone && (
           <div className="flex items-center gap-2 text-on-surface-variant">
             <span className="material-symbols-outlined text-[16px]" aria-hidden="true">call</span>
@@ -82,14 +77,6 @@ export function EmployeeCard({ employee, onView, onEdit, onCreateAccount, isLoad
             <span className="text-sm truncate">{employee.email}</span>
           </div>
         )}
-      </div>
-
-      {/* Status badge */}
-      <div className="mb-4">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusClass}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${employee.is_active ? 'bg-green-500' : 'bg-gray-500'}`} />
-          {employee.is_active ? 'Active' : 'Inactive'}
-        </span>
       </div>
 
       {/* Action buttons */}
