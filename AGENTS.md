@@ -91,7 +91,7 @@ Reusable hooks: `usePaginatedList`, `usePagination`, `useSearch`, `useDebounce` 
 - Supplementary docs: `ARCHITECTURE.md`, `auth-spec.md`, `competitions-api.md`, `daily-reports.md`, `enrollments-spec.md`, `docs/`
 
 <!-- SPECKIT START -->
-Active plan: `specs/051-login-page-redesign/spec.md`
+Active plan: `specs/051-login-page-redesign/plan.md`
 <!-- SPECKIT END -->
 
 ---

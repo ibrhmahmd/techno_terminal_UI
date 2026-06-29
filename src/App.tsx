@@ -4,6 +4,7 @@ import { useAuthStore } from './store/authStore'
 import { useEffect, useState } from 'react'
 import { AppLayout } from './components/layout/AppLayout'
 import { LoginPage } from './pages/LoginPage'
+import { AuthLayout } from './components/auth/AuthLayout'
 import { RegisterPage } from './pages/RegisterPage'
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
@@ -53,7 +54,7 @@ function ProtectedRoute() {
 function PublicRoute() {
   const { isAuthenticated } = useAuthStore()
   const hydrated = useHasHydrated()
-  if (!hydrated) return null // wait for localStorage rehydration before deciding
+  if (!hydrated) return <AuthLayout title="" subtitle="" showBranding /> // branded skeleton during hydration
   return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Outlet />
 }
 

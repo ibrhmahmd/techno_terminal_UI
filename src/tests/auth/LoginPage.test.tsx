@@ -42,6 +42,7 @@ describe('LoginPage', () => {
     mockIsAuthenticated = false
     mockLogin.mockReset()
     mockStoreLogin.mockReset()
+    localStorage.clear()
   })
 
   it('renders email and password inputs', () => {
@@ -52,12 +53,12 @@ describe('LoginPage', () => {
 
   it('renders sign in button', () => {
     renderLoginPage()
-    expect(screen.getByText('Sign In')).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Sign In' })).toBeDefined()
   })
 
   it('submit button is disabled when fields are empty', () => {
     renderLoginPage()
-    const button = screen.getByText('Sign In') as HTMLButtonElement
+    const button = screen.getByRole('button', { name: 'Sign In' }) as HTMLButtonElement
     expect(button.disabled).toBe(true)
   })
 
@@ -65,7 +66,7 @@ describe('LoginPage', () => {
     renderLoginPage()
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pwd' } })
-    const button = screen.getByText('Sign In') as HTMLButtonElement
+    const button = screen.getByRole('button', { name: 'Sign In' }) as HTMLButtonElement
     expect(button.disabled).toBe(false)
   })
 
@@ -83,7 +84,7 @@ describe('LoginPage', () => {
     renderLoginPage()
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pwd' } })
-    fireEvent.click(screen.getByText('Sign In'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
 
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith({ email: 'a@b.com', password: 'pwd' })
@@ -97,9 +98,10 @@ describe('LoginPage', () => {
     renderLoginPage()
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pwd' } })
-    fireEvent.click(screen.getByText('Sign In'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
 
-    expect(document.querySelector('.loading-spinner')).toBeDefined()
+    // Spinner renders with role="status"
+    expect(screen.getByRole('status')).toBeDefined()
     resolvePromise({
       success: true,
       data: {
@@ -117,7 +119,7 @@ describe('LoginPage', () => {
     renderLoginPage()
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'wrong' } })
-    fireEvent.click(screen.getByText('Sign In'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
 
     await waitFor(() => {
       expect(screen.getByText('Invalid email or password.')).toBeDefined()
@@ -128,11 +130,12 @@ describe('LoginPage', () => {
     mockIsAuthenticated = true
 
     renderLoginPage()
-    expect(screen.queryByText('Sign In')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Sign In' })).toBeNull()
   })
 
   it('shows rate limit message on 429 response with Retry-After', async () => {
     const error = {
+      isAxiosError: true,
       response: { status: 429, headers: { 'retry-after': '30' } },
     }
     mockLogin.mockRejectedValueOnce(error)
@@ -140,7 +143,7 @@ describe('LoginPage', () => {
     renderLoginPage()
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pwd' } })
-    fireEvent.click(screen.getByText('Sign In'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
 
     await waitFor(() => {
       expect(screen.getByText(/Too many attempts/)).toBeDefined()
@@ -149,6 +152,7 @@ describe('LoginPage', () => {
 
   it('disables submit button during rate limit countdown', async () => {
     const error = {
+      isAxiosError: true,
       response: { status: 429, headers: { 'retry-after': '30' } },
     }
     mockLogin.mockRejectedValueOnce(error)
@@ -156,10 +160,10 @@ describe('LoginPage', () => {
     renderLoginPage()
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pwd' } })
-    fireEvent.click(screen.getByText('Sign In'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
 
     await waitFor(() => {
-      const button = screen.getByText('Sign In') as HTMLButtonElement
+      const button = screen.getByRole('button', { name: /Try again in/ }) as HTMLButtonElement
       expect(button.disabled).toBe(true)
     })
   })
@@ -171,7 +175,7 @@ describe('LoginPage', () => {
     renderLoginPage()
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pwd' } })
-    fireEvent.click(screen.getByText('Sign In'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
 
     const emailInput = screen.getByLabelText('Email') as HTMLInputElement
     const passwordInput = screen.getByLabelText('Password') as HTMLInputElement
@@ -186,6 +190,42 @@ describe('LoginPage', () => {
         user: { id: 1, email: 'a@b.com', role: 'admin' } as User,
       },
       message: 'OK',
+    })
+  })
+
+  it('renders remember me checkbox', () => {
+    renderLoginPage()
+    expect(screen.getByLabelText('Remember me')).toBeDefined()
+  })
+
+  it('renders password visibility toggle', () => {
+    renderLoginPage()
+    expect(screen.getByLabelText('Show password')).toBeDefined()
+  })
+
+  it('toggles password visibility', () => {
+    renderLoginPage()
+    const passwordInput = screen.getByLabelText('Password') as HTMLInputElement
+    expect(passwordInput.type).toBe('password')
+
+    fireEvent.click(screen.getByLabelText('Show password'))
+    expect(passwordInput.type).toBe('text')
+
+    fireEvent.click(screen.getByLabelText('Hide password'))
+    expect(passwordInput.type).toBe('password')
+  })
+
+  it('shows network error message on connection failure', async () => {
+    const networkError = { isAxiosError: true, response: undefined }
+    mockLogin.mockRejectedValueOnce(networkError)
+
+    renderLoginPage()
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pwd' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/Unable to connect/)).toBeDefined()
     })
   })
 })
