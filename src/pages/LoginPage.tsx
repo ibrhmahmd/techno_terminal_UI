@@ -11,10 +11,14 @@ export function LoginPage() {
   const { isAuthenticated, login: storeLogin } = useAuthStore()
   const emailRef = useRef<HTMLInputElement>(null)
 
-  const [email, setEmail] = useState(() => localStorage.getItem('remembered_email') || '')
+  const [email, setEmail] = useState(() => {
+    try { return localStorage.getItem('tt_remember_email') || '' } catch { return '' }
+  })
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem('remembered_email'))
+  const [rememberMe, setRememberMe] = useState(() => {
+    try { return !!localStorage.getItem('tt_remember_email') } catch { return false }
+  })
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [retryAfter, setRetryAfter] = useState<number | null>(null)
@@ -51,10 +55,14 @@ export function LoginPage() {
     setIsLoading(true)
 
     // Persist remember-me preference
-    if (rememberMe) {
-      localStorage.setItem('remembered_email', email)
-    } else {
-      localStorage.removeItem('remembered_email')
+    try {
+      if (rememberMe) {
+        localStorage.setItem('tt_remember_email', email)
+      } else {
+        localStorage.removeItem('tt_remember_email')
+      }
+    } catch {
+      // localStorage unavailable (private browsing, quota exceeded) — silently skip
     }
 
     try {
@@ -164,7 +172,6 @@ export function LoginPage() {
               onClick={() => setShowPassword((prev) => !prev)}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-0.5"
-              tabIndex={-1}
             >
               <span className="material-symbols-outlined text-lg" aria-hidden="true">
                 {showPassword ? 'visibility_off' : 'visibility'}
