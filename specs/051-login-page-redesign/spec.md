@@ -59,9 +59,9 @@ The login page (`src/pages/LoginPage.tsx`) is functionally complete but visually
 An admin navigates to the login page and sees a polished, branded experience that reflects the TechnoTerminal identity — not just a generic card on a flat background.
 
 **Acceptance Scenarios**:
-1. **Given** the login page loads, **When** viewing the page, **Then** there is a visible brand element beyond plain text (logo, illustration, or background graphic)
+1. **Given** the login page loads, **When** viewing the page, **Then** there is a visible brand element beyond plain text — a terminal/grid dot pattern background graphic in the secondary color accent
 2. **Given** the login page loads, **When** viewing on desktop, **Then** the layout uses the full viewport with a terminal/grid dot pattern in the secondary color accent on the `bg-surface` background
-3. **Given** the login page loads, **When** viewing on mobile (< 640px), **Then** the card goes full-width with 16px padding and no horizontal scroll
+3. **Given** the login page loads, **When** viewing on mobile (< 640px), **Then** the card goes full-width with 16px interior padding (`px-4`) and no horizontal scroll
 
 ### User Story 2 — Auth Pages Share a Common Layout Shell (P2)
 
@@ -79,7 +79,7 @@ The login form includes common UX patterns that reduce friction.
 **Acceptance Scenarios**:
 1. **Given** the login form, **When** the user types a password, **Then** there is a visibility toggle (eye icon) to show/hide the password
 2. **Given** the login form, **When** the user fills in credentials, **Then** pressing Enter submits the form (already works — confirm preserved)
-3. **Given** the auth check is in progress (checking if already logged in), **When** the page first loads, **Then** a skeleton or spinner is shown instead of a blank/flashing page
+3. **Given** the auth check is in progress (checking if already logged in), **When** the page first loads, **Then** a branded card skeleton is shown instead of a blank/flashing page
 4. **Given** the login form, **When** the page renders, **Then** the email field is auto-focused for immediate typing
 
 ### User Story 4 — Error States Are Visually Clear (P3)
@@ -114,15 +114,16 @@ Login errors (invalid credentials, rate limiting, network failure) are displayed
 - **FR-006**: Login form MUST preserve input values on error (do not clear fields on failed submit)
 - **FR-007**: Rate-limit countdown MUST be reflected in the submit button text (e.g., "Try again in 45s") in addition to the banner
 - **FR-008**: All auth pages MUST remain fully responsive (mobile-first)
-- **FR-009**: Login page MUST support "Remember Me" checkbox (stored in localStorage, pre-fills email on return)
+- **FR-009**: Login page MUST support "Remember Me" checkbox (stored in localStorage key `tt_remember_email`, pre-fills email on return). Email persists indefinitely until the user unchecks Remember Me and resubmits. On first visit (no stored email), the checkbox defaults to unchecked and the email field is empty.
 - **FR-010**: Error messages MUST distinguish network/server failures from invalid credentials — network errors display "Unable to connect. Please check your internet connection and try again."; authentication failures display "Invalid email or password."
 - **FR-011**: Login page MUST meet WCAG 2.1 AA accessibility requirements:
   - Error banners MUST use `role="alert"` for screen reader announcement
   - Password visibility toggle MUST have an `aria-label` (e.g., "Show password" / "Hide password")
   - Auth check loading state MUST use `role="status"` or `aria-live="polite"`
   - All interactive elements MUST have visible focus indicators (already present — confirm preserved)
-  - Keyboard navigation MUST follow a logical tab order (email → password → submit → forgot password)
+  - Keyboard navigation MUST follow a logical tab order (email → password → password toggle → remember me → submit → forgot password)
   - Rate-limit countdown text MUST be announced by screen readers (`aria-live="polite"` on the countdown element)
+- **FR-012**: ForgotPassword, Register, and ResetPassword pages MUST use error banners styled consistently with the LoginPage error banner pattern (icon + colored background + `role="alert"`)
 
 ### Design Token Migration
 
@@ -136,6 +137,7 @@ No token migration needed — login page already uses design tokens. The focus i
 | `subtitle` | string | required | Page description |
 | `children` | ReactNode | required | Form content |
 | `showBranding` | boolean | `true` | Show/hide the brand header |
+| `showSkeleton` | boolean | `false` | Show branded card skeleton in place of children |
 
 ### Success Criteria
 
@@ -153,6 +155,12 @@ No token migration needed — login page already uses design tokens. The focus i
 - No changes to auth store or token management logic
 - No changes to password reset flow or API integration
 - No changes to the dashboard or any page outside the `/login`, `/register`, `/forgot-password`, `/reset-password` routes
+
+### Dependencies & Assumptions
+
+- Error banners on sibling pages (ForgotPassword, Register, ResetPassword) reuse the existing error banner styling pattern already present on LoginPage — no new banner component
+- Password toggle uses existing Material Symbols icon font already loaded by the app — no new icon dependency
+- `localStorage` may be unavailable (private browsing, quota exceeded); when unavailable, login flow continues without Remember Me (checkbox hidden or ignored silently)
 
 ### Entities
 

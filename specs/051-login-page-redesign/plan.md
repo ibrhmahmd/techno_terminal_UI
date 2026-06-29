@@ -5,7 +5,7 @@
 
 ## Summary
 
-Redesign the login page and all auth pages (ForgotPassword, Register, ResetPassword) with a shared `AuthLayout` component, terminal/grid dot pattern background, password visibility toggle, Remember Me checkbox, auth-check branded skeleton, WCAG 2.1 AA a11y, and distinct network error messages. Frontend-only — no backend changes.
+Redesign the login page and all auth pages (ForgotPassword, Register, ResetPassword) with a shared `AuthLayout` component, terminal/grid dot pattern background, password visibility toggle, Remember Me checkbox, auth-check branded skeleton, WCAG 2.1 AA a11y, distinct network error messages, and consistent error banner styling across all auth pages. Frontend-only — no backend changes.
 
 ## Technical Context
 
@@ -87,3 +87,6 @@ See `research.md` for detailed findings. Key decisions:
 - **Auth skeleton**: Full-height viewport skeleton mirroring card structure using same Token/breakpoints — no animation library needed (CSS-only pulse)
 - **Remember Me**: `localStorage.setItem('tt_remember_email', email)` — email-only, no password stored
 - **Network error detection**: Check `isAxiosError(err) && !err.response` — no response body means network failure, different from 4xx/5xx
+- **FR-012 — sibling error consistency**: Error banners on ForgotPassword, Register, ResetPassword follow the same pattern as LoginPage (icon + colored background + `role="alert"`) — no new banner component needed, reuse existing styling
+- **localStorage unavailable**: Login flow continues without Remember Me when localStorage is unavailable — checkbox hidden or ignored silently
+- **Remember Me first visit**: Checkbox defaults unchecked, email field empty when no `tt_remember_email` exists
