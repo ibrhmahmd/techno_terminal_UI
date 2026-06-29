@@ -1,7 +1,7 @@
 // RoleBasedRoute - Route guard for role-based access control
 // Restricts access to users with specific roles
 
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet, Link } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 
 interface RoleBasedRouteProps {
@@ -40,5 +40,22 @@ export function RoleBasedRoute({
   return <Outlet />
 }
 
-
+export function AccessDenied() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-surface px-4">
+      <div className="text-center max-w-md">
+        <span className="material-symbols-outlined text-5xl text-red-500 mb-4" aria-hidden="true">block</span>
+        <h1 className="font-headline text-2xl font-bold text-on-surface mb-2">Access Denied</h1>
+        <p className="text-on-surface-variant mb-6">You do not have permission to access this page.</p>
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-secondary rounded-lg hover:opacity-90 transition-all"
+        >
+          <span className="material-symbols-outlined text-base" aria-hidden="true">home</span>
+          Return to Dashboard
+        </Link>
+      </div>
+    </div>
+  )
+}
 

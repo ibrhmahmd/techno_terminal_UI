@@ -15,16 +15,6 @@ export function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  if (!token) {
-    return (
-      <AuthLayout title="Invalid Invite Link" subtitle="This invite link is missing a registration token. Please check your email for the full link.">
-        <div className="text-center">
-          <span className="material-symbols-outlined text-4xl text-red-500 mb-4" aria-hidden="true">link_off</span>
-        </div>
-      </AuthLayout>
-    )
-  }
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -36,6 +26,11 @@ export function RegisterPage() {
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
+      return
+    }
+
+    if (!token) {
+      setError('Invalid or missing registration token. Please check your invite link.')
       return
     }
 
@@ -51,8 +46,8 @@ export function RegisterPage() {
     <AuthLayout title="Complete Registration" subtitle="Set up your account to get started">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700" role="alert">
-            <span className="material-symbols-outlined text-lg shrink-0" aria-hidden="true">error</span>
+          <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700" role="alert">
+            <span className="material-symbols-outlined text-lg mt-0.5 shrink-0" aria-hidden="true">error</span>
             <span>{error}</span>
           </div>
         )}
@@ -69,7 +64,7 @@ export function RegisterPage() {
             placeholder="Choose a username"
             required
             disabled={registerMutation.isPending}
-            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+            className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 
@@ -86,7 +81,7 @@ export function RegisterPage() {
             required
             minLength={12}
             disabled={registerMutation.isPending}
-            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+            className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 
@@ -103,7 +98,7 @@ export function RegisterPage() {
             required
             minLength={12}
             disabled={registerMutation.isPending}
-            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+            className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 

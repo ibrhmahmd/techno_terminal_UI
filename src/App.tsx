@@ -1,35 +1,37 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { useAuthStore } from './store/authStore'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { AppLayout } from './components/layout/AppLayout'
-import { LoginPage } from './pages/LoginPage'
 import { AuthLayout } from './components/auth/AuthLayout'
-import { RegisterPage } from './pages/RegisterPage'
-import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
-import { ResetPasswordPage } from './pages/ResetPasswordPage'
-
-import { DashboardPage } from './pages/DashboardPage'
-import { GroupsPage } from './pages/GroupsPage'
-import { GroupDetailPage } from './pages/GroupDetailPage'
-import { DirectoryPage } from './pages/DirectoryPage'
-import { StudentDetailPage } from './pages/StudentDetailPage'
-import { ParentDetailPage } from './pages/ParentDetailPage'
-import { EnrollmentsPage } from './pages/EnrollmentsPage'
-import { FinancePage } from './pages/FinancePage'
-import { CompetitionsPage } from './pages/CompetitionsPage'
-import { CompetitionDetailPage } from './pages/CompetitionDetailPage'
-import { CompetitionEditPage } from './pages/CompetitionEditPage'
-import { TeamDetailPage } from './pages/TeamDetailPage'
-import { CoursesPage } from './pages/CoursesPage'
-import { CourseDetailPage } from './pages/CourseDetailPage'
-import { ReportsPage } from './pages/ReportsPage'
-import { StaffPage } from './pages/StaffPage'
-import { SettingsPage } from './pages/SettingsPage'
-import { NotificationsPage } from './pages/NotificationsPage'
-import { CapabilitiesPage } from './pages/CapabilitiesPage'
+import { ErrorBoundary } from './components/common/ErrorBoundary'
+import { LoadingSpinner } from './components/common/LoadingSpinner'
 import { RoleBasedRoute } from './components/common/RoleBasedRoute'
 import { InstructorBlockedRoute } from './components/common/InstructorBlockedRoute'
+
+const LoginPage = lazy(() => import('./pages/LoginPage').then(m => ({ default: m.LoginPage })))
+const RegisterPage = lazy(() => import('./pages/RegisterPage').then(m => ({ default: m.RegisterPage })))
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })))
+const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
+const GroupsPage = lazy(() => import('./pages/GroupsPage').then(m => ({ default: m.GroupsPage })))
+const GroupDetailPage = lazy(() => import('./pages/GroupDetailPage').then(m => ({ default: m.GroupDetailPage })))
+const DirectoryPage = lazy(() => import('./pages/DirectoryPage').then(m => ({ default: m.DirectoryPage })))
+const StudentDetailPage = lazy(() => import('./pages/StudentDetailPage').then(m => ({ default: m.StudentDetailPage })))
+const ParentDetailPage = lazy(() => import('./pages/ParentDetailPage').then(m => ({ default: m.ParentDetailPage })))
+const EnrollmentsPage = lazy(() => import('./pages/EnrollmentsPage').then(m => ({ default: m.EnrollmentsPage })))
+const FinancePage = lazy(() => import('./pages/FinancePage').then(m => ({ default: m.FinancePage })))
+const CompetitionsPage = lazy(() => import('./pages/CompetitionsPage').then(m => ({ default: m.CompetitionsPage })))
+const CompetitionDetailPage = lazy(() => import('./pages/CompetitionDetailPage').then(m => ({ default: m.CompetitionDetailPage })))
+const CompetitionEditPage = lazy(() => import('./pages/CompetitionEditPage').then(m => ({ default: m.CompetitionEditPage })))
+const TeamDetailPage = lazy(() => import('./pages/TeamDetailPage').then(m => ({ default: m.TeamDetailPage })))
+const CoursesPage = lazy(() => import('./pages/CoursesPage').then(m => ({ default: m.CoursesPage })))
+const CourseDetailPage = lazy(() => import('./pages/CourseDetailPage').then(m => ({ default: m.CourseDetailPage })))
+const ReportsPage = lazy(() => import('./pages/ReportsPage').then(m => ({ default: m.ReportsPage })))
+const StaffPage = lazy(() => import('./pages/StaffPage').then(m => ({ default: m.StaffPage })))
+const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
+const CapabilitiesPage = lazy(() => import('./pages/CapabilitiesPage').then(m => ({ default: m.CapabilitiesPage })))
 
 function useHasHydrated() {
   const [hasHydrated, setHasHydrated] = useState(
@@ -61,13 +63,18 @@ function PublicRoute() {
 function App() {
   return (
     <BrowserRouter>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-secondary focus:rounded-lg focus:shadow-lg">
+        Skip to content
+      </a>
+      <div id="main-content">
+      <Suspense fallback={<LoadingSpinner size="lg" variant="default" />}>
       <Routes>
         {/* Public Routes */}
         <Route element={<PublicRoute />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/login" element={<ErrorBoundary><LoginPage /></ErrorBoundary>} />
+          <Route path="/register" element={<ErrorBoundary><RegisterPage /></ErrorBoundary>} />
+          <Route path="/forgot-password" element={<ErrorBoundary><ForgotPasswordPage /></ErrorBoundary>} />
+          <Route path="/reset-password" element={<ErrorBoundary><ResetPasswordPage /></ErrorBoundary>} />
         </Route>
 
         {/* Protected Routes */}
@@ -113,6 +120,8 @@ function App() {
         {/* Wildcard: send unknown routes to login, not dashboard, to avoid redirect loops */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
+      </Suspense>
+      </div>
       <SpeedInsights />
     </BrowserRouter>
   )

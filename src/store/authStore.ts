@@ -52,9 +52,9 @@ if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e) => {
     if (e.key === 'auth-storage') {
       try {
-        const stored = localStorage.getItem('auth-storage')
-        if (stored) {
-          const parsed = JSON.parse(stored)
+        const newValue = (e as StorageEvent).newValue || localStorage.getItem('auth-storage')
+        if (newValue) {
+          const parsed = JSON.parse(newValue)
           if (parsed?.state) {
             useAuthStore.setState(parsed.state)
           }

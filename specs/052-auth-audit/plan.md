@@ -1,13 +1,13 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Auth Pages & Logic Audit Fix
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Branch**: `051-login-page-redesign` | **Date**: 2026-06-29 | **Spec**: `specs/052-auth-audit/spec.md`
+**Input**: Feature specification from `/specs/052-auth-audit/spec.md`
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Fix 65 audit findings (17 high, 20 medium, 28 low) across 15 auth-related files: runtime bugs, security issues, dead code, design system violations, accessibility gaps, data-fetching anti-patterns, and performance regressions. All changes are frontend-only, confined to `src/`.
 
 ## Technical Context
 
@@ -23,13 +23,47 @@
 **Fonts**: Space Grotesk (`font-headline`) for headings, Inter (`font-body`) for body text  
 **Performance Goals**: <1s initial load, <200ms navigation, 60fps animations  
 **Constraints**: Frontend-only — no backend code. Strict TS (`noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax`). Build must pass `tsc -b && vite build`.  
-**Scale/Scope**: Single-page CRM with 18 pages, ~13 API domain modules
+**Scale/Scope**: 15 files across auth pages, hooks, API, store, components, and App.
+
+### Resolved Research Items
+
+- **ErrorBoundary**: Exists at `src/components/common/ErrorBoundary.tsx` — class component, accepts `children` and optional `fallback` props. Used in 11 existing pages.
+- **Glassmorphism pattern**: `bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl` (from StudentCombobox, SpyCombobox, etc.)
+- **Ghost input pattern**: `w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors` (from StudentForm, LogActivityModal)
+- **Motion-safe animations**: `motion-safe:animate-pulse` on skeletons (used in comboboxes), `motion-safe:transition-all motion-safe:duration-200` on hover effects
+- **useLogin hook**: Does not exist — needs to be created following `useRegister` pattern in `useAuthQueries.ts`
+- **Refresh drain pattern**: No existing pattern. `refreshSubscribers` queue is only drained on success (`onTokenRefreshed`); no `onTokenRefreshFailed` function exists. Fix: reject all subscribers in the catch block.
+- **Query keys auth**: `queryKeys.auth.all`, `.sessions`, `.activity`, `.users`, `.auditLogins`, `.auditPasswordChanges`, `.auditFailedAttempts`, `.mfa`
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+### Principle I — Frontend-Only Scope
+**PASS** — All changes are in `src/`. No backend code, no database schemas, no server logic.
+
+### Principle II — Server State Discipline
+**PASS** — Fixes strengthen React Query discipline (adding missing `enabled` guards, consistent `staleTime`, proper `invalidateQueries`, replacing raw hook `window.location.replace` with `navigate()`). The `useLogin` hook aligns with the mutation pattern.
+
+### Principle III — Global State Minimalism
+**PASS** — No new Zustand stores. authStore changes are bug fixes (storage event listener).
+
+### Principle IV — TypeScript Strict Mode
+**PASS** — Fixes remove `token!` non-null assertions, add proper runtime guards. All changes comply with `verbatimModuleSyntax`, `erasableSyntaxOnly`, and `noUnusedLocals`.
+
+### Principle V — Component Naming Convention
+**PASS** — No new components. No naming violations.
+
+### Cache & API Discipline — Query Keys
+**PASS** — All changes use factory functions from `queryKeys.ts`.
+
+### Build Gates
+**PASS** — All changes must pass `npm run build` (tsc -b && vite build). Lint must pass `npm run lint`.
+
+### Testing
+**PASS** — Fixing broken test imports (AccessDenied, User type). No new test files needed.
+
+**Gate result**: ALL CLEAR — no violations.
 
 ## Project Structure
 

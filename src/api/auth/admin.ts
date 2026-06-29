@@ -15,11 +15,6 @@ export async function getUsers(query?: AdminUserQuery): Promise<PaginatedApiResp
   return response.data
 }
 
-export async function getUser(id: number): Promise<User> {
-  const response = await client.get<{ success: boolean; data: User }>(`/admin/users/${id}`)
-  return response.data.data
-}
-
 export interface UpdateUserRequest {
   role?: string
   is_active?: boolean

@@ -17,7 +17,7 @@ export function LoadingSpinner({ size = 'md', variant = 'default' }: LoadingSpin
 
   return (
     <div className="flex items-center justify-center p-2" role="status" aria-live="polite">
-      <div className={`${sizeClasses[size]} ${colorClasses[variant]} rounded-full animate-spin`} />
+      <div className={`${sizeClasses[size]} ${colorClasses[variant]} rounded-full motion-safe:animate-spin`} />
       <span className="sr-only">Loading...</span>
     </div>
   )

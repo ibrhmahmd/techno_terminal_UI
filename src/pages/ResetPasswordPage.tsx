@@ -1,13 +1,13 @@
-import { useMemo, useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { useMemo, useState, useRef, useEffect, type FormEvent } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useResetPasswordWithToken } from '../hooks/useAuthQueries'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { AuthLayout } from '../components/auth/AuthLayout'
 
 type Phase = 'invalid' | 'form' | 'success'
 
-function parseRecoveryToken(): { token: string; valid: true } | { token: null; valid: false } {
-  const params = new URLSearchParams(window.location.hash.slice(1))
+function parseRecoveryToken(hash: string): { token: string; valid: true } | { token: null; valid: false } {
+  const params = new URLSearchParams(hash.slice(1))
   const token = params.get('access_token')
   const type = params.get('type')
   if (token && type === 'recovery') return { token, valid: true }
@@ -15,12 +15,23 @@ function parseRecoveryToken(): { token: string; valid: true } | { token: null; v
 }
 
 export function ResetPasswordPage() {
-  const { token, valid } = useMemo(() => parseRecoveryToken(), [])
+  const location = useLocation()
+  const { token, valid } = useMemo(() => parseRecoveryToken(location.hash), [location.hash])
   const [phase, setPhase] = useState<Phase>(valid ? 'form' : 'invalid')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const resetMutation = useResetPasswordWithToken()
+  const invalidRef = useRef<HTMLDivElement>(null)
+  const successRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (phase === 'invalid') {
+      invalidRef.current?.focus()
+    } else if (phase === 'success') {
+      successRef.current?.focus()
+    }
+  }, [phase])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -33,8 +44,13 @@ export function ResetPasswordPage() {
       setError('Passwords do not match')
       return
     }
+    if (!token) {
+      setPhase('invalid')
+      return
+    }
+
     try {
-      await resetMutation.mutateAsync({ recoveryToken: token!, data: { new_password: newPassword } })
+      await resetMutation.mutateAsync({ recoveryToken: token, data: { new_password: newPassword } })
       setPhase('success')
     } catch {
       setError('This link has expired or has already been used. Please request a new reset link.')
@@ -44,7 +60,7 @@ export function ResetPasswordPage() {
   if (phase === 'invalid') {
     return (
       <AuthLayout title="Invalid or Expired Link" subtitle="The password reset link is invalid, incomplete, or has expired.">
-        <div className="text-center">
+        <div ref={invalidRef} tabIndex={-1} className="text-center focus:outline-none">
           <span className="material-symbols-outlined text-4xl text-red-500 mb-4" aria-hidden="true">error</span>
           <Link
             to="/forgot-password"
@@ -61,7 +77,7 @@ export function ResetPasswordPage() {
   if (phase === 'success') {
     return (
       <AuthLayout title="Password Reset Complete" subtitle="Your password has been successfully updated. You can now sign in with your new password.">
-        <div className="text-center">
+        <div ref={successRef} tabIndex={-1} className="text-center focus:outline-none">
           <span className="material-symbols-outlined text-4xl text-green-500 mb-4" aria-hidden="true">check_circle</span>
           <Link
             to="/login"
@@ -97,7 +113,7 @@ export function ResetPasswordPage() {
             required
             minLength={12}
             disabled={resetMutation.isPending}
-            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+            className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 
@@ -114,7 +130,7 @@ export function ResetPasswordPage() {
             required
             minLength={12}
             disabled={resetMutation.isPending}
-            className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+            className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 
@@ -131,7 +147,7 @@ export function ResetPasswordPage() {
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-slate-500">
+      <p className="mt-6 text-center text-sm text-on-surface-variant">
         Remember your password?{' '}
         <Link to="/login" className="text-secondary font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-secondary/20 rounded">
           Sign In

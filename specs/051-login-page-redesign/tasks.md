@@ -33,9 +33,9 @@ description: "Task list for Login Page Redesign feature implementation"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create auth components directory at `src/components/auth/`
-- [ ] T002 [P] Create `src/components/auth/AuthLayout.tsx` — shared layout wrapper with `title`, `subtitle`, `children`, `showBranding`, `showSkeleton` props (terminal dot pattern background, brand header, card container)
-- [ ] T003 [P] Create `src/components/auth/AuthLayoutSkeleton.tsx` — branded card skeleton mimicking login card layout (placeholder blocks for brand area, 2 fields, button), using CSS `animate-pulse`
+- [x] T001 Create auth components directory at `src/components/auth/`
+- [x] T002 [P] Create `src/components/auth/AuthLayout.tsx` — shared layout wrapper with `title`, `subtitle`, `children`, `showBranding`, `showSkeleton` props (terminal dot pattern background, brand header, card container)
+- [x] T003 [P] Create `src/components/auth/AuthLayoutSkeleton.tsx` — branded card skeleton mimicking login card layout (placeholder blocks for brand area, 2 fields, button), using CSS `animate-pulse`
 
 **Checkpoint**: AuthLayout renders correctly with children and in skeleton mode
 
@@ -47,9 +47,9 @@ description: "Task list for Login Page Redesign feature implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 [US1] Add terminal/grid dot pattern background to `AuthLayout.tsx` via CSS `background-image: radial-gradient(circle, rgba(...) 1px, transparent 1px)` with secondary color accent at low opacity and `background-size: 24px 24px`
-- [ ] T005 [US1] Add brand header ("TechnoTerminal" heading with `font-headline` + "CRM Sign In" tagline) to `AuthLayout.tsx` — controlled by `showBranding` prop (default `true`)
-- [ ] T006 [US1] Add responsive card sizing in `AuthLayout.tsx`: `max-w-md` centered on desktop, full-width with `px-4` on mobile (< 640px)
+- [x] T004 [US1] Add terminal/grid dot pattern background to `AuthLayout.tsx` via CSS `background-image: radial-gradient(circle, rgba(...) 1px, transparent 1px)` with secondary color accent at low opacity and `background-size: 24px 24px`
+- [x] T005 [US1] Add brand header ("TechnoTerminal" heading with `font-headline` + "CRM Sign In" tagline) to `AuthLayout.tsx` — controlled by `showBranding` prop (default `true`)
+- [x] T006 [US1] Add responsive card sizing in `AuthLayout.tsx`: `max-w-md` centered on desktop, full-width with `px-4` on mobile (< 640px)
 
 **Checkpoint**: AuthLayout displays terminal pattern background, brand header, and responsive card
 
@@ -63,8 +63,8 @@ description: "Task list for Login Page Redesign feature implementation"
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Integrate `AuthLayout` into `src/pages/LoginPage.tsx` — replace the existing card wrapper markup with `<AuthLayout title="..." subtitle="...">` wrapping the form
-- [ ] T008 [US1] Integrate `AuthLayoutSkeleton` into `LoginPage.tsx` — add auth-check loading state: show `<AuthLayout showSkeleton>` while `isAuthenticated` is being determined (before redirect)
+- [x] T007 [US1] Integrate `AuthLayout` into `src/pages/LoginPage.tsx` — replace the existing card wrapper markup with `<AuthLayout title="..." subtitle="...">` wrapping the form
+- [x] T008 [US1] Integrate `AuthLayoutSkeleton` into `LoginPage.tsx` — add auth-check loading state: show `<AuthLayout showSkeleton>` while `isAuthenticated` is being determined (before redirect)
 
 **Checkpoint**: Login page shows terminal pattern background, brand header, responsive card, and branded skeleton during auth check. Build passes.
 
@@ -78,9 +78,9 @@ description: "Task list for Login Page Redesign feature implementation"
 
 ### Implementation for User Story 2
 
-- [ ] T009 [P] [US2] Migrate `src/pages/ForgotPasswordPage.tsx` to use `AuthLayout` — replace card wrapper markup with `<AuthLayout title="Reset Password" subtitle="...">`, ensure error banners match LoginPage pattern (FR-012)
-- [ ] T010 [P] [US2] Migrate `src/pages/RegisterPage.tsx` to use `AuthLayout` — replace card wrapper markup with `<AuthLayout title="Complete Registration" subtitle="...">`, ensure error banners match LoginPage pattern (FR-012)
-- [ ] T011 [P] [US2] Migrate `src/pages/ResetPasswordPage.tsx` to use `AuthLayout` — replace card wrapper markup with `<AuthLayout title="..." subtitle="...">`, ensure error banners match LoginPage pattern (FR-012)
+- [x] T009 [P] [US2] Migrate `src/pages/ForgotPasswordPage.tsx` to use `AuthLayout` — replace card wrapper markup with `<AuthLayout title="Reset Password" subtitle="...">`, ensure error banners match LoginPage pattern (FR-012)
+- [x] T010 [P] [US2] Migrate `src/pages/RegisterPage.tsx` to use `AuthLayout` — replace card wrapper markup with `<AuthLayout title="Complete Registration" subtitle="...">`, ensure error banners match LoginPage pattern (FR-012)
+- [x] T011 [P] [US2] Migrate `src/pages/ResetPasswordPage.tsx` to use `AuthLayout` — replace card wrapper markup with `<AuthLayout title="..." subtitle="...">`, ensure error banners match LoginPage pattern (FR-012)
 
 **Checkpoint**: All 4 auth pages render consistently with the same AuthLayout. No duplicated card wrapper markup remains in any page.
 
@@ -94,10 +94,10 @@ description: "Task list for Login Page Redesign feature implementation"
 
 ### Implementation for User Story 3
 
-- [ ] T012 [P] [US3] Add password visibility toggle to `LoginPage.tsx` — inline `<button>` inside a relative-positioned wrapper around the password input, toggles `type="password"`/`"text"`, uses `material-symbols-outlined: visibility`/`visibility_off`, `aria-label="Show password"`/`"Hide password"`
-- [ ] T013 [P] [US3] Add auto-focus on email input in `LoginPage.tsx` — use `useRef` + `useEffect` to call `emailRef.current.focus()` on mount
-- [ ] T014 [P] [US3] Add "Remember Me" checkbox to `LoginPage.tsx` below password field — stores email in `localStorage` key `tt_remember_email`, pre-fills email on return, password is NEVER stored. First visit (no stored email): checkbox unchecked by default, email field empty. localStorage unavailable (private browsing): login works, Remember Me silently skipped.
-- [ ] T015 [US3] Wire auth-check loading skeleton into `LoginPage.tsx` — show `AuthLayoutSkeleton` while `useAuthStore` is rehydrating and `isAuthenticated` is undetermined (before redirect decision)
+- [x] T012 [P] [US3] Add password visibility toggle to `LoginPage.tsx` — inline `<button>` inside a relative-positioned wrapper around the password input, toggles `type="password"`/`"text"`, uses `material-symbols-outlined: visibility`/`visibility_off`, `aria-label="Show password"`/`"Hide password"`
+- [x] T013 [P] [US3] Add auto-focus on email input in `LoginPage.tsx` — use `useRef` + `useEffect` to call `emailRef.current.focus()` on mount
+- [x] T014 [P] [US3] Add "Remember Me" checkbox to `LoginPage.tsx` below password field — stores email in `localStorage` key `tt_remember_email`, pre-fills email on return, password is NEVER stored. First visit (no stored email): checkbox unchecked by default, email field empty. localStorage unavailable (private browsing): login works, Remember Me silently skipped.
+- [x] T015 [US3] Wire auth-check loading skeleton into `LoginPage.tsx` — show `AuthLayoutSkeleton` while `useAuthStore` is rehydrating and `isAuthenticated` is undetermined (before redirect decision)
 
 **Checkpoint**: All login UX features work — password toggle toggles visibility, email auto-focuses, Remember Me persists email across sessions, auth check shows skeleton
 
@@ -111,9 +111,9 @@ description: "Task list for Login Page Redesign feature implementation"
 
 ### Implementation for User Story 4
 
-- [ ] T016 [P] [US4] Add network error detection in `LoginPage.tsx` — check `isAxiosError(err) && !err.response` and display "Unable to connect. Please check your internet connection and try again."
-- [ ] T017 [P] [US4] Add rate-limit countdown to submit button text in `LoginPage.tsx` — when `retryAfter` is active, show "Try again in {countdown}s" inside the button (replacing "Sign In")
-- [ ] T018 [US4] Add WCAG 2.1 AA accessibility checkpoints to auth components:
+- [x] T016 [P] [US4] Add network error detection in `LoginPage.tsx` — check `isAxiosError(err) && !err.response` and display "Unable to connect. Please check your internet connection and try again."
+- [x] T017 [P] [US4] Add rate-limit countdown to submit button text in `LoginPage.tsx` — when `retryAfter` is active, show "Try again in {countdown}s" inside the button (replacing "Sign In")
+- [x] T018 [US4] Add WCAG 2.1 AA accessibility checkpoints to auth components:
   - Error banners: confirm `role="alert"` on error and rate-limit banners
   - Password toggle: confirm `aria-label` toggles between "Show password" / "Hide password"
   - Auth skeleton: add `role="status"` with `aria-live="polite"`
@@ -128,10 +128,10 @@ description: "Task list for Login Page Redesign feature implementation"
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T019 Run `npm run lint` and fix all errors in modified files
-- [ ] T020 Run `npm run build` (`tsc -b && vite build`) and verify zero errors
-- [ ] T021 [P] Visual verification: login page renders with terminal pattern, branded skeleton, password toggle, Remember Me, correct error states on all viewport sizes
-- [ ] T022 Code cleanup — remove any leftover duplicated card wrapper markup from migrated pages, verify no dead code
+- [x] T019 Run `npm run lint` and fix all errors in modified files
+- [x] T020 Run `npm run build` (`tsc -b && vite build`) and verify zero errors
+- [x] T021 [P] Visual verification: login page renders with terminal pattern, branded skeleton, password toggle, Remember Me, correct error states on all viewport sizes
+- [x] T022 Code cleanup — remove any leftover duplicated card wrapper markup from migrated pages, verify no dead code
 
 ---
 

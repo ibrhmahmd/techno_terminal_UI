@@ -1,18 +1,18 @@
-import { useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
+  login,
   updateProfile,
   changePassword,
   getSessions,
   revokeAllSessions,
   getMyActivity,
-  getCurrentUser,
   forgotPassword,
   register,
   createUser,
   resetPassword,
   getMfaStatus,
   resetPasswordWithToken,
+  type LoginCredentials,
   type UpdateProfileRequest,
   type ChangePasswordRequest,
   type ActivityQuery,
@@ -25,7 +25,6 @@ import {
 import {
   getUsers,
   updateUser,
-  deleteUser,
   inviteUser,
   getAuditLogins,
   getAuditPasswordChanges,
@@ -41,25 +40,6 @@ import { queryKeys } from './queryKeys'
 
 // --- Profile ---
 
-export function useCurrentUser() {
-  const logout = useAuthStore((s) => s.logout)
-  const query = useQuery({
-    queryKey: queryKeys.auth.all,
-    queryFn: getCurrentUser,
-    staleTime: 300_000,
-    retry: false,
-  })
-
-  useEffect(() => {
-    if (query.error instanceof Error && query.error.message === 'Account deactivated') {
-      logout()
-      window.location.replace('/login')
-    }
-  }, [query.error, logout])
-
-  return query
-}
-
 export function useUpdateProfile() {
   const updateUserInStore = useAuthStore((s) => s.updateUser)
   const qc = useQueryClient()
@@ -67,8 +47,6 @@ export function useUpdateProfile() {
     mutationFn: (data: UpdateProfileRequest) => updateProfile(data),
     onSuccess: (user) => {
       updateUserInStore(user)
-    },
-    onSettled: () => {
       qc.invalidateQueries({ queryKey: queryKeys.auth.all })
     },
   })
@@ -80,6 +58,20 @@ export function useMfaStatus() {
     queryFn: getMfaStatus,
     staleTime: 300_000,
     retry: false,
+  })
+}
+
+// --- Login ---
+
+export function useLogin() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (credentials: LoginCredentials) => login(credentials),
+    onSuccess: (response) => {
+      const { access_token, refresh_token, user } = response.data
+      useAuthStore.getState().login(access_token, refresh_token, user)
+      qc.invalidateQueries({ queryKey: queryKeys.auth.all })
+    },
   })
 }
 
@@ -144,7 +136,8 @@ export function useUsers(query?: AdminUserQuery) {
   return useQuery({
     queryKey: [...queryKeys.auth.users, query],
     queryFn: () => getUsers(query),
-    staleTime: 0,
+    staleTime: 30_000,
+    enabled: !query?.q || query.q.length >= 2,
   })
 }
 
@@ -152,17 +145,6 @@ export function useUpdateUser() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateUserRequest }) => updateUser(id, data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.auth.users })
-      qc.invalidateQueries({ queryKey: queryKeys.auth.all })
-    },
-  })
-}
-
-export function useDeleteUser() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (id: number) => deleteUser(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.auth.users })
       qc.invalidateQueries({ queryKey: queryKeys.auth.all })
@@ -183,8 +165,12 @@ export function useInviteUser() {
 // --- Registration ---
 
 export function useRegister() {
+  const qc = useQueryClient()
   return useMutation({
     mutationFn: (data: RegisterRequest) => register(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.auth.users })
+    },
   })
 }
 

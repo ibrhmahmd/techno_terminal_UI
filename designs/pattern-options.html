@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pattern Explorer — TechnoTerminal</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:Inter,sans-serif;background:#f8f9ff;color:#1e293b;padding:32px}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:24px;margin-bottom:4px}
+  .sub{color:#64748b;margin-bottom:28px;font-size:14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:20px}
+  .card{border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;background:#fff}
+  .ch{display:flex;justify-content:space-between;align-items:center;
+     padding:14px 18px;border-bottom:1px solid #e2e8f0;
+     font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;background:#fafbff}
+  .badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:999px;
+         background:#e2e8f0;color:#475569;font-family:Inter,sans-serif}
+  .badge.cur{background:#d1fae5;color:#065f46}
+  .badge.new{background:#dbeafe;color:#1e40af}
+  .preview{height:260px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+  .preview .bg{position:absolute;inset:0}
+  .mock{width:300px;background:#fff;border-radius:14px;padding:22px;
+        box-shadow:0 4px 20px rgba(0,0,0,.06);border:1px solid #e2e8f0;position:relative;z-index:1}
+  .mock .ti{font-family:'JetBrains Mono',monospace;font-size:26px;color:#006a61;margin-bottom:6px;font-weight:700}
+  .mock .ct{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:2px}
+  .mock .cs{font-size:12px;color:#94a3b8;margin-bottom:16px}
+  .mock .f{height:11px;background:#f1f5f9;border-radius:6px;margin-bottom:8px}
+  .mock .f.h{width:55%}
+  .mock .b{height:34px;background:#006a61;border-radius:8px;opacity:.12;margin-top:4px}
+  .desc{padding:12px 18px;font-size:13px;color:#64748b;line-height:1.5;border-top:1px solid #e2e8f0}
+</style>
+</head>
+<body>
+<h1>🔲 Terminal Pattern Explorer</h1>
+<p class="sub">Patterns rendered via Canvas → PNG data URL. Each shows the pattern tiled behind a card mockup.</p>
+<div class="grid" id="g"></div>
+<script>
+const C = '#006a61';
+const g = document.getElementById('g');
+
+function generatePattern(w, h, drawFn) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d');
+  drawFn(ctx, w, h);
+  return c.toDataURL();
+}
+
+// ─── Options ────────────────────────
+const opts = [];
+
+// 0: Current dots
+opts.push({
+  label: 'Baseline — Teal Dots',
+  badge: 'CURRENT', badgeClass: 'cur',
+  pattern: (() => {
+    const c = document.createElement('canvas');
+    c.width = 24; c.height = 24;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = C;
+    ctx.beginPath(); ctx.arc(12, 12, 0.5, 0, Math.PI*2); ctx.fill();
+    return c.toDataURL();
+  })(),
+  desc: 'Single-shape dot grid. 24×24 tile, 1px dot.',
+});
+
+function charPattern(tileW, tileH, fontSize, chars, positions, opacity) {
+  return generatePattern(tileW, tileH, (ctx, w, h) => {
+    ctx.font = `700 ${fontSize}px "JetBrains Mono", monospace`;
+    ctx.fillStyle = C;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.globalAlpha = opacity;
+    for (const p of positions) {
+      ctx.fillText(p.ch, p.x, p.y);
+    }
+  });
+}
+
+// Helper: grid positions
+function gridPositions(tileW, tileH, chars, rows, cols) {
+  const cellW = tileW / cols;
+  const cellH = tileH / rows;
+  const pos = [];
+  let i = 0;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (i >= chars.length) break;
+      pos.push({ ch: chars[i], x: c * cellW + cellW/2, y: r * cellH + cellH/2 });
+      i++;
+    }
+  }
+  return pos;
+}
+
+// 1: 3×3 Matrix
+opts.push({
+  label: 'A — 3×3 Matrix',
+  badge: 'NEW', badgeClass: 'new',
+  pattern: charPattern(72, 72, 13, '>_~$#|&%<', gridPositions(72, 72, '>_~$#|&%<', 3, 3), 0.14),
+  desc: '72×72 tile, 13px. 9 terminal symbols in a 3×3 grid. Dense textile feel.',
+});
+
+// 2: Sparse row
+opts.push({
+  label: 'B — Sparse Row',
+  pattern: charPattern(160, 32, 20, '>_~$', [
+    {ch:'>', x:20, y:16},{ch:'_',x:60,y:16},{ch:'~',x:100,y:16},{ch:'$',x:140,y:16}
+  ], 0.08),
+  desc: '160×32 tile, 20px. Just 4 symbols widely spaced. Minimal & clean.',
+});
+
+// 3: All symbols ribbon
+opts.push({
+  label: 'C — Horizontal Ribbon',
+  pattern: charPattern(112, 24, 12, '>_~$#|&',
+    '>_~$#|&'.split('').map((ch,i) => ({ch, x: i*16+8, y:12})), 0.10),
+  desc: '112×24 tile, 12px. All 7 symbols in one row, stacked vertically.',
+});
+
+// 4: Big >_
+opts.push({
+  label: 'D — Big >_ Statement',
+  pattern: charPattern(160, 80, 42, '>_',
+    [{ch:'>',x:50,y:40},{ch:'_',x:110,y:40}], 0.07),
+  desc: '160×80 tile, 42px. Bold cursor prompt, large & sparse. Wallpaper feel.',
+});
+
+// 5: 4×4 full set
+opts.push({
+  label: 'E — 4×4 Full Deck',
+  badge: 'NEW', badgeClass: 'new',
+  pattern: charPattern(96, 96, 11, '>_~$#|&%<>[]',
+    gridPositions(96, 96, '>_~$#|&%<>[]', 3, 4), 0.10),
+  desc: '96×96 tile, 11px. 12 symbols including brackets. Maximum variety.',
+});
+
+// 6: Diagonal
+opts.push({
+  label: 'F — Diagonal Flow',
+  pattern: charPattern(80, 80, 15, '>_~$#', [
+    {ch:'>',x:20,y:16},{ch:'_',x:60,y:16},
+    {ch:'~',x:40,y:40},
+    {ch:'$',x:20,y:64},{ch:'#',x:60,y:64},
+  ], 0.10),
+  desc: '80×80 tile. Offset positions creating a diagonal reading flow.',
+});
+
+// 7: Checkerboard
+opts.push({
+  label: 'G — Checkerboard',
+  pattern: charPattern(80, 80, 20, '>_', [
+    {ch:'>',x:20,y:16},{ch:'_',x:60,y:16},
+    {ch:'_',x:20,y:56},{ch:'>',x:60,y:56},
+  ], 0.08),
+  desc: '80×80 tile. Alternating >_ >_ like a checkerboard. Rhythmic.',
+});
+
+// 8: Micro dense
+opts.push({
+  label: 'H — Micro Dense',
+  pattern: charPattern(64, 64, 9, '>_~$#|&', gridPositions(64, 64, '>_~$#|&', 3, 2), 0.18),
+  desc: '64×64 tile, 9px. Tiny characters packed tight. Code-like texture.',
+});
+
+// 9: 4×2 block
+opts.push({
+  label: 'I — 4×2 Block',
+  pattern: charPattern(96, 48, 14, '>_~$#|&%',
+    gridPositions(96, 48, '>_~$#|&%', 2, 4), 0.10),
+  desc: '96×48 tile, 14px. Wide rectangle, 8 symbols. Balanced spacing.',
+});
+
+// 10: Prompt line
+opts.push({
+  label: 'J — Prompt Line',
+  pattern: charPattern(180, 24, 11, '>_~$#|&%', 
+    '>_~$#|&%'.split('').map((ch,i) => ({ch, x: i*22+11, y:12})), 0.08),
+  desc: '180×24 tile. The prompt symbols repeating as a horizontal band.',
+});
+
+// 11: Prompt text
+opts.push({
+  label: 'K — "root@techno:~$"',
+  badge: 'NEW', badgeClass: 'new',
+  pattern: charPattern(200, 28, 11, 'root@techno:~$',
+    'root@techno:~$'.split('').map((ch,i) => ({ch, x: i*11+11, y:14})), 0.08),
+  desc: '200×28 tile. The actual prompt text. Narrative & brand-driven.',
+});
+
+// 12: Two-layer (large + small)
+opts.push({
+  label: 'L — Layered Hierarchy',
+  pattern: charPattern(96, 96, 10, '>_~$#|&', (() => {
+    const p = gridPositions(96, 96, '>_~$', 1, 4);
+    // Add smaller ones
+    p.push({ch:'#',x:24,y:72},{ch:'|',x:72,y:72});
+    return p;
+  })(), 0.10),
+  desc: '96×96 tile. Two visual layers — some symbols larger than others.',
+});
+
+// 13: Stars/asterisks pattern
+opts.push({
+  label: 'M — Asterisk Field',
+  pattern: charPattern(64, 64, 12, '***',
+    [{ch:'*',x:16,y:16},{ch:'*',x:48,y:16},
+     {ch:'*',x:32,y:39},{ch:'*',x:16,y:56},{ch:'*',x:48,y:56}], 0.10),
+  desc: '64×64 tile. Asterisks in an offset grid. Unix glob feel.',
+});
+
+// ─── Render ────────────────────────
+opts.forEach(opt => {
+  const el = document.createElement('div');
+  el.className = 'card';
+  const badgeHtml = opt.badge
+    ? `<span class="badge ${opt.badgeClass || ''}">${opt.badge}</span>`
+    : '';
+  el.innerHTML = `
+    <div class="ch"><span>${opt.label}</span>${badgeHtml}</div>
+    <div class="preview">
+      <div class="bg" style="background:#f8f9ff;background-image:url('${opt.pattern}');background-repeat:repeat;"></div>
+      <div class="mock">
+        <div class="ti">&gt;_</div>
+        <div class="ct">Sign In</div>
+        <div class="cs">Welcome to TechnoTerminal</div>
+        <div class="f h"></div>
+        <div class="f"></div>
+        <div class="f h"></div>
+        <div class="b"></div>
+      </div>
+    </div>
+    <div class="desc">${opt.desc}</div>`;
+  g.appendChild(el);
+});
+</script>
+</body>
+</html>

@@ -16,6 +16,12 @@ function onTokenRefreshed(newToken: string) {
   refreshSubscribers = [];
 }
 
+// Drain all pending subscribers on refresh failure
+function onTokenRefreshFailed() {
+  refreshSubscribers.forEach((callback) => callback(''));
+  refreshSubscribers = [];
+}
+
 // Debug flag - enable via localStorage.setItem('api_debug', 'true')
 const isDebugEnabled = () => {
   if (typeof window === 'undefined') return false;
@@ -41,7 +47,7 @@ export const createApiClient = () => {
   // Request interceptor - add auth token (skip for login/refresh which use other auth) + debug logging
   client.interceptors.request.use((config) => {
     const token = useAuthStore.getState().token;
-    const noBearerEndpoints = ['/auth/login', '/auth/refresh'];
+    const noBearerEndpoints = ['/auth/login', '/auth/refresh', '/auth/reset-password-confirm'];
     if (token && !noBearerEndpoints.includes(config.url ?? '')) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -95,7 +101,7 @@ export const createApiClient = () => {
       }
 
       // Don't intercept auth-flow 401s — login/refresh errors are handled by the caller
-      const noRefreshEndpoints = ['/auth/login', '/auth/refresh'];
+      const noRefreshEndpoints = ['/auth/login', '/auth/refresh', '/auth/reset-password-confirm'];
       if (noRefreshEndpoints.includes(originalRequest.url ?? '')) {
         return Promise.reject(error);
       }
@@ -139,6 +145,8 @@ export const createApiClient = () => {
         
         return client(originalRequest);
       } catch (refreshError) {
+        // Drain queued subscribers — pending promises would hang forever
+        onTokenRefreshFailed();
         // Refresh failed - logout user
         await state.logout();
         window.location.replace("/login");

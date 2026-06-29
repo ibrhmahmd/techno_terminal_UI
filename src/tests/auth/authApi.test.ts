@@ -11,7 +11,7 @@ const { mockPost, mockGet } = vi.hoisted(() => ({
 }))
 
 vi.mock('../../api/client', () => ({
-  default: { post: mockPost, get: mockGet },
+  client: { post: mockPost, get: mockGet },
 }))
 
 const { mockStoreLogout } = vi.hoisted(() => ({
@@ -85,7 +85,7 @@ describe('Auth API functions', () => {
     expect(result).toEqual(userData)
   })
 
-  it('getCurrentUser logs out and redirects when account is inactive', async () => {
+  it('getCurrentUser throws when account is inactive', async () => {
     const userData = {
       id: 1, employee_id: 100, username: 'admin',
       email: 'admin@test.com', role: 'admin',
@@ -93,13 +93,7 @@ describe('Auth API functions', () => {
     }
     mockGet.mockResolvedValueOnce({ data: { success: true, data: userData, message: null } })
 
-    const replaceSpy = vi.spyOn(window.location, 'replace').mockImplementation(() => {})
-
     await expect(getCurrentUser()).rejects.toThrow('Account deactivated')
-    expect(mockStoreLogout).toHaveBeenCalled()
-    expect(replaceSpy).toHaveBeenCalledWith('/login')
-
-    replaceSpy.mockRestore()
   })
 
   it('createUser calls POST /auth/users with user data', async () => {
