@@ -233,6 +233,8 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
                       type="number"
                       value={amountDue}
                       onChange={e => setAmountDue(e.target.value)}
+                      onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                      onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                       placeholder="Group Default"
                       min="0"
                       step="0.01"
@@ -250,6 +252,8 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
                       type="number"
                       value={discountApplied}
                       onChange={e => setDiscountApplied(e.target.value)}
+                      onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                      onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                       min="0"
                       step="0.01"
                       className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"

@@ -158,6 +158,8 @@ export function StudentMultiSelector({
                     type="number"
                     value={fee ?? ''}
                     onChange={(e) => handleFeeChange(student.id, e.target.value)}
+                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                    onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                     placeholder={`${defaultFee}`}
                     step="0.01"
                     min="0"

@@ -88,6 +88,8 @@ export function ReceiptLineItemRow({
                 min={0}
                 value={item.amount || ''}
                 onChange={(e) => onUpdate({ amount: parseFloat(e.target.value) || 0 })}
+                onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
               />
             </div>
@@ -99,6 +101,8 @@ export function ReceiptLineItemRow({
                 min={0}
                 value={item.discount || ''}
                 onChange={(e) => onUpdate({ discount: parseFloat(e.target.value) || 0 })}
+                onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
               />
             </div>

@@ -56,6 +56,8 @@ export function UnpaidEnrollmentsFilters({
               placeholder="0"
               value={minBalance}
               onChange={(e) => onMinBalanceChange(e.target.value === '' ? '' : Number(e.target.value))}
+              onWheel={(e) => (e.target as HTMLInputElement).blur()}
+              onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
               className="w-24 px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary text-center"
             />
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">EGP</span>

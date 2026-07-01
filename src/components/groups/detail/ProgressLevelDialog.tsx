@@ -243,6 +243,8 @@ export function ProgressLevelDialog({
                     step={0.01}
                     value={formData.price_override ?? ''}
                     onChange={(e) => setPriceOverride(e.target.value ? Number(e.target.value) : null)}
+                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                    onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                     placeholder="Course Default"
                     className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
                   />

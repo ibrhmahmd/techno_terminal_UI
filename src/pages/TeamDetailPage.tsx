@@ -751,6 +751,8 @@ export function TeamDetailPage() {
                 type="number"
                 value={payAmount}
                 onChange={(e) => setPayAmount(e.target.value)}
+                onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                 placeholder="Enter amount..."
                 step="0.01"
                 min="0.01"
@@ -827,6 +829,8 @@ export function TeamDetailPage() {
                 type="number"
                 value={refundAmount}
                 onChange={(e) => setRefundAmount(e.target.value)}
+                onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                 placeholder="Enter amount..."
                 step="0.01"
                 min="0.01"
