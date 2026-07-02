@@ -95,7 +95,7 @@ export function SearchablePillSelector({
   if (selectedOption) {
     return (
       <div className="flex items-center gap-2">
-        <div className={`inline-flex items-center gap-2 px-3 py-1.5 bg-secondary/10 text-secondary border border-secondary/20 rounded-full ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
+        <div className={`inline-flex items-center gap-2 px-3 py-1.5 bg-secondary/10 text-secondary border border-secondary/20 rounded-full ${disabled ? 'opacity-50' : ''}`}>
           <div className="flex flex-col">
             <span className="text-sm font-semibold">{selectedOption.label}</span>
             {selectedOption.subLabel && (
@@ -104,12 +104,14 @@ export function SearchablePillSelector({
           </div>
           <button
             type="button"
+            disabled={disabled}
             onClick={() => {
+              if (disabled) return
               onChange(null)
               setIsOpen(true)
               setTimeout(() => wrapperRef.current?.querySelector('input')?.focus(), 0)
             }}
-            className="p-0.5 hover:bg-secondary/20 rounded-full transition-colors ml-1"
+            className="p-0.5 hover:bg-secondary/20 rounded-full transition-colors ml-1 disabled:pointer-events-none disabled:opacity-50"
           >
             <X className="w-4 h-4" />
           </button>

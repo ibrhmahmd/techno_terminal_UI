@@ -6,6 +6,8 @@ import { LevelBadge } from '../shared/LevelBadge'
 import { GroupStatusBadge } from '../shared/GroupStatusBadge'
 import { useDebounce } from '../../../hooks/useDebounce'
 import { formatTime } from '../../../utils/formatting'
+import { LoadingSpinner } from '../../common/LoadingSpinner'
+
 
 interface GroupInfoCardProps {
   group: EnrichedGroupPublic
@@ -18,6 +20,7 @@ interface GroupInfoCardProps {
   canLevelUp: boolean
   onNotesChange?: (notes: string) => void
   isSavingNotes?: boolean
+  isLevelUpPending?: boolean
 }
 
 export function GroupInfoCard({
@@ -31,6 +34,7 @@ export function GroupInfoCard({
   canLevelUp,
   onNotesChange,
   isSavingNotes,
+  isLevelUpPending = false,
 }: GroupInfoCardProps) {
   const [notes, setNotes] = useState(group.notes || '')
   const debouncedNotes = useDebounce(notes, 500)
@@ -77,10 +81,13 @@ export function GroupInfoCard({
           {canLevelUp && (
             <button
               onClick={onLevelUp}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-bold text-green-700 bg-green-50 rounded hover:bg-green-100 transition-colors"
+              disabled={isLevelUpPending}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-bold text-green-700 bg-green-50 rounded hover:bg-green-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <ArrowUpCircle className="w-4 h-4" />
-              Level Up
+              {isLevelUpPending
+                ? <LoadingSpinner size="sm" />
+                : <ArrowUpCircle className="w-4 h-4" />}
+              {isLevelUpPending ? 'Leveling Up...' : 'Level Up'}
             </button>
           )}
           <button

@@ -63,6 +63,8 @@ export function GroupDetailPage() {
     archiveGroup,
     levelUp, 
     createNewLevel,
+    isCreateLevelPending,
+    isLevelUpPending,
   } = useGroupMutations(groupId)
 
   // Current level enrollment count from consolidated data
@@ -216,6 +218,7 @@ export function GroupDetailPage() {
             canLevelUp={currentLevel?.status === 'active' && currentLevel?.students_completed > 0}
             onNotesChange={handleNotesChange}
             isSavingNotes={isSavingNotes}
+            isLevelUpPending={isLevelUpPending}
           />
 
           <MetricsStripCards
@@ -314,7 +317,7 @@ export function GroupDetailPage() {
             currentPriceOverride={null}
             onClose={() => setIsProgressLevelDialogOpen(false)}
             onConfirm={handleProgressLevelConfirm}
-            isLoading={false}
+            isLoading={isCreateLevelPending}
           />
         </ErrorBoundary>
       </div>

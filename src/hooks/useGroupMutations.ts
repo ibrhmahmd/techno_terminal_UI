@@ -20,6 +20,8 @@ interface UseGroupMutationsReturn {
   archiveGroup: () => Promise<Group>
   levelUp: () => Promise<ProgressGroupLevelResult>
   createNewLevel: (data: ProgressGroupLevelRequest) => Promise<ProgressGroupLevelResult>
+  isLevelUpPending: boolean
+  isCreateLevelPending: boolean
   status: MutationStatus
   error: string | null
   clearError: () => void
@@ -140,6 +142,8 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     archiveGroup: handleArchiveGroup,
     levelUp: handleLevelUp,
     createNewLevel: handleCreateNewLevel,
+    isLevelUpPending: levelUpMutation.isPending,
+    isCreateLevelPending: createLevelMutation.isPending,
     status,
     error,
     clearError,
