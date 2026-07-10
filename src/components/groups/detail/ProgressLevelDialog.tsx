@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { X, ArrowRightCircle, Users, BookOpen, Calendar as CalendarIcon, DollarSign, CheckCircle2 } from 'lucide-react'
+import { X, ArrowRightCircle, Users, BookOpen, Calendar as CalendarIcon, DollarSign, CheckCircle2, Info } from 'lucide-react'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
 import { useProgressLevelForm } from '../../../hooks/useProgressLevelForm'
 import { SearchablePillSelector } from '../../common/SearchablePillSelector'
@@ -71,6 +71,19 @@ export function ProgressLevelDialog({
     }
   }, [isOpen, currentLevelNumber, currentInstructorId, currentCourseId, currentGroupName, currentPriceOverride, resetForm])
 
+  // Block Escape key from closing the dialog while loading
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isLoading) {
+        e.stopPropagation()
+        e.preventDefault()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown, true) // capture phase
+    return () => document.removeEventListener('keydown', handleKeyDown, true)
+  }, [isOpen, isLoading])
+
   // Focus trap and focus return
   useEffect(() => {
     if (!isOpen || !dialogRef.current) return
@@ -104,14 +117,15 @@ export function ProgressLevelDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!isValid) return
+    if (!isValid || isLoading) return   // ← guard both conditions
 
     await onConfirm(toApiRequest())
   }
 
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={isLoading ? undefined : onClose} />
       <div 
         ref={dialogRef} 
         role="dialog" 
@@ -129,14 +143,50 @@ export function ProgressLevelDialog({
               Advance this group to the next level and generate new sessions.
             </p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-lg transition-colors" aria-label="Close dialog">
+          <button
+            onClick={onClose}
+            disabled={isLoading}
+            className="p-2 hover:bg-surface-container rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label="Close dialog"
+          >
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
 
         <form id="progress-level-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-8 bg-surface">
-          
-          {/* Level Identity */}
+
+          {/* Dynamic Action Summary Disclaimer */}
+          <div className="flex gap-3 p-4 rounded-lg bg-blue-50 border border-blue-200 ring-1 ring-blue-100">
+            <Info className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" aria-hidden="true" />
+            <div className="flex-1">
+              <p className="text-sm font-bold text-blue-800 mb-1.5">This action will:</p>
+              <ul className="space-y-1">
+                <li className="flex items-center gap-1.5 text-sm text-blue-700">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                  Create <strong>Level {formData.target_level}</strong> for this group
+                </li>
+                {formData.complete_current_level && (
+                  <li className="flex items-center gap-1.5 text-sm text-blue-700">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    Mark <strong>Level {currentLevelNumber}</strong> as completed
+                  </li>
+                )}
+                {formData.auto_migrate_enrollments && (
+                  <li className="flex items-center gap-1.5 text-sm text-blue-700">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                    Migrate all active enrollments into the new level
+                  </li>
+                )}
+                {formData.session_start_date && (
+                  <li className="flex items-center gap-1.5 text-sm text-blue-700">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                    Generate new sessions starting on <strong>{formData.session_start_date}</strong>
+                  </li>
+                )}
+              </ul>
+              <p className="text-xs text-blue-500 mt-2 font-medium">⚠️ This operation cannot be undone.</p>
+            </div>
+          </div>
           <section>
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-secondary" />
@@ -154,7 +204,8 @@ export function ProgressLevelDialog({
                   min={currentLevelNumber + 1}
                   value={formData.target_level}
                   onChange={(e) => setTargetLevel(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
+                  disabled={isLoading}
+                  className="w-full px-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                   required
                 />
                 <p className="text-xs text-slate-500 mt-1">
@@ -173,7 +224,8 @@ export function ProgressLevelDialog({
                   onChange={(e) => setGroupName(e.target.value)}
                   placeholder={currentGroupName}
                   maxLength={255}
-                  className="w-full px-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
+                  disabled={isLoading}
+                  className="w-full px-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -186,7 +238,7 @@ export function ProgressLevelDialog({
                   value={formData.course_id ?? null}
                   onChange={(val) => setCourseId(val ? Number(val) : null)}
                   placeholder="-- Keep Current --"
-                  disabled={isLoadingCourses}
+                  disabled={isLoadingCourses || isLoading}
                 />
               </div>
 
@@ -199,7 +251,7 @@ export function ProgressLevelDialog({
                   value={formData.instructor_id ?? null}
                   onChange={(val) => setInstructorId(val ? Number(val) : null)}
                   placeholder="-- Keep Current --"
-                  disabled={isLoadingEmployees}
+                  disabled={isLoadingEmployees || isLoading}
                 />
               </div>
 
@@ -224,7 +276,8 @@ export function ProgressLevelDialog({
                     type="date"
                     value={formData.session_start_date}
                     onChange={(e) => setSessionStartDate(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
+                    disabled={isLoading}
+                    className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                     required
                   />
                   <CalendarIcon className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
@@ -246,7 +299,8 @@ export function ProgressLevelDialog({
                     onWheel={(e) => (e.target as HTMLInputElement).blur()}
                     onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                     placeholder="Course Default"
-                    className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
+                    disabled={isLoading}
+                    className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <DollarSign className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
                 </div>
@@ -266,11 +320,17 @@ export function ProgressLevelDialog({
             </h3>
             <div className="flex flex-col gap-3">
               
-              <label className={`flex items-center gap-4 p-4 rounded-lg border transition-all cursor-pointer ${
-                formData.auto_migrate_enrollments 
-                  ? 'bg-secondary/5 border-secondary/30 ring-1 ring-secondary/20' 
-                  : 'bg-surface-container-lowest border-surface-container-low hover:border-surface-container-highest'
-              }`}>
+              <label
+                className={`flex items-center gap-4 p-4 rounded-lg border transition-all ${
+                  isLoading
+                    ? 'opacity-60 cursor-not-allowed'
+                    : 'cursor-pointer'
+                } ${
+                  formData.auto_migrate_enrollments 
+                    ? 'bg-secondary/5 border-secondary/30 ring-1 ring-secondary/20' 
+                    : 'bg-surface-container-lowest border-surface-container-low hover:border-surface-container-highest'
+                }`}
+              >
                 <div className="flex-1">
                   <span className="block text-sm font-bold text-slate-900">Auto-migrate active enrollments</span>
                   <span className="block text-xs text-slate-500 mt-0.5">Move current active students directly into this new level.</span>
@@ -287,15 +347,22 @@ export function ProgressLevelDialog({
                   type="checkbox"
                   className="sr-only"
                   checked={formData.auto_migrate_enrollments}
+                  disabled={isLoading}
                   onChange={(e) => setAutoMigrateEnrollments(e.target.checked)}
                 />
               </label>
 
-              <label className={`flex items-center gap-4 p-4 rounded-lg border transition-all cursor-pointer ${
-                formData.complete_current_level 
-                  ? 'bg-emerald-50 border-emerald-200 ring-1 ring-emerald-100' 
-                  : 'bg-surface-container-lowest border-surface-container-low hover:border-surface-container-highest'
-              }`}>
+              <label
+                className={`flex items-center gap-4 p-4 rounded-lg border transition-all ${
+                  isLoading
+                    ? 'opacity-60 cursor-not-allowed'
+                    : 'cursor-pointer'
+                } ${
+                  formData.complete_current_level 
+                    ? 'bg-emerald-50 border-emerald-200 ring-1 ring-emerald-100' 
+                    : 'bg-surface-container-lowest border-surface-container-low hover:border-surface-container-highest'
+                }`}
+              >
                 <div className="flex-1">
                   <span className="block text-sm font-bold text-slate-900">Complete current level</span>
                   <span className="block text-xs text-slate-500 mt-0.5">Mark the current level (Level {currentLevelNumber}) as completed.</span>
@@ -313,6 +380,7 @@ export function ProgressLevelDialog({
                   type="checkbox"
                   className="sr-only"
                   checked={formData.complete_current_level}
+                  disabled={isLoading}
                   onChange={(e) => setCompleteCurrentLevel(e.target.checked)}
                 />
               </label>

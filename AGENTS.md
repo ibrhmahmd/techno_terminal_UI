@@ -91,5 +91,5 @@ No formatter configured — lint only.
 - **Audit artifacts**: `.feature-audit.json`, `src/audit-findings.json`
 
 <!-- SPECKIT START -->
-Active plan: `specs/053-disable-scroll-money-inputs/plan.md`
+Active plan: `specs/053-level-creation-modal-loading/plan.md`
 <!-- SPECKIT END -->
