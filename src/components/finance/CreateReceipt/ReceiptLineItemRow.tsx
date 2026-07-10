@@ -72,7 +72,18 @@ export function ReceiptLineItemRow({
             <EnrollmentSelection
               studentId={item.selectedStudent.id}
               selectedEnrollment={item.selectedEnrollment}
-              onSelect={(enrollment) => onUpdate({ selectedEnrollment: enrollment })}
+              onSelect={(enrollment) => {
+                const updates: Partial<ReceiptLineItem> = {
+                  selectedEnrollment: enrollment,
+                }
+                if (enrollment) {
+                  if (enrollment.remaining_balance > 0) {
+                    updates.amount = enrollment.remaining_balance
+                  }
+                  updates.payment_type = 'course_level'
+                }
+                onUpdate(updates)
+              }}
             />
           )}
         </div>
