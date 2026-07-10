@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { TerminalPattern } from './TerminalPattern'
 
 interface PageHeaderProps {
   /** Main page title */
@@ -42,8 +43,9 @@ export function PageHeader({
     : ''
 
   return (
-    <header className={`${stickyClasses} bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-6 ${className}`}>
-      <div className="w-full flex items-end justify-between">
+    <header className={`${stickyClasses} relative overflow-hidden bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-6 ${className}`}>
+      <TerminalPattern opacity={0.04} id="header-pattern" />
+      <div className="relative z-10 w-full flex items-end justify-between">
         <div>
           <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">
             {title}

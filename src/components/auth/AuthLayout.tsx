@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { TerminalPattern } from '../common'
 
 interface AuthLayoutProps {
   /** Page heading (e.g. "Sign In", "Reset Password") */
@@ -47,46 +48,13 @@ export function AuthLayout({ title, subtitle, children, showBranding = true }: A
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden bg-surface">
       {/* Page background: repeating terminal symbol matrix */}
-      <svg
-        className="absolute inset-0 w-full h-full pointer-events-none select-none"
-        aria-hidden="true"
-      >
-        <defs>
-          <pattern id="auth-pattern" width="144" height="144" patternUnits="userSpaceOnUse">
-            <text x="24" y="36" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61" fillOpacity="0.12">&gt;</text>
-            <text x="72" y="36" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61" fillOpacity="0.12">_</text>
-            <text x="120" y="36" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61" fillOpacity="0.12">~</text>
-            <text x="24" y="84" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61" fillOpacity="0.12">$</text>
-            <text x="72" y="84" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61" fillOpacity="0.12">#</text>
-            <text x="120" y="84" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61" fillOpacity="0.12">|</text>
-            <text x="24" y="132" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61" fillOpacity="0.12">&amp;</text>
-            <text x="72" y="132" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61" fillOpacity="0.12">%</text>
-            <text x="120" y="132" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61" fillOpacity="0.12">&lt;</text>
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#auth-pattern)" />
-      </svg>
+      <TerminalPattern id="auth-pattern" opacity={0.12} />
 
       {/* Card interior watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden="true">
         <div className="relative w-full max-w-lg">
           <div className="absolute inset-0 rounded-2xl overflow-hidden">
-            <svg className="w-full h-full opacity-[0.04]">
-              <defs>
-                <pattern id="card-pattern" width="144" height="144" patternUnits="userSpaceOnUse">
-                  <text x="24" y="36" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61">&gt;</text>
-                  <text x="72" y="36" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61">_</text>
-                  <text x="120" y="36" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61">~</text>
-                  <text x="24" y="84" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61">$</text>
-                  <text x="72" y="84" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61">#</text>
-                  <text x="120" y="84" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61">|</text>
-                  <text x="24" y="132" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61">&amp;</text>
-                  <text x="72" y="132" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61">%</text>
-                  <text x="120" y="132" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontWeight="700" fontSize="18" fill="#006a61">&lt;</text>
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#card-pattern)" />
-            </svg>
+            <TerminalPattern id="card-pattern" opacity={1} className="opacity-[0.04]" />
           </div>
         </div>
       </div>

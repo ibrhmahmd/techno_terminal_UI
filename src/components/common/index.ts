@@ -20,6 +20,7 @@ export { RowActions } from './RowActions'
 export { SearchBar } from './SearchBar'
 export { SuccessBanner } from './SuccessBanner'
 export { Toast } from './Toast'
+export { TerminalPattern } from './TerminalPattern'
 
 // Generic Cards
 export { EntityDetailCard } from './cards/EntityDetailCard'
