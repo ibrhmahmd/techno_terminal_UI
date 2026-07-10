@@ -18,7 +18,7 @@ export function transformRoster(
     student_name: r.student_name,
     gender: "male" as const, // Default fallback
     billing_status: r.billing_status === "paid" ? "paid" : "due",
-    balance: r.billing_status === "paid" ? 0 : -1,
+    balance: r.balance,
   }));
 }
 
@@ -61,15 +61,14 @@ export function transformSessions(
     instructor_name: null,
     is_substitute: false,
     notes: s.notes,
-    // Convert attendance Record map to AttendanceRecordDTO array
-    attendance: Object.entries(s.attendance || {}).map(
+    attendance: (Object.entries(s.attendance || {}) as [string, 'present' | 'absent' | 'excused' | 'late' | null][]).map(
       ([studentId, status]) => {
         const student = roster.find((r) => r.student_id === Number(studentId));
         return {
           student_id: Number(studentId),
           student_name: student?.student_name || "",
           gender: "male" as const,
-          status: mapStatus(status as any),
+          status: mapStatus(status),
         };
       },
     ),

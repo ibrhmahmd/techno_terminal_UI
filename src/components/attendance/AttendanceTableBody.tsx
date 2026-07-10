@@ -7,6 +7,7 @@ interface StudentRowData {
   student_id: string
   full_name: string
   billing_status: 'paid' | 'due'
+  balance?: number
   attendance: Map<number, AttendanceStatus>
 }
 
@@ -33,6 +34,7 @@ export function AttendanceTableBody({ students, sessions, onToggle }: Attendance
             <StudentInfo
               fullName={student.full_name}
               billingStatus={student.billing_status}
+              balance={student.balance}
             />
           </td>
 

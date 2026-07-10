@@ -74,6 +74,7 @@ export interface AttendanceRosterDTO {
   student_name: string
   enrollment_id: number
   billing_status: 'paid' | 'due' | 'partial'
+  balance: number
   joined_at: string
 }
 

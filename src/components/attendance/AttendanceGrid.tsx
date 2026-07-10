@@ -15,6 +15,7 @@ import { SessionActionsRow } from './SessionActionsRow'
 import { SessionNotesRow } from './SessionNotesRow'
 import { EditSessionPopup } from './EditSessionPopup'
 import { AddSessionDialog } from '../groups/detail/AddSessionDialog'
+import { PaymentSummaryStrip } from './PaymentSummaryStrip'
 import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashboard'
 
 // Toggle cycle: null -> present -> absent -> cancelled -> null
@@ -551,6 +552,13 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
                       </div>
                       
                       <div className="h-8 w-px bg-slate-300"></div>
+                      
+                      {roster && roster.length > 0 && (
+                        <>
+                          <PaymentSummaryStrip roster={roster} />
+                          <div className="h-8 w-px bg-slate-300"></div>
+                        </>
+                      )}
                       
                       <button
                         onClick={() => setIsAddSessionOpen(true)}

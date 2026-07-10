@@ -38,6 +38,8 @@ interface UseGroupMutationsReturn {
     levelNumber: number,
     reason: string,
   ) => Promise<CancelLevelResult>;
+  isCreateLevelPending: boolean;
+  isLevelUpPending: boolean;
   status: MutationStatus;
   error: string | null;
   clearError: () => void;
@@ -96,42 +98,6 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
       data: ProgressGroupLevelRequest,
     ): Promise<ProgressGroupLevelResult> => {
       return progressGroupLevel(groupId, data);
-    },
-    onSuccess: invalidateGroups,
-  });
-
-  // Delete group level mutation (undo progression)
-  const deleteLevelMutation = useMutation({
-    mutationFn: async (levelNumber: number): Promise<DeleteLevelResponse> => {
-      return deleteGroupLevel(groupId, levelNumber);
-    },
-    onSuccess: invalidateGroups,
-  });
-
-  // Update group level details mutation
-  const updateLevelMutation = useMutation({
-    mutationFn: async ({
-      levelNumber,
-      data,
-    }: {
-      levelNumber: number;
-      data: UpdateLevelInput;
-    }): Promise<GroupLevelPublic> => {
-      return updateGroupLevel(groupId, levelNumber, data);
-    },
-    onSuccess: invalidateGroups,
-  });
-
-  // Cancel group level mutation
-  const cancelLevelMutation = useMutation({
-    mutationFn: async ({
-      levelNumber,
-      reason,
-    }: {
-      levelNumber: number;
-      reason: string;
-    }): Promise<CancelLevelResult> => {
-      return cancelGroupLevel(groupId, levelNumber, reason);
     },
     onSuccess: invalidateGroups,
   });
@@ -317,6 +283,8 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     deleteLevel: handleDeleteLevel,
     updateLevel: handleUpdateLevel,
     cancelLevel: handleCancelLevel,
+    isCreateLevelPending: createLevelMutation.isPending,
+    isLevelUpPending: levelUpMutation.isPending,
     status,
     error,
     clearError,

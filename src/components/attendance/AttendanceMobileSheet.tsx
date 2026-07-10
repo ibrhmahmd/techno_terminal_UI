@@ -7,6 +7,7 @@ import { queryKeys } from '../../hooks/queryKeys'
 import { formatTime, formatInstructorName } from '../../utils/formatting'
 import { sessionStatusColors } from '../../utils/colors'
 import { useToast } from '../common/Toast'
+import { PaymentSummaryStrip } from './PaymentSummaryStrip'
 
 export interface AttendanceMobileSheetProps {
   isOpen: boolean
@@ -155,6 +156,11 @@ export function AttendanceMobileSheet({
           </button>
         </div>
 
+        {/* Payment Summary */}
+        {activeStep === 'students' && roster && roster.length > 0 && (
+          <PaymentSummaryStrip roster={roster} className="px-5 py-2.5 border-b border-slate-100 bg-slate-50 shrink-0" />
+        )}
+
         {/* Content Area — grows and scrolls, shrink-0 footer sits below */}
         <div className="overflow-y-auto flex-1 overscroll-contain">
           {activeStep === 'sessions' ? (
@@ -237,8 +243,20 @@ export function AttendanceMobileSheet({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-slate-900 truncate">{student.student_name}</p>
-                          {isDue && (
-                            <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Payment Due" />
+                          {isDue ? (
+                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-error bg-error-container px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0 animate-fadeIn">
+                              <span className="material-symbols-outlined text-[10px] font-bold text-error">close</span>
+                              <span>
+                                {student.balance !== undefined && student.balance > 0
+                                  ? `${student.balance.toLocaleString()} EGP`
+                                  : 'DUE'}
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-on-secondary-container bg-secondary-container px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0 animate-fadeIn">
+                              <span className="material-symbols-outlined text-[10px] font-bold text-secondary">check</span>
+                              <span>PAID</span>
+                            </span>
                           )}
                         </div>
                       </div>
