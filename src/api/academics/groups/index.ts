@@ -31,6 +31,9 @@ export {
 // Lifecycle router functions
 export {
   generateLevelSessions,
+  deleteGroupLevel,
+  updateGroupLevel,
+  cancelGroupLevel,
 } from './lifecycle';
 
 // New endpoints (Group Details API v2)

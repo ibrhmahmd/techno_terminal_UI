@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BookOpen, GraduationCap, CheckCircle, XCircle, AlertCircle, Edit3, FileDown, MessageCircle, Calendar } from 'lucide-react'
+import { BookOpen, GraduationCap, CheckCircle, XCircle, AlertCircle, Edit3, FileDown, MessageCircle, Calendar, Trash2 } from 'lucide-react'
 import type { LevelDetailDTO, LevelPaymentsDTO, CourseInfoDTO, InstructorInfoDTO, PaymentDetailDTO } from '../../api/academics'
 import { LevelSelector } from './detail/LevelSelector'
 import { useGroupAttendance } from '../../hooks/useGroupAttendance'
@@ -10,6 +10,10 @@ import { downloadReceiptPdf } from '../../api/finance/receipts'
 import { sendReceiptToStudent } from '../../api/crm/students/payments'
 import { useToast } from '../common/Toast'
 import { formatDate } from '../../utils/formatting'
+import { useAuthStore } from '../../store/authStore'
+import { useGroupMutations } from '../../hooks/useGroupMutations'
+import { EditGroupLevelDialog } from './detail/EditGroupLevelDialog'
+import { ConfirmDialog } from '../common/ConfirmDialog'
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString()} EGP`
@@ -163,6 +167,19 @@ export function LevelsTab({
   const activeLevelId = selectedLevelId || levels[0]?.level_id || null
   const selectedLevel = levels.find(l => l.level_id === activeLevelId)
 
+  const { user } = useAuthStore()
+  const isAdmin = user?.role === 'admin' || user?.role === 'system_admin'
+  const { showToast } = useToast()
+  
+  const { updateLevel, deleteLevel } = useGroupMutations(groupId)
+
+  const [isEditLevelDialogOpen, setIsEditLevelDialogOpen] = useState(false)
+  const [isDeleteLevelDialogOpen, setIsDeleteLevelDialogOpen] = useState(false)
+  const [isMutatingLevel, setIsMutatingLevel] = useState(false)
+
+  const maxLevelNumber = levels.length > 0 ? Math.max(...levels.map(l => l.level_number)) : 0
+  const isLatestLevel = selectedLevel?.level_number === maxLevelNumber
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'active':
@@ -213,6 +230,47 @@ export function LevelsTab({
     }
   }
 
+  const handleEditLevelConfirm = async (data: {
+    instructor_id: number | null
+    course_id: number | null
+    price_override: number | null
+    notes: string | null
+  }) => {
+    if (!selectedLevel) return
+    setIsMutatingLevel(true)
+    try {
+      await updateLevel(selectedLevel.level_number, data)
+      showToast(`Level ${selectedLevel.level_number} updated successfully.`, 'success')
+      setIsEditLevelDialogOpen(false)
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to update level details', 'error')
+    } finally {
+      setIsMutatingLevel(false)
+    }
+  }
+
+
+  const handleDeleteLevelConfirm = async () => {
+    if (!selectedLevel) return
+    setIsMutatingLevel(true)
+    try {
+      await deleteLevel(selectedLevel.level_number)
+      showToast(`Level ${selectedLevel.level_number} deleted successfully.`, 'success')
+      const remainingLevels = levels.filter(l => l.level_number !== selectedLevel.level_number)
+      if (remainingLevels.length > 0) {
+        const nextActiveId = remainingLevels.find(l => l.level_number === currentLevelNumber - 1)?.level_id || remainingLevels[remainingLevels.length - 1]?.level_id || null
+        setSelectedLevelId(nextActiveId)
+      } else {
+        setSelectedLevelId(null)
+      }
+      setIsDeleteLevelDialogOpen(false)
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to delete level', 'error')
+    } finally {
+      setIsMutatingLevel(false)
+    }
+  }
+
   if (levels.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
@@ -248,14 +306,16 @@ export function LevelsTab({
               <div>
                 <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                   Level {selectedLevel.level_number}
-                  <button
-                    disabled
-                    title="Coming soon — level renumbering requires a database migration"
-                    className="p-1 hover:bg-slate-200 rounded-md transition-colors text-slate-400 hover:text-slate-600 cursor-not-allowed opacity-60 flex items-center justify-center"
-                    aria-label="Edit level number"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" aria-hidden="true" />
-                  </button>
+                  {isAdmin && selectedLevel.status === 'active' && (
+                    <button
+                      onClick={() => setIsEditLevelDialogOpen(true)}
+                      title="Edit Level Details"
+                      className="p-1 hover:bg-slate-200 rounded-md transition-colors text-slate-500 hover:text-slate-700 flex items-center justify-center"
+                      aria-label="Edit level details"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" aria-hidden="true" />
+                    </button>
+                  )}
                   {selectedLevel.level_number === currentLevelNumber && (
                     <span className="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
                       Current
@@ -269,6 +329,18 @@ export function LevelsTab({
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {isAdmin && selectedLevel.status === 'active' && isLatestLevel && selectedLevel.level_number > 1 && (
+                <div className="flex items-center gap-1.5 mr-2">
+                  <button
+                    onClick={() => setIsDeleteLevelDialogOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200 shadow-sm flex items-center"
+                    title="Delete this level (Undo Progression)"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                    Undo Level
+                  </button>
+                </div>
+              )}
               {getStatusBadge(selectedLevel.status)}
               {getStatusIcon(selectedLevel.status)}
             </div>
@@ -437,6 +509,29 @@ export function LevelsTab({
           </div>
         </div>
       </div>
+
+      {/* Level Management Dialogs */}
+      <EditGroupLevelDialog
+        isOpen={isEditLevelDialogOpen}
+        levelNumber={selectedLevel.level_number}
+        currentInstructorId={selectedLevel.instructor_id}
+        currentCourseId={selectedLevel.course_id}
+        currentPriceOverride={selectedLevel.price_override}
+        currentNotes={selectedLevel.notes}
+        onClose={() => setIsEditLevelDialogOpen(false)}
+        onConfirm={handleEditLevelConfirm}
+        isLoading={isMutatingLevel}
+      />
+
+      <ConfirmDialog
+        isOpen={isDeleteLevelDialogOpen}
+        onCancel={() => setIsDeleteLevelDialogOpen(false)}
+        onConfirm={handleDeleteLevelConfirm}
+        title={`Undo Progression to Level ${selectedLevel.level_number}`}
+        message="Are you sure you want to delete this level and undo progression? This will permanently delete all sessions generated for this level and revert enrolled students back to active status. This action cannot be undone."
+        confirmText="Undo Progression"
+        variant="danger"
+      />
     </div>
   )
 }

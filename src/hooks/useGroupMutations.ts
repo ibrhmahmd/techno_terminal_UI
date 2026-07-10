@@ -5,10 +5,17 @@ import {
   deleteGroup,
   archiveGroup,
   progressGroupLevel,
+  deleteGroupLevel,
+  updateGroupLevel,
+  cancelGroupLevel,
   type Group,
   type UpdateGroupDTO,
   type ProgressGroupLevelRequest,
   type ProgressGroupLevelResult,
+  type UpdateLevelInput,
+  type DeleteLevelResponse,
+  type CancelLevelResult,
+  type GroupLevelPublic,
 } from '../api/academics'
 import { queryKeys } from './queryKeys'
 
@@ -20,6 +27,9 @@ interface UseGroupMutationsReturn {
   archiveGroup: () => Promise<Group>
   levelUp: () => Promise<ProgressGroupLevelResult>
   createNewLevel: (data: ProgressGroupLevelRequest) => Promise<ProgressGroupLevelResult>
+  deleteLevel: (levelNumber: number) => Promise<DeleteLevelResponse>
+  updateLevel: (levelNumber: number, data: UpdateLevelInput) => Promise<GroupLevelPublic>
+  cancelLevel: (levelNumber: number, reason: string) => Promise<CancelLevelResult>
   status: MutationStatus
   error: string | null
   clearError: () => void
@@ -76,19 +86,64 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     onSuccess: invalidateGroups,
   })
 
+  // Delete group level mutation (undo progression)
+  const deleteLevelMutation = useMutation({
+    mutationFn: async (levelNumber: number): Promise<DeleteLevelResponse> => {
+      return deleteGroupLevel(groupId, levelNumber)
+    },
+    onSuccess: invalidateGroups,
+  })
+
+  // Update group level details mutation
+  const updateLevelMutation = useMutation({
+    mutationFn: async ({ levelNumber, data }: { levelNumber: number; data: UpdateLevelInput }): Promise<GroupLevelPublic> => {
+      return updateGroupLevel(groupId, levelNumber, data)
+    },
+    onSuccess: invalidateGroups,
+  })
+
+  // Cancel group level mutation
+  const cancelLevelMutation = useMutation({
+    mutationFn: async ({ levelNumber, reason }: { levelNumber: number; reason: string }): Promise<CancelLevelResult> => {
+      return cancelGroupLevel(groupId, levelNumber, reason)
+    },
+    onSuccess: invalidateGroups,
+  })
+
   // Combine all pending states
   const isPending = 
     updateMutation.isPending || 
     deleteMutation.isPending || 
     archiveMutation.isPending || 
     levelUpMutation.isPending || 
-    createLevelMutation.isPending
+    createLevelMutation.isPending ||
+    deleteLevelMutation.isPending ||
+    updateLevelMutation.isPending ||
+    cancelLevelMutation.isPending
 
   // Determine overall status
   let status: MutationStatus = 'idle'
   if (isPending) status = 'loading'
-  else if (updateMutation.isSuccess || deleteMutation.isSuccess || archiveMutation.isSuccess || levelUpMutation.isSuccess || createLevelMutation.isSuccess) status = 'success'
-  else if (updateMutation.isError || deleteMutation.isError || archiveMutation.isError || levelUpMutation.isError || createLevelMutation.isError) status = 'error'
+  else if (
+    updateMutation.isSuccess || 
+    deleteMutation.isSuccess || 
+    archiveMutation.isSuccess || 
+    levelUpMutation.isSuccess || 
+    createLevelMutation.isSuccess ||
+    deleteLevelMutation.isSuccess ||
+    updateLevelMutation.isSuccess ||
+    cancelLevelMutation.isSuccess
+  ) status = 'success'
+  else if (
+    updateMutation.isError || 
+    deleteMutation.isError || 
+    archiveMutation.isError || 
+    levelUpMutation.isError || 
+    createLevelMutation.isError ||
+    deleteLevelMutation.isError ||
+    updateLevelMutation.isError ||
+    cancelLevelMutation.isError
+  ) status = 'error'
 
   // Combine all errors
   const getErrorMessage = (err: unknown): string | null => {
@@ -102,6 +157,9 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     archiveMutation.isError ? getErrorMessage(archiveMutation.error) :
     levelUpMutation.isError ? getErrorMessage(levelUpMutation.error) :
     createLevelMutation.isError ? getErrorMessage(createLevelMutation.error) :
+    deleteLevelMutation.isError ? getErrorMessage(deleteLevelMutation.error) :
+    updateLevelMutation.isError ? getErrorMessage(updateLevelMutation.error) :
+    cancelLevelMutation.isError ? getErrorMessage(cancelLevelMutation.error) :
     null
 
   // Clear all mutations
@@ -111,7 +169,19 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     archiveMutation.reset()
     levelUpMutation.reset()
     createLevelMutation.reset()
-  }, [updateMutation, deleteMutation, archiveMutation, levelUpMutation, createLevelMutation])
+    deleteLevelMutation.reset()
+    updateLevelMutation.reset()
+    cancelLevelMutation.reset()
+  }, [
+    updateMutation, 
+    deleteMutation, 
+    archiveMutation, 
+    levelUpMutation, 
+    createLevelMutation,
+    deleteLevelMutation,
+    updateLevelMutation,
+    cancelLevelMutation
+  ])
 
   // Wrapper functions that maintain the same interface — wrapped in useCallback for stable references
   const handleUpdateGroup = useCallback(async (data: UpdateGroupDTO): Promise<Group> => {
@@ -134,12 +204,27 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     return createLevelMutation.mutateAsync(data)
   }, [createLevelMutation])
 
+  const handleDeleteLevel = useCallback(async (levelNumber: number): Promise<DeleteLevelResponse> => {
+    return deleteLevelMutation.mutateAsync(levelNumber)
+  }, [deleteLevelMutation])
+
+  const handleUpdateLevel = useCallback(async (levelNumber: number, data: UpdateLevelInput): Promise<GroupLevelPublic> => {
+    return updateLevelMutation.mutateAsync({ levelNumber, data })
+  }, [updateLevelMutation])
+
+  const handleCancelLevel = useCallback(async (levelNumber: number, reason: string): Promise<CancelLevelResult> => {
+    return cancelLevelMutation.mutateAsync({ levelNumber, reason })
+  }, [cancelLevelMutation])
+
   return {
     updateGroup: handleUpdateGroup,
     deleteGroup: handleDeleteGroup,
     archiveGroup: handleArchiveGroup,
     levelUp: handleLevelUp,
     createNewLevel: handleCreateNewLevel,
+    deleteLevel: handleDeleteLevel,
+    updateLevel: handleUpdateLevel,
+    cancelLevel: handleCancelLevel,
     status,
     error,
     clearError,

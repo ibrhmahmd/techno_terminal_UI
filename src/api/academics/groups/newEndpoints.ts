@@ -56,6 +56,8 @@ export interface LevelDetailDTO {
   students_completed: number
   students_dropped: number
   payment_summary: LevelPaymentSummaryDTO
+  price_override?: number | null
+  notes?: string | null
 }
 
 export interface DetailedLevelsResponse {

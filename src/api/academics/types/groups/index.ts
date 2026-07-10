@@ -30,4 +30,8 @@ export type {
 // Lifecycle types
 export type {
   ProgressGroupLevelResult,
+  UpdateLevelInput,
+  DeleteLevelResponse,
+  CancelLevelResult,
+  GroupLevelPublic,
 } from './lifecycle';
