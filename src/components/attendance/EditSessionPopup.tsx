@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { Modal, PillSelector, SearchablePillSelector } from '../common'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { UpdateSessionDTO } from '../../api/academics'
-import { getEmployees } from '../../api/hr'
-import type { EmployeeListItem } from '../../api/hr'
 import type { SessionWithAttendanceDTO } from '../../api/dashboard'
+import { useEmployees } from '../../hooks/useEmployees'
 
 interface EditSessionPopupProps {
   isOpen: boolean
@@ -25,14 +23,8 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
   const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  // Load instructors via React Query
-  const { data: instructorsData } = useQuery({
-    queryKey: ['employees', 'list'],
-    queryFn: () => getEmployees({ page: 1, page_size: 100 }),
-    staleTime: 10 * 60 * 1000,
-    enabled: isOpen,
-  })
-  const instructors: EmployeeListItem[] = instructorsData?.data ?? []
+  // Load instructors via useEmployees hook
+  const { employees: instructors } = useEmployees(isOpen)
 
   const instructorOptions = instructors.map((inst) => ({
     id: inst.id,
@@ -236,12 +228,13 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
         {/* Row 1: Date & Status */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           <div className="lg:col-span-5">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Date</label>
+            <label htmlFor="session-date" className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Date</label>
             <input
+              id="session-date"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3.5 py-2 border border-slate-200 rounded-md text-sm text-slate-800 bg-white focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none transition-all"
+              className="w-full px-3.5 py-2 border border-slate-200 rounded-md text-sm text-slate-800 bg-white focus:border-secondary focus-visible:ring-2 focus-visible:ring-secondary/50 focus:outline-none transition-all"
               required
             />
             <div className="flex gap-1.5 mt-2">
@@ -309,8 +302,11 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
             </div>
             <button
               type="button"
+              role="switch"
+              aria-checked={isSubstitute}
+              aria-label="Substitute Instructor"
               onClick={() => setIsSubstitute((prev) => !prev)}
-              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-secondary/20 ${
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 ${
                 isSubstitute ? 'bg-secondary' : 'bg-slate-200'
               }`}
             >
@@ -325,13 +321,14 @@ export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessi
 
         {/* Row 4: Notes */}
         <div>
-          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Notes (Optional)</label>
+          <label htmlFor="session-notes" className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Notes (Optional)</label>
           <textarea
+            id="session-notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Enter session notes..."
             rows={3}
-            className="w-full px-3.5 py-2 border border-slate-200 rounded-md text-sm text-slate-800 bg-white focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none transition-all resize-none"
+            className="w-full px-3.5 py-2 border border-slate-200 rounded-md text-sm text-slate-800 bg-white focus:border-secondary focus-visible:ring-2 focus-visible:ring-secondary/50 focus:outline-none transition-all resize-none"
           />
         </div>
       </form>

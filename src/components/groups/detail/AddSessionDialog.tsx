@@ -38,7 +38,7 @@ export function AddSessionDialog({
 
   // Load instructors via React Query
   const { data: instructorsData } = useQuery({
-    queryKey: queryKeys.employeesAll,
+    queryKey: queryKeys.employees.all,
     queryFn: () => getEmployees({ page: 1, page_size: 100 }),
     staleTime: 10 * 60 * 1000,
     enabled: isOpen,

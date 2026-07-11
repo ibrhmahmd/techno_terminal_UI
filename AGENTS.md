@@ -90,6 +90,86 @@ No formatter configured — lint only.
 - **Gitignored**: `.opencode/*` (includes Speckit workflow commands), `.specify/*`
 - **Audit artifacts**: `.feature-audit.json`, `src/audit-findings.json`
 
+---
+
+## 8. Attendance Grid Implementation
+
+### Component Architecture
+The attendance grid is a complex feature spanning multiple components:
+
+```
+src/components/attendance/
+├── AttendanceGrid.tsx          # Main container (desktop) — orchestrates all state
+├── AttendanceHeader.tsx        # Session column headers (date, time, instructor, session number)
+├── AttendanceTableBody.tsx     # Student rows × session columns grid
+├── AttendanceCell.tsx          # Single cell — click cycles: null → present → absent → cancelled → null
+├── AttendanceFooter.tsx        # Save/Cancel bar with per-session retry buttons
+├── AttendanceMobileSheet.tsx   # Mobile bottom sheet (session picker → student list)
+├── SessionActionsRow.tsx       # Edit/Cancel/Delete/Reactivate/Complete buttons per session
+├── SessionNotesRow.tsx         # Textarea row for per-session notes
+├── EditSessionPopup.tsx        # Modal for editing session (date, time, instructor, status)
+├── StudentInfo.tsx             # Student name + billing badge (PAID/DUE)
+└── PaymentSummaryStrip.tsx     # Paid/Due counts + remaining balance
+
+src/hooks/useGroupAttendance.ts # React Query hook → calls getAttendanceForLevel
+src/utils/attendanceTransforms.ts # Transforms new API DTOs → dashboard DTOs
+src/api/attendance/attendance.ts  # markAttendance() — POST /attendance/session/{id}/mark
+```
+
+### Data Flow — Two Sources
+1. **Dashboard view**: `useDashboardOverview` provides `ScheduledGroupDTO` with `roster`, `sessions`, and embedded `attendance[]` per session. Used on the main dashboard page.
+2. **Group-specific view**: `useGroupAttendance` calls `GET /academics/groups/{id}/attendance?level_number=N`. Returns `AttendanceLevelResponse` with `roster` and `sessions` (attendance as `Record<studentId, status>` map, not array).
+
+**`attendanceTransforms.ts`** bridges the two: `transformRoster()`, `transformSessions()`, `mapStatus()`. The new API uses `excused`/`late` statuses that `mapStatus()` collapses to `present`.
+
+### Key Type: `SessionWithAttendanceDTO`
+Defined in `src/api/dashboard/types/models.ts:53`. Has many alias fields for backward compat (`session_id`/`id`, `date`/`session_date`, `time_start`/`start_time`). Attendance is `AttendanceRecordDTO[] | null`.
+
+### Status Toggle Cycle
+```
+null → present → absent → cancelled → null
+```
+Defined in `AttendanceGrid.tsx:22` as `NEXT_STATE` map. Keys are `String(currentStatus)` because Map keys stringify.
+
+### Save Model — Batch, Not Auto-Save
+- Toggles update local state optimistically (no API call)
+- Changes queue in `pendingChanges: Map<sessionId, entries[]>`
+- "Save Changes" button in `AttendanceFooter` triggers `handleSaveAll`
+- Saves attendance per-session in parallel via `markAttendance()`
+- Notes saved separately via `updateSession(sessionId, { notes })`
+- Per-session status tracking: `sessionSaveStatus: Map<sessionId, 'idle'|'saving'|'success'|'error'>`
+- Failed sessions show retry buttons in footer
+- After save: invalidates `queryKeys.dashboard.overview(date)` + `queryKeys.groupAttendance(groupId, level)`
+
+### Cache Invalidation Pattern
+Every session mutation (cancel/delete/reactivate/complete/update) follows the same pattern:
+```ts
+if (selectedDate) {
+  await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
+}
+await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+await refetchData()
+```
+
+### Mobile Attendance (AttendanceMobileSheet)
+- Two-step flow: session picker → student list
+- Uses `z-[60]` bottom sheet (same pattern as other sheets)
+- Saves immediately on "Save" button click (not batch)
+- Auto-resets state on open/close via `useEffect`
+
+### Query Key
+```ts
+queryKeys.groupAttendance(groupId, levelNumber) // ['groups', id, 'attendance', levelNumber]
+```
+`useGroupAttendance` hook: `staleTime: 60s`, `gcTime: 5min` (shorter than defaults — attendance changes frequently).
+
+### Gotchas
+- **`attendanceTransforms.ts` hardcoded gender**: `transformRoster` always sets `gender: 'male'` — new API doesn't return gender
+- **`markAttendance` filters nulls**: The API function filters out entries with `status: null` before posting, so toggling back to null removes the record
+- **Table min-width formula**: `Math.max(700, 200 + sessions.length * 160)` in `AttendanceGrid.tsx:518`
+- **Session notes preserve dirty state**: `useEffect` only initializes notes from `sessions` if `dirtyNotes.size === 0`
+- **`fetchCycleRef`**: Debug counter for tracking re-renders — not used in production logic
+
 <!-- SPECKIT START -->
-Active plan: `specs/053-level-creation-modal-loading/plan.md`
+Active plan: `specs/058-attendance-grid-audit-fix/plan.md`
 <!-- SPECKIT END -->

@@ -1,9 +1,12 @@
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 import type { AttendanceStatus } from '../../api/attendance'
 
 interface AttendanceCellProps {
   status: AttendanceStatus
-  onToggle: () => void
+  onToggle: (studentId: string | number, sessionId: number) => void
+  studentId: string | number
+  sessionId: number
+  disabled?: boolean
 }
 
 const ICONS = {
@@ -22,23 +25,23 @@ const ICONS = {
       block
     </span>
   ),
-  empty: <div className="w-6 h-6 mx-auto border-2 border-slate-300 rounded-sm bg-white" />
 }
 
-export function AttendanceCell({ status, onToggle }: AttendanceCellProps) {
+export const AttendanceCell = React.memo(function AttendanceCell({ status, onToggle, studentId, sessionId, disabled }: AttendanceCellProps) {
   const handleClick = useCallback(() => {
-    onToggle()
-  }, [onToggle])
+    if (!disabled) {
+      onToggle(studentId, sessionId)
+    }
+  }, [onToggle, studentId, sessionId, disabled])
 
   return (
     <button
       onClick={handleClick}
-      className="w-full h-full flex items-center justify-center hover:bg-blue-100 rounded transition-colors py-3 focus:outline-none focus:ring-2 focus:ring-secondary/30"
-      aria-label={`Toggle attendance: ${status || 'empty'}`}
+      disabled={disabled}
+      className="w-full h-full flex items-center justify-center hover:bg-secondary-container/30 rounded transition-colors py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
+      aria-label={`Toggle attendance: ${status}`}
     >
-      {status === 'present' ? ICONS.present :
-       status === 'absent' ? ICONS.absent :
-       status === 'cancelled' ? ICONS.cancelled : ICONS.empty}
+      {ICONS[status]}
     </button>
   )
-}
+})

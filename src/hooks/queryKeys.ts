@@ -71,7 +71,10 @@ export const queryKeys = {
   },
 
   // Employees
-  employeesAll: ['employees', 'all'] as const,
+  employees: {
+    all: ['employees', 'all'] as const,
+    list: () => ['employees', 'list'] as const,
+  },
 
   // Directory
   directory: {

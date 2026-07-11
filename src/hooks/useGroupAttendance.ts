@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from './queryKeys'
-import { getAttendanceForLevel } from '../api/academics'
-import type { AttendanceRosterDTO, AttendanceSessionDTO } from '../api/academics'
+import { getAttendanceForLevel } from '../api/attendance'
+import type { AttendanceRosterDTO, AttendanceSessionDTO } from '../api/attendance'
 
 interface UseGroupAttendanceOptions {
   enabled?: boolean

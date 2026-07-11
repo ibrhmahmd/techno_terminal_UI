@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashboard'
 import type { AttendanceStatus, AttendanceEntry } from '../../api/attendance'
@@ -38,6 +38,46 @@ export function AttendanceMobileSheet({
   const [localAttendance, setLocalAttendance] = useState<Map<number, AttendanceStatus>>(new Map())
   const [pendingEntries, setPendingEntries] = useState<AttendanceEntry[]>([])
   const [isSaving, setIsSaving] = useState(false)
+  const sheetRef = useRef<HTMLDivElement>(null)
+
+  // Escape key to dismiss
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
+  // Focus trap + initial focus
+  useEffect(() => {
+    if (!isOpen || !sheetRef.current) return
+    const sheet = sheetRef.current
+    const raf = requestAnimationFrame(() => sheet.focus())
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !sheet.contains(document.activeElement)) return
+      const focusable = sheet.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+    sheet.addEventListener('keydown', handleTab)
+    return () => {
+      cancelAnimationFrame(raf)
+      sheet.removeEventListener('keydown', handleTab)
+    }
+  }, [isOpen])
 
   // Reset state when opened/closed or group changes
   useEffect(() => {
@@ -53,7 +93,7 @@ export function AttendanceMobileSheet({
       const initialMap = new Map<number, AttendanceStatus>()
       if (selectedSession.attendance) {
         selectedSession.attendance.forEach(record => {
-          initialMap.set(record.student_id, record.status)
+          initialMap.set(record.student_id, record.status ?? 'absent')
         })
       }
       setLocalAttendance(initialMap)
@@ -64,13 +104,12 @@ export function AttendanceMobileSheet({
   const handleStudentTap = (studentId: number) => {
     setLocalAttendance(prev => {
       const next = new Map(prev)
-      const currentStatus = next.get(studentId)
-      let nextStatus: AttendanceStatus = null
+      const currentStatus = next.get(studentId) ?? 'absent'
+      let nextStatus: AttendanceStatus = 'absent'
 
-      if (currentStatus === null || currentStatus === undefined) nextStatus = 'present'
-      else if (currentStatus === 'present') nextStatus = 'absent'
-      else if (currentStatus === 'absent') nextStatus = 'cancelled'
-      else if (currentStatus === 'cancelled') nextStatus = null
+      if (currentStatus === 'absent') nextStatus = 'present'
+      else if (currentStatus === 'present') nextStatus = 'cancelled'
+      else if (currentStatus === 'cancelled') nextStatus = 'absent'
 
       next.set(studentId, nextStatus)
 
@@ -96,8 +135,11 @@ export function AttendanceMobileSheet({
     setIsSaving(true)
     try {
       await markAttendance(selectedSession.session_id, pendingEntries)
-      // Invalidate dashboard to refresh data
-      qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
+      // Invalidate both dashboard and group attendance caches in parallel
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) }),
+        qc.invalidateQueries({ queryKey: queryKeys.groupAttendance(groupId, selectedSession.level_number ?? -1) }),
+      ])
       showToast('Attendance saved successfully', 'success')
       setPendingEntries([])
       setActiveStep('sessions')
@@ -116,16 +158,23 @@ export function AttendanceMobileSheet({
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-slate-900/60 z-[60] transition-opacity lg:hidden"
+        className="fixed inset-0 bg-black/60 z-[60] transition-opacity lg:hidden"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Sheet */}
-      <div className="fixed inset-x-0 bottom-0 z-[60] bg-surface rounded-t-2xl shadow-2xl lg:hidden flex flex-col max-h-[90vh] transition-transform duration-300 translate-y-0">
+      <div
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Attendance for ${groupName}`}
+        tabIndex={-1}
+        className="fixed inset-x-0 bottom-0 z-[60] bg-surface rounded-t-2xl shadow-2xl lg:hidden flex flex-col max-h-[90vh] motion-reduce:transition-none transition-transform duration-300 translate-y-0"
+      >
         
         {/* Drag Handle */}
-        <div className="flex justify-center pt-3 pb-2 shrink-0">
+        <div className="flex justify-center pt-3 pb-2 shrink-0" aria-hidden="true">
           <div className="w-12 h-1.5 rounded-full bg-slate-300" />
         </div>
 
@@ -136,8 +185,9 @@ export function AttendanceMobileSheet({
               <button 
                 onClick={() => setActiveStep('sessions')}
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"
+                aria-label="Back to sessions"
               >
-                <span className="material-symbols-outlined text-xl">arrow_back</span>
+                <span className="material-symbols-outlined text-xl" aria-hidden="true">arrow_back</span>
               </button>
             )}
             <div>
@@ -151,8 +201,8 @@ export function AttendanceMobileSheet({
               )}
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:bg-slate-100 rounded-full">
-            <span className="material-symbols-outlined text-xl">close</span>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:bg-slate-100 rounded-full" aria-label="Close attendance sheet">
+            <span className="material-symbols-outlined text-xl" aria-hidden="true">close</span>
           </button>
         </div>
 
@@ -162,11 +212,11 @@ export function AttendanceMobileSheet({
         )}
 
         {/* Content Area — grows and scrolls, shrink-0 footer sits below */}
-        <div className="overflow-y-auto flex-1 overscroll-contain">
+        <div className="overflow-y-auto flex-1 overscroll-contain" aria-live="polite">
           {activeStep === 'sessions' ? (
             <div className="divide-y divide-slate-100 pb-20">
               {sessions.length === 0 ? (
-                <div className="p-8 text-center text-slate-500">No sessions available.</div>
+                <div className="p-8 text-center text-on-surface-variant">No sessions available.</div>
               ) : (
                 sessions.map(session => {
                   const isCancelled = session.status === 'cancelled'
@@ -210,7 +260,7 @@ export function AttendanceMobileSheet({
                       {isCancelled ? (
                         <span className={`px-2 py-1 rounded text-xs font-bold ${sessionStatusColors.cancelled}`}>CANCELLED</span>
                       ) : (
-                        <span className="material-symbols-outlined text-slate-300">chevron_right</span>
+                        <span className="material-symbols-outlined text-slate-400" aria-hidden="true">chevron_right</span>
                       )}
                     </button>
                   )
@@ -220,14 +270,13 @@ export function AttendanceMobileSheet({
           ) : (
             <div className="divide-y divide-slate-100">
               {roster.map(student => {
-                const status = localAttendance.get(student.student_id)
+                const status = localAttendance.get(student.student_id) ?? 'absent'
                 const statusConfig = {
                   present: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200', icon: 'check', label: 'Present' },
                   absent: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', icon: 'close', label: 'Absent' },
                   cancelled: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200', icon: 'remove', label: 'Cancelled' },
-                  null: { bg: 'bg-transparent', text: 'text-slate-400', border: 'border-slate-200 border-dashed', icon: '', label: '' }
                 }
-                const conf = status ? statusConfig[status] : statusConfig.null
+                const conf = statusConfig[status]
                 const isDue = student.billing_status === 'due'
 
                 return (
@@ -236,7 +285,7 @@ export function AttendanceMobileSheet({
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                         student.gender === 'male' ? 'bg-blue-50 text-blue-500' : 'bg-pink-50 text-pink-500'
                       }`}>
-                        <span className="material-symbols-outlined text-[18px]">
+                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                           {student.gender === 'male' ? 'face' : 'face_3'}
                         </span>
                       </div>
@@ -244,8 +293,8 @@ export function AttendanceMobileSheet({
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-slate-900 truncate">{student.student_name}</p>
                           {isDue ? (
-                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-error bg-error-container px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0 animate-fadeIn">
-                              <span className="material-symbols-outlined text-[10px] font-bold text-error">close</span>
+                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-error bg-error-container px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0 animate-fadeIn motion-reduce:animate-none">
+                              <span className="material-symbols-outlined text-[10px] font-bold text-error" aria-hidden="true">close</span>
                               <span>
                                 {student.balance !== undefined && student.balance > 0
                                   ? `${student.balance.toLocaleString()} EGP`
@@ -253,8 +302,8 @@ export function AttendanceMobileSheet({
                               </span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-on-secondary-container bg-secondary-container px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0 animate-fadeIn">
-                              <span className="material-symbols-outlined text-[10px] font-bold text-secondary">check</span>
+                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-on-secondary-container bg-secondary-container px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0 animate-fadeIn motion-reduce:animate-none">
+                              <span className="material-symbols-outlined text-[10px] font-bold text-secondary" aria-hidden="true">check</span>
                               <span>PAID</span>
                             </span>
                           )}
@@ -266,7 +315,7 @@ export function AttendanceMobileSheet({
                       onClick={() => handleStudentTap(student.student_id)}
                       className={`h-10 px-3 min-w-[100px] flex items-center justify-center gap-1.5 rounded-full border transition-colors ${conf.bg} ${conf.text} ${conf.border}`}
                     >
-                      {conf.icon && <span className="material-symbols-outlined text-[18px]">{conf.icon}</span>}
+                      {conf.icon && <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{conf.icon}</span>}
                       <span className="text-sm font-bold">{conf.label || 'Mark...'}</span>
                     </button>
                   </div>
@@ -286,12 +335,12 @@ export function AttendanceMobileSheet({
             >
               {isSaving ? (
                 <>
-                  <span className="material-symbols-outlined animate-spin">refresh</span>
+                  <span className="material-symbols-outlined animate-spin motion-reduce:animate-none" aria-hidden="true">refresh</span>
                   <span>Saving...</span>
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined">save</span>
+                  <span className="material-symbols-outlined" aria-hidden="true">save</span>
                   <span>Save Attendance {pendingEntries.length > 0 ? `(${pendingEntries.length})` : ''}</span>
                 </>
               )}
