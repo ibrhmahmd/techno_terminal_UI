@@ -1,20 +1,12 @@
 import { StudentInfo } from './StudentInfo'
 import { AttendanceCell } from './AttendanceCell'
 import type { SessionWithAttendanceDTO } from '../../api/dashboard'
-import type { AttendanceStatus } from '../../api/attendance'
-
-interface StudentRowData {
-  student_id: string
-  full_name: string
-  billing_status: 'paid' | 'due'
-  balance?: number
-  attendance: Map<number, AttendanceStatus>
-}
+import type { StudentRowData } from './types'
 
 interface AttendanceTableBodyProps {
   students: StudentRowData[]
   sessions: SessionWithAttendanceDTO[]
-  onToggle: (studentId: string, sessionId: number) => void
+  onToggle: (studentId: string | number, sessionId: number) => void
 }
 
 export function AttendanceTableBody({ students, sessions, onToggle }: AttendanceTableBodyProps) {
@@ -27,7 +19,7 @@ export function AttendanceTableBody({ students, sessions, onToggle }: Attendance
           key={`${student.student_id}-${index}`} 
           className={`transition-colors ${
             index % 2 === 0 ? 'bg-white' : 'bg-slate-50'
-          } hover:bg-blue-50/50`}
+          } hover:bg-secondary-container/10`}
         >
           {/* Student Cell */}
           <td className="px-6 py-4 border-r border-slate-200">
@@ -40,7 +32,7 @@ export function AttendanceTableBody({ students, sessions, onToggle }: Attendance
 
           {/* Attendance Cells */}
           {sessions.map((session, sessionIdx) => {
-            const status = student.attendance.get(session.session_id) || null
+            const status = student.attendance.get(session.session_id) ?? 'absent'
             const isCancelled = session.status === 'cancelled'
             return (
               <td
@@ -51,7 +43,10 @@ export function AttendanceTableBody({ students, sessions, onToggle }: Attendance
               >
                 <AttendanceCell
                   status={status}
-                  onToggle={() => !isCancelled && onToggle(student.student_id, session.session_id)}
+                  onToggle={onToggle}
+                  studentId={student.student_id}
+                  sessionId={session.session_id}
+                  disabled={isCancelled}
                 />
               </td>
             )

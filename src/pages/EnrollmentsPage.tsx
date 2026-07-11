@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { EnrollPanel } from '../components/enrollments/EnrollPanel'
 import { ModifyEnrollmentPanel } from '../components/enrollments/ModifyEnrollmentPanel'
@@ -12,10 +13,27 @@ type PanelType = 'create' | 'modify' | 'drop'
 const PANEL_ORDER: PanelType[] = ['create', 'modify', 'drop']
 
 export function EnrollmentsPage() {
-  const [activePanel, setActivePanel] = useState<PanelType>('create')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+
+  const initialTab = useMemo<PanelType>(() => {
+    if (tabParam === 'modify' || tabParam === 'drop' || tabParam === 'create') {
+      return tabParam as PanelType
+    }
+    return 'create'
+  }, [tabParam])
+
+  const [activePanel, setActivePanel] = useState<PanelType>(initialTab)
   const [isLoading, setIsLoading] = useState(false)
   const { ToastComponent } = useToast()
   const panelRef = useRef<HTMLDivElement>(null)
+
+  // Sync state if search params change
+  useEffect(() => {
+    if (tabParam === 'modify' || tabParam === 'drop' || tabParam === 'create') {
+      setActivePanel(tabParam as PanelType)
+    }
+  }, [tabParam])
 
   useEffect(() => {
     panelRef.current?.focus()
@@ -25,6 +43,7 @@ export function EnrollmentsPage() {
 
   const handleTabChange = (panel: PanelType) => {
     setActivePanel(panel)
+    setSearchParams({ tab: panel })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 

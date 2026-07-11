@@ -150,16 +150,42 @@ export function StudentComboboxInner({
             <span className="material-symbols-outlined text-[22px]" aria-hidden="true">person</span>
           </div>
           <div>
-            <span className="font-headline font-semibold text-slate-800 text-sm flex items-center gap-1.5">
+            <a
+              href={`/students/${value.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-headline font-bold text-base md:text-lg text-slate-800 hover:text-secondary hover:underline flex items-center gap-1.5"
+            >
               {value.full_name}
+              <span className="material-symbols-outlined text-[16px] text-slate-400 select-none">open_in_new</span>
               {value.has_unpaid_balance && (
                 <span className="material-symbols-outlined text-[16px] text-amber-500 font-bold" aria-hidden="true" title="Has unpaid balance">warning</span>
               )}
-            </span>
-            <div className="flex gap-2 text-xs text-slate-500 mt-0.5">
+            </a>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 mt-1">
+              <span className="font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">#ID: {value.id}</span>
+              <span>•</span>
               <span>{value.phone || 'No phone'}</span>
               <span>•</span>
               <span className="capitalize">{value.status}</span>
+              {value.gender && (
+                <>
+                  <span>•</span>
+                  <span className="capitalize">{value.gender}</span>
+                </>
+              )}
+              {value.grade && (
+                <>
+                  <span>•</span>
+                  <span>{value.grade}</span>
+                </>
+              )}
+              {value.current_group_name && (
+                <>
+                  <span>•</span>
+                  <span className="bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded font-medium">Group: {value.current_group_name}</span>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -4,7 +4,6 @@ interface AttendanceFooterProps {
   isSaving: boolean
   onCancel: () => void
   onSave: () => void
-  hasError?: boolean
   hasChanges?: boolean
   saveStatus?: Map<number, 'idle' | 'saving' | 'success' | 'error'>
   onRetrySession?: (sessionId: number) => void
@@ -20,14 +19,6 @@ export function AttendanceFooter({
   onRetrySession,
   dirtySessions = new Set()
 }: AttendanceFooterProps) {
-  const handleSaveClick = () => {
-    onSave()
-  }
-
-  const handleCancelClick = () => {
-    onCancel()
-  }
-
   // Get failed sessions for retry
   const failedSessions = Array.from(dirtySessions).filter(
     sessionId => saveStatus.get(sessionId) === 'error'
@@ -59,14 +50,14 @@ export function AttendanceFooter({
       {hasChanges && (
         <div className="flex justify-end gap-3">
           <button
-            onClick={handleCancelClick}
+            onClick={onCancel}
             className="px-4 py-2 rounded text-sm font-semibold text-outline hover:text-secondary transition-colors"
             disabled={isSaving}
           >
             Cancel
           </button>
           <button
-            onClick={handleSaveClick}
+            onClick={onSave}
             disabled={isSaving}
             className="bg-secondary text-white px-5 py-2 rounded text-sm font-bold flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
           >

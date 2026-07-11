@@ -23,15 +23,16 @@ export function transformRoster(
 }
 
 /**
- * Map new API status to old format status
+ * Map new API status to frontend format
  * New: 'present' | 'absent' | 'excused' | 'late' | null
- * Old: 'present' | 'absent' | 'cancelled' | null
+ * Frontend: 'present' | 'absent' | 'cancelled'
  */
-export function mapStatus(
+function mapStatus(
   status: "present" | "absent" | "excused" | "late" | null,
-): "present" | "absent" | "cancelled" | null {
-  if (status === "excused" || status === "late") return "present"; // Treat as present for compatibility
-  return status;
+): "present" | "absent" | "cancelled" {
+  if (status === "excused" || status === "late") return "present"
+  if (status === null) return "absent"
+  return status
 }
 
 /**
@@ -61,7 +62,7 @@ export function transformSessions(
     instructor_name: null,
     is_substitute: false,
     notes: s.notes,
-    attendance: (Object.entries(s.attendance || {}) as [string, 'present' | 'absent' | 'excused' | 'late' | null][]).map(
+    attendance: Object.entries(s.attendance || {}).map(
       ([studentId, status]) => {
         const student = roster.find((r) => r.student_id === Number(studentId));
         return {

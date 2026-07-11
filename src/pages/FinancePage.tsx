@@ -113,20 +113,20 @@ export function FinancePage() {
       <TopNavbar activePage="Finance" />
 
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-6">
-        <div className="max-w-[1400px] mx-auto">
+        <div className="max-w-[1700px] mx-auto">
           <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">Finance</h1>
           <p className="text-sm text-on-surface-variant mt-2">Create receipts and manage payments</p>
         </div>
       </header>
 
       <section className="px-8 pt-6">
-        <div className="max-w-[1400px] mx-auto">
+        <div className="max-w-[1700px] mx-auto">
           <MetricsStripCards items={metricItems} activeIndex={activeIndex} />
         </div>
       </section>
 
       <section className="px-8 py-6">
-        <div className="max-w-[1400px] mx-auto">
+        <div className="max-w-[1700px] mx-auto">
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm">
               {error}

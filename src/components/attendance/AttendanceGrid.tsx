@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../../hooks/queryKeys'
@@ -6,7 +6,6 @@ import type { UpdateSessionDTO } from '../../api/academics'
 import { cancelSession, updateSession, deleteSession, reactivateSession } from '../../api/academics'
 import { markAttendance, type AttendanceStatus } from '../../api/attendance'
 import { getInitials } from '../../utils/formatting'
-import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useToast } from '../common/Toast'
 import { AttendanceHeader } from './AttendanceHeader'
 import { AttendanceTableBody } from './AttendanceTableBody'
@@ -17,13 +16,16 @@ import { EditSessionPopup } from './EditSessionPopup'
 import { AddSessionDialog } from '../groups/detail/AddSessionDialog'
 import { PaymentSummaryStrip } from './PaymentSummaryStrip'
 import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashboard'
+import type { StudentRowData } from './types'
 
-// Toggle cycle: null -> present -> absent -> cancelled -> null
-const NEXT_STATE: Record<string, AttendanceStatus> = {
-  'null': 'present',
-  'present': 'absent',
-  'absent': 'cancelled',
-  'cancelled': null,
+// Toggle cycle: absent -> present -> cancelled -> absent
+function getNextStatus(current: AttendanceStatus): AttendanceStatus {
+  const map: Record<string, AttendanceStatus> = {
+    'absent': 'present',
+    'present': 'cancelled',
+    'cancelled': 'absent',
+  }
+  return map[String(current)] ?? 'absent'
 }
 
 interface AttendanceGridProps {
@@ -34,24 +36,12 @@ interface AttendanceGridProps {
   groupInstructorName?: string  // Fallback instructor name for consistency
   groupName?: string            // Group name to display in header
   courseName?: string           // Course name to display in header
-  isLoading?: boolean           // External loading state from API hook
   selectedDate?: string         // Date for dashboard cache invalidation
-}
-
-interface StudentRow {
-  student_id: string
-  full_name: string
-  gender: 'male' | 'female'
-  billing_status: 'paid' | 'due'
-  balance: number
-  attendance: Map<number, AttendanceStatus>
 }
 
 export function AttendanceGrid({ sessions, roster, groupId, level, groupInstructorName, groupName, courseName, selectedDate }: AttendanceGridProps) {
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const [students, setStudents] = useState<StudentRow[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
@@ -73,93 +63,59 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   const [pendingChanges, setPendingChanges] = useState<Map<number, { student_id: string; status: AttendanceStatus }[]>>(new Map())
   const [sessionSaveStatus, setSessionSaveStatus] = useState<Map<number, 'idle' | 'saving' | 'success' | 'error'>>(new Map())
   const [dirtySessions, setDirtySessions] = useState<Set<number>>(new Set())
-
-  // Debounced attendance state (kept for cleanup, but not used for auto-save)
-  const attendanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const fetchCycleRef = useRef(0)
-
+  
+  // Optimistic overrides — merged into derived students during pending save
+  const [localOverrides, setLocalOverrides] = useState<Map<string, AttendanceStatus>>(new Map())
 
   const { showToast, ToastComponent } = useToast()
 
-  // Initialize session notes when sessions change (preserve dirty notes)
-  useEffect(() => {
-    if (dirtyNotes.size === 0) {
-      const initialNotes: Record<number, string> = {}
-      sessions.forEach(s => {
-        initialNotes[s.session_id] = s.notes || ''
-      })
-      setSessionNotes(initialNotes)
-    }
-  }, [sessions])
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (attendanceTimeoutRef.current) {
-        clearTimeout(attendanceTimeoutRef.current)
-      }
-    }
-  }, [])
-
-  const refetchData = useCallback(async () => {
-    if (!groupId) return
-
-    setIsLoading(true)
-    try {
-      fetchCycleRef.current += 1
-      console.debug(
-        `[AttendanceGrid] Fetch #${fetchCycleRef.current} started for group ${groupId} with ${sessions.length} sessions`
-      )
-
-      // Use provided roster from parent component (handle empty roster gracefully)
-      const rosterData: StudentRosterDTO[] = roster || []
-      if (rosterData.length === 0) {
-        console.debug('[AttendanceGrid] No roster provided, showing empty state')
-      } else {
-        console.debug(`[AttendanceGrid] Using provided roster (${rosterData.length} students)`)
-      }
-
-      // Build student rows using roster + session attendance
-      // Even if there are no sessions yet, we still populate students so the
-      // correct empty-state message ("no sessions" vs "no students") is shown.
-      const studentRows: StudentRow[] = rosterData.map((r) => {
-        const attendanceMap = new Map<number, AttendanceStatus>()
-        sessions.forEach((session) => {
-          // Get attendance from the embedded data in the session
+  // Derive student rows directly from props + local overrides — no state, no fetch cycle
+  const students = useMemo<StudentRowData[]>(() => {
+    const rosterData: StudentRosterDTO[] = roster || []
+    return rosterData.map((r) => {
+      const attendanceMap = new Map<number, AttendanceStatus>()
+      sessions.forEach((session) => {
+        const overrideKey = `${r.student_id}-${session.session_id}`
+        if (localOverrides.has(overrideKey)) {
+          attendanceMap.set(session.session_id, localOverrides.get(overrideKey)!)
+        } else {
           const sessionAttendance = session.attendance || []
           const record = sessionAttendance.find((a) => a.student_id === r.student_id)
-          attendanceMap.set(session.session_id, record?.status || null)
-        })
-
-        return {
-          student_id: String(r.student_id),
-          full_name: r.student_name,
-          gender: r.gender || 'male',
-          billing_status: r.billing_status,
-          balance: r.balance,
-          attendance: attendanceMap,
+          attendanceMap.set(session.session_id, record?.status ?? 'absent')
         }
       })
 
-      setStudents(studentRows)
-      setError(null)
-      console.debug(
-        `[AttendanceGrid] Fetch #${fetchCycleRef.current} completed for group ${groupId} (${studentRows.length} students, ${sessions.length} sessions)`
-      )
-    } catch (err) {
-      console.error('Failed to refresh data:', err)
-      setError('Failed to load attendance data')
-      showToast('Failed to refresh data', 'error')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [groupId, sessions, roster, showToast])
+      return {
+        student_id: String(r.student_id),
+        full_name: r.student_name,
+        gender: r.gender || 'male',
+        billing_status: r.billing_status,
+        balance: r.balance,
+        attendance: attendanceMap,
+      }
+    })
+  }, [roster, sessions, localOverrides])
 
-  // Load roster and attendance data
+  // Initialize session notes when sessions change (preserve dirty notes)
+  const initialSessionNotes = useMemo(() => {
+    const notes: Record<number, string> = {}
+    sessions.forEach(s => {
+      notes[s.session_id] = s.notes || ''
+    })
+    return notes
+  }, [sessions])
+
   useEffect(() => {
-    void refetchData()
-  }, [refetchData])
+    if (dirtyNotes.size === 0) {
+      setSessionNotes(initialSessionNotes)
+    }
+  }, [initialSessionNotes, dirtyNotes.size])
+
+  const refetchData = useCallback(async () => {
+    // Students are now derived via useMemo — nothing to fetch
+    setError(null)
+    setLocalOverrides(new Map())
+  }, [])
 
   // Handle note change
   const handleNoteChange = useCallback((sessionId: number, value: string) => {
@@ -172,7 +128,6 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   const handleEditSession = useCallback((session: SessionWithAttendanceDTO) => {
     setEditingSession(session)
     setIsEditModalOpen(true)
-    setHasChanges(true)
   }, [])
 
   // Handle cancel session
@@ -261,33 +216,28 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     }
   }, [refetchData, showToast, selectedDate, qc, groupId])
 
-  const handleToggle = useCallback((studentId: string, sessionId: number) => {
-    const student = students.find(s => s.student_id === studentId)
+  const handleToggle = useCallback((studentId: string | number, sessionId: number) => {
+    const studentIdStr = String(studentId)
+    // Read current status from derived students
+    const student = students.find(s => s.student_id === studentIdStr)
     if (!student) return
 
-    const currentStatus = student.attendance.get(sessionId) || null
-    const nextStatus = NEXT_STATE[String(currentStatus)]
+    const currentStatus = student.attendance.get(sessionId) ?? 'absent'
+    const nextStatus = getNextStatus(currentStatus)
 
-    // Optimistic UI update
-    setStudents((prev) => {
-      return prev.map((s) => {
-        if (s.student_id !== studentId) return s
-        const newAttendance = new Map(s.attendance)
-        newAttendance.set(sessionId, nextStatus)
-        return { ...s, attendance: newAttendance }
-      })
+    // Optimistic UI: store override in localOverrides
+    setLocalOverrides(prev => {
+      const newMap = new Map(prev)
+      newMap.set(`${studentIdStr}-${sessionId}`, nextStatus)
+      return newMap
     })
     
-    // Queue change for batch save (no auto-save)
+    // Queue change for batch save
     setPendingChanges(prev => {
       const newMap = new Map(prev)
       const existing = newMap.get(sessionId) || []
-      const filtered = existing.filter(e => e.student_id !== studentId)
-      if (nextStatus !== null) {
-        newMap.set(sessionId, [...filtered, { student_id: studentId, status: nextStatus }])
-      } else {
-        newMap.set(sessionId, filtered)
-      }
+      const filtered = existing.filter(e => e.student_id !== studentIdStr)
+      newMap.set(sessionId, [...filtered, { student_id: studentIdStr, status: nextStatus }])
       return newMap
     })
     
@@ -396,10 +346,27 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         return newSet
       })
       
-      // 8. Check if any sessions remain unsaved
-      const remainingChanges = pendingChanges.size - successfulSessions.length
-      if (remainingChanges === 0 && dirtyNotes.size === 0) {
+      // 8. Check if any sessions remain unsaved — compute from results, not stale closures
+      const failedCount = results.filter(r => {
+        if (r.status !== 'fulfilled') return true
+        return 'status' in r.value && r.value.status === 'error'
+      }).length
+      if (failedCount === 0) {
+        // No failures — all pending attendance and notes saved successfully
         setHasChanges(false)
+      } else {
+        // Some sessions failed — check remaining after state flushes
+        queueMicrotask(() => {
+          setPendingChanges(pending => {
+            setDirtyNotes(dirty => {
+              if (pending.size === 0 && dirty.size === 0) {
+                setHasChanges(false)
+              }
+              return dirty
+            })
+            return pending
+          })
+        })
       }
       
       // 9. Invalidate caches after save
@@ -450,10 +417,26 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       
       setSessionSaveStatus(prev => new Map(prev).set(sessionId, 'success'))
       
-      const remaining = pendingChanges.size - 1
-      if (remaining === 0 && dirtyNotes.size === 0) {
-        setHasChanges(false)
-      }
+      // Use functional updater to avoid stale closure on pendingChanges.size
+      setPendingChanges(currentPending => {
+        queueMicrotask(() => {
+          setDirtyNotes(currentDirty => {
+            if (currentPending.size === 0 && currentDirty.size === 0) {
+              setHasChanges(false)
+            }
+            return currentDirty
+          })
+        })
+        return currentPending
+      })
+      
+      // Invalidate caches after successful retry
+      await Promise.all([
+        selectedDate
+          ? qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
+          : Promise.resolve(),
+        qc.invalidateQueries({ queryKey: queryKeys.groupAttendance(groupId, level) }),
+      ])
       
       showToast('Session saved successfully', 'success')
     } catch (err) {
@@ -461,7 +444,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       setSessionSaveStatus(prev => new Map(prev).set(sessionId, 'error'))
       showToast('Failed to save session', 'error')
     }
-  }, [pendingChanges, dirtyNotes, showToast])
+  }, [pendingChanges, showToast, selectedDate, qc, groupId, level])
 
   const handleCancel = useCallback(() => {
     setHasChanges(false)
@@ -471,15 +454,6 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     setSessionSaveStatus(new Map())
     refetchData()
   }, [refetchData])
-
-  if (isLoading) {
-    return (
-      <div className="p-8 text-center text-outline-variant flex items-center justify-center gap-2">
-        <LoadingSpinner size="sm" />
-        <span>Loading attendance...</span>
-      </div>
-    )
-  }
 
   if (students.length === 0) {
     return (
@@ -509,18 +483,19 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   return (
     <div className="bg-white border border-outline-variant/10 shadow-sm w-full max-w-full overflow-x-hidden">
       {error && (
-        <div role="alert" className="p-3 bg-red-50 border-b border-red-100 text-red-700 text-sm">
+        <div role="alert" className="p-3 bg-error-container/30 border-b border-error/20 text-error text-sm">
           {error}
         </div>
       )}
 
       <div className="w-full overflow-x-auto">
-        <table className="text-left border-collapse border-2 border-slate-400" style={{ width: '100%', minWidth: `${Math.max(700, 200 + sessions.length * 160)}px` }}>
+        <table className="text-left border-collapse border border-outline-variant/20" style={{ width: '100%', minWidth: `${Math.max(700, 200 + sessions.length * 160)}px` }} aria-label="Attendance grid">
+          <caption className="sr-only">Student attendance for {groupName || 'group'} — Level {level}</caption>
           {/* Group Header Row */}
           {groupName && (
             <thead>
               <tr className="bg-slate-50">
-                <th colSpan={sessions.length + 1} className="p-0 border-b-2 border-slate-400">
+                  <th colSpan={sessions.length + 1} className="p-0 border-b border-outline-variant/20">
                   <div className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="w-1 h-8 bg-secondary rounded-full"></div>
@@ -564,7 +539,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
                         onClick={() => setIsAddSessionOpen(true)}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors shadow-sm"
                       >
-                        <span className="material-symbols-outlined text-sm">add</span>
+                        <span className="material-symbols-outlined text-sm" aria-hidden="true">add</span>
                         Add Session
                       </button>
                     </div>
@@ -577,7 +552,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
           <AttendanceHeader sessions={sessions} groupInstructorName={groupInstructorName} />
           
           {/* Session Actions Row */}
-          <tbody className="border-b-2 border-slate-300">
+          <tbody className="border-b border-outline-variant/20">
             <SessionActionsRow 
               sessions={sessions} 
               onEdit={handleEditSession}
@@ -596,7 +571,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
           />
           
           {/* Session Notes Row */}
-          <tbody className="border-t-2 border-slate-300">
+          <tbody className="border-t border-outline-variant/20">
             <SessionNotesRow 
               sessions={sessions}
               notes={sessionNotes}
@@ -610,7 +585,6 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         isSaving={isSaving}
         onCancel={handleCancel}
         onSave={handleSaveAll}
-        hasError={!!error}
         hasChanges={hasChanges || pendingChanges.size > 0 || dirtyNotes.size > 0}
         saveStatus={sessionSaveStatus}
         onRetrySession={handleRetrySession}

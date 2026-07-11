@@ -11,16 +11,20 @@ interface PaymentMethodPillsProps {
   onChange: (value: string) => void
   error?: string
   label?: string
+  layout?: 'horizontal' | 'vertical'
 }
 
-export function PaymentMethodPills({ options, selected, onChange, error, label }: PaymentMethodPillsProps) {
+export function PaymentMethodPills({ options, selected, onChange, error, label, layout = 'horizontal' }: PaymentMethodPillsProps) {
+  const isVertical = layout === 'vertical'
   return (
     <div>
       {label && (
-        <label className="block text-sm font-medium text-on-surface mb-2">{label}</label>
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{label}</label>
       )}
       <div
-        className={`flex flex-wrap gap-2 p-1 rounded-lg transition-all ${error ? 'ring-2 ring-red-400 animate-shake' : ''}`}
+        className={`${
+          isVertical ? 'flex flex-col gap-2.5' : 'grid grid-cols-4 gap-1.5'
+        } p-0.5 transition-all ${error ? 'ring-2 ring-red-400/50 rounded-xl animate-shake' : ''}`}
       >
         {options.map((opt) => {
           const isSelected = selected === opt.value
@@ -36,12 +40,20 @@ export function PaymentMethodPills({ options, selected, onChange, error, label }
               key={opt.value}
               type="button"
               onClick={() => onChange(opt.value)}
-              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
+              className={`${
+                isVertical
+                  ? 'w-full py-3.5 px-4 text-base font-bold rounded-xl justify-start inline-flex items-center gap-2.5'
+                  : 'w-full py-2 px-1 text-[10px] font-extrabold rounded-xl flex flex-col items-center justify-center gap-1 text-center'
+              } transition-all border shadow-sm active:scale-[0.98] ${
                 isSelected ? s.selected : s.unselected
               }`}
             >
-              {opt.icon && <span className="material-symbols-outlined text-base" aria-hidden="true">{opt.icon}</span>}
-              {opt.label}
+              {opt.icon && (
+                <span className={`material-symbols-outlined ${isVertical ? 'text-[20px]' : 'text-[18px]'}`} aria-hidden="true">
+                  {opt.icon}
+                </span>
+              )}
+              <span className="truncate max-w-full">{opt.label}</span>
             </button>
           )
         })}
