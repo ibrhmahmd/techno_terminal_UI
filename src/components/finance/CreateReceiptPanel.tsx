@@ -9,6 +9,7 @@ import type { UnpaidEnrollment } from '../../api/crm/students/types/finance'
 import type { Student } from '../../api/crm'
 import { ReceiptLineItemRow } from './CreateReceipt/ReceiptLineItemRow'
 import type { ReceiptLineItem } from './CreateReceipt/ReceiptLineItemRow'
+import { SlideToConfirm } from './CreateReceipt/SlideToConfirm'
 
 const PAYMENT_METHODS: PillOption[] = [
   { value: 'cash', label: 'Cash', color: 'emerald', icon: 'payments' },
@@ -18,6 +19,7 @@ const PAYMENT_METHODS: PillOption[] = [
 ]
 
 const DRAFT_KEY = 'receipt-draft'
+const PRESETS = [150, 500, 550, 600, 650, 700]
 
 interface CreateReceiptPanelProps {
   isLoading: boolean
@@ -29,16 +31,10 @@ interface CreateReceiptPanelProps {
 }
 
 const VALID_METHODS = ['cash', 'e_wallet', 'instapay', 'other'] as const
-const VALID_TYPES = ['course_level', 'competition', 'other'] as const
 
 function narrowMethod(value: string | null | undefined): 'cash' | 'e_wallet' | 'instapay' | 'other' {
   if (value && (VALID_METHODS as readonly string[]).includes(value)) return value as 'cash' | 'e_wallet' | 'instapay' | 'other'
   return 'cash'
-}
-
-function narrowType(value: string | null | undefined): 'course_level' | 'competition' | 'other' {
-  if (value && (VALID_TYPES as readonly string[]).includes(value)) return value as 'course_level' | 'competition' | 'other'
-  return 'course_level'
 }
 
 function emptyLineItem(): ReceiptLineItem {
@@ -49,7 +45,7 @@ function emptyLineItem(): ReceiptLineItem {
     students: [],
     selectedEnrollment: null,
     amount: 0,
-    payment_type: null,
+    payment_type: 'course_level',
     discount: 0,
     notes: '',
   }
@@ -73,7 +69,7 @@ function initFromDraft<T>(key: string, fallback: T): T {
 }
 
 export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData, onClearInitialData, onNavigateToUnpaid }: CreateReceiptPanelProps) {
-  const { create, previewRisk, isCreating, overpaymentRisk, clearOverpaymentRisk } = useReceipts()
+  const { create, isCreating } = useReceipts()
   const [payerName, setPayerName] = useState(() => initFromDraft('payerName', ''))
   const [paymentMethod, setPaymentMethod] = useState<string | null>(() => initFromDraft<string | null>('paymentMethod', null))
   const [paymentMethodError, setPaymentMethodError] = useState<string | undefined>()
@@ -83,8 +79,12 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
     if (d && Array.isArray(d.lineItems) && d.lineItems.length > 0) return d.lineItems as ReceiptLineItem[]
     return [{ ...emptyLineItem(), id: '1' }]
   })
-  const [lineItemErrors, setLineItemErrors] = useState<Record<string, Record<string, string | undefined>>>({})
-  const [localOverpaymentRisk, setLocalOverpaymentRisk] = useState<{ has_risk: boolean; message?: string } | null>(null)
+  const [activeLineItemId, setActiveLineItemId] = useState<string>(() => {
+    const d = getSessionDraft()
+    if (d && Array.isArray(d.lineItems) && d.lineItems.length > 0) return (d.lineItems as ReceiptLineItem[])[0].id
+    return '1'
+  })
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
 
   const [activeSearchItemId, setActiveSearchItemId] = useState<string | null>(null)
   const activeItem = lineItems.find(item => item.id === activeSearchItemId)
@@ -136,6 +136,8 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
           amount_paid: initialData.total_paid,
           remaining_balance: initialData.remaining_balance,
           notes: null,
+          status: 'active',
+          enrolled_at: new Date().toISOString(),
         }
 
         setPayerName('')
@@ -152,12 +154,10 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
           discount: 0,
           notes: '',
         }])
-        setLocalOverpaymentRisk(null)
-        clearOverpaymentRisk?.()
         onClearInitialData?.()
       })
     }
-  }, [initialData, onClearInitialData, clearOverpaymentRisk])
+  }, [initialData, onClearInitialData])
 
   // Sync search results to the active line item
   useEffect(() => {
@@ -173,7 +173,9 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
   }, [activeSearchItemId, searchResults])
 
   const handleAddLineItem = () => {
-    setLineItems(prev => [...prev, emptyLineItem()])
+    const newItem = emptyLineItem()
+    setLineItems(prev => [...prev, newItem])
+    setActiveLineItemId(newItem.id)
   }
 
   const handleRemoveLineItem = (id: string) => {
@@ -181,7 +183,13 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
       onError('Receipt must have at least one line item')
       return
     }
-    setLineItems(prev => prev.filter(item => item.id !== id))
+    setLineItems(prev => {
+      const filtered = prev.filter(item => item.id !== id)
+      if (activeLineItemId === id) {
+        setActiveLineItemId(filtered[0].id)
+      }
+      return filtered
+    })
   }
 
   const handleUpdateLineItem = (id: string, updates: Partial<ReceiptLineItem>) => {
@@ -220,69 +228,31 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
         itemErrors.amount = 'Amount must be greater than 0'
         valid = false
       }
-      if (!item.payment_type) {
-        itemErrors.payment_type = 'Please select a payment type'
-        valid = false
-      }
       if (Object.keys(itemErrors).length > 0) {
         newErrors[item.id] = itemErrors
       }
     })
-    setLineItemErrors(newErrors)
 
     return valid
   }
 
-  const handlePreviewRisk = async () => {
-    const validItems = lineItems.filter(item => item.selectedStudent && item.amount > 0 && item.payment_type)
-
-    if (validItems.length === 0) {
-      setLocalOverpaymentRisk(null)
-      clearOverpaymentRisk()
-      return
-    }
-
-    const itemsWithoutEnrollment = validItems.filter(item => !item.selectedEnrollment)
-    if (itemsWithoutEnrollment.length > 0) {
-      onError('Please select an enrollment for each line item')
-      return
-    }
-
-    const request: CreateReceiptRequest = {
-      payer_name: payerName || null,
-      method: narrowMethod(paymentMethod),
-      notes: notes || null,
-      allow_credit: true,
-      lines: validItems.map((item, index) => ({
-        id: index + 1,
-        student_id: item.selectedStudent!.id,
-        enrollment_id: item.selectedEnrollment?.enrollment_id,
-        amount: item.amount,
-        transaction_type: 'charge',
-        payment_type: narrowType(item.payment_type),
-        discount: item.discount || 0,
-        notes: item.notes || undefined,
-      })),
-    }
-
-    try {
-      const risk = await previewRisk(request)
-      setLocalOverpaymentRisk(risk)
-    } catch {
-      setLocalOverpaymentRisk(null)
-    }
-  }
-
-  const handleCreateReceipt = async () => {
+  const handleOpenConfirm = () => {
     if (!validate()) return
 
-    const validItems = lineItems.filter(item => item.selectedStudent && item.amount > 0 && item.payment_type)
+    const validItems = lineItems.filter(item => item.selectedStudent && item.amount > 0)
 
     const itemsWithoutEnrollment = validItems.filter(item => !item.selectedEnrollment)
     if (itemsWithoutEnrollment.length > 0) {
       onError('Please select an enrollment for each line item (click on student first)')
       return
     }
+
+    setShowConfirmModal(true)
+  }
+
+  const handleCreateReceipt = async () => {
+    setShowConfirmModal(false)
+    const validItems = lineItems.filter(item => item.selectedStudent && item.amount > 0)
 
     onError('')
     try {
@@ -297,7 +267,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
           enrollment_id: item.selectedEnrollment?.enrollment_id,
           amount: item.amount,
           transaction_type: 'charge',
-          payment_type: narrowType(item.payment_type),
+          payment_type: 'course_level',
           discount: item.discount || 0,
           notes: item.notes || undefined,
         })),
@@ -315,21 +285,22 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
       setPaymentMethodError(undefined)
       setNotes('')
       setLineItems([{ ...emptyLineItem(), id: '1' }])
-      setLineItemErrors({})
-      setLocalOverpaymentRisk(null)
-      clearOverpaymentRisk()
+      setActiveLineItemId('1')
     } catch (err) {
       onError(err instanceof Error ? err.message : 'Failed to create receipt')
     }
   }
 
+  const selectedMethodObj = PAYMENT_METHODS.find(m => m.value === paymentMethod)
+  const activeItemForSidebar = lineItems.find(item => item.id === activeLineItemId) || lineItems[0]
+
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 relative">
+      <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
         <div className="flex items-center gap-3">
-          <h2 className="font-headline text-xl font-semibold text-on-surface">Create Receipt</h2>
+          <h2 className="font-headline text-xl font-bold text-on-surface">Create Receipt</h2>
           {draftRestored && (
-            <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium">
+            <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium animate-pulse">
               Draft restored
             </span>
           )}
@@ -338,99 +309,372 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
           <button
             type="button"
             onClick={onNavigateToUnpaid}
-            className="text-sm text-secondary hover:text-secondary/80 flex items-center gap-1.5 font-medium transition-colors"
+            className="text-sm text-secondary hover:text-secondary/80 flex items-center gap-1.5 font-bold transition-colors bg-secondary/5 px-3 py-1.5 rounded-xl border border-secondary/10"
           >
-            <span className="material-symbols-outlined text-base" aria-hidden="true">warning</span>
+            <span className="material-symbols-outlined text-base font-bold" aria-hidden="true">warning</span>
             Pay from Unpaid
           </button>
         )}
       </div>
 
-      {/* Receipt Header */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-on-surface mb-2">Payer Name</label>
-          <input
-            type="text"
-            value={payerName}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPayerName(e.target.value)}
-            placeholder="Enter payer name..."
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm transition-shadow focus:ring-2 focus:ring-secondary/20 focus:outline-none"
-          />
-        </div>
-        <div>
-          <PaymentMethodPills
-            label="Payment Method"
-            options={PAYMENT_METHODS}
-            selected={paymentMethod}
-            onChange={(value) => { setPaymentMethod(value); setPaymentMethodError(undefined) }}
-            error={paymentMethodError}
-          />
-        </div>
-      </div>
+      {/* POS Two-Column Split Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        {/* Left Column: Form Details */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Line Items */}
+          <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/50 space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-bold text-slate-800 uppercase tracking-wider">Line Items</label>
+              <button
+                onClick={handleAddLineItem}
+                className="text-xs font-bold text-secondary hover:text-secondary/80 flex items-center gap-1 transition-colors bg-secondary/5 px-3 py-1.5 rounded-lg border border-secondary/15 active:scale-95 duration-100"
+              >
+                <span className="material-symbols-outlined text-sm font-bold" aria-hidden="true">add</span>
+                Add Student
+              </button>
+            </div>
 
-      {/* Line Items */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <label className="block text-sm font-medium text-on-surface">Line Items</label>
-          <button
-            onClick={handleAddLineItem}
-            className="text-sm font-semibold text-secondary hover:text-secondary/80 flex items-center gap-1 transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm" aria-hidden="true">add</span>
-            Add Item
-          </button>
+            <div className="space-y-4">
+              {lineItems.map((item, index) => (
+                <ReceiptLineItemRow
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  isActive={activeLineItemId === item.id}
+                  onFocus={() => setActiveLineItemId(item.id)}
+                  onUpdate={(updates) => handleUpdateLineItem(item.id, updates)}
+                  onRemove={() => handleRemoveLineItem(item.id)}
+                  isSearchingStudents={activeSearchItemId === item.id && isSearchingStudents}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Optional Details (Payer & Notes) */}
+          <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/50 space-y-4">
+            <label className="block text-sm font-bold text-slate-800 uppercase tracking-wider">Payer & General Notes</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Payer Name (Optional)</label>
+                <input
+                  type="text"
+                  value={payerName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPayerName(e.target.value)}
+                  placeholder="Enter payer name (e.g., Parent's name)..."
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm transition-shadow focus:ring-2 focus:ring-secondary/20 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">General Notes (Optional)</label>
+                <input
+                  type="text"
+                  value={notes}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNotes(e.target.value)}
+                  placeholder="Enter any general notes for the receipt..."
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm transition-shadow focus:ring-2 focus:ring-secondary/20 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-4">
-          {lineItems.map((item, index) => (
-            <ReceiptLineItemRow
-              key={item.id}
-              item={item}
-              index={index}
-              onUpdate={(updates) => handleUpdateLineItem(item.id, updates)}
-              onRemove={() => handleRemoveLineItem(item.id)}
-              isSearchingStudents={activeSearchItemId === item.id && isSearchingStudents}
-              errors={lineItemErrors[item.id]}
+        {/* Right Column: Checkout Sidebar (Sticky) */}
+        <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-6">
+          {/* Active Student Monetary Editor */}
+          {activeItemForSidebar && activeItemForSidebar.selectedStudent && activeItemForSidebar.selectedEnrollment ? (
+            <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/50 space-y-4 animate-fadeIn">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider pb-2 border-b border-slate-200/40 truncate" title={activeItemForSidebar.selectedStudent.full_name}>
+                Payment: <span className="text-slate-850 font-extrabold">{activeItemForSidebar.selectedStudent.full_name}</span>
+              </h3>
+
+              {/* Suggestions presets (Placed above Amount input) */}
+              <div className="text-left">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider select-none block mb-1.5">المقترحات:</span>
+                <div className="flex flex-wrap gap-1.5 items-center">
+                  {activeItemForSidebar.selectedEnrollment.remaining_balance > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateLineItem(activeItemForSidebar.id, { amount: activeItemForSidebar.selectedEnrollment!.remaining_balance })}
+                      className="text-xs px-3 py-1.5 rounded-xl border border-secondary/35 bg-secondary/5 text-secondary hover:bg-secondary/10 hover:border-secondary transition-all font-extrabold active:scale-95 duration-100"
+                    >
+                      المتبقي ({activeItemForSidebar.selectedEnrollment.remaining_balance.toFixed(0)})
+                    </button>
+                  )}
+                  {PRESETS.filter(p => p < activeItemForSidebar.selectedEnrollment!.remaining_balance).map(p => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => handleUpdateLineItem(activeItemForSidebar.id, { amount: p })}
+                      className="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all font-extrabold active:scale-95 duration-100"
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Amount Input */}
+              <div>
+                <label htmlFor="sidebar-amount" className="block text-[11px] font-bold uppercase tracking-wider text-slate-555 mb-1.5">Amount to Pay *</label>
+                <div className="relative">
+                  <input
+                    id="sidebar-amount"
+                    type="number"
+                    min={0}
+                    value={activeItemForSidebar.amount || ''}
+                    onChange={(e) => handleUpdateLineItem(activeItemForSidebar.id, { amount: parseFloat(e.target.value) || 0 })}
+                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                    onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
+                    placeholder="0.00"
+                    className={`w-full py-2.5 px-3.5 pr-12 border rounded-xl text-base font-bold focus:outline-none focus:ring-2 transition-all ${
+                      activeItemForSidebar.amount > activeItemForSidebar.selectedEnrollment.remaining_balance
+                        ? 'border-rose-500 focus:ring-rose-500/20 text-rose-700 bg-rose-50/5'
+                        : (activeItemForSidebar.amount === activeItemForSidebar.selectedEnrollment.remaining_balance && activeItemForSidebar.amount > 0)
+                          ? 'border-emerald-500 focus:ring-emerald-500/20 text-emerald-700 bg-emerald-50/5'
+                          : (activeItemForSidebar.amount > 0 && activeItemForSidebar.amount < activeItemForSidebar.selectedEnrollment.remaining_balance)
+                            ? 'border-amber-400 focus:ring-amber-500/20 text-amber-700 bg-amber-50/5'
+                            : 'border-slate-200 focus:ring-secondary/20 text-slate-900 bg-white'
+                    }`}
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-450">EGP</span>
+                </div>
+
+                {/* Overpayment Warning */}
+                {activeItemForSidebar.amount > activeItemForSidebar.selectedEnrollment.remaining_balance && (
+                  <p className="text-[10px] text-rose-600 mt-1.5 flex items-start gap-1 animate-fadeIn font-semibold leading-tight text-left">
+                    <span className="material-symbols-outlined text-[12px] shrink-0 select-none mt-0.5">warning</span>
+                    <span>يتجاوز الرصيد المتبقي ({activeItemForSidebar.selectedEnrollment.remaining_balance.toFixed(0)} ج.م)</span>
+                  </p>
+                )}
+                {/* Perfect Match */}
+                {activeItemForSidebar.amount === activeItemForSidebar.selectedEnrollment.remaining_balance && activeItemForSidebar.amount > 0 && (
+                  <p className="text-[10px] text-emerald-600 mt-1.5 flex items-center gap-1 animate-fadeIn font-semibold text-left">
+                    <span className="material-symbols-outlined text-[14px] shrink-0 select-none">check_circle</span>
+                    <span>تطابق كامل مع الرصيد المتبقي</span>
+                  </p>
+                )}
+                {/* Partial Match */}
+                {activeItemForSidebar.amount > 0 && activeItemForSidebar.amount < activeItemForSidebar.selectedEnrollment.remaining_balance && (
+                  <p className="text-[10px] text-amber-600 mt-1.5 flex items-center gap-1 animate-fadeIn font-semibold text-left">
+                    <span className="material-symbols-outlined text-[14px] shrink-0 select-none">info</span>
+                    <span>دفعة جزئية من الرصيد المتبقي</span>
+                  </p>
+                )}
+              </div>
+
+              {/* Discount Input */}
+              <div>
+                <label htmlFor="sidebar-discount" className="block text-[11px] font-bold uppercase tracking-wider text-slate-555 mb-1.5 text-left">Discount</label>
+                <div className="relative">
+                  <input
+                    id="sidebar-discount"
+                    type="number"
+                    min={0}
+                    value={activeItemForSidebar.discount || ''}
+                    onChange={(e) => handleUpdateLineItem(activeItemForSidebar.id, { discount: parseFloat(e.target.value) || 0 })}
+                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                    onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
+                    placeholder="0.00"
+                    className="w-full py-2 px-3 pr-12 border border-slate-200 rounded-xl text-base font-bold focus:outline-none focus:ring-2 focus:ring-secondary/20 text-slate-900 bg-white transition-all text-left"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-450">EGP</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/50 text-center text-slate-400 text-[11px] py-8" dir="rtl">
+              <span className="material-symbols-outlined text-3xl text-slate-300 block mb-1">payments</span>
+              اختر طالباً واشتراكاً من اليسار لإدخال قيمة الدفع.
+            </div>
+          )}
+
+          {/* Payment Method Selector */}
+          <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/50">
+            <PaymentMethodPills
+              label="Payment Method *"
+              options={PAYMENT_METHODS}
+              selected={paymentMethod}
+              onChange={(value) => { setPaymentMethod(value); setPaymentMethodError(undefined) }}
+              error={paymentMethodError}
             />
-          ))}
+          </div>
+
+          {/* POS Summary Box (Light Mode) */}
+          <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-sm space-y-4 text-slate-800 text-left">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider pb-2.5 border-b border-slate-200/60">POS Checkout Summary</h3>
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-500 font-medium">Payment Mode</span>
+                <span className="font-semibold text-slate-850">{selectedMethodObj?.label || 'Not Selected'}</span>
+              </div>
+              {payerName && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-500 font-medium">Payer</span>
+                  <span className="font-semibold text-slate-850 truncate max-w-[120px]">{payerName}</span>
+                </div>
+              )}
+
+              {lineItems.some(i => i.selectedStudent && i.selectedEnrollment) && (
+                <div className="pt-2 border-t border-slate-200/60 space-y-3">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left">Breakdown</p>
+                  {lineItems.filter(i => i.selectedStudent && i.selectedEnrollment).map(i => {
+                    const remaining = i.selectedEnrollment!.remaining_balance
+                    const payAmount = i.amount || 0
+                    const disc = i.discount || 0
+                    const newBal = Math.max(0, remaining - payAmount)
+
+                    return (
+                      <div key={i.id} className="bg-white/50 border border-slate-200/60 rounded-xl p-3 text-xs space-y-1.5 shadow-sm text-slate-750 text-left">
+                        <div className="flex justify-between items-start">
+                          <a 
+                            href={`/students/${i.selectedStudent!.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="font-bold text-slate-850 hover:text-secondary hover:underline flex items-center gap-0.5 truncate max-w-[140px]"
+                          >
+                            {i.selectedStudent!.full_name}
+                            <span className="material-symbols-outlined text-[12px] text-slate-400 select-none">open_in_new</span>
+                          </a>
+                          <span className="font-extrabold text-slate-900">{payAmount.toFixed(0)} EGP</span>
+                        </div>
+                        <div className="flex justify-between text-[11px] text-slate-500">
+                          <a 
+                            href={`/groups/${i.selectedEnrollment!.group_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="hover:text-secondary hover:underline flex items-center gap-0.5 truncate max-w-[145px]"
+                          >
+                            {i.selectedEnrollment!.group_name}
+                            <span className="material-symbols-outlined text-[10px] text-slate-400 select-none">open_in_new</span>
+                          </a>
+                          <span>LVL {i.selectedEnrollment!.level_number}</span>
+                        </div>
+                        <div className="pt-1.5 border-t border-slate-200/40 grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px] text-slate-500">
+                          <div>المتبقي حالياً: <span className="font-semibold text-slate-700">{remaining.toFixed(0)} ج.م</span></div>
+                          {disc > 0 && <div className="text-right">الخصم: <span className="font-semibold text-slate-700">{disc.toFixed(0)} ج.م</span></div>}
+                          <div className="col-span-2 mt-0.5 pt-0.5 border-t border-dashed border-slate-200/50 flex justify-between font-bold">
+                            <span>الرصيد الجديد:</span>
+                            <span className={newBal === 0 ? 'text-emerald-600 font-extrabold' : 'text-slate-800 font-extrabold'}>
+                              {newBal.toFixed(0)} ج.م
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-slate-200/60 flex justify-between items-baseline">
+                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total</span>
+                <span className="text-3xl font-black text-slate-900">{totalAmount.toFixed(2)} <span className="text-xs font-normal text-slate-500">EGP</span></span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleOpenConfirm}
+              disabled={isLoading || isCreating || totalAmount === 0}
+              className="w-full py-3.5 bg-secondary text-white rounded-xl font-extrabold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-secondary/90 transition-all flex items-center justify-center gap-2 shadow-md active:scale-[0.98] duration-100 text-sm"
+            >
+              {(isLoading || isCreating) ? <LoadingSpinner size="sm" /> : null}
+              <span className="material-symbols-outlined text-lg" aria-hidden="true">receipt</span>
+              Create Receipt
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Overpayment Warning */}
-      {(overpaymentRisk?.has_risk || localOverpaymentRisk?.has_risk) && (
-        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg animate-pulse">
-          <p className="text-sm text-yellow-800 flex items-center gap-2">
-            <span className="material-symbols-outlined" aria-hidden="true">warning</span>
-            {overpaymentRisk?.message || localOverpaymentRisk?.message || 'This payment may exceed the amount due'}
-          </p>
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl w-full max-w-md p-6 overflow-hidden animate-scaleIn">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-full bg-secondary/10 text-secondary">
+                <span className="material-symbols-outlined text-2xl block">lock</span>
+              </div>
+              <div>
+                <h3 className="font-headline text-lg font-bold text-slate-900">Confirm Payment</h3>
+                <p className="text-xs text-slate-500">Please review these payment details carefully.</p>
+              </div>
+            </div>
+
+            <div className="space-y-3.5 my-5">
+              <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-100 space-y-2">
+                <div className="flex justify-between items-center text-sm border-b border-slate-200/50 pb-2">
+                  <span className="text-slate-500 font-medium">Payment Method</span>
+                  <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-${selectedMethodObj?.color}-50 text-${selectedMethodObj?.color}-700 border border-${selectedMethodObj?.color}-200`}>
+                    <span className="material-symbols-outlined text-sm">{selectedMethodObj?.icon}</span>
+                    {selectedMethodObj?.label}
+                  </span>
+                </div>
+                {payerName && (
+                  <div className="flex justify-between text-sm border-b border-slate-200/50 pb-2">
+                    <span className="text-slate-500 font-medium">Payer Name</span>
+                    <span className="font-semibold text-slate-800 truncate max-w-[200px]">{payerName}</span>
+                  </div>
+                )}
+                {notes && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500 font-medium">Notes</span>
+                    <span className="text-slate-700 italic text-xs truncate max-w-[200px]">{notes}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Line Items</p>
+                {lineItems.filter(item => item.selectedStudent && item.amount > 0).map((item) => (
+                  <div key={item.id} className="bg-slate-50/50 border border-slate-200/60 rounded-xl p-3 flex flex-col gap-1 text-sm">
+                    <div className="flex justify-between font-bold text-slate-800">
+                      <span>{item.selectedStudent?.full_name}</span>
+                      <span>{item.amount.toFixed(2)} EGP</span>
+                    </div>
+                    {item.selectedEnrollment && (
+                      <div className="flex justify-between text-xs text-slate-500 font-medium">
+                        <span>{item.selectedEnrollment.group_name}</span>
+                        <span>Level {item.selectedEnrollment.level_number}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-3 border-t border-slate-200 flex justify-between items-end">
+                <div>
+                  <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Charge</span>
+                  <p className="text-xl font-bold text-slate-800">{totalAmount.toFixed(2)} EGP</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 mt-6">
+              {isLoading || isCreating ? (
+                <div className="flex items-center justify-center gap-2 py-3 bg-slate-50 border border-slate-100 rounded-full text-slate-500 font-bold text-sm">
+                  <LoadingSpinner size="sm" />
+                  <span>جاري إنشاء الإيصال...</span>
+                </div>
+              ) : (
+                <SlideToConfirm 
+                  onConfirm={handleCreateReceipt} 
+                  label="اسحب للتأكيد وإنشاء الإيصال" 
+                />
+              )}
+              <button
+                type="button"
+                disabled={isLoading || isCreating}
+                onClick={() => setShowConfirmModal(false)}
+                className="w-full py-2 text-xs font-semibold text-slate-450 hover:text-slate-600 transition-colors text-center disabled:opacity-40"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
         </div>
       )}
-
-      {/* Total & Actions */}
-      <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-        <div>
-          <p className="text-sm text-slate-600">Total Amount</p>
-          <p className="text-2xl font-bold text-on-surface">{totalAmount.toFixed(2)} <span className="text-sm font-normal text-slate-400">EGP</span></p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={handlePreviewRisk}
-            className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
-          >
-            Check Risk
-          </button>
-          <button
-            onClick={handleCreateReceipt}
-            disabled={isLoading || isCreating || totalAmount === 0}
-            className="px-6 py-2 bg-secondary text-white rounded-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/90 transition-all flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
-          >
-            {(isLoading || isCreating) ? <LoadingSpinner size="sm" /> : null}
-            <span className="material-symbols-outlined" aria-hidden="true">receipt</span>
-            Create Receipt
-          </button>
-        </div>
-      </div>
     </div>
   )
 }

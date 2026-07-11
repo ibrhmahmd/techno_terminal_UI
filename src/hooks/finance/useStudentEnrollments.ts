@@ -17,6 +17,8 @@ export interface StudentEnrollmentInfo {
   amount_paid: number
   remaining_balance: number
   notes: string | null
+  status: string
+  enrolled_at: string
 }
 
 export interface UseStudentEnrollmentsReturn {
@@ -28,21 +30,27 @@ export interface UseStudentEnrollmentsReturn {
 }
 
 function mapEnrollments(enrollmentsData: Enrollment[]): StudentEnrollmentInfo[] {
-  return enrollmentsData.map((e: Enrollment) => ({
-    enrollment_id: e.id,
-    group_id: e.group_id,
-    group_name: e.group_name || `Group #${e.group_id}`,
-    course_name: e.course_name,
-    instructor_name: e.instructor_name,
-    level_number: e.level_number,
-    amount_due: e.amount_due,
-    discount_applied: e.discount_applied,
-    amount_paid: 0,
-    remaining_balance: e.amount_remaining !== undefined
-      ? e.amount_remaining
-      : (e.amount_due || 0) - e.discount_applied,
-    notes: e.notes || null,
-  }))
+  return enrollmentsData.map((e: Enrollment) => {
+    const netDue = (e.amount_due || 0) - e.discount_applied
+    const remaining = e.amount_remaining !== undefined ? e.amount_remaining : netDue
+    const paid = Math.max(0, netDue - remaining)
+
+    return {
+      enrollment_id: e.id,
+      group_id: e.group_id,
+      group_name: e.group_name || `Group #${e.group_id}`,
+      course_name: e.course_name,
+      instructor_name: e.instructor_name,
+      level_number: e.level_number,
+      amount_due: e.amount_due,
+      discount_applied: e.discount_applied,
+      amount_paid: paid,
+      remaining_balance: remaining,
+      notes: e.notes || null,
+      status: e.status,
+      enrolled_at: e.enrolled_at,
+    }
+  })
 }
 
 export function useStudentEnrollments(studentId: number | null): UseStudentEnrollmentsReturn {
