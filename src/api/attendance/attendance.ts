@@ -4,18 +4,17 @@ import type { AttendanceLevelResponse } from './types'
 
 export async function markAttendance(
   sessionId: number,
-  entries: { student_id: string; status: 'present' | 'absent' | 'cancelled' }[]
+  entries: { student_id: string; status: 'present' | 'absent' | 'not_taken' }[]
 ): Promise<void> {
-  const payload: {
-    entries: { student_id: number; status: 'present' | 'absent' | 'cancelled' }[]
-  } = {
-    entries: entries.map(e => ({
+  const validEntries = entries.filter(e => e.status !== 'not_taken')
+  if (validEntries.length === 0) return
+
+  await client.post(`/attendance/session/${sessionId}/mark`, {
+    entries: validEntries.map(e => ({
       student_id: parseInt(e.student_id),
       status: e.status,
     }))
-  }
-
-  await client.post(`/attendance/session/${sessionId}/mark`, payload)
+  })
 }
 
 /**

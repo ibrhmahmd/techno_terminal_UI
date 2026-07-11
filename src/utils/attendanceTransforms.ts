@@ -25,13 +25,13 @@ export function transformRoster(
 /**
  * Map new API status to frontend format
  * New: 'present' | 'absent' | 'excused' | 'late' | null
- * Frontend: 'present' | 'absent' | 'cancelled'
+ * Frontend: 'present' | 'absent' | 'not_taken'
  */
 function mapStatus(
   status: "present" | "absent" | "excused" | "late" | null,
-): "present" | "absent" | "cancelled" {
+): "present" | "absent" | "not_taken" {
   if (status === "excused" || status === "late") return "present"
-  if (status === null) return "absent"
+  if (status === null) return "not_taken"
   return status
 }
 
@@ -69,7 +69,7 @@ export function transformSessions(
           student_id: Number(studentId),
           student_name: student?.student_name || "",
           gender: "male" as const,
-          status: mapStatus(status),
+          status: mapStatus(status) as "present" | "absent" | "cancelled" | null,
         };
       },
     ),

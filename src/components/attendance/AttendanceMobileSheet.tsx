@@ -93,7 +93,8 @@ export function AttendanceMobileSheet({
       const initialMap = new Map<number, AttendanceStatus>()
       if (selectedSession.attendance) {
         selectedSession.attendance.forEach(record => {
-          initialMap.set(record.student_id, record.status ?? 'absent')
+          const rawStatus = record.status ?? null
+          initialMap.set(record.student_id, rawStatus === 'cancelled' || rawStatus === null ? 'not_taken' : rawStatus)
         })
       }
       setLocalAttendance(initialMap)
@@ -104,12 +105,12 @@ export function AttendanceMobileSheet({
   const handleStudentTap = (studentId: number) => {
     setLocalAttendance(prev => {
       const next = new Map(prev)
-      const currentStatus = next.get(studentId) ?? 'absent'
-      let nextStatus: AttendanceStatus = 'absent'
+      const currentStatus = next.get(studentId) ?? 'not_taken'
+      let nextStatus: AttendanceStatus = 'not_taken'
 
-      if (currentStatus === 'absent') nextStatus = 'present'
-      else if (currentStatus === 'present') nextStatus = 'cancelled'
-      else if (currentStatus === 'cancelled') nextStatus = 'absent'
+      if (currentStatus === 'not_taken') nextStatus = 'present'
+      else if (currentStatus === 'present') nextStatus = 'absent'
+      else if (currentStatus === 'absent') nextStatus = 'not_taken'
 
       next.set(studentId, nextStatus)
 
@@ -272,9 +273,9 @@ export function AttendanceMobileSheet({
               {roster.map(student => {
                 const status = localAttendance.get(student.student_id) ?? 'absent'
                 const statusConfig = {
-                  present: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200', icon: 'check', label: 'Present' },
-                  absent: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', icon: 'close', label: 'Absent' },
-                  cancelled: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200', icon: 'remove', label: 'Cancelled' },
+                  present: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200', icon: 'check_circle', label: 'Present' },
+                  absent: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', icon: 'cancel', label: 'Absent' },
+                  not_taken: { bg: 'bg-slate-100', text: 'text-slate-500', border: 'border-slate-200', icon: 'radio_button_unchecked', label: 'Not Taken' },
                 }
                 const conf = statusConfig[status]
                 const isDue = student.billing_status === 'due'

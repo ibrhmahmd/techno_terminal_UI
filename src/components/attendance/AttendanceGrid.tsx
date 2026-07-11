@@ -18,14 +18,14 @@ import { PaymentSummaryStrip } from './PaymentSummaryStrip'
 import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashboard'
 import type { StudentRowData } from './types'
 
-// Toggle cycle: absent -> present -> cancelled -> absent
+// Toggle cycle: not_taken -> present -> absent -> not_taken
 function getNextStatus(current: AttendanceStatus): AttendanceStatus {
   const map: Record<string, AttendanceStatus> = {
-    'absent': 'present',
-    'present': 'cancelled',
-    'cancelled': 'absent',
+    'not_taken': 'present',
+    'present': 'absent',
+    'absent': 'not_taken',
   }
-  return map[String(current)] ?? 'absent'
+  return map[String(current)] ?? 'not_taken'
 }
 
 interface AttendanceGridProps {
@@ -81,7 +81,8 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         } else {
           const sessionAttendance = session.attendance || []
           const record = sessionAttendance.find((a) => a.student_id === r.student_id)
-          attendanceMap.set(session.session_id, record?.status ?? 'absent')
+          const rawStatus = record?.status ?? null
+          attendanceMap.set(session.session_id, rawStatus === 'cancelled' || rawStatus === null ? 'not_taken' : rawStatus)
         }
       })
 
@@ -222,7 +223,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     const student = students.find(s => s.student_id === studentIdStr)
     if (!student) return
 
-    const currentStatus = student.attendance.get(sessionId) ?? 'absent'
+    const currentStatus = student.attendance.get(sessionId) ?? 'not_taken'
     const nextStatus = getNextStatus(currentStatus)
 
     // Optimistic UI: store override in localOverrides

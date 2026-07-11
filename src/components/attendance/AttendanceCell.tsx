@@ -20,9 +20,9 @@ const ICONS = {
       cancel
     </span>
   ),
-  cancelled: (
-    <span className="material-symbols-outlined text-slate-500 text-2xl" aria-hidden="true" style={{ fontVariationSettings: "'FILL' 1" }}>
-      block
+  not_taken: (
+    <span className="material-symbols-outlined text-slate-400 text-2xl" aria-hidden="true">
+      radio_button_unchecked
     </span>
   ),
 }

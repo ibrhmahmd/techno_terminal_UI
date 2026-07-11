@@ -1,4 +1,4 @@
-export type AttendanceStatus = 'present' | 'absent' | 'cancelled'
+export type AttendanceStatus = 'present' | 'absent' | 'not_taken'
 
 export type AttendanceEntry = {
   student_id: string
