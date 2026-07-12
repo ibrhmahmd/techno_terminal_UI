@@ -30,6 +30,7 @@ const CourseDetailPage = lazy(() => import('./pages/CourseDetailPage').then(m =>
 const ReportsPage = lazy(() => import('./pages/ReportsPage').then(m => ({ default: m.ReportsPage })))
 const StaffPage = lazy(() => import('./pages/StaffPage').then(m => ({ default: m.StaffPage })))
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
+const TasksPage = lazy(() => import('./pages/TasksPage').then(m => ({ default: m.TasksPage })))
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
 const CapabilitiesPage = lazy(() => import('./pages/CapabilitiesPage').then(m => ({ default: m.CapabilitiesPage })))
 
@@ -103,6 +104,7 @@ function App() {
               <Route path="/finance" element={<FinancePage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/staff" element={<StaffPage />} />
+              <Route path="/tasks" element={<TasksPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>

@@ -5,7 +5,6 @@ import {
   getTask,
   createTask,
   updateTask,
-  deleteTask,
   addSubtask,
   updateSubtask,
   deleteSubtask,
@@ -25,7 +24,7 @@ export function useTaskList(filters: TaskFilters = {}) {
 export function useTaskDetail(id: string | null) {
   return useQuery({
     queryKey: queryKeys.tasks.detail(id ?? ''),
-    queryFn: () => getTask(id!),
+    queryFn: () => getTask(id as string),
     enabled: !!id,
   })
 }
@@ -44,17 +43,6 @@ export function useUpdateTask() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTaskInput }) => updateTask(id, data),
-    onSuccess: (_result, variables) => {
-      void qc.invalidateQueries({ queryKey: queryKeys.tasks.all })
-      void qc.invalidateQueries({ queryKey: queryKeys.tasks.detail(variables.id) })
-    },
-  })
-}
-
-export function useDeleteTask() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) => deleteTask(id),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.tasks.all })
     },
@@ -85,10 +73,8 @@ export function useToggleSubtask() {
 export function useDeleteSubtask() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ subtaskId, taskId }: { subtaskId: string; taskId: string }) => {
-      void taskId
-      return deleteSubtask(subtaskId)
-    },
+    mutationFn: (vars: { subtaskId: string; taskId: string }) =>
+      deleteSubtask(vars.subtaskId),
     onSuccess: (_result, variables) => {
       void qc.invalidateQueries({ queryKey: queryKeys.tasks.detail(variables.taskId) })
     },
@@ -108,10 +94,8 @@ export function useAddComment() {
 export function useDeleteComment() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ commentId, taskId }: { commentId: string; taskId: string }) => {
-      void taskId
-      return deleteComment(commentId)
-    },
+    mutationFn: (vars: { commentId: string; taskId: string }) =>
+      deleteComment(vars.commentId),
     onSuccess: (_result, variables) => {
       void qc.invalidateQueries({ queryKey: queryKeys.tasks.detail(variables.taskId) })
     },

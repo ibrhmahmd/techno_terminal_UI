@@ -43,16 +43,16 @@ export function TimeLogPanel({ timeLogs, taskId, isAssigned }: TimeLogPanelProps
         {timeLogs.map((log) => (
           <div key={log.id} className="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
             <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-              <span className="material-symbols-outlined text-sm text-teal-600">schedule</span>
+              <span className="material-symbols-outlined text-sm text-teal-600" aria-hidden="true">schedule</span>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-slate-900">{log.hours}h</span>
-                <span className="text-xs text-slate-400">by {log.employee_name ?? 'Unknown'}</span>
+                <span className="text-xs text-slate-500">by {log.employee_name ?? 'Unknown'}</span>
               </div>
               {log.note && <p className="text-xs text-slate-500 mt-0.5">{log.note}</p>}
             </div>
-            <span className="text-xs text-slate-400 flex-shrink-0">{formatDate(log.logged_at)}</span>
+            <span className="text-xs text-slate-500 flex-shrink-0">{formatDate(log.logged_at)}</span>
           </div>
         ))}
       </div>
@@ -66,6 +66,7 @@ export function TimeLogPanel({ timeLogs, taskId, isAssigned }: TimeLogPanelProps
               value={hours}
               onChange={(e) => setHours(e.target.value)}
               placeholder="Hours"
+              aria-label="Hours logged"
               min="0.5"
               step="0.5"
               className="w-24 text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
@@ -76,6 +77,7 @@ export function TimeLogPanel({ timeLogs, taskId, isAssigned }: TimeLogPanelProps
               onChange={(e) => setNote(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
               placeholder="Optional note..."
+              aria-label="Time log note"
               className="flex-1 text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
             />
             <button

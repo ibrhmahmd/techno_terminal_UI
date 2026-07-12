@@ -26,6 +26,7 @@ export function SubtaskChecklist({ subtasks, taskId, isAdmin }: SubtaskChecklist
   }
 
   const handleDelete = (subtaskId: string) => {
+    if (!window.confirm('Delete this subtask?')) return
     deleteMutation.mutate({ subtaskId, taskId })
   }
 
@@ -36,9 +37,16 @@ export function SubtaskChecklist({ subtasks, taskId, isAdmin }: SubtaskChecklist
     <div className="space-y-3">
       {subtasks.length > 0 && (
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            role="progressbar"
+            aria-valuenow={progress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Subtask progress: ${doneCount} of ${subtasks.length} complete`}
+            className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden"
+          >
             <div
-              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300 motion-reduce:transition-none"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -50,6 +58,9 @@ export function SubtaskChecklist({ subtasks, taskId, isAdmin }: SubtaskChecklist
         {subtasks.map((subtask) => (
           <div key={subtask.id} className="flex items-center gap-2 py-1.5 group">
             <button
+              role="checkbox"
+              aria-checked={subtask.is_done}
+              aria-label={`Mark "${subtask.title}" as ${subtask.is_done ? 'incomplete' : 'complete'}`}
               onClick={() => handleToggle(subtask)}
               className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                 subtask.is_done
@@ -58,7 +69,7 @@ export function SubtaskChecklist({ subtasks, taskId, isAdmin }: SubtaskChecklist
               }`}
             >
               {subtask.is_done && (
-                <span className="material-symbols-outlined text-xs">check</span>
+                <span className="material-symbols-outlined text-xs" aria-hidden="true">check</span>
               )}
             </button>
             <span className={`flex-1 text-sm ${subtask.is_done ? 'line-through text-slate-400' : 'text-slate-700'}`}>
@@ -67,9 +78,10 @@ export function SubtaskChecklist({ subtasks, taskId, isAdmin }: SubtaskChecklist
             {isAdmin && (
               <button
                 onClick={() => handleDelete(subtask.id)}
-                className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-opacity"
+                aria-label={`Delete subtask: ${subtask.title}`}
+                className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-slate-400 hover:text-red-500 transition-opacity"
               >
-                <span className="material-symbols-outlined text-sm">close</span>
+                <span className="material-symbols-outlined text-sm" aria-hidden="true">close</span>
               </button>
             )}
           </div>
@@ -84,6 +96,7 @@ export function SubtaskChecklist({ subtasks, taskId, isAdmin }: SubtaskChecklist
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
             placeholder="Add subtask..."
+            aria-label="New subtask title"
             className="flex-1 text-sm px-3 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
           />
           <button

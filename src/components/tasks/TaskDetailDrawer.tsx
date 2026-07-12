@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import type { TaskDetailDTO } from '../../api/tasks'
 import { TaskStatusBadge } from './TaskStatusBadge'
 import { TaskPriorityBadge } from './TaskPriorityBadge'
@@ -19,9 +19,47 @@ interface TaskDetailDrawerProps {
 
 type Tab = 'overview' | 'subtasks' | 'activity'
 
+const TAB_DEFINITIONS: { key: Tab; label: string; id: string; panelId: string }[] = [
+  { key: 'overview', label: 'Overview', id: 'tab-overview', panelId: 'tabpanel-overview' },
+  { key: 'subtasks', label: 'Subtasks', id: 'tab-subtasks', panelId: 'tabpanel-subtasks' },
+  { key: 'activity', label: 'Activity', id: 'tab-activity', panelId: 'tabpanel-activity' },
+]
+
 export function TaskDetailDrawer({ task, isOpen, onClose, currentUserId, isAdmin }: TaskDetailDrawerProps) {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const updateMutation = useUpdateTask()
+  const drawerRef = useRef<HTMLDivElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement
+      drawerRef.current?.focus()
+    } else {
+      previousFocusRef.current?.focus()
+    }
+  }, [isOpen])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onClose()
+      return
+    }
+    if (e.key === 'Tab' && drawerRef.current) {
+      const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+  }, [onClose])
 
   if (!isOpen || !task) return null
 
@@ -41,11 +79,19 @@ export function TaskDetailDrawer({ task, isOpen, onClose, currentUserId, isAdmin
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-lg bg-white z-50 shadow-2xl flex flex-col">
+      <div
+        ref={drawerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Task: ${task.title}`}
+        tabIndex={-1}
+        onKeyDown={handleKeyDown}
+        className="fixed right-0 top-0 h-full w-full max-w-lg bg-white z-50 shadow-2xl flex flex-col outline-none"
+      >
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-200 flex items-start justify-between">
           <div className="flex-1 min-w-0 pr-4">
-            <h2 className="text-lg font-semibold text-slate-900 truncate">{task.title}</h2>
+            <h2 className="text-lg font-semibold text-slate-900 font-headline truncate">{task.title}</h2>
             <div className="flex items-center gap-2 mt-2">
               <TaskStatusBadge status={task.status} />
               <TaskPriorityBadge priority={task.priority} />
@@ -59,27 +105,32 @@ export function TaskDetailDrawer({ task, isOpen, onClose, currentUserId, isAdmin
           </div>
           <button
             onClick={onClose}
+            aria-label="Close task detail"
             className="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0"
           >
-            <span className="material-symbols-outlined">close</span>
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-200 px-6">
-          {(['overview', 'subtasks', 'activity'] as const).map((tab) => (
+        <div role="tablist" className="flex border-b border-slate-200 px-6">
+          {TAB_DEFINITIONS.map((tab) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+              key={tab.key}
+              role="tab"
+              id={tab.id}
+              aria-selected={activeTab === tab.key}
+              aria-controls={tab.panelId}
+              onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab
+                activeTab === tab.key
                   ? 'border-teal-500 text-teal-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700'
               }`}
             >
-              {tab === 'overview' && 'Overview'}
-              {tab === 'subtasks' && `Subtasks (${task.subtasks.length})`}
-              {tab === 'activity' && `Activity (${task.comments.length + task.time_logs.length})`}
+              {tab.key === 'overview' && 'Overview'}
+              {tab.key === 'subtasks' && `Subtasks (${task.subtasks.length})`}
+              {tab.key === 'activity' && `Activity (${task.comments.length + task.time_logs.length})`}
             </button>
           ))}
         </div>
@@ -87,7 +138,7 @@ export function TaskDetailDrawer({ task, isOpen, onClose, currentUserId, isAdmin
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {activeTab === 'overview' && (
-            <div className="space-y-6">
+            <div role="tabpanel" id="tabpanel-overview" aria-labelledby="tab-overview" className="space-y-6">
               {/* Status actions */}
               {canEdit && (
                 <div className="flex gap-2">
@@ -128,7 +179,7 @@ export function TaskDetailDrawer({ task, isOpen, onClose, currentUserId, isAdmin
                 </div>
                 <div>
                   <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Due Date</h4>
-                  <p className={`text-sm ${task.due_date && new Date(task.due_date) < new Date() && task.status !== 'done' ? 'text-red-600 font-medium' : 'text-slate-700'}`}>
+                  <p className={`text-sm ${task.due_date && new Date(task.due_date) < new Date() && task.status !== 'done' && task.status !== 'cancelled' ? 'text-red-600 font-medium' : 'text-slate-700'}`}>
                     {task.due_date ? formatDate(task.due_date) : '—'}
                   </p>
                 </div>
@@ -163,11 +214,13 @@ export function TaskDetailDrawer({ task, isOpen, onClose, currentUserId, isAdmin
           )}
 
           {activeTab === 'subtasks' && (
-            <SubtaskChecklist subtasks={task.subtasks} taskId={task.id} isAdmin={isAdmin} />
+            <div role="tabpanel" id="tabpanel-subtasks" aria-labelledby="tab-subtasks">
+              <SubtaskChecklist subtasks={task.subtasks} taskId={task.id} isAdmin={isAdmin} />
+            </div>
           )}
 
           {activeTab === 'activity' && (
-            <div className="space-y-6">
+            <div role="tabpanel" id="tabpanel-activity" aria-labelledby="tab-activity" className="space-y-6">
               <CommentsFeed
                 comments={task.comments}
                 taskId={task.id}

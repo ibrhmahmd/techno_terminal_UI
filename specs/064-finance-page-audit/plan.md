@@ -1,11 +1,13 @@
-# Implementation Plan: Finance Page Audit & Fix
+# Implementation Plan: [FEATURE]
 
-**Branch**: `main` | **Date**: 2026-07-11 | **Spec**: [specs/064-finance-page-audit/spec.md](specs/064-finance-page-audit/spec.md)
-**Input**: Feature specification from `/specs/064-finance-page-audit/spec.md`
+**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+
+**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
 
 ## Summary
 
-Comprehensive audit and fix of the finance page (POS interface) addressing 142 findings across 8 phases: runtime bugs, dead code, TypeScript quality, data fetching anti-patterns, accessibility, React performance, architecture compliance, and UI polish. The most critical work is migrating 3 hooks from manual useState to React Query (Constitution Principle II) and fixing 7 critical accessibility/blocking issues.
+[Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
 
@@ -27,15 +29,7 @@ Comprehensive audit and fix of the finance page (POS interface) addressing 142 f
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. Frontend-Only Scope | PASS | All 142 findings are frontend-only. No backend changes. |
-| II. Server State Discipline | PASS | This audit specifically migrates 3 hooks FROM manual useState TO React Query. Aligns with constitution. |
-| III. Global State Minimalism | PASS | No new Zustand stores. All state stays in React Query or local useState. |
-| IV. TypeScript Strict Mode | PASS | Audit fixes unsafe type casts, removes `any` usage, adds proper type guards. |
-| V. Component Naming Convention | PASS | US-9 fixes 3 naming violations (ComingSoonPlaceholder, SlideToConfirm, PaymentMethodPills). |
-
-**Gate Result**: PASS — No constitution violations. All changes reinforce existing principles.
+[Gates determined based on constitution file]
 
 ## Project Structure
 

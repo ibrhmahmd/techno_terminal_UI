@@ -29,6 +29,7 @@ const navSections = [
     title: 'Resources',
     items: [
       { path: '/staff', label: 'Staff', icon: 'people' },
+      { path: '/tasks', label: 'Tasks', icon: 'task_alt' },
       { path: '/capabilities', label: 'Capabilities', icon: 'article' },
       { path: '/notifications', label: 'Notifications', icon: 'notifications' },
       { path: '/settings', label: 'Settings', icon: 'settings' },

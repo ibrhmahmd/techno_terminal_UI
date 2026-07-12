@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { TaskListTable } from '../components/tasks/TaskListTable'
 import { TaskDetailDrawer } from '../components/tasks/TaskDetailDrawer'
@@ -8,6 +8,8 @@ import { useAuthStore } from '../store/authStore'
 import type { TaskReadDTO, TaskFilters } from '../api/tasks'
 import { TASK_STATUSES, TASK_PRIORITIES } from '../api/tasks'
 import { useEmployees } from '../hooks/useEmployees'
+
+const EMPTY_TASKS: TaskReadDTO[] = []
 
 export function TasksPage() {
   const user = useAuthStore((s) => s.user)
@@ -27,9 +29,9 @@ export function TasksPage() {
   // Employees for filter dropdown
   const { employees } = useEmployees()
 
-  const handleRowClick = (task: TaskReadDTO) => {
+  const handleRowClick = useCallback((task: TaskReadDTO) => {
     setSelectedTaskId(task.id)
-  }
+  }, [])
 
   return (
     <div className="min-h-screen bg-surface">
@@ -47,7 +49,7 @@ export function TasksPage() {
               onClick={() => setCreateOpen(true)}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors"
             >
-              <span className="material-symbols-outlined text-base">add</span>
+              <span className="material-symbols-outlined text-base" aria-hidden="true">add</span>
               New Task
             </button>
           )}
@@ -58,6 +60,7 @@ export function TasksPage() {
           <select
             value={filters.status ?? ''}
             onChange={(e) => setFilters((f) => ({ ...f, status: (e.target.value || null) as TaskFilters['status'] }))}
+            aria-label="Filter by status"
             className="text-sm px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
           >
             <option value="">All Statuses</option>
@@ -69,6 +72,7 @@ export function TasksPage() {
           <select
             value={filters.priority ?? ''}
             onChange={(e) => setFilters((f) => ({ ...f, priority: (e.target.value || null) as TaskFilters['priority'] }))}
+            aria-label="Filter by priority"
             className="text-sm px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
           >
             <option value="">All Priorities</option>
@@ -80,6 +84,7 @@ export function TasksPage() {
           <select
             value={filters.assigned_to ?? ''}
             onChange={(e) => setFilters((f) => ({ ...f, assigned_to: e.target.value ? parseInt(e.target.value) : null }))}
+            aria-label="Filter by assignee"
             className="text-sm px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
           >
             <option value="">All Assignees</option>
@@ -115,12 +120,23 @@ export function TasksPage() {
             <button onClick={() => refetch()} className="text-sm text-teal-600 hover:underline">Retry</button>
           </div>
         ) : isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block w-6 h-6 border-2 border-slate-200 border-t-teal-600 rounded-full animate-spin" />
+          <div role="status" className="bg-white rounded-xl border border-slate-200 shadow-sm">
+            <span className="sr-only">Loading tasks...</span>
+            <div className="divide-y divide-slate-100">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4 px-4 py-3">
+                  <div className="h-4 bg-slate-100 rounded animate-pulse flex-1 max-w-[280px]" />
+                  <div className="h-5 w-14 bg-slate-100 rounded animate-pulse" />
+                  <div className="h-5 w-16 bg-slate-100 rounded animate-pulse" />
+                  <div className="h-4 w-24 bg-slate-100 rounded animate-pulse hidden md:block" />
+                  <div className="h-4 w-20 bg-slate-100 rounded animate-pulse hidden lg:block" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-            <TaskListTable tasks={tasks ?? []} onRowClick={handleRowClick} />
+            <TaskListTable tasks={tasks ?? EMPTY_TASKS} onRowClick={handleRowClick} />
           </div>
         )}
       </div>

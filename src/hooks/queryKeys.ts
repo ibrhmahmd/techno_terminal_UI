@@ -118,6 +118,13 @@ export const queryKeys = {
     sessions: (groupId: number) => ['dashboard', 'sessions', groupId] as const,
   },
 
+  // Tasks
+  tasks: {
+    all: ['tasks'] as const,
+    list: (filters?: import('../api/tasks').TaskFilters) => ['tasks', 'list', filters] as const,
+    detail: (id: string) => ['tasks', 'detail', id] as const,
+  },
+
   // Auth
   auth: {
     all: ['auth'] as const,

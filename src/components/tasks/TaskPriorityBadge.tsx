@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { TaskPriority } from '../../api/tasks'
 import { PRIORITY_LABELS } from '../../api/tasks'
 
@@ -13,10 +14,10 @@ interface TaskPriorityBadgeProps {
   className?: string
 }
 
-export function TaskPriorityBadge({ priority, className = '' }: TaskPriorityBadgeProps) {
+export const TaskPriorityBadge = memo(function TaskPriorityBadge({ priority, className = '' }: TaskPriorityBadgeProps) {
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${PRIORITY_STYLES[priority]} ${className}`}>
       {PRIORITY_LABELS[priority]}
     </span>
   )
-}
+})

@@ -71,7 +71,6 @@ export interface CreateTaskInput {
   recurrence_pattern?: TaskRecurrencePattern | null
   recurrence_interval_days?: number | null
   recurrence_day_of_week?: number | null
-  recurrence_day_of_month?: number | null
 }
 
 export interface UpdateTaskInput {
@@ -87,7 +86,6 @@ export interface UpdateTaskInput {
   recurrence_pattern?: TaskRecurrencePattern | null
   recurrence_interval_days?: number | null
   recurrence_day_of_week?: number | null
-  recurrence_day_of_month?: number | null
 }
 
 export interface TaskFilters {

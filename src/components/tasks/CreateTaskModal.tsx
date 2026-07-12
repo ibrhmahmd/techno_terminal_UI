@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import type { CreateTaskInput, TaskPriority, TaskRecurrencePattern } from '../../api/tasks'
 import { TASK_PRIORITIES, TASK_RECURRENCE_PATTERNS } from '../../api/tasks'
 import { useCreateTask } from '../../hooks/useTasks'
@@ -14,6 +14,41 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
   const { showToast, ToastComponent } = useToast()
   const createMutation = useCreateTask()
   const { employees } = useEmployees()
+  const modalRef = useRef<HTMLDivElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement
+      const timer = setTimeout(() => {
+        modalRef.current?.querySelector<HTMLElement>('input, select, textarea')?.focus()
+      }, 0)
+      return () => clearTimeout(timer)
+    } else {
+      previousFocusRef.current?.focus()
+    }
+  }, [isOpen])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onClose()
+      return
+    }
+    if (e.key === 'Tab' && modalRef.current) {
+      const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+  }, [onClose])
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -51,13 +86,13 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       description: description.trim() || null,
       priority,
       due_date: dueDate || null,
-      assigned_to: assignedTo ? parseInt(assignedTo) : null,
-      estimated_hours: estimatedHours ? parseFloat(estimatedHours) : null,
+      assigned_to: assignedTo ? parseInt(assignedTo, 10) : null,
+      estimated_hours: estimatedHours ? (parseFloat(estimatedHours) || null) : null,
       tags,
       is_recurring: isRecurring,
       recurrence_pattern: isRecurring ? recurrencePattern : null,
-      recurrence_interval_days: isRecurring && recurrenceIntervalDays ? parseInt(recurrenceIntervalDays) : null,
-      recurrence_day_of_week: isRecurring && recurrenceDayOfWeek !== '' ? parseInt(recurrenceDayOfWeek) : null,
+      recurrence_interval_days: isRecurring && recurrenceIntervalDays ? (parseInt(recurrenceIntervalDays, 10) || null) : null,
+      recurrence_day_of_week: isRecurring && recurrenceDayOfWeek !== '' ? (parseInt(recurrenceDayOfWeek, 10) || null) : null,
     }
 
     try {
@@ -76,23 +111,31 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
     <>
       {ToastComponent}
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/40 z-[55]" onClick={onClose} />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div
+          ref={modalRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="create-task-title"
+          onKeyDown={handleKeyDown}
+          className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto outline-none"
+        >
           <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">Create Task</h2>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
-              <span className="material-symbols-outlined">close</span>
+            <h2 id="create-task-title" className="text-lg font-semibold text-slate-900 font-headline">Create Task</h2>
+            <button onClick={onClose} aria-label="Close create task dialog" className="text-slate-400 hover:text-slate-600">
+              <span className="material-symbols-outlined" aria-hidden="true">close</span>
             </button>
           </div>
 
           <div className="px-6 py-4 space-y-4">
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Title *</label>
+              <label htmlFor="task-title" className="block text-sm font-medium text-slate-700 mb-1">Title *</label>
               <input
+                id="task-title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -103,8 +146,9 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+              <label htmlFor="task-description" className="block text-sm font-medium text-slate-700 mb-1">Description</label>
               <textarea
+                id="task-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optional description"
@@ -116,8 +160,9 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
             {/* Priority + Due Date */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Priority</label>
+                <label htmlFor="task-priority" className="block text-sm font-medium text-slate-700 mb-1">Priority</label>
                 <select
+                  id="task-priority"
                   value={priority}
                   onChange={(e) => setPriority(e.target.value as TaskPriority)}
                   className="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
@@ -128,8 +173,9 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Due Date</label>
+                <label htmlFor="task-due-date" className="block text-sm font-medium text-slate-700 mb-1">Due Date</label>
                 <input
+                  id="task-due-date"
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
@@ -140,8 +186,9 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
 
             {/* Assignee */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Assign To</label>
+              <label htmlFor="task-assignee" className="block text-sm font-medium text-slate-700 mb-1">Assign To</label>
               <select
+                id="task-assignee"
                 value={assignedTo}
                 onChange={(e) => setAssignedTo(e.target.value)}
                 className="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
@@ -156,8 +203,9 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
             {/* Est. Hours + Tags */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Est. Hours</label>
+                <label htmlFor="task-est-hours" className="block text-sm font-medium text-slate-700 mb-1">Est. Hours</label>
                 <input
+                  id="task-est-hours"
                   type="number"
                   value={estimatedHours}
                   onChange={(e) => setEstimatedHours(e.target.value)}
@@ -168,8 +216,9 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Tags</label>
+                <label htmlFor="task-tags" className="block text-sm font-medium text-slate-700 mb-1">Tags</label>
                 <input
+                  id="task-tags"
                   type="text"
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
@@ -194,8 +243,9 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
               {isRecurring && (
                 <div className="mt-3 grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Pattern</label>
+                    <label htmlFor="task-recurrence-pattern" className="block text-sm font-medium text-slate-700 mb-1">Pattern</label>
                     <select
+                      id="task-recurrence-pattern"
                       value={recurrencePattern}
                       onChange={(e) => setRecurrencePattern(e.target.value as TaskRecurrencePattern)}
                       className="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
@@ -207,8 +257,9 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                   </div>
                   {recurrencePattern === 'weekly' && (
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Day of Week</label>
+                      <label htmlFor="task-recurrence-day" className="block text-sm font-medium text-slate-700 mb-1">Day of Week</label>
                       <select
+                        id="task-recurrence-day"
                         value={recurrenceDayOfWeek}
                         onChange={(e) => setRecurrenceDayOfWeek(e.target.value)}
                         className="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
@@ -226,8 +277,9 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                   )}
                   {recurrencePattern === 'custom_interval' && (
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Interval (days)</label>
+                      <label htmlFor="task-recurrence-interval" className="block text-sm font-medium text-slate-700 mb-1">Interval (days)</label>
                       <input
+                        id="task-recurrence-interval"
                         type="number"
                         value={recurrenceIntervalDays}
                         onChange={(e) => setRecurrenceIntervalDays(e.target.value)}

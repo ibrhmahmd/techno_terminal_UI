@@ -37,10 +37,6 @@ export async function updateTask(id: string, data: UpdateTaskInput): Promise<Tas
   return response.data.data
 }
 
-export async function deleteTask(id: string): Promise<void> {
-  await client.delete(`/tasks/${id}`)
-}
-
 // Subtasks
 export async function addSubtask(taskId: string, title: string): Promise<TaskSubtaskReadDTO> {
   const response = await client.post<ApiResponse<TaskSubtaskReadDTO>>(`/tasks/${taskId}/subtasks`, { title })

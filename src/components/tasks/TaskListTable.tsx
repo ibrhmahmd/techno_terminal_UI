@@ -12,13 +12,13 @@ export function TaskListTable({ tasks, onRowClick }: TaskListTableProps) {
   if (tasks.length === 0) {
     return (
       <div className="text-center py-12">
-        <span className="material-symbols-outlined text-4xl text-slate-300 mb-3 block">task_alt</span>
+        <span className="material-symbols-outlined text-4xl text-slate-400 mb-3 block">task_alt</span>
         <p className="text-sm text-slate-500">No tasks found</p>
       </div>
     )
   }
 
-  return (
+    return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
@@ -34,8 +34,11 @@ export function TaskListTable({ tasks, onRowClick }: TaskListTableProps) {
           {tasks.map((task) => (
             <tr
               key={task.id}
+              role="button"
+              tabIndex={0}
               onClick={() => onRowClick(task)}
-              className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(task) } }}
+              className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40"
             >
               <td className="py-3 px-4">
                 <div className="flex items-center gap-2">

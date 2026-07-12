@@ -23,6 +23,7 @@ export function CommentsFeed({ comments, taskId, currentUserId, isAdmin }: Comme
   }
 
   const handleDelete = (commentId: string) => {
+    if (!window.confirm('Delete this comment?')) return
     deleteMutation.mutate({ commentId, taskId })
   }
 
@@ -48,16 +49,17 @@ export function CommentsFeed({ comments, taskId, currentUserId, isAdmin }: Comme
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-slate-900">{comment.author_name ?? 'Unknown'}</span>
-                  <span className="text-xs text-slate-400">{formatDate(comment.created_at)}</span>
+                   <span className="text-xs text-slate-500">{formatDate(comment.created_at)}</span>
                 </div>
                 <p className="text-sm text-slate-700 mt-0.5 whitespace-pre-wrap">{comment.content}</p>
               </div>
               {canDelete(comment) && (
                 <button
                   onClick={() => handleDelete(comment.id)}
-                  className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-opacity flex-shrink-0"
+                  aria-label="Delete comment"
+                  className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-slate-400 hover:text-red-500 transition-opacity flex-shrink-0"
                 >
-                  <span className="material-symbols-outlined text-sm">delete</span>
+                  <span className="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
                 </button>
               )}
             </div>
@@ -73,6 +75,7 @@ export function CommentsFeed({ comments, taskId, currentUserId, isAdmin }: Comme
           onChange={(e) => setNewComment(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
           placeholder="Write a comment..."
+          aria-label="Write a comment"
           className="flex-1 text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
         />
         <button

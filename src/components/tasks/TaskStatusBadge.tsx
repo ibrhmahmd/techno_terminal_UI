@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { TaskStatus } from '../../api/tasks'
 import { STATUS_LABELS } from '../../api/tasks'
 
@@ -13,10 +14,10 @@ interface TaskStatusBadgeProps {
   className?: string
 }
 
-export function TaskStatusBadge({ status, className = '' }: TaskStatusBadgeProps) {
+export const TaskStatusBadge = memo(function TaskStatusBadge({ status, className = '' }: TaskStatusBadgeProps) {
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[status]} ${className}`}>
       {STATUS_LABELS[status]}
     </span>
   )
-}
+})
