@@ -286,7 +286,8 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       
       // 3. Save notes for dirty sessions
       const notesPromises = Array.from(dirtyNotes).map(async (sessionId) => {
-        const notes = sessionNotes[sessionId]
+        // Fix 3: normalize empty string to null so the DB stores null, not ""
+        const notes = sessionNotes[sessionId] || null
         try {
           await updateSession(sessionId, { notes })
           return { sessionId, type: 'notes', status: 'success' as const }
@@ -305,13 +306,15 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       
       results.forEach((result) => {
         if (result.status === 'fulfilled') {
-          const { sessionId, status } = result.value
-          setSessionSaveStatus(prev => new Map(prev).set(sessionId, status))
-          
-          if (status === 'success') {
-            successfulSessions.push(sessionId)
+          const val = result.value
+          // Fix 2: notes results carry a 'type' discriminant — skip them here;
+          // they are handled exclusively in the setDirtyNotes block below.
+          if ('type' in val && val.type === 'notes') return
+          setSessionSaveStatus(prev => new Map(prev).set(val.sessionId, val.status))
+          if (val.status === 'success') {
+            successfulSessions.push(val.sessionId)
           } else {
-            failedSessions.push(sessionId)
+            failedSessions.push(val.sessionId)
           }
         } else {
           console.error('[Save] Unexpected error:', result.reason)
@@ -333,21 +336,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         })
       }
       
-      // 7. Clear dirty notes for successful note saves
-      setDirtyNotes(prev => {
-        const newSet = new Set(prev)
-        results.forEach(result => {
-          if (result.status === 'fulfilled' && 
-              'type' in result.value && 
-              result.value.type === 'notes' &&
-              result.value.status === 'success') {
-            newSet.delete(result.value.sessionId)
-          }
-        })
-        return newSet
-      })
-      
-      // 8. Check if any sessions remain unsaved — compute from results, not stale closures
+      // 7. Check if any sessions remain unsaved — compute from results, not stale closures
       const failedCount = results.filter(r => {
         if (r.status !== 'fulfilled') return true
         return 'status' in r.value && r.value.status === 'error'
@@ -370,17 +359,38 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         })
       }
       
-      // 9. Invalidate caches after save
+      // 8. Invalidate caches after save
       if (selectedDate) {
         await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       }
       await qc.invalidateQueries({ queryKey: queryKeys.groupAttendance(groupId, level) })
 
-      // 10. REFETCH data (soft refresh - no page reload)
+      // 9. REFETCH data (soft refresh - no page reload)
       await refetchData()
-      // 11. Show appropriate toast message
+
+      // Fix 1: Clear dirty notes AFTER cache invalidation + refetch have resolved.
+      // Doing this earlier caused the useEffect (line ~109) to see dirtyNotes.size=0
+      // while the refetch was still in-flight, making it overwrite sessionNotes with
+      // potentially stale cache data — reverting the textarea to the old note value
+      // even though the PATCH to the DB had already succeeded.
+      setDirtyNotes(prev => {
+        const newSet = new Set(prev)
+        results.forEach(result => {
+          if (result.status === 'fulfilled' &&
+              'type' in result.value &&
+              result.value.type === 'notes' &&
+              result.value.status === 'success') {
+            newSet.delete(result.value.sessionId)
+          }
+        })
+        return newSet
+      })
+
+      // 10. Show appropriate toast message
       if (failedSessions.length === 0) {
-        showToast(`Saved ${successfulSessions.length} session(s) successfully!`, 'success')
+        const notesSaved = results.filter(r => r.status === 'fulfilled' && 'type' in r.value && r.value.type === 'notes' && r.value.status === 'success').length
+        const totalSaved = successfulSessions.length + notesSaved
+        showToast(`Saved ${totalSaved} change(s) successfully!`, 'success')
       } else if (successfulSessions.length === 0) {
         showToast('Failed to save all changes', 'error')
       } else {
@@ -450,11 +460,16 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   const handleCancel = useCallback(() => {
     setHasChanges(false)
     setDirtyNotes(new Set())
+    // Fix 4: explicitly reset sessionNotes to server values rather than relying
+    // on the useEffect side-effect chain (which requires dirtyNotes.size=0 AND
+    // a fresh initialSessionNotes — fragile). refetchData() only resets
+    // localOverrides; it does not invalidate the cache or trigger a fetch.
+    setSessionNotes(initialSessionNotes)
     setPendingChanges(new Map())
     setDirtySessions(new Set())
     setSessionSaveStatus(new Map())
     refetchData()
-  }, [refetchData])
+  }, [refetchData, initialSessionNotes])
 
   if (students.length === 0) {
     return (
