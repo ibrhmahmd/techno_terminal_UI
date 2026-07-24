@@ -64,7 +64,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
     }
 
     if (categoryHasSubcategories && !selectedSubcategory.trim()) {
-      setError(`Subcategory is required for "${selectedCategory}". Choose from: ${subcategoriesForCategory.join(', ')}`)
+      setError(`Subcategory is required for "${selectedCategory}". Existing subcategories include: ${subcategoriesForCategory.join(', ')}`)
       return
     }
 
@@ -190,30 +190,22 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
             <label htmlFor="subcategory" className="text-sm font-medium text-on-surface">
               Subcategory{categoryHasSubcategories && <span className="text-red-500"> *</span>}
             </label>
-            {categoryHasSubcategories ? (
-              <select
-                id="subcategory"
-                value={selectedSubcategory}
-                onChange={(e) => setSelectedSubcategory(e.target.value)}
-                required
-                disabled={isLoading}
-                className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-              >
-                <option value="">Select subcategory...</option>
+            <input
+              id="subcategory"
+              type="text"
+              value={selectedSubcategory}
+              onChange={(e) => setSelectedSubcategory(e.target.value)}
+              placeholder={categoryHasSubcategories ? "Required subcategory..." : "Optional subcategory..."}
+              list={categoryHasSubcategories ? "subcategory-list" : undefined}
+              disabled={isLoading}
+              className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
+            />
+            {categoryHasSubcategories && (
+              <datalist id="subcategory-list">
                 {subcategoriesForCategory.map(sub => (
-                  <option key={sub} value={sub}>{sub}</option>
+                  <option key={sub} value={sub} />
                 ))}
-              </select>
-            ) : (
-              <input
-                id="subcategory"
-                type="text"
-                value={selectedSubcategory}
-                onChange={(e) => setSelectedSubcategory(e.target.value)}
-                placeholder="Optional subcategory..."
-                disabled={isLoading}
-                className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
-              />
+              </datalist>
             )}
           </div>
         </div>

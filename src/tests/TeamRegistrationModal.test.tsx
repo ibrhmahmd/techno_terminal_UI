@@ -37,4 +37,40 @@ describe('TeamRegistrationModal', () => {
     fireEvent.click(screen.getByText('Cancel'))
     expect(onClose).toHaveBeenCalled()
   })
+
+  it('renders subcategory as a free text input with datalist when category has subcategories', () => {
+    const props = {
+      ...defaultProps,
+      categorySubcategories: { Robotics: ['Junior', 'Senior'] },
+    }
+    renderWithQuery(<TeamRegistrationModal {...props} />)
+
+    const subcategoryInput = screen.getByPlaceholderText('Required subcategory...') as HTMLInputElement
+    expect(subcategoryInput).toBeDefined()
+    expect(subcategoryInput.tagName).toBe('INPUT')
+    expect(subcategoryInput.type).toBe('text')
+
+    // Verify subcategory input allows custom free text typing
+    fireEvent.change(subcategoryInput, { target: { value: 'Master League' } })
+    expect(subcategoryInput.value).toBe('Master League')
+  })
+
+  it('shows updated error message when required subcategory is omitted', () => {
+    const props = {
+      ...defaultProps,
+      categorySubcategories: { Robotics: ['Junior', 'Senior'] },
+    }
+    renderWithQuery(<TeamRegistrationModal {...props} />)
+
+    // Fill in team name
+    const nameInput = screen.getByPlaceholderText('Enter team name...')
+    fireEvent.change(nameInput, { target: { value: 'Alpha Team' } })
+
+    const form = screen.getByRole('dialog').querySelector('form')!
+    fireEvent.submit(form)
+
+    expect(
+      screen.getByText('Subcategory is required for "Robotics". Existing subcategories include: Junior, Senior')
+    ).toBeDefined()
+  })
 })
