@@ -125,6 +125,13 @@ export const queryKeys = {
     detail: (id: string) => ['tasks', 'detail', id] as const,
   },
 
+  // Certificates
+  certificates: {
+    all: ['certificates'] as const,
+    list: (params?: Record<string, unknown>) => ['certificates', 'list', params] as const,
+    detail: (certId: string) => ['certificates', certId] as const,
+  },
+
   // Auth
   auth: {
     all: ['auth'] as const,

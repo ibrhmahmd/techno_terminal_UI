@@ -171,5 +171,5 @@ queryKeys.groupAttendance(groupId, levelNumber) // ['groups', id, 'attendance', 
 - **`fetchCycleRef`**: Debug counter for tracking re-renders — not used in production logic
 
 <!-- SPECKIT START -->
-Active plan: `specs/064-finance-page-audit/plan.md`
+Active plan: `specs/066-certificates-page/plan.md`
 <!-- SPECKIT END -->

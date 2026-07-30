@@ -64,6 +64,7 @@ export function ModalFooter({
   return (
     <div className={`flex justify-end gap-3 ${className}`}>
       <button
+        type="button"
         onClick={onCancel}
         disabled={cancelDisabled || isProcessing}
         className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
@@ -71,6 +72,7 @@ export function ModalFooter({
         {cancelText}
       </button>
       <button
+        type="button"
         onClick={onConfirm}
         disabled={confirmDisabled || isProcessing}
         className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${confirmClasses}`}

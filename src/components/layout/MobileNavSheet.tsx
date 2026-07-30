@@ -6,6 +6,7 @@ const MORE_ITEMS = [
   { path: '/courses',       label: 'Courses',       icon: 'school'          },
   { path: '/enrollments',   label: 'Enrollments',   icon: 'assignment_ind'  },
   { path: '/competitions',  label: 'Competitions',  icon: 'emoji_events'    },
+  { path: '/certificates',  label: 'Certificates',  icon: 'verified'        },
   { path: '/reports',       label: 'Reports',       icon: 'assessment'      },
   { path: '/staff',         label: 'Staff',         icon: 'people'          },
   { path: '/tasks',         label: 'Tasks',         icon: 'task_alt'        },
@@ -56,7 +57,7 @@ export function MobileNavSheet({ isOpen, onClose }: MobileNavSheetProps) {
 
   // Filter by role
   const allowedPaths = user?.role === 'instructor'
-    ? ['/courses', '/competitions', '/capabilities']
+    ? ['/courses', '/competitions', '/certificates', '/capabilities']
     : null
 
   const visibleItems = MORE_ITEMS.filter(item => {

@@ -22,6 +22,7 @@ const navSections = [
     title: 'Programs',
     items: [
       { path: '/competitions', label: 'Competitions', icon: 'emoji_events' },
+      { path: '/certificates', label: 'Certificates', icon: 'verified' },
       { path: '/reports', label: 'Reports', icon: 'assessment' },
     ],
   },
@@ -59,7 +60,7 @@ export function Sidebar() {
 
   // Filter sections based on user role
   const allowedPaths = user?.role === 'instructor'
-    ? ['/dashboard', '/groups', '/courses', '/competitions', '/students', '/parents', '/attendance', '/capabilities']
+    ? ['/dashboard', '/groups', '/courses', '/competitions', '/certificates', '/students', '/parents', '/attendance', '/capabilities']
     : null
   const filteredSections = navSections.map(section => ({
     ...section,

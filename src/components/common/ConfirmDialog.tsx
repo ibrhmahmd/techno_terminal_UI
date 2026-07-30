@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -9,6 +9,8 @@ interface ConfirmDialogProps {
   onConfirm: () => void
   onCancel: () => void
   variant?: 'danger' | 'warning' | 'info'
+  children?: ReactNode
+  disabled?: boolean
 }
 
 export function ConfirmDialog({
@@ -19,7 +21,9 @@ export function ConfirmDialog({
   cancelText = 'Cancel',
   onConfirm,
   onCancel,
-  variant = 'info'
+  variant = 'info',
+  children,
+  disabled = false,
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
 
@@ -103,6 +107,7 @@ export function ConfirmDialog({
         {/* Body */}
         <div className="px-6 py-4">
           <p id="confirm-dialog-message" className="text-gray-600 leading-relaxed">{message}</p>
+          {children && <div className="mt-2">{children}</div>}
         </div>
 
         {/* Footer */}
@@ -115,7 +120,8 @@ export function ConfirmDialog({
           </button>
           <button
             onClick={onConfirm}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${styles.confirmBtn}`}
+            disabled={disabled}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${styles.confirmBtn} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {confirmText}
           </button>
