@@ -33,6 +33,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ defa
 const TasksPage = lazy(() => import('./pages/TasksPage').then(m => ({ default: m.TasksPage })))
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
 const CapabilitiesPage = lazy(() => import('./pages/CapabilitiesPage').then(m => ({ default: m.CapabilitiesPage })))
+const CertificatesPage = lazy(() => import('./pages/CertificatesPage').then(m => ({ default: m.CertificatesPage })))
 
 function useHasHydrated() {
   const [hasHydrated, setHasHydrated] = useState(
@@ -94,6 +95,7 @@ function App() {
             <Route path="/competitions/:id/edit" element={<CompetitionEditPage />} />
             <Route path="/competitions/:id" element={<CompetitionDetailPage />} />
             <Route path="/teams/:id" element={<TeamDetailPage />} />
+            <Route path="/certificates" element={<CertificatesPage />} />
           </Route>
 
           {/* Instructor-restricted Routes */}
