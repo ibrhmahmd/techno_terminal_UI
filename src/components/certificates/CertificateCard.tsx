@@ -23,6 +23,11 @@ const TRACK_ICONS: Record<string, string> = {
   'robotics-arduino': 'hardware',
   scratch: 'stadia_controller',
   'scratch-jr': 'stadia_controller',
+  iot: 'sensors',
+  ai: 'neurology',
+  game_dev: 'sports_esports',
+  digital_marketing: 'campaign',
+  electronics: 'bolt',
 }
 
 export function CertificateCard({

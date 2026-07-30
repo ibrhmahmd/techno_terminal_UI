@@ -71,8 +71,11 @@ export function CertificatesPage() {
       const blob = await downloadPdf.mutateAsync(certId)
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
+      const cert = certificates.find((c) => c.cert_id === certId)
+      const datePart = cert ? cert.issue_date.replace(/-/g, '') : certId
+      const namePart = cert ? cert.student_name.replace(/\s+/g, '_') : 'certificate'
+      a.download = `${namePart}_${datePart}.pdf`
       a.href = url
-      a.download = `${certId}.pdf`
       a.click()
       window.URL.revokeObjectURL(url)
       showToast('PDF downloaded successfully', 'success')
@@ -81,7 +84,7 @@ export function CertificatesPage() {
     } finally {
       setDownloadingCertId(null)
     }
-  }, [downloadPdf, showToast])
+  }, [downloadPdf, showToast, certificates])
 
   const handleRevokeClick = useCallback((certId: string) => {
     setRevokeTarget(certId)
@@ -163,7 +166,7 @@ export function CertificatesPage() {
           </div>
         ) : (
           <>
-            <CardGrid>
+            <CardGrid className="xl:grid-cols-3">
               {certificates.map((cert) => (
                 <CertificateCard
                   key={cert.cert_id}

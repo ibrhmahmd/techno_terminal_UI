@@ -60,8 +60,8 @@ export function CertificateDetailModal({
           <InfoRow label="Level" value={certificate.level} />
           <InfoRow label="Issue Date" value={formatDate(certificate.issue_date)} />
           <InfoRow label="Branch" value={certificate.branch} />
-          <InfoRow label="Instructor" value={certificate.instructor} />
-          <InfoRow label="Director" value={certificate.director} />
+          {certificate.instructor && <InfoRow label="Instructor" value={certificate.instructor} />}
+          {certificate.director && <InfoRow label="Director" value={certificate.director} />}
           {certificate.revoked_at && (
             <>
               <InfoRow label="Revoked At" value={formatDate(certificate.revoked_at)} />
