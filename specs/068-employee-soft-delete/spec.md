@@ -54,7 +54,7 @@
 **So that** I can bring back an employee who was deleted by mistake or is returning
 
 **Acceptance Criteria**:
-- "Restore" button on deleted employee's detail modal (yellow warning banner at top: "This employee was deleted on {date} by {admin}. Restoring will re-add them to the staff list but will NOT automatically restore their login.")
+- "Restore" button on deleted employee's detail modal (yellow warning banner at top: "This employee was deleted on {date} by #{deleted_by}. Restoring will re-add them to the staff list but will NOT automatically restore their login.")
 - "Restore" button replaces Edit/Create Account row actions for deleted employees in list view
 - On confirm: `POST /hr/employees/{id}/restore` → response returns employee with `deleted_at: null, deleted_by: null`
 - After restore: employee removed from deleted view, reappears in default list
@@ -76,7 +76,7 @@
 
 **Acceptance Criteria**:
 - Yellow warning banner at top of `EmployeeDetailModal` when `deleted_at` is non-null
-- Banner shows: "Employee was soft-deleted on {formatted date}" and "Restoring will NOT automatically re-enable their login"
+- Banner shows: "Employee was soft-deleted on {formatted date} by #{deleted_by}" and "Restoring will NOT automatically re-enable their login"
 - "Restore Employee" button in banner
 - Clicking restore triggers US3 flow
 - After successful restore: banner disappears, modal refreshes with restored employee data
@@ -102,6 +102,13 @@
 - EmployeeDetailModal renders `deleted_at` info when present
 
 **Independent Test**: TypeScript compiles with new fields; API functions exist and are exported
+
+---
+
+## Clarifications
+
+### Session 2026-08-24
+- Q: How should `deleted_by` (numeric user ID) be displayed in the restore banner? → A: Use raw user ID (`#3`) for now. No backend contract change needed. Can be upgraded to name resolution later if backend adds `deleted_by_name`.
 
 ---
 
