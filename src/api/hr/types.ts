@@ -17,6 +17,8 @@ export interface EmployeePublic {
   is_graduate?: boolean
   monthly_salary?: number
   contract_percentage?: number
+  deleted_at: string | null
+  deleted_by: number | null
 }
 
 /**
@@ -30,6 +32,8 @@ export interface EmployeeListItem {
   is_active: boolean
   phone?: string
   email?: string
+  deleted_at: string | null
+  deleted_by: number | null
 }
 
 /**

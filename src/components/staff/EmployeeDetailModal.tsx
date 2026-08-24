@@ -10,9 +10,11 @@ interface EmployeeDetailModalProps {
   isOpen: boolean
   onClose: () => void
   onRetry?: () => void
+  onDelete?: () => void
+  onRestore?: () => void
 }
 
-export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRetry }: EmployeeDetailModalProps) {
+export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRetry, onDelete, onRestore }: EmployeeDetailModalProps) {
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return null
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -27,8 +29,25 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
     return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 
+  const isDeleted = !!employee?.deleted_at
+
   const modalFooter = (
-    <div className="flex justify-end">
+    <div className="flex justify-end gap-2">
+      {isDeleted ? (
+        <button
+          onClick={onRestore}
+          className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Restore Employee
+        </button>
+      ) : (
+        <button
+          onClick={onDelete}
+          className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+        >
+          Delete Employee
+        </button>
+      )}
       <button
         onClick={onClose}
         className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
@@ -80,6 +99,27 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
         </div>
       ) : (
         <div className="space-y-6">
+          {/* Deleted warning banner */}
+          {isDeleted && employee.deleted_at && (
+            <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+              <span className="material-symbols-outlined text-yellow-600 mt-0.5">warning</span>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-yellow-800">
+                  Employee was soft-deleted on {formatDate(employee.deleted_at)} by #{employee.deleted_by}
+                </p>
+                <p className="text-xs text-yellow-700 mt-1">
+                  Restoring will NOT automatically re-enable their login.
+                </p>
+              </div>
+              <button
+                onClick={onRestore}
+                className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors shrink-0"
+              >
+                Restore
+              </button>
+            </div>
+          )}
+
           {/* Header Section */}
           <div className="flex items-start gap-4 pb-6 border-b border-slate-200">
             <div className="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center">

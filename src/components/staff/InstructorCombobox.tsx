@@ -69,7 +69,9 @@ export function InstructorComboboxInner({ value, onChange }: InstructorComboboxP
           full_name: r.name,
           job_title: 'Recently Used',
           employment_type: 'full_time' as const,
-          is_active: true
+          is_active: true,
+          deleted_at: null,
+          deleted_by: null,
         } satisfies EmployeeListItem)
       })
 

@@ -9,7 +9,7 @@ import { EmployeeCard } from '../components/staff/EmployeeCard'
 import { CardGrid } from '../components/directory/CardGrid'
 import { CardSkeleton } from '../components/directory/shared/CardSkeleton'
 import { useToast } from '../components/common/Toast'
-import { useEmployees, useEmployee, useCreateEmployee, useUpdateEmployee } from '../hooks/useStaff'
+import { useEmployees, useEmployee, useCreateEmployee, useUpdateEmployee, useSoftDeleteEmployee, useRestoreEmployee } from '../hooks/useStaff'
 import { useCreateEmployeeAccount } from '../hooks/useStaffAccounts'
 import type { EmployeeCreateInput, CreateEmployeeAccountRequest } from '../api/hr'
 
@@ -53,9 +53,10 @@ export function StaffPage() {
 
   // Filter state
   const [employmentType] = useState('')
+  const [includeDeleted, setIncludeDeleted] = useState(false)
 
   // Server data via React Query
-  const { data: pageData, isLoading, error, refetch } = useEmployees(debouncedSearch, page, pageSize, employmentType || undefined)
+  const { data: pageData, isLoading, error, refetch } = useEmployees(debouncedSearch, page, pageSize, employmentType || undefined, includeDeleted)
   const employees = pageData?.items ?? []
   const total = pageData?.total ?? 0
 
@@ -69,6 +70,8 @@ export function StaffPage() {
   const createMutation = useCreateEmployee()
   const updateMutation = useUpdateEmployee()
   const createAccountMutation = useCreateEmployeeAccount()
+  const deleteMutation = useSoftDeleteEmployee()
+  const restoreMutation = useRestoreEmployee()
 
   // Detail query for view modal
   const { data: employeeDetail, isLoading: isLoadingDetail, refetch: refetchDetail } = useEmployee(viewingEmployeeId)
@@ -101,6 +104,31 @@ export function StaffPage() {
 
   const handleViewEmployee = (id: number) => {
     setViewingEmployeeId(id)
+  }
+
+  // Delete handler
+  const handleDeleteEmployee = async (id: number) => {
+    const employee = employees.find(e => e.id === id)
+    const name = employee?.full_name ?? 'this employee'
+    if (!window.confirm(`Are you sure you want to delete ${name}? This will hide them from the staff list and block their login.`)) return
+    try {
+      await deleteMutation.mutateAsync(id)
+      setViewingEmployeeId(null)
+      showToast('Employee deleted successfully', 'success')
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to delete employee', 'error')
+    }
+  }
+
+  // Restore handler
+  const handleRestoreEmployee = async (id: number) => {
+    try {
+      await restoreMutation.mutateAsync(id)
+      setViewingEmployeeId(null)
+      showToast('Employee restored successfully', 'success')
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to restore employee', 'error')
+    }
   }
 
   // Find editing employee info from the list
@@ -144,6 +172,15 @@ export function StaffPage() {
             onSearch={setSearchInput}
             className="flex-1 max-w-md"
           />
+          <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={includeDeleted}
+              onChange={(e) => { setIncludeDeleted(e.target.checked); setPage(1) }}
+              className="w-4 h-4 text-red-600 border-slate-300 rounded focus:ring-red-500"
+            />
+            Include deleted
+          </label>
         </div>
 
         {isLoading ? (
@@ -169,6 +206,8 @@ export function StaffPage() {
                   onView={() => handleViewEmployee(employee.id)}
                   onEdit={() => setEditingEmployee(employee.id)}
                   onCreateAccount={() => setCreatingAccountFor(employee.id)}
+                  onDelete={() => handleDeleteEmployee(employee.id)}
+                  onRestore={() => handleRestoreEmployee(employee.id)}
                 />
               ))}
             </CardGrid>
@@ -259,6 +298,8 @@ export function StaffPage() {
           setViewingEmployeeId(null)
         }}
         onRetry={() => refetchDetail()}
+        onDelete={() => viewingEmployeeId && handleDeleteEmployee(viewingEmployeeId)}
+        onRestore={() => viewingEmployeeId && handleRestoreEmployee(viewingEmployeeId)}
       />
 
       {/* Create Account Modal */}

@@ -1,20 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getEmployee, createEmployee, updateEmployee, fetchEmployeesPaginated } from '../api/hr/employees'
+import { getEmployee, createEmployee, updateEmployee, fetchEmployeesPaginated, softDeleteEmployee, restoreEmployee } from '../api/hr/employees'
 import type { EmployeeCreateInput } from '../api/hr/types'
+import { queryKeys } from './queryKeys'
 
 export const staffKeys = {
   all: ['staff', 'employees'] as const,
-  list: (params: { search?: string; page?: number; pageSize?: number; employment_type?: string }) =>
+  list: (params: { search?: string; page?: number; pageSize?: number; employment_type?: string; include_deleted?: boolean }) =>
     ['staff', 'employees', 'list', params] as const,
   detail: (id: number) => ['staff', 'employees', id] as const,
 }
 
-export function useEmployees(search: string, page: number, pageSize: number, employmentType?: string) {
+export function useEmployees(search: string, page: number, pageSize: number, employmentType?: string, includeDeleted?: boolean) {
   const trimmed = search.trim()
   return useQuery({
-    queryKey: staffKeys.list({ search: trimmed, page, pageSize, employment_type: employmentType }),
+    queryKey: staffKeys.list({ search: trimmed, page, pageSize, employment_type: employmentType, include_deleted: includeDeleted }),
     queryFn: async () => {
-      const result = await fetchEmployeesPaginated({ skip: (page - 1) * pageSize, limit: pageSize, q: trimmed || undefined, employment_type: employmentType })
+      const result = await fetchEmployeesPaginated({ skip: (page - 1) * pageSize, limit: pageSize, q: trimmed || undefined, employment_type: employmentType, include_deleted: includeDeleted })
       return result
     },
     enabled: trimmed.length === 0 || trimmed.length >= 2,
@@ -55,6 +56,34 @@ export function useUpdateEmployee() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: staffKeys.all })
+    },
+  })
+}
+
+export function useSoftDeleteEmployee() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await softDeleteEmployee(id)
+      return response.data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: staffKeys.all })
+      qc.invalidateQueries({ queryKey: queryKeys.employees.all })
+    },
+  })
+}
+
+export function useRestoreEmployee() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await restoreEmployee(id)
+      return response.data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: staffKeys.all })
+      qc.invalidateQueries({ queryKey: queryKeys.employees.all })
     },
   })
 }
