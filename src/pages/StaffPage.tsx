@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
-import { PageHeader, PageSection, ActionButton, SearchBar, LoadingSpinner, Modal, PaginationControls, EmptyState, ErrorState } from '../components/common'
+import { PageHeader, PageSection, ActionButton, SearchBar, LoadingSpinner, Modal, Pagination, EmptyState, ErrorState } from '../components/common'
 import { EmployeeForm } from '../components/staff/EmployeeForm'
 import { CreateAccountModal } from '../components/staff/CreateAccountModal'
 import { EmployeeDetailModal } from '../components/staff/EmployeeDetailModal'
@@ -20,7 +20,7 @@ export function StaffPage() {
 
   // Pagination state (declared before effects that reference it)
   const [page, setPage] = useState(1)
-  const pageSize = 20
+  const [pageSize, setPageSize] = useState(20)
 
   // Search with debounce
   const [searchInput, setSearchInput] = useState(initialSearch)
@@ -229,12 +229,16 @@ export function StaffPage() {
             </CardGrid>
 
             {/* Pagination Controls */}
-            <div className="mt-6 flex justify-center">
-              <PaginationControls
+            <div className="mt-6">
+              <Pagination
                 currentPage={page}
-                total={total}
+                totalPages={Math.max(1, Math.ceil(total / pageSize))}
+                onPageChange={setPage}
                 pageSize={pageSize}
-                onChange={setPage}
+                onPageSizeChange={(size) => { setPageSize(size); setPage(1) }}
+                pageSizeOptions={[10, 20, 50, 100]}
+                showTotalInfo
+                totalRecords={total}
               />
             </div>
           </>
