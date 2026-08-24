@@ -1,0 +1,26 @@
+{
+  "page_title": "Dashboard",
+  "breadcrumb": {
+    "home": "Home"
+  },
+  "actions": {
+    "new_enrollment": "New Enrollment"
+  },
+  "scheduled_groups": "Scheduled groups",
+  "empty": {
+    "no_groups": "No groups scheduled",
+    "no_groups_today": "No groups scheduled for this day",
+    "no_progress_data": "No progress data available"
+  },
+  "fallbacks": {
+    "unknown_group": "Unknown Group",
+    "unknown_course": "Unknown Course",
+    "tba": "TBA"
+  },
+  "progress_chart": {
+    "on_track": "On Track",
+    "at_risk": "At Risk",
+    "behind": "Behind",
+    "aria_label": "Student progress distribution chart showing on track, at risk, and behind counts"
+  }
+}

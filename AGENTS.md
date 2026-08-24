@@ -20,6 +20,7 @@ No formatter configured — lint only.
 - `noUncheckedSideEffectImports: true` in both tsconfigs
 - **Tailwind**: v3 config (`tailwind.config.js`, `postcss.config.js` uses `tailwindcss` v3 plugin) despite `@tailwindcss/postcss` v4 installed — don't use v4 syntax
 - **Fonts**: Space Grotesk (`font-headline`) headings, Inter (`font-body`) body — Google Fonts in `index.html`
+- **Border radius**: Non-standard values in `tailwind.config.js` — `rounded` = `0.125rem`, `rounded-full` = `0.75rem` (not `9999px`). Don't use Tailwind defaults mentally.
 - **Icons**: Lucide React components + Google Material Symbols (CSS class `material-symbols-outlined`)
 - **Time formatting**: Use `formatTime` from `src/utils/formatting.ts` (12h), not inline formatting
 - **Charts**: recharts in `src/components/reports/` for `StudentProgressChart` and `RevenueChart`
@@ -42,7 +43,7 @@ No formatter configured — lint only.
 
 ### API & State
 - `src/api/client.ts`: Axios, base `/api/v1`, Bearer token injection, 401 refresh queue with request queuing → logout on failure. Dynamic import of `./auth` in interceptor to break circular dependency.
-- 15 API domain modules under `src/api/` (academics, analytics, attendance, auth, certificates, competitions, crm, dashboard, enrollments, finance, hr, notifications, reports, tasks, teams)
+- 15 API domain modules under `src/api/` (academics, analytics, attendance, auth, certificates, competitions, crm, dashboard, enrollments, finance, hr, notifications, reports, tasks, teams) + `client.ts`
 - `src/hooks/queryKeys.ts`: centralized React Query key factories — use these, never inline arrays
 - `src/store/authStore.ts`: Zustand, persist key `auth-storage`, cross-tab sync via `storage` event
 - React Query defaults: `staleTime: 5min`, `gcTime: 30min`, `retry: 1`, `refetchOnWindowFocus: false`; mutations `retry: 0`
@@ -176,5 +177,5 @@ queryKeys.groupAttendance(groupId, levelNumber) // ['groups', id, 'attendance', 
 - **Session notes preserve dirty state**: `useEffect` only initializes notes from `sessions` if `dirtyNotes.size === 0`
 
 <!-- SPECKIT START -->
-Active plan: `specs/068-employee-soft-delete/plan.md`
+Active plan: `specs/070-arabic-i18n-rtl/plan.md`
 <!-- SPECKIT END -->

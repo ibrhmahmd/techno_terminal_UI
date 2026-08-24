@@ -1,0 +1,26 @@
+{
+  "page_title": "لوحة التحكم",
+  "breadcrumb": {
+    "home": "الرئيسية"
+  },
+  "actions": {
+    "new_enrollment": "اشتراك جديد"
+  },
+  "scheduled_groups": "المجموعات المجدولة",
+  "empty": {
+    "no_groups": "لا توجد مجموعات مجدولة",
+    "no_groups_today": "لا توجد مجموعات مجدولة لهذا اليوم",
+    "no_progress_data": "لا توجد بيانات تقدم متاحة"
+  },
+  "fallbacks": {
+    "unknown_group": "مجموعة غير معروفة",
+    "unknown_course": "مقرر غير معروف",
+    "tba": "يُحدد لاحقاً"
+  },
+  "progress_chart": {
+    "on_track": "على المسار",
+    "at_risk": "تحت التهديد",
+    "behind": "متأخر",
+    "aria_label": "مخطط توزيع تقدم الطلاب يعرض عدد المتأخرين والمتlogged والمتأخرين"
+  }
+}

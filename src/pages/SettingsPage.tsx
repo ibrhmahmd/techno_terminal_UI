@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../store/authStore'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { PageHeader } from '../components/common/PageHeader'
@@ -10,10 +11,11 @@ import { ProfileTab } from '../components/settings/ProfileTab'
 import { SessionsActivityTab } from '../components/settings/SessionsActivityTab'
 import { UsersTab } from '../components/settings/UsersTab'
 import { AuditLogTable, AuditDateFilter } from '../components/settings/AuditLogTable'
+import { LanguageSettings } from '../components/settings/LanguageSettings'
 import { useAuditLogins, useAuditPasswordChanges, useAuditFailedAttempts } from '../hooks/useAuthQueries'
 import { MetricsStripCards } from '../components/common/MetricsStripCards'
 
-type TabType = 'profile' | 'sessions-activity' | 'users' | 'audit-logins' | 'audit-password-changes' | 'audit-failed-attempts'
+type TabType = 'profile' | 'sessions-activity' | 'users' | 'audit-logins' | 'audit-password-changes' | 'audit-failed-attempts' | 'language'
 
 function AuditLoginSection() {
   const [page, setPage] = useState(0)
@@ -70,6 +72,7 @@ export function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('profile')
   const { user } = useAuthStore()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const canManageUsers = user?.role === 'admin' || user?.role === 'system_admin'
   const isSystemAdmin = user?.role === 'system_admin'
@@ -83,7 +86,7 @@ export function SettingsPage() {
       onClick: () => void
     }[] = [
       {
-        label: 'Profile',
+        label: t('labels.name'),
         value: 'User',
         icon: 'person',
         color: 'secondary',
@@ -95,6 +98,13 @@ export function SettingsPage() {
         icon: 'devices',
         color: 'emerald',
         onClick: () => setActiveTab('sessions-activity'),
+      },
+      {
+        label: t('navigation.settings'),
+        value: 'Language',
+        icon: 'language',
+        color: 'slate',
+        onClick: () => setActiveTab('language'),
       },
     ]
 
@@ -135,19 +145,20 @@ export function SettingsPage() {
     }
 
     return items
-  }, [canManageUsers, isSystemAdmin])
+  }, [canManageUsers, isSystemAdmin, t])
 
   const activeIndex = useMemo(() => {
     return metricItems.findIndex((item) => {
-      if (activeTab === 'profile') return item.label === 'Profile'
+      if (activeTab === 'profile') return item.label === t('labels.name')
       if (activeTab === 'sessions-activity') return item.label === 'Sessions & Activity'
+      if (activeTab === 'language') return item.label === t('navigation.settings')
       if (activeTab === 'users') return item.label === 'Users'
       if (activeTab === 'audit-logins') return item.label === 'Login Logs'
       if (activeTab === 'audit-password-changes') return item.label === 'Password Changes'
       if (activeTab === 'audit-failed-attempts') return item.label === 'Failed Attempts'
       return false
     })
-  }, [metricItems, activeTab])
+  }, [metricItems, activeTab, t])
 
   const headerActions = canManageUsers ? (
     <ActionButton
@@ -180,6 +191,7 @@ export function SettingsPage() {
           <ErrorBoundary>
             {activeTab === 'profile' && <ProfileTab />}
             {activeTab === 'sessions-activity' && <SessionsActivityTab />}
+            {activeTab === 'language' && <LanguageSettings />}
             {activeTab === 'users' && canManageUsers && <UsersTab />}
             {activeTab === 'audit-logins' && <AuditLoginSection />}
             {activeTab === 'audit-password-changes' && <AuditPasswordChangeSection />}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { StudentListItem } from '../../../api/crm'
 import type { StudentEnrollmentInfo } from '../../../hooks/finance/useStudentEnrollments'
 import { EnrollmentSelection } from './EnrollmentSelection'
@@ -34,6 +35,7 @@ export function ReceiptLineItemRow({
   onRemove,
   isSearchingStudents = false,
 }: ReceiptLineItemRowProps) {
+  const { t } = useTranslation('finance')
   let wrapperClass = "p-5 rounded-2xl border transition-all duration-150 space-y-4"
   if (isActive) {
     wrapperClass += " border-secondary bg-secondary/[0.01] ring-1 ring-secondary shadow-sm"
@@ -48,16 +50,16 @@ export function ReceiptLineItemRow({
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Student {index + 1}</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('line_item.student', { index: index + 1 })}</span>
           {isActive && (
-            <span className="text-[10px] font-bold bg-secondary text-white px-2 py-0.5 rounded-full uppercase tracking-wider select-none">Active</span>
+            <span className="text-[10px] font-bold bg-secondary text-white px-2 py-0.5 rounded-full uppercase tracking-wider select-none">{t('line_item.active')}</span>
           )}
         </div>
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
           className="text-red-500 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
-          title="Remove item"
+          title={t('line_item.remove')}
         >
           <span className="material-symbols-outlined text-sm block font-bold" aria-hidden="true">delete</span>
         </button>
@@ -68,7 +70,7 @@ export function ReceiptLineItemRow({
           {/* Step 1: Student Combobox */}
           <div className="w-full">
             {!item.selectedStudent && (
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Select Student *</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">{t('line_item.select_student')}</label>
             )}
             <StudentCombobox
               value={item.selectedStudent}
@@ -109,13 +111,13 @@ export function ReceiptLineItemRow({
 
           {/* Item Notes */}
           <div className="pt-2">
-            <label htmlFor={`notes-${item.id}`} className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Item Notes (Optional)</label>
+            <label htmlFor={`notes-${item.id}`} className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">{t('line_item.item_notes')}</label>
             <input
               id={`notes-${item.id}`}
               type="text"
               value={item.notes}
               onChange={(e) => onUpdate({ notes: e.target.value })}
-              placeholder="e.g., Book fee, March level fee..."
+              placeholder={t('line_item.item_notes_placeholder')}
               className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all select-text"
             />
           </div>
@@ -126,7 +128,7 @@ export function ReceiptLineItemRow({
           <div className="flex justify-between items-center">
             <div>
               <h4 className="font-headline font-semibold text-slate-800 text-sm">
-                {item.selectedStudent?.full_name || 'No Student Selected'}
+                {item.selectedStudent?.full_name || t('line_item.no_student')}
               </h4>
               {item.selectedEnrollment && (
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -134,14 +136,14 @@ export function ReceiptLineItemRow({
                 </p>
               )}
             </div>
-            <div className="text-right">
+            <div className="text-end">
               <p className="text-sm font-bold text-slate-800">{item.amount.toFixed(2)} EGP</p>
               {item.discount > 0 && (
                 <p className="text-[10px] text-emerald-600 font-semibold">Discount: -{item.discount.toFixed(0)} EGP</p>
               )}
             </div>
           </div>
-          <p className="text-[11px] text-slate-400 font-medium italic">Click card to edit student details</p>
+          <p className="text-[11px] text-slate-400 font-medium italic">{t('line_item.click_to_edit')}</p>
         </div>
       )}
     </div>

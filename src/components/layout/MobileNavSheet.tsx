@@ -1,19 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/authStore'
-
-const MORE_ITEMS = [
-  { path: '/courses',       label: 'Courses',       icon: 'school'          },
-  { path: '/enrollments',   label: 'Enrollments',   icon: 'assignment_ind'  },
-  { path: '/competitions',  label: 'Competitions',  icon: 'emoji_events'    },
-  { path: '/certificates',  label: 'Certificates',  icon: 'verified'        },
-  { path: '/reports',       label: 'Reports',       icon: 'assessment'      },
-  { path: '/staff',         label: 'Staff',         icon: 'people'          },
-  { path: '/tasks',         label: 'Tasks',         icon: 'task_alt'        },
-  { path: '/capabilities',  label: 'Capabilities',  icon: 'article'         },
-  { path: '/notifications', label: 'Notifications', icon: 'notifications'   },
-  { path: '/settings',      label: 'Settings',      icon: 'settings'        },
-]
 
 interface MobileNavSheetProps {
   isOpen: boolean
@@ -25,6 +13,20 @@ export function MobileNavSheet({ isOpen, onClose }: MobileNavSheetProps) {
   const location = useLocation()
   const { user, logout } = useAuthStore()
   const sheetRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation('layout')
+
+  const MORE_ITEMS = [
+    { path: '/courses',       label: t('nav.courses'),       icon: 'school'          },
+    { path: '/enrollments',   label: t('nav.enrollments'),   icon: 'assignment_ind'  },
+    { path: '/competitions',  label: t('nav.competitions'),  icon: 'emoji_events'    },
+    { path: '/certificates',  label: t('nav.certificates'),  icon: 'verified'        },
+    { path: '/reports',       label: t('nav.reports'),       icon: 'assessment'      },
+    { path: '/staff',         label: t('nav.staff'),         icon: 'people'          },
+    { path: '/tasks',         label: t('nav.tasks'),         icon: 'task_alt'        },
+    { path: '/capabilities',  label: t('nav.capabilities'),  icon: 'article'         },
+    { path: '/notifications', label: t('nav.notifications'), icon: 'notifications'   },
+    { path: '/settings',      label: t('nav.settings'),      icon: 'settings'        },
+  ]
 
   // Close when route changes
   useEffect(() => {
@@ -88,7 +90,7 @@ export function MobileNavSheet({ isOpen, onClose }: MobileNavSheetProps) {
         ref={sheetRef}
         role="dialog"
         aria-modal="true"
-        aria-label="More navigation"
+        aria-label={t('aria.more_navigation')}
         className={`fixed bottom-0 left-0 right-0 z-50 bg-slate-950 rounded-t-2xl border-t border-slate-800 lg:hidden
           transition-transform duration-300 ease-out
           ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}
@@ -100,7 +102,7 @@ export function MobileNavSheet({ isOpen, onClose }: MobileNavSheetProps) {
 
         {/* Title */}
         <p className="px-6 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          More
+          {t('more')}
         </p>
 
         {/* Icon Grid */}
@@ -146,7 +148,7 @@ export function MobileNavSheet({ isOpen, onClose }: MobileNavSheetProps) {
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
           >
             <span className="material-symbols-outlined text-base" aria-hidden="true">logout</span>
-            Sign Out
+            {t('sign_out')}
           </button>
         </div>
       </div>

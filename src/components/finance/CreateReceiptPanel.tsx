@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, startTransition } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { PaymentMethodPills } from './PaymentMethodPills'
 import type { PillOption } from './PaymentMethodPills'
@@ -11,12 +12,15 @@ import { ReceiptLineItemRow } from './CreateReceipt/ReceiptLineItemRow'
 import type { ReceiptLineItem } from './CreateReceipt/ReceiptLineItemRow'
 import { SlideToConfirm } from './CreateReceipt/SlideToConfirm'
 
-const PAYMENT_METHODS: PillOption[] = [
-  { value: 'cash', label: 'Cash', color: 'emerald', icon: 'payments' },
-  { value: 'e_wallet', label: 'E-Wallet', color: 'red', icon: 'account_balance_wallet' },
-  { value: 'instapay', label: 'instaPay', color: 'purple', icon: 'bolt' },
-  { value: 'other', label: 'Other', color: 'slate', icon: 'more_horiz' },
-]
+function usePaymentMethods(): PillOption[] {
+  const { t } = useTranslation('finance')
+  return [
+    { value: 'cash', label: t('payment_methods.cash'), color: 'emerald', icon: 'payments' },
+    { value: 'e_wallet', label: t('payment_methods.e_wallet'), color: 'red', icon: 'account_balance_wallet' },
+    { value: 'instapay', label: t('payment_methods.instapay'), color: 'purple', icon: 'bolt' },
+    { value: 'other', label: t('payment_methods.other'), color: 'slate', icon: 'more_horiz' },
+  ]
+}
 
 const DRAFT_KEY = 'receipt-draft'
 const PRESETS = [150, 500, 550, 600, 650, 700]
@@ -69,6 +73,8 @@ function initFromDraft<T>(key: string, fallback: T): T {
 }
 
 export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData, onClearInitialData, onNavigateToUnpaid }: CreateReceiptPanelProps) {
+  const { t } = useTranslation('finance')
+  const PAYMENT_METHODS = usePaymentMethods()
   const { create, isCreating } = useReceipts()
   const [payerName, setPayerName] = useState(() => initFromDraft('payerName', ''))
   const [paymentMethod, setPaymentMethod] = useState<string | null>(() => initFromDraft<string | null>('paymentMethod', null))
@@ -180,7 +186,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
 
   const handleRemoveLineItem = (id: string) => {
     if (lineItems.length === 1) {
-      onError('Receipt must have at least one line item')
+      onError(t('receipt.minimum_line_items'))
       return
     }
     setLineItems(prev => {
@@ -210,7 +216,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
 
     // Validate payment method
     if (!paymentMethod) {
-      setPaymentMethodError('Please select a payment method')
+      setPaymentMethodError(t('receipt.select_payment_method'))
       valid = false
     } else {
       setPaymentMethodError(undefined)
@@ -221,11 +227,11 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
     lineItems.forEach((item) => {
       const itemErrors: Record<string, string | undefined> = {}
       if (!item.selectedStudent) {
-        itemErrors.student = 'Please select a student'
+        itemErrors.student = t('receipt.select_student')
         valid = false
       }
       if (item.amount <= 0) {
-        itemErrors.amount = 'Amount must be greater than 0'
+        itemErrors.amount = t('receipt.amount_required')
         valid = false
       }
       if (Object.keys(itemErrors).length > 0) {
@@ -243,7 +249,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
 
     const itemsWithoutEnrollment = validItems.filter(item => !item.selectedEnrollment)
     if (itemsWithoutEnrollment.length > 0) {
-      onError('Please select an enrollment for each line item (click on student first)')
+      onError(t('receipt.select_enrollment'))
       return
     }
 
@@ -274,7 +280,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
       }
 
       const result = await create(request)
-      onSuccess(`Receipt created successfully: ${result.receipt_number}`, result.receipt_id)
+      onSuccess(t('receipt.receipt_created', { number: result.receipt_number }), result.receipt_id)
 
       // Clear draft on success
       sessionStorage.removeItem(DRAFT_KEY)
@@ -287,7 +293,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
       setLineItems([{ ...emptyLineItem(), id: '1' }])
       setActiveLineItemId('1')
     } catch (err) {
-      onError(err instanceof Error ? err.message : 'Failed to create receipt')
+      onError(err instanceof Error ? err.message : t('receipt.receipt_failed'))
     }
   }
 
@@ -298,10 +304,10 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 relative">
       <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
         <div className="flex items-center gap-3">
-          <h2 className="font-headline text-xl font-bold text-on-surface">Create Receipt</h2>
+          <h2 className="font-headline text-xl font-bold text-on-surface">{t('receipt.create')}</h2>
           {draftRestored && (
             <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium animate-pulse">
-              Draft restored
+              {t('receipt.draft_restored')}
             </span>
           )}
         </div>
@@ -312,7 +318,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
             className="text-sm text-secondary hover:text-secondary/80 flex items-center gap-1.5 font-bold transition-colors bg-secondary/5 px-3 py-1.5 rounded-xl border border-secondary/10"
           >
             <span className="material-symbols-outlined text-base font-bold" aria-hidden="true">warning</span>
-            Pay from Unpaid
+            {t('receipt.pay_from_unpaid')}
           </button>
         )}
       </div>
@@ -324,13 +330,13 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
           {/* Line Items */}
           <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/50 space-y-4">
             <div className="flex items-center justify-between">
-              <label className="block text-sm font-bold text-slate-800 uppercase tracking-wider">Line Items</label>
+              <label className="block text-sm font-bold text-slate-800 uppercase tracking-wider">{t('receipt.line_items')}</label>
               <button
                 onClick={handleAddLineItem}
                 className="text-xs font-bold text-secondary hover:text-secondary/80 flex items-center gap-1 transition-colors bg-secondary/5 px-3 py-1.5 rounded-lg border border-secondary/15 active:scale-95 duration-100"
               >
                 <span className="material-symbols-outlined text-sm font-bold" aria-hidden="true">add</span>
-                Add Student
+                {t('receipt.add_student')}
               </button>
             </div>
 
@@ -352,25 +358,25 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
 
           {/* Optional Details (Payer & Notes) */}
           <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/50 space-y-4">
-            <label className="block text-sm font-bold text-slate-800 uppercase tracking-wider">Payer & General Notes</label>
+            <label className="block text-sm font-bold text-slate-800 uppercase tracking-wider">{t('receipt.payer_notes')}</label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Payer Name (Optional)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('receipt.payer_name_optional')}</label>
                 <input
                   type="text"
                   value={payerName}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPayerName(e.target.value)}
-                  placeholder="Enter payer name (e.g., Parent's name)..."
+                  placeholder={t('receipt.payer_name_placeholder')}
                   className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm transition-shadow focus:ring-2 focus:ring-secondary/20 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">General Notes (Optional)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('receipt.general_notes_optional')}</label>
                 <input
                   type="text"
                   value={notes}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNotes(e.target.value)}
-                  placeholder="Enter any general notes for the receipt..."
+                  placeholder={t('receipt.general_notes_placeholder')}
                   className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm transition-shadow focus:ring-2 focus:ring-secondary/20 focus:outline-none"
                 />
               </div>
@@ -384,12 +390,12 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
           {activeItemForSidebar && activeItemForSidebar.selectedStudent && activeItemForSidebar.selectedEnrollment ? (
             <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/50 space-y-4 animate-fadeIn">
               <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider pb-2 border-b border-slate-200/40 truncate" title={activeItemForSidebar.selectedStudent.full_name}>
-                Payment: <span className="text-slate-850 font-extrabold">{activeItemForSidebar.selectedStudent.full_name}</span>
+                {t('receipt.payment')}: <span className="text-slate-850 font-extrabold">{activeItemForSidebar.selectedStudent.full_name}</span>
               </h3>
 
               {/* Suggestions presets (Placed above Amount input) */}
-              <div className="text-left">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider select-none block mb-1.5">المقترحات:</span>
+              <div className="text-start">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider select-none block mb-1.5">{t('receipt.suggestions')}</span>
                 <div className="flex flex-wrap gap-1.5 items-center">
                   {activeItemForSidebar.selectedEnrollment.remaining_balance > 0 && (
                     <button
@@ -397,7 +403,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
                       onClick={() => handleUpdateLineItem(activeItemForSidebar.id, { amount: activeItemForSidebar.selectedEnrollment!.remaining_balance })}
                       className="text-xs px-3 py-1.5 rounded-xl border border-secondary/35 bg-secondary/5 text-secondary hover:bg-secondary/10 hover:border-secondary transition-all font-extrabold active:scale-95 duration-100"
                     >
-                      المتبقي ({activeItemForSidebar.selectedEnrollment.remaining_balance.toFixed(0)})
+                      {t('receipt.remaining_balance')} ({activeItemForSidebar.selectedEnrollment.remaining_balance.toFixed(0)})
                     </button>
                   )}
                   {PRESETS.filter(p => p < activeItemForSidebar.selectedEnrollment!.remaining_balance).map(p => (
@@ -415,7 +421,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
 
               {/* Amount Input */}
               <div>
-                <label htmlFor="sidebar-amount" className="block text-[11px] font-bold uppercase tracking-wider text-slate-555 mb-1.5">Amount to Pay *</label>
+                <label htmlFor="sidebar-amount" className="block text-[11px] font-bold uppercase tracking-wider text-slate-555 mb-1.5">{t('receipt.amount_to_pay')}</label>
                 <div className="relative">
                   <input
                     id="sidebar-amount"
@@ -426,7 +432,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
                     onWheel={(e) => (e.target as HTMLInputElement).blur()}
                     onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                     placeholder="0.00"
-                    className={`w-full py-2.5 px-3.5 pr-12 border rounded-xl text-base font-bold focus:outline-none focus:ring-2 transition-all ${
+                    className={`w-full py-2.5 px-3.5 pe-12 border rounded-xl text-base font-bold focus:outline-none focus:ring-2 transition-all ${
                       activeItemForSidebar.amount > activeItemForSidebar.selectedEnrollment.remaining_balance
                         ? 'border-rose-500 focus:ring-rose-500/20 text-rose-700 bg-rose-50/5'
                         : (activeItemForSidebar.amount === activeItemForSidebar.selectedEnrollment.remaining_balance && activeItemForSidebar.amount > 0)
@@ -436,35 +442,35 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
                             : 'border-slate-200 focus:ring-secondary/20 text-slate-900 bg-white'
                     }`}
                   />
-                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-450">EGP</span>
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-450">{t('currency')}</span>
                 </div>
 
                 {/* Overpayment Warning */}
                 {activeItemForSidebar.amount > activeItemForSidebar.selectedEnrollment.remaining_balance && (
-                  <p className="text-[10px] text-rose-600 mt-1.5 flex items-start gap-1 animate-fadeIn font-semibold leading-tight text-left">
+                  <p className="text-[10px] text-rose-600 mt-1.5 flex items-start gap-1 animate-fadeIn font-semibold leading-tight text-start">
                     <span className="material-symbols-outlined text-[12px] shrink-0 select-none mt-0.5">warning</span>
-                    <span>يتجاوز الرصيد المتبقي ({activeItemForSidebar.selectedEnrollment.remaining_balance.toFixed(0)} ج.م)</span>
+                    <span>{t('receipt.overpayment_warning', { amount: activeItemForSidebar.selectedEnrollment.remaining_balance.toFixed(0) })}</span>
                   </p>
                 )}
                 {/* Perfect Match */}
                 {activeItemForSidebar.amount === activeItemForSidebar.selectedEnrollment.remaining_balance && activeItemForSidebar.amount > 0 && (
-                  <p className="text-[10px] text-emerald-600 mt-1.5 flex items-center gap-1 animate-fadeIn font-semibold text-left">
+                  <p className="text-[10px] text-emerald-600 mt-1.5 flex items-center gap-1 animate-fadeIn font-semibold text-start">
                     <span className="material-symbols-outlined text-[14px] shrink-0 select-none">check_circle</span>
-                    <span>تطابق كامل مع الرصيد المتبقي</span>
+                    <span>{t('receipt.perfect_match')}</span>
                   </p>
                 )}
                 {/* Partial Match */}
                 {activeItemForSidebar.amount > 0 && activeItemForSidebar.amount < activeItemForSidebar.selectedEnrollment.remaining_balance && (
-                  <p className="text-[10px] text-amber-600 mt-1.5 flex items-center gap-1 animate-fadeIn font-semibold text-left">
+                  <p className="text-[10px] text-amber-600 mt-1.5 flex items-center gap-1 animate-fadeIn font-semibold text-start">
                     <span className="material-symbols-outlined text-[14px] shrink-0 select-none">info</span>
-                    <span>دفعة جزئية من الرصيد المتبقي</span>
+                    <span>{t('receipt.partial_payment')}</span>
                   </p>
                 )}
               </div>
 
               {/* Discount Input */}
               <div>
-                <label htmlFor="sidebar-discount" className="block text-[11px] font-bold uppercase tracking-wider text-slate-555 mb-1.5 text-left">Discount</label>
+                <label htmlFor="sidebar-discount" className="block text-[11px] font-bold uppercase tracking-wider text-slate-555 mb-1.5 text-start">{t('receipt.discount')}</label>
                 <div className="relative">
                   <input
                     id="sidebar-discount"
@@ -475,23 +481,23 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
                     onWheel={(e) => (e.target as HTMLInputElement).blur()}
                     onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                     placeholder="0.00"
-                    className="w-full py-2 px-3 pr-12 border border-slate-200 rounded-xl text-base font-bold focus:outline-none focus:ring-2 focus:ring-secondary/20 text-slate-900 bg-white transition-all text-left"
+                    className="w-full py-2 px-3 pe-12 border border-slate-200 rounded-xl text-base font-bold focus:outline-none focus:ring-2 focus:ring-secondary/20 text-slate-900 bg-white transition-all text-start"
                   />
                   <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-450">EGP</span>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/50 text-center text-slate-400 text-[11px] py-8" dir="rtl">
+            <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/50 text-center text-slate-400 text-[11px] py-8">
               <span className="material-symbols-outlined text-3xl text-slate-300 block mb-1">payments</span>
-              اختر طالباً واشتراكاً من اليسار لإدخال قيمة الدفع.
+              {t('receipt.select_student_first')}
             </div>
           )}
 
           {/* Payment Method Selector */}
           <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/50">
             <PaymentMethodPills
-              label="Payment Method *"
+              label={t('receipt.payment_method')}
               options={PAYMENT_METHODS}
               selected={paymentMethod}
               onChange={(value) => { setPaymentMethod(value); setPaymentMethodError(undefined) }}
@@ -500,24 +506,24 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
           </div>
 
           {/* POS Summary Box (Light Mode) */}
-          <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-sm space-y-4 text-slate-800 text-left">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider pb-2.5 border-b border-slate-200/60">POS Checkout Summary</h3>
+          <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-sm space-y-4 text-slate-800 text-start">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider pb-2.5 border-b border-slate-200/60">{t('receipt.pos_checkout_summary')}</h3>
 
             <div className="space-y-3">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-500 font-medium">Payment Mode</span>
-                <span className="font-semibold text-slate-850">{selectedMethodObj?.label || 'Not Selected'}</span>
+                <span className="text-slate-500 font-medium">{t('receipt.payment_mode')}</span>
+                <span className="font-semibold text-slate-850">{selectedMethodObj?.label || t('receipt.not_selected')}</span>
               </div>
               {payerName && (
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500 font-medium">Payer</span>
+                  <span className="text-slate-500 font-medium">{t('receipt.payer')}</span>
                   <span className="font-semibold text-slate-850 truncate max-w-[120px]">{payerName}</span>
                 </div>
               )}
 
               {lineItems.some(i => i.selectedStudent && i.selectedEnrollment) && (
                 <div className="pt-2 border-t border-slate-200/60 space-y-3">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left">Breakdown</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-start">{t('receipt.breakdown')}</p>
                   {lineItems.filter(i => i.selectedStudent && i.selectedEnrollment).map(i => {
                     const remaining = i.selectedEnrollment!.remaining_balance
                     const payAmount = i.amount || 0
@@ -525,7 +531,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
                     const newBal = Math.max(0, remaining - payAmount)
 
                     return (
-                      <div key={i.id} className="bg-white/50 border border-slate-200/60 rounded-xl p-3 text-xs space-y-1.5 shadow-sm text-slate-750 text-left">
+                      <div key={i.id} className="bg-white/50 border border-slate-200/60 rounded-xl p-3 text-xs space-y-1.5 shadow-sm text-slate-750 text-start">
                         <div className="flex justify-between items-start">
                           <a 
                             href={`/students/${i.selectedStudent!.id}`}
@@ -537,7 +543,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
                             {i.selectedStudent!.full_name}
                             <span className="material-symbols-outlined text-[12px] text-slate-400 select-none">open_in_new</span>
                           </a>
-                          <span className="font-extrabold text-slate-900">{payAmount.toFixed(0)} EGP</span>
+                          <span className="font-extrabold text-slate-900">{payAmount.toFixed(0)} {t('currency')}</span>
                         </div>
                         <div className="flex justify-between text-[11px] text-slate-500">
                           <a 
@@ -553,12 +559,12 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
                           <span>LVL {i.selectedEnrollment!.level_number}</span>
                         </div>
                         <div className="pt-1.5 border-t border-slate-200/40 grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px] text-slate-500">
-                          <div>المتبقي حالياً: <span className="font-semibold text-slate-700">{remaining.toFixed(0)} ج.م</span></div>
-                          {disc > 0 && <div className="text-right">الخصم: <span className="font-semibold text-slate-700">{disc.toFixed(0)} ج.م</span></div>}
+                          <div>{t('receipt.current_remaining')} <span className="font-semibold text-slate-700">{remaining.toFixed(0)} {t('currency')}</span></div>
+                          {disc > 0 && <div className="text-end">{t('receipt.discount_label')} <span className="font-semibold text-slate-700">{disc.toFixed(0)} {t('currency')}</span></div>}
                           <div className="col-span-2 mt-0.5 pt-0.5 border-t border-dashed border-slate-200/50 flex justify-between font-bold">
-                            <span>الرصيد الجديد:</span>
+                            <span>{t('receipt.new_balance')}</span>
                             <span className={newBal === 0 ? 'text-emerald-600 font-extrabold' : 'text-slate-800 font-extrabold'}>
-                              {newBal.toFixed(0)} ج.م
+                              {newBal.toFixed(0)} {t('currency')}
                             </span>
                           </div>
                         </div>
@@ -569,8 +575,8 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
               )}
 
               <div className="pt-3 border-t border-slate-200/60 flex justify-between items-baseline">
-                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total</span>
-                <span className="text-3xl font-black text-slate-900">{totalAmount.toFixed(2)} <span className="text-xs font-normal text-slate-500">EGP</span></span>
+                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">{t('receipt.total')}</span>
+                <span className="text-3xl font-black text-slate-900">{totalAmount.toFixed(2)} <span className="text-xs font-normal text-slate-500">{t('currency')}</span></span>
               </div>
             </div>
 
@@ -582,7 +588,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
             >
               {(isLoading || isCreating) ? <LoadingSpinner size="sm" /> : null}
               <span className="material-symbols-outlined text-lg" aria-hidden="true">receipt</span>
-              Create Receipt
+              {t('receipt.create')}
             </button>
           </div>
         </div>
@@ -597,15 +603,15 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
                 <span className="material-symbols-outlined text-2xl block">lock</span>
               </div>
               <div>
-                <h3 className="font-headline text-lg font-bold text-slate-900">Confirm Payment</h3>
-                <p className="text-xs text-slate-500">Please review these payment details carefully.</p>
+                <h3 className="font-headline text-lg font-bold text-slate-900">{t('receipt.confirm_payment')}</h3>
+                <p className="text-xs text-slate-500">{t('receipt.confirm_review')}</p>
               </div>
             </div>
 
             <div className="space-y-3.5 my-5">
               <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-100 space-y-2">
                 <div className="flex justify-between items-center text-sm border-b border-slate-200/50 pb-2">
-                  <span className="text-slate-500 font-medium">Payment Method</span>
+                  <span className="text-slate-500 font-medium">{t('receipt.payment_method')}</span>
                   <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-${selectedMethodObj?.color}-50 text-${selectedMethodObj?.color}-700 border border-${selectedMethodObj?.color}-200`}>
                     <span className="material-symbols-outlined text-sm">{selectedMethodObj?.icon}</span>
                     {selectedMethodObj?.label}
@@ -613,25 +619,25 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
                 </div>
                 {payerName && (
                   <div className="flex justify-between text-sm border-b border-slate-200/50 pb-2">
-                    <span className="text-slate-500 font-medium">Payer Name</span>
+                    <span className="text-slate-500 font-medium">{t('receipt.payer_name')}</span>
                     <span className="font-semibold text-slate-800 truncate max-w-[200px]">{payerName}</span>
                   </div>
                 )}
                 {notes && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500 font-medium">Notes</span>
+                    <span className="text-slate-500 font-medium">{t('receipt.notes')}</span>
                     <span className="text-slate-700 italic text-xs truncate max-w-[200px]">{notes}</span>
                   </div>
                 )}
               </div>
 
-              <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Line Items</p>
+              <div className="space-y-2 max-h-[160px] overflow-y-auto pe-1">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{t('receipt.line_items')}</p>
                 {lineItems.filter(item => item.selectedStudent && item.amount > 0).map((item) => (
                   <div key={item.id} className="bg-slate-50/50 border border-slate-200/60 rounded-xl p-3 flex flex-col gap-1 text-sm">
                     <div className="flex justify-between font-bold text-slate-800">
                       <span>{item.selectedStudent?.full_name}</span>
-                      <span>{item.amount.toFixed(2)} EGP</span>
+                      <span>{item.amount.toFixed(2)} {t('currency')}</span>
                     </div>
                     {item.selectedEnrollment && (
                       <div className="flex justify-between text-xs text-slate-500 font-medium">
@@ -645,8 +651,8 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
 
               <div className="pt-3 border-t border-slate-200 flex justify-between items-end">
                 <div>
-                  <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Charge</span>
-                  <p className="text-xl font-bold text-slate-800">{totalAmount.toFixed(2)} EGP</p>
+                  <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">{t('receipt.total_charge')}</span>
+                  <p className="text-xl font-bold text-slate-800">{totalAmount.toFixed(2)} {t('currency')}</p>
                 </div>
               </div>
             </div>
@@ -655,12 +661,12 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
               {isLoading || isCreating ? (
                 <div className="flex items-center justify-center gap-2 py-3 bg-slate-50 border border-slate-100 rounded-full text-slate-500 font-bold text-sm">
                   <LoadingSpinner size="sm" />
-                  <span>جاري إنشاء الإيصال...</span>
+                  <span>{t('receipt.creating_receipt')}</span>
                 </div>
               ) : (
                 <SlideToConfirm 
                   onConfirm={handleCreateReceipt} 
-                  label="اسحب للتأكيد وإنشاء الإيصال" 
+                  label={t('receipt.slide_to_confirm')} 
                 />
               )}
               <button
@@ -669,7 +675,7 @@ export function CreateReceiptPanel({ isLoading, onSuccess, onError, initialData,
                 onClick={() => setShowConfirmModal(false)}
                 className="w-full py-2 text-xs font-semibold text-slate-450 hover:text-slate-600 transition-colors text-center disabled:opacity-40"
               >
-                إلغاء
+                {t('receipt.cancel')}
               </button>
             </div>
           </div>

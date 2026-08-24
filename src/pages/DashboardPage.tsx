@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDashboard } from '../hooks/dashboard'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DaySelectorBar } from '../components/dashboard/DaySelectorBar'
@@ -16,6 +17,7 @@ import { getTodayISO } from '../utils/formatting'
 
 export function DashboardPage() {
   const isMobile = useIsMobile()
+  const { t } = useTranslation('dashboard')
   const [openGroupId, setOpenGroupId] = useState<number | null>(null)
   
   const [selectedDate, setSelectedDate] = useState(getTodayISO)
@@ -65,7 +67,7 @@ export function DashboardPage() {
     <div className="min-h-screen bg-surface">
       {isMobile ? (
         <>
-          <MobileTopBar title="Dashboard" />
+          <MobileTopBar title={t('page_title')} />
           <main className="p-4 flex-1 space-y-6">
             <DaySelectorBar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
             <InstructorSelectorBar
@@ -85,11 +87,11 @@ export function DashboardPage() {
                 <span>{error}</span>
               </div>
             ) : (
-              <section aria-label="Scheduled groups" className="flex flex-col gap-4 pb-24">
+              <section aria-label={t('scheduled_groups')} className="flex flex-col gap-4 pb-24">
                 {filteredScheduleItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center p-10 text-slate-500 bg-white rounded-xl border border-slate-200">
                     <span className="material-symbols-outlined text-4xl mb-3 opacity-50" aria-hidden="true">event_busy</span>
-                    <p className="text-sm">No groups scheduled</p>
+                    <p className="text-sm">{t('empty.no_groups')}</p>
                   </div>
                 ) : (
                   filteredScheduleItems.map((item, index) => {
@@ -100,7 +102,7 @@ export function DashboardPage() {
                       <MobileGroupCard
                         key={`mobile-group-${item.group_id}-${index}`}
                         group={group}
-                        instructorName={group.instructor_id ? instructors[group.instructor_id]?.name || 'TBA' : 'TBA'}
+                        instructorName={group.instructor_id ? instructors[group.instructor_id]?.name || t('fallbacks.tba') : t('fallbacks.tba')}
                         onOpenAttendance={() => setOpenGroupId(item.group_id)}
                       />
                     )
@@ -118,11 +120,11 @@ export function DashboardPage() {
               <AttendanceMobileSheet
               isOpen={true}
               groupId={openGroupId}
-              groupName={groupInfo.name || 'Unknown Group'}
+              groupName={groupInfo.name || t('fallbacks.unknown_group')}
               instructorName={
                 groupInstructorId
-                  ? instructors[groupInstructorId]?.name || 'TBA'
-                  : 'TBA'
+                  ? instructors[groupInstructorId]?.name || t('fallbacks.tba')
+                  : t('fallbacks.tba')
               }
               sessions={getGroupData(openGroupId).sessions}
               roster={getGroupData(openGroupId).roster}
@@ -134,7 +136,7 @@ export function DashboardPage() {
         </>
       ) : (
         <>
-          <TopNavbar activePage="Dashboard" />
+          <TopNavbar activePage={t('page_title')} />
           
           <main className="p-10 flex-1 space-y-8">
             <QuickActionsGrid todaySessionCount={scheduleItems.length} />
@@ -156,11 +158,11 @@ export function DashboardPage() {
                 <span>{error}</span>
               </div>
             ) : (
-              <section aria-label="Scheduled groups" className="flex flex-col gap-8 pb-20">
+              <section aria-label={t('scheduled_groups')} className="flex flex-col gap-8 pb-20">
                 {filteredScheduleItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center p-16 text-on-surface-variant bg-white rounded-lg border border-slate-200">
                     <span className="material-symbols-outlined text-5xl mb-4 opacity-50" aria-hidden="true">event_busy</span>
-                    <p>No groups scheduled for this day</p>
+                    <p>{t('empty.no_groups_today')}</p>
                   </div>
               ) : (
                 filteredScheduleItems.map((item, index) => {
@@ -173,9 +175,9 @@ export function DashboardPage() {
                       className={`relative ${!isLast ? 'pb-8 border-b-2 border-slate-200' : ''}`}
                     >
                         <GroupSessionCard
-                          groupName={group?.name || 'Unknown Group'}
-                          courseName={group?.course_name || 'Unknown Course'}
-                          instructorName={group?.instructor_id ? instructors[group.instructor_id]?.name || 'TBA' : 'TBA'}
+                          groupName={group?.name || t('fallbacks.unknown_group')}
+                          courseName={group?.course_name || t('fallbacks.unknown_course')}
+                          instructorName={group?.instructor_id ? instructors[group.instructor_id]?.name || t('fallbacks.tba') : t('fallbacks.tba')}
                           sessions={groupData.sessions}
                           roster={groupData.roster}
                           groupId={item.group_id}

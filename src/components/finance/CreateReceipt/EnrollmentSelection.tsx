@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useStudentEnrollments } from '../../../hooks/finance/useStudentEnrollments'
 import type { StudentEnrollmentInfo } from '../../../hooks/finance/useStudentEnrollments'
 
@@ -24,6 +25,7 @@ function getLevelCircleStyle(level: number) {
 }
 
 export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }: EnrollmentSelectionProps) {
+  const { t } = useTranslation('finance')
   const { enrollments, loading, error } = useStudentEnrollments(studentId)
 
   // Auto-select if only one enrollment
@@ -36,10 +38,10 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
   if (loading) {
     return (
       <div className="w-full">
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">الاشتراك</label>
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">{t('enrollment.title')}</label>
         <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-500">
           <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-500 border-t-transparent" />
-          جاري تحميل الاشتراكات...
+          {t('enrollment.loading')}
         </div>
       </div>
     )
@@ -48,7 +50,7 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
   if (error) {
     return (
       <div className="w-full">
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">الاشتراك</label>
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">{t('enrollment.title')}</label>
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 flex items-center gap-2">
           <span className="material-symbols-outlined text-base">error</span>
           {error}
@@ -60,10 +62,10 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
   if (enrollments.length === 0) {
     return (
       <div className="w-full">
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">الاشتراك</label>
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">{t('enrollment.title')}</label>
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700 flex items-center gap-2">
           <span className="material-symbols-outlined text-base">warning</span>
-          لم يتم العثور على اشتراكات نشطة لهذا الطالب
+          {t('enrollment.no_enrollments')}
         </div>
       </div>
     )
@@ -78,16 +80,16 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
   return (
     <div className="w-full">
       <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-        {enrollments.length === 1 ? 'الاشتراك (محدد تلقائياً)' : 'اختر الاشتراك *'}
+        {enrollments.length === 1 ? t('enrollment.auto_selected') : t('enrollment.select_enrollment')}
       </label>
 
       {/* Warning Banner Placement (above the cards grid) */}
       {selectedEnrollment && selectedEnrollment.remaining_balance <= 0 && (
         <div className="mb-4 p-4 bg-rose-50 border-l-4 border-rose-500 rounded-r-xl text-sm text-rose-905 flex items-start gap-3 shadow-sm animate-fadeIn" dir="rtl">
           <span className="material-symbols-outlined text-rose-600 shrink-0 text-xl font-bold select-none animate-bounce" aria-hidden="true">warning</span>
-          <div className="text-right">
-            <span className="font-bold block mb-0.5 text-rose-900">تحذير: اشتراك مدفوع بالكامل</span>
-            المستوى المختار لـ <strong className="font-extrabold">{selectedEnrollment.group_name}</strong> مدفوع بالكامل بالفعل (المتبقي 0.00 جنيه). تسجيل دفعة جديدة سيؤدي إلى دفع زائد. يرجى التأكيد مع ولي الأمر قبل المتابعة.
+                  <div className="text-end">
+            <span className="font-bold block mb-0.5 text-rose-900">{t('enrollment.fully_paid_warning')}</span>
+            {t('enrollment.fully_paid_message', { group: selectedEnrollment.group_name })}
           </div>
         </div>
       )}
@@ -99,7 +101,7 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
           const isZeroOrNegative = enrollment.remaining_balance <= 0
 
           // Style definitions based on paid/unpaid status
-          let cardStyle = "w-full p-4 rounded-xl border text-left transition-all duration-200 flex flex-col items-stretch gap-3 cursor-pointer select-none"
+          let cardStyle = "w-full p-4 rounded-xl border text-start transition-all duration-200 flex flex-col items-stretch gap-3 cursor-pointer select-none"
           if (isSelected) {
             if (isZeroOrNegative) {
               cardStyle += " border-emerald-500 bg-emerald-50/10 ring-1 ring-emerald-500 shadow-sm"
@@ -136,7 +138,7 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="font-semibold text-slate-800 text-sm leading-tight hover:text-secondary hover:underline flex items-center gap-1 text-left"
+                        className="font-semibold text-slate-800 text-sm leading-tight hover:text-secondary hover:underline flex items-center gap-1 text-start"
                       >
                         {enrollment.group_name}
                         <span className="material-symbols-outlined text-[14px] text-slate-400 select-none">open_in_new</span>
@@ -144,17 +146,17 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
                       {/* Payment Status Badge */}
                       {hasOutstanding ? (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-600 text-white border border-rose-500 shadow-sm uppercase tracking-wider shrink-0 select-none">
-                          غير مدفوع
+                          {t('enrollment.unpaid')}
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white border border-emerald-500 shadow-sm uppercase tracking-wider shrink-0 select-none">
-                          مدفوع
+                          {t('enrollment.paid')}
                         </span>
                       )}
                     </div>
 
                     {enrollment.course_name && enrollment.course_name !== enrollment.group_name && (
-                      <p className="text-xs text-slate-500 font-medium truncate text-left">
+                      <p className="text-xs text-slate-500 font-medium truncate text-start">
                         Course: {enrollment.course_name}
                       </p>
                     )}
@@ -175,10 +177,10 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
                         className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-secondary/15 hover:text-secondary border border-slate-200 transition-colors"
-                        title="تعديل الاشتراك"
+                        title={t('enrollment.edit')}
                       >
                         <span className="material-symbols-outlined text-[12px]">edit_document</span>
-                        تعديل
+                        {t('enrollment.edit')}
                       </a>
                       <span>•</span>
                       {enrollment.instructor_name && (
@@ -202,25 +204,25 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
                       {isSelected ? 'radio_button_checked' : 'radio_button_unchecked'}
                     </span>
                     <span className="text-xs font-medium text-slate-500">
-                      {isSelected ? 'محدد' : 'تحديد'}
+                      {isSelected ? t('enrollment.selected') : t('enrollment.select')}
                     </span>
                   </div>
 
-                  <div className="text-right">
+          <div className="text-end">
                     {hasOutstanding ? (
                       <span className="text-xs font-bold text-rose-600" dir="rtl">
-                        متبقي {enrollment.remaining_balance.toFixed(0)} ج.م
+                        {t('enrollment.remaining', { amount: enrollment.remaining_balance.toFixed(0) })}
                       </span>
                     ) : (
                       <span className="text-xs font-bold text-emerald-600" dir="rtl">
-                        متبقي 0 ج.م
+                        {t('enrollment.remaining', { amount: '0' })}
                       </span>
                     )}
                   </div>
                 </div>
 
                 {enrollment.notes && (
-                  <div className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-slate-500 text-[11px] truncate flex items-center gap-1.5 select-text text-left">
+                  <div className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-slate-500 text-[11px] truncate flex items-center gap-1.5 select-text text-start">
                     <span className="material-symbols-outlined text-[14px] shrink-0 text-slate-400">info</span>
                     <span className="truncate">Note: {enrollment.notes}</span>
                   </div>
@@ -229,17 +231,17 @@ export function EnrollmentSelection({ studentId, selectedEnrollment, onSelect }:
                 {isSelected && (
                   <div className="mt-1 pt-3 border-t border-slate-200/60 grid grid-cols-3 gap-2 text-center text-xs animate-fadeIn">
                     <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-                      <span className="block text-slate-400 font-medium mb-0.5">إجمالي الرسوم</span>
-                      <span className="font-semibold text-slate-700">{(enrollment.amount_due ?? 0).toFixed(2)} ج.م</span>
+                      <span className="block text-slate-400 font-medium mb-0.5">{t('enrollment.total_fees')}</span>
+                      <span className="font-semibold text-slate-700">{(enrollment.amount_due ?? 0).toFixed(2)} {t('currency')}</span>
                     </div>
                     <div className="bg-emerald-50/30 p-2 rounded-lg border border-emerald-100/50">
-                      <span className="block text-emerald-600 font-medium mb-0.5">المدفوع بالفعل</span>
-                      <span className="font-semibold text-emerald-700">{enrollment.amount_paid.toFixed(2)} ج.م</span>
+                      <span className="block text-emerald-600 font-medium mb-0.5">{t('enrollment.already_paid')}</span>
+                      <span className="font-semibold text-emerald-700">{enrollment.amount_paid.toFixed(2)} {t('currency')}</span>
                     </div>
                     <div className={`${hasOutstanding ? 'bg-rose-50/40 border-rose-100/50' : 'bg-emerald-50/20 border-emerald-100/50'} p-2 rounded-lg border`}>
-                      <span className="block text-slate-550 font-medium mb-0.5">المتبقي</span>
+                      <span className="block text-slate-550 font-medium mb-0.5">{t('enrollment.remaining_label')}</span>
                       <span className={`font-bold ${hasOutstanding ? 'text-rose-700' : 'text-emerald-700'}`}>
-                        {enrollment.remaining_balance.toFixed(2)} ج.م
+                        {enrollment.remaining_balance.toFixed(2)} {t('currency')}
                       </span>
                     </div>
                   </div>

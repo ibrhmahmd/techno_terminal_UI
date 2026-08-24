@@ -38,7 +38,7 @@ export default {
       },
       fontFamily: {
         'headline': ['Space Grotesk', 'system-ui', 'sans-serif'],
-        'body': ['Inter', 'system-ui', 'sans-serif'],
+        'body': ['Inter', 'Noto Sans Arabic', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         'DEFAULT': '0.125rem',

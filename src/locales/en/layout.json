@@ -1,0 +1,32 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "groups": "Groups",
+    "directory": "Directory",
+    "courses": "Courses",
+    "enrollments": "Enrollments",
+    "finance": "Finance",
+    "competitions": "Competitions",
+    "certificates": "Certificates",
+    "reports": "Reports",
+    "staff": "Staff",
+    "tasks": "Tasks",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "capabilities": "Capabilities"
+  },
+  "sections": {
+    "core_operations": "Core Operations",
+    "management": "Management",
+    "programs": "Programs",
+    "resources": "Resources"
+  },
+  "brand": "TechnoTerminal",
+  "sign_out": "Sign Out",
+  "more": "More",
+  "aria": {
+    "mobile_navigation": "Mobile navigation",
+    "more_navigation_options": "More navigation options",
+    "more_navigation": "More navigation"
+  }
+}
