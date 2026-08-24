@@ -16,9 +16,14 @@ export async function getEmployees(
   const { page = 1, page_size = 20, q, employment_type, include_deleted } = params
   // Cap page_size at 100 to match backend API maximum
   const capped_page_size = Math.min(page_size, 100)
+  // Only send include_deleted when true — omitting it lets the backend default to excluding deleted records
+  const queryParams: Record<string, string | number | boolean> = { page, page_size: capped_page_size }
+  if (q) queryParams.q = q
+  if (employment_type) queryParams.employment_type = employment_type
+  if (include_deleted) queryParams.include_deleted = true
   const response = await client.get<ApiResponse<EmployeeListItem[]> & { total: number; skip: number; limit: number }>(
     '/hr/employees',
-    { params: { page, page_size: capped_page_size, q, employment_type, include_deleted } }
+    { params: queryParams }
   )
   return response.data
 }
