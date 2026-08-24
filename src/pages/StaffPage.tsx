@@ -106,29 +106,45 @@ export function StaffPage() {
     setViewingEmployeeId(id)
   }
 
+  // Confirmation dialog state
+  const [confirmAction, setConfirmAction] = useState<{ title: string; message: string; onConfirm: () => void; variant: 'danger' | 'success' } | null>(null)
+
   // Delete handler
   const handleDeleteEmployee = async (id: number) => {
     const employee = employees.find(e => e.id === id)
     const name = employee?.full_name ?? 'this employee'
-    if (!window.confirm(`Are you sure you want to delete ${name}? This will hide them from the staff list and block their login.`)) return
-    try {
-      await deleteMutation.mutateAsync(id)
-      setViewingEmployeeId(null)
-      showToast('Employee deleted successfully', 'success')
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to delete employee', 'error')
-    }
+    setConfirmAction({
+      title: 'Delete Employee',
+      message: `Are you sure you want to delete ${name}? This will hide them from the staff list and block their login.`,
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await deleteMutation.mutateAsync(id)
+          setViewingEmployeeId(null)
+          showToast('Employee deleted successfully', 'success')
+        } catch (err) {
+          showToast(err instanceof Error ? err.message : 'Failed to delete employee', 'error')
+        }
+      },
+    })
   }
 
   // Restore handler
   const handleRestoreEmployee = async (id: number) => {
-    try {
-      await restoreMutation.mutateAsync(id)
-      setViewingEmployeeId(null)
-      showToast('Employee restored successfully', 'success')
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to restore employee', 'error')
-    }
+    setConfirmAction({
+      title: 'Restore Employee',
+      message: 'This will restore the employee to the staff list. Their login will NOT be automatically re-enabled.',
+      variant: 'success',
+      onConfirm: async () => {
+        try {
+          await restoreMutation.mutateAsync(id)
+          setViewingEmployeeId(null)
+          showToast('Employee restored successfully', 'success')
+        } catch (err) {
+          showToast(err instanceof Error ? err.message : 'Failed to restore employee', 'error')
+        }
+      },
+    })
   }
 
   // Find editing employee info from the list
@@ -312,6 +328,40 @@ export function StaffPage() {
           isLoading={createAccountMutation.isPending}
         />
       )}
+
+      {/* Confirmation Dialog */}
+      <Modal
+        isOpen={!!confirmAction}
+        onClose={() => setConfirmAction(null)}
+        title={confirmAction?.title ?? ''}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">{confirmAction?.message}</p>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setConfirmAction(null)}
+              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                const action = confirmAction
+                setConfirmAction(null)
+                await action?.onConfirm()
+              }}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors ${
+                confirmAction?.variant === 'danger'
+                  ? 'bg-red-600 hover:bg-red-700'
+                  : 'bg-green-600 hover:bg-green-700'
+              }`}
+            >
+              {confirmAction?.variant === 'danger' ? 'Delete' : 'Restore'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
