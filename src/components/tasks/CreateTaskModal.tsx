@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { CreateTaskInput, TaskPriority, TaskRecurrencePattern } from '../../api/tasks'
 import { TASK_PRIORITIES, TASK_RECURRENCE_PATTERNS } from '../../api/tasks'
 import { useCreateTask } from '../../hooks/useTasks'
@@ -11,6 +12,7 @@ interface CreateTaskModalProps {
 }
 
 export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
+  const { t } = useTranslation('tasks')
   const { showToast, ToastComponent } = useToast()
   const createMutation = useCreateTask()
   const { employees } = useEmployees()
@@ -97,11 +99,11 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
 
     try {
       await createMutation.mutateAsync(data)
-      showToast('Task created successfully', 'success')
+      showToast(t('toast.created_successfully'), 'success')
       resetForm()
       onClose()
     } catch {
-      showToast('Failed to create task', 'error')
+      showToast(t('toast.create_failed'), 'error')
     }
   }
 
@@ -124,7 +126,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
           className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto outline-none"
         >
           <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-            <h2 id="create-task-title" className="text-lg font-semibold text-slate-900 font-headline">Create Task</h2>
+            <h2 id="create-task-title" className="text-lg font-semibold text-slate-900 font-headline">{t('create_modal.title')}</h2>
             <button onClick={onClose} aria-label="Close create task dialog" className="text-slate-400 hover:text-slate-600">
               <span className="material-symbols-outlined" aria-hidden="true">close</span>
             </button>
@@ -133,25 +135,25 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
           <div className="px-6 py-4 space-y-4">
             {/* Title */}
             <div>
-              <label htmlFor="task-title" className="block text-sm font-medium text-slate-700 mb-1">Title *</label>
+              <label htmlFor="task-title" className="block text-sm font-medium text-slate-700 mb-1">{t('create_modal.title_label')}</label>
               <input
                 id="task-title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Task title"
+                placeholder={t('create_modal.title_placeholder')}
                 className="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
               />
             </div>
 
             {/* Description */}
             <div>
-              <label htmlFor="task-description" className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+              <label htmlFor="task-description" className="block text-sm font-medium text-slate-700 mb-1">{t('create_modal.description_label')}</label>
               <textarea
                 id="task-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Optional description"
+                placeholder={t('create_modal.description_placeholder')}
                 rows={3}
                 className="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 resize-none"
               />
@@ -160,7 +162,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
             {/* Priority + Due Date */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="task-priority" className="block text-sm font-medium text-slate-700 mb-1">Priority</label>
+                <label htmlFor="task-priority" className="block text-sm font-medium text-slate-700 mb-1">{t('create_modal.priority_label')}</label>
                 <select
                   id="task-priority"
                   value={priority}
@@ -173,7 +175,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                 </select>
               </div>
               <div>
-                <label htmlFor="task-due-date" className="block text-sm font-medium text-slate-700 mb-1">Due Date</label>
+                <label htmlFor="task-due-date" className="block text-sm font-medium text-slate-700 mb-1">{t('create_modal.due_date_label')}</label>
                 <input
                   id="task-due-date"
                   type="date"
@@ -186,14 +188,14 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
 
             {/* Assignee */}
             <div>
-              <label htmlFor="task-assignee" className="block text-sm font-medium text-slate-700 mb-1">Assign To</label>
+              <label htmlFor="task-assignee" className="block text-sm font-medium text-slate-700 mb-1">{t('create_modal.assign_to_label')}</label>
               <select
                 id="task-assignee"
                 value={assignedTo}
                 onChange={(e) => setAssignedTo(e.target.value)}
                 className="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
               >
-                <option value="">Unassigned</option>
+                <option value="">{t('create_modal.unassigned')}</option>
                 {employees.map((emp) => (
                   <option key={emp.id} value={emp.id}>{emp.full_name}</option>
                 ))}
@@ -203,7 +205,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
             {/* Est. Hours + Tags */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="task-est-hours" className="block text-sm font-medium text-slate-700 mb-1">Est. Hours</label>
+                <label htmlFor="task-est-hours" className="block text-sm font-medium text-slate-700 mb-1">{t('create_modal.est_hours_label')}</label>
                 <input
                   id="task-est-hours"
                   type="number"
@@ -216,13 +218,13 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                 />
               </div>
               <div>
-                <label htmlFor="task-tags" className="block text-sm font-medium text-slate-700 mb-1">Tags</label>
+                <label htmlFor="task-tags" className="block text-sm font-medium text-slate-700 mb-1">{t('create_modal.tags_label')}</label>
                 <input
                   id="task-tags"
                   type="text"
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
-                  placeholder="Comma-separated"
+                  placeholder={t('create_modal.tags_placeholder')}
                   className="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 />
               </div>
@@ -237,13 +239,13 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                   onChange={(e) => setIsRecurring(e.target.checked)}
                   className="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                 />
-                <span className="text-sm font-medium text-slate-700">Recurring task</span>
+                <span className="text-sm font-medium text-slate-700">{t('create_modal.recurring_task')}</span>
               </label>
 
               {isRecurring && (
                 <div className="mt-3 grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="task-recurrence-pattern" className="block text-sm font-medium text-slate-700 mb-1">Pattern</label>
+                    <label htmlFor="task-recurrence-pattern" className="block text-sm font-medium text-slate-700 mb-1">{t('create_modal.pattern_label')}</label>
                     <select
                       id="task-recurrence-pattern"
                       value={recurrencePattern}
@@ -257,14 +259,14 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                   </div>
                   {recurrencePattern === 'weekly' && (
                     <div>
-                      <label htmlFor="task-recurrence-day" className="block text-sm font-medium text-slate-700 mb-1">Day of Week</label>
+                      <label htmlFor="task-recurrence-day" className="block text-sm font-medium text-slate-700 mb-1">{t('create_modal.day_of_week_label')}</label>
                       <select
                         id="task-recurrence-day"
                         value={recurrenceDayOfWeek}
                         onChange={(e) => setRecurrenceDayOfWeek(e.target.value)}
                         className="w-full text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                       >
-                        <option value="">Any</option>
+                        <option value="">{t('create_modal.any')}</option>
                         <option value="0">Sunday</option>
                         <option value="1">Monday</option>
                         <option value="2">Tuesday</option>
@@ -277,7 +279,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                   )}
                   {recurrencePattern === 'custom_interval' && (
                     <div>
-                      <label htmlFor="task-recurrence-interval" className="block text-sm font-medium text-slate-700 mb-1">Interval (days)</label>
+                      <label htmlFor="task-recurrence-interval" className="block text-sm font-medium text-slate-700 mb-1">{t('create_modal.interval_days_label')}</label>
                       <input
                         id="task-recurrence-interval"
                         type="number"
@@ -300,14 +302,14 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
             >
-              Cancel
+              {t('create_modal.cancel')}
             </button>
             <button
               onClick={handleSubmit}
               disabled={!title.trim() || createMutation.isPending}
               className="px-4 py-2 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors disabled:opacity-50"
             >
-              {createMutation.isPending ? 'Creating...' : 'Create Task'}
+              {createMutation.isPending ? t('create_modal.creating') : t('create_modal.create_task')}
             </button>
           </div>
         </div>

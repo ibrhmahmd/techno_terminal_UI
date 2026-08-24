@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useNavDirection } from '../../../hooks/useNavDirection'
 
 export type LogsGroupByField = 'date' | 'recipient' | null
 
@@ -18,13 +19,20 @@ const OPTIONS: Array<{ value: LogsGroupBySelectorValue; label: string; icon: str
 ]
 
 export function LogsGroupBySelector({ value, onChange, rightSlot }: LogsGroupBySelectorProps) {
+  const { getNextIndex } = useNavDirection()
+
   const handleKeyDown = (index: number) => (e: React.KeyboardEvent) => {
     let next = index
-    if (e.key === 'ArrowRight') next = (index + 1) % OPTIONS.length
-    else if (e.key === 'ArrowLeft') next = (index - 1 + OPTIONS.length) % OPTIONS.length
-    else if (e.key === 'Home') next = 0
-    else if (e.key === 'End') next = OPTIONS.length - 1
-    else return
+    const navIndex = getNextIndex(e, index, OPTIONS.length)
+    if (navIndex !== null) {
+      next = navIndex
+    } else if (e.key === 'Home') {
+      next = 0
+    } else if (e.key === 'End') {
+      next = OPTIONS.length - 1
+    } else {
+      return
+    }
     e.preventDefault()
     onChange(OPTIONS[next].value)
   }

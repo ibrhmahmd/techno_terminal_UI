@@ -1,0 +1,141 @@
+{
+  "page_title": "دليل الطلاب",
+  "tabs": {
+    "students": "الطلاب",
+    "parents": "أولياء الأمور",
+    "waiting": "قائمة الانتظار",
+    "advanced": "بحث متقدم"
+  },
+  "empty": {
+    "no_students": "مفيش طلاب",
+    "no_parents": "مفيش أولياء أمور",
+    "no_waiting": "مفيش طلاب في قائمة الانتظار",
+    "no_results": "ملحقناش نتائج تطابق بحثك",
+    "select_student": "اختار طالب عشان تشوف تفاصيله",
+    "clear_filters": "امسح كل الفلاتر",
+    "no_students_letter": "مفيش طلاببدأ بحرف \"{{letter}}\"",
+    "no_deleted_students": "مفيش طلاب محذوفين",
+    "no_deleted_students_letter": "مفيش طلاب محذوفينبدأ بحرف \"{{letter}}\"",
+    "no_students_match_search": "مفيش طلاب يطابقوا بحثك",
+    "no_waiting_students": "مفيش طلاب في قائمة الانتظار",
+    "no_parents_match_search": "مفيش أولياء أمور يطابقوا بحثك",
+    "no_filtered_students": "مفيش طلاب يطابقوا الفلاتر"
+  },
+  "actions": {
+    "add_student": "زيد طالب",
+    "add_parent": "زيد ولي أمر",
+    "export": "صدّر",
+    "filter": "تصفية",
+    "group_by": "رتّب حسب",
+    "sort_by": "رتّب",
+    "refresh": "حدّث"
+  },
+  "toast": {
+    "student_created": "الطالب اتضاف بنجاح",
+    "student_updated": "الطالب اتعدّل بنجاح",
+    "student_deleted": "الطالب اتحذف بنجاح",
+    "parent_created": "ولي الأمر اتضاف بنجاح",
+    "parent_updated": "ولي الأمر اتعدّل بنجاح",
+    "create_failed": "مقدرش أضيف",
+    "update_failed": "مقدرش أحدّث",
+    "delete_failed": "مقدرش أحذف",
+    "activity_type_required": "نوع النشاط مطلوب.",
+    "invalid_date_format": "صيغة التاريخ مش صحيحة.",
+    "activity_updated": "النشاط اتعدّل.",
+    "activity_logged": "الностью اتتسجّل.",
+    "operation_failed": "العملية فشلت."
+  },
+  "student_form": {
+    "full_name_label": "الاسم الكامل",
+    "full_name_placeholder": "اكتب الاسم الكامل للطالب",
+    "phone_placeholder": "+20 123 456 7890",
+    "phone_label": "التليفون",
+    "birth_date_label": "تاريخ الميلاد",
+    "notes_label": "ملاحظات",
+    "notes_placeholder": "ملاحظات إضافية عن الطالب...",
+    "gender_label": "الجنس",
+    "status_label": "الحالة",
+    "log_initial_activity": "سجّل ملاحظة نشاط أولية",
+    "activity_type_label": "نوع النشاط",
+    "activity_description_label": "وصف النشاط",
+    "activity_description_placeholder": "صف النشاط الأولي (مثلاً: ولي الأمر اتصل عشان يحدد موعد تعريف)...",
+    "cancel": "إلغاء",
+    "create_student": "إنشاء طالب",
+    "save_changes": "حفظ التعديلات",
+    "please_consider_adding": "فكر تضيف:"
+  },
+  "parent_form": {
+    "full_name_placeholder": "اكتب الاسم الكامل لولي الأمر",
+    "notes_placeholder": "ملاحظات إضافية...",
+    "cancel": "إلغاء",
+    "create_parent": "إنشاء ولي أمر",
+    "save_changes": "حفظ التعديلات"
+  },
+  "log_activity": {
+    "title_edit": "تعديل سجل النشاط",
+    "title_log": "تسجيل نشاط يدوي",
+    "activity_type_label": "نوع النشاط",
+    "subtype_label": "النوع الفرعي",
+    "subtype_placeholder": "مثلاً: system_import, manual_fix",
+    "custom_type_label": "اسم نوع النشاط المخصص *",
+    "custom_type_placeholder": "مثلاً: scholarship_awarded, interview_completed",
+    "description_label": "الوصف / تفاصيل السجل",
+    "description_placeholder": "صف اللي حصل...",
+    "logged_date_label": "تاريخ ووقت التسجيل",
+    "reference_label": "الكيان المرجعي",
+    "no_reference": "من غير مرجع",
+    "metadata_label": "حقول البيانات الوصفية المخصصة",
+    "add_field": "زيد حقل",
+    "no_custom_fields": "مفيش حقول مخصصة اتضافت لسه. زيد وسوم بيانات وصفية زي أكواد الخصم أو المراجع المخصصة أو تفاصيل الموافقة.",
+    "key_placeholder": "المفتاح (مثلاً: coupon_code)",
+    "value_placeholder": "القيمة (مثلاً: SUMMER50)",
+    "cancel": "إلغاء",
+    "save_changes": "حفظ التعديلات",
+    "log_activity": "سجّل النشاط"
+  },
+  "link_parent": {
+    "title": "ربط ولي أمر بالطالب",
+    "search_label": "البحث عن أولياء الأمور",
+    "search_placeholder": "ابحث بالاسم...",
+    "search_button": "بحث",
+    "search_results": "نتائج البحث ({{count}})",
+    "no_results": "ملحقناش أولياء أمور. جرّب كلمة بحث تانية.",
+    "linked_parents": "أولياء الأمور المربوطين حالياً",
+    "no_linked": "مفيش أولياء أمور مربوطين بالطالب ده.",
+    "link": "ربط",
+    "unlink": "فك الربط"
+  },
+  "waiting_list": {
+    "search_placeholder": "ابحث بالاسم أو التليفون...",
+    "search_label": "ابحث في قائمة الانتظار",
+    "load_failed": "مش عارف أحمّل قائمة الانتظار",
+    "try_again_later": "جرّب تاني بعدين",
+    "no_students": "مفيش طلاب في قائمة الانتظار",
+    "no_students_hint": "الطلاب اللي اتضافوا في قائمة الانتظار هيظهروا هنا",
+    "no_match": "مفيش طلاب يطابقوا بحثك",
+    "title": "قائمة الانتظار ({{count}} طالب)"
+  },
+  "confirm": {
+    "soft_delete_title": "نقل للسلة",
+    "soft_delete_message": "متأكد إنك عايز تنقل \"{{name}}\" للسلة؟ تقدر ترجّعهم بعدين.",
+    "hard_delete_title": "حذف نهائي",
+    "hard_delete_message": "متأكد إنك عايز تحذف \"{{name}}\" نهائياً؟ العملية دي مش هترجع تاني.",
+    "cancel": "إلغاء"
+  },
+  "filter_panel": {
+    "title": "تصفية الطلاب",
+    "reset": "صفر تاني",
+    "apply": "طبّق",
+    "found_count": "لقينا <strong>{{count}}</strong> طالب",
+    "select_filters_hint": "اختار الفلاتر واعمل Apply عشان تدور"
+  },
+  "modal": {
+    "create_student": "إنشاء طالب",
+    "edit_student": "عدّل الطالب",
+    "create_parent": "إنشاء ولي أمر",
+    "enroll_student": "سجّل {{name}}"
+  },
+  "enroll_toast": {
+    "success": "الطالب اتسجّل بنجاح!"
+  }
+}

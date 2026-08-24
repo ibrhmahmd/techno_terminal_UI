@@ -1,0 +1,77 @@
+{
+  "page_title": "Enrollments",
+  "subtitle": "Create new enrollments, modify financial details, or drop students",
+  "tabs": {
+    "create": "Create",
+    "modify": "Modify",
+    "drop": "Drop"
+  },
+  "enroll_panel": {
+    "select_student": "1. Select Student",
+    "select_group": "2. Select Group",
+    "payment_details": "3. Payment Details",
+    "course_fee": "Course Fee (EGP)",
+    "discount": "Discount (EGP)",
+    "sibling_discount_auto": "(Sibling discount auto-applied)",
+    "net_amount": "Net Amount",
+    "notes": "Notes",
+    "notes_placeholder": "Optional notes about this enrollment...",
+    "enroll_student": "Enroll Student"
+  },
+  "modify_panel": {
+    "title": "Modify Enrollment",
+    "subtitle": "Edit financial details and administrative notes",
+    "select_student": "1. Select Student",
+    "choose_enrollment": "2. Choose Enrollment",
+    "no_enrollments": "This student has no active enrollments to manage.",
+    "edit_details": "3. Edit Details",
+    "amount_due": "Amount Due",
+    "group_default": "Group Default",
+    "leave_blank_price": "Leave blank to use the group's default price.",
+    "discount_applied": "Discount Applied",
+    "internal_notes": "Internal Notes",
+    "add_notes_placeholder": "Add administrative notes...",
+    "save_changes": "Save Changes"
+  },
+  "drop_panel": {
+    "title": "Drop or Transfer",
+    "subtitle": "Withdraw a student or transfer them to another group",
+    "select_student": "1. Select Student",
+    "choose_enrollment": "2. Choose Enrollment",
+    "no_enrollments": "This student has no active enrollments to manage.",
+    "choose_action": "3. Choose Action",
+    "transfer_group": "Transfer Group",
+    "transfer_description": "Move this student to a different active group.",
+    "destination_group": "Destination Group",
+    "execute_transfer": "Execute Transfer",
+    "drop_enrollment": "Drop Enrollment",
+    "drop_description": "Permanently withdraw this student from the group.",
+    "notes_optional": "Notes (Optional)",
+    "reason_placeholder": "Reason for dropping...",
+    "confirm_drop": "Confirm Drop"
+  },
+  "edit_modal": {
+    "title": "Edit Enrollment Details",
+    "not_found": "Enrollment details not found.",
+    "amount_due": "Amount Due",
+    "group_default": "Group Default",
+    "leave_blank_price": "Leave blank to use group's default price.",
+    "discount_applied": "Discount Applied",
+    "internal_notes": "Internal Notes",
+    "add_notes_placeholder": "Add administrative notes...",
+    "cancel": "Cancel",
+    "save_changes": "Save Changes"
+  },
+  "toast": {
+    "select_student_group": "Please select both student and group",
+    "enrolled_success": "Successfully enrolled",
+    "enroll_failed": "Failed to create enrollment",
+    "updated_success": "Enrollment updated successfully",
+    "update_failed": "Failed to update enrollment.",
+    "transfer_select_group": "Please select a target group for the transfer.",
+    "transfer_success": "Successfully transferred student to",
+    "transfer_failed": "Transfer failed. Please verify the student state and try again.",
+    "drop_success": "Successfully dropped student enrollment",
+    "drop_failed": "Drop failed. Please verify the student state and try again."
+  }
+}

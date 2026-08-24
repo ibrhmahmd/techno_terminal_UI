@@ -232,7 +232,7 @@ function TimelineView({
             <Calendar className="w-4 h-4 text-slate-400" />
             <h4 className="text-sm font-medium text-slate-600">{date}</h4>
           </div>
-          <div className="space-y-3 ml-7">
+          <div className="space-y-3 ms-7">
             {items.map((item, idx) => (
               <TimelineItem
                 key={idx}
@@ -308,7 +308,7 @@ function TimelineItem({
 
       {/* Admin Actions */}
       {isAdmin && (
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 self-start ml-2 bg-white/90 backdrop-blur shadow-sm border border-slate-200 rounded-lg p-0.5">
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 self-start ms-2 bg-white/90 backdrop-blur shadow-sm border border-slate-200 rounded-lg p-0.5">
           <button
             onClick={onLogNew}
             title="Log New Activity"
@@ -365,7 +365,7 @@ function EnrollmentsView({ enrollments }: { enrollments: EnrollmentHistoryEntry[
               </p>
             )}
           </div>
-          <div className="text-right">
+          <div className="text-end">
             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
               enrollment.action === 'enrolled'
                 ? 'bg-green-100 text-green-700'

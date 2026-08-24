@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
@@ -23,62 +24,63 @@ import { useGroupsByCourse } from '../hooks/useGroupQueries'
 
 type TabId = 'info' | 'groups'
 
-const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
-  {
-    key: 'name',
-    header: 'Group Name',
-    cell: (group) => <span className="font-semibold text-slate-900">{group.name}</span>
-  },
-  {
-    key: 'instructor_name',
-    header: 'Instructor',
-    cell: (group) => (
-      <span className="text-sm text-slate-600">
-        {group.instructor_name || <span className="text-slate-400 italic">Unassigned</span>}
-      </span>
-    )
-  },
-  {
-    key: 'current_level',
-    header: 'Level',
-    align: 'center',
-    cell: (group) => (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700">
-        Level {group.current_level}
-      </span>
-    )
-  },
-  {
-    key: 'capacity',
-    header: 'Capacity',
-    align: 'center',
-    cell: (group) => (
-      <span className="text-sm text-slate-600">{group.capacity} students</span>
-    )
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    cell: (group) => (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-        group.status === 'active'
-          ? 'bg-green-100 text-green-700'
-          : group.status === 'completed'
-            ? 'bg-blue-100 text-blue-700'
-            : 'bg-slate-100 text-slate-600'
-      }`}>
-        <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-        {group.status === 'active' ? 'Active' : group.status === 'completed' ? 'Completed' : 'Archived'}
-      </span>
-    )
-  }
-]
-
 export function CourseDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation('courses')
   const courseId = Number(id) || 0
   const { showToast, ToastComponent } = useToast()
+
+  const groupColumns: DataTableColumn<EnrichedGroupPublic>[] = [
+    {
+      key: 'name',
+      header: t('courseDetail.group_name'),
+      cell: (group) => <span className="font-semibold text-slate-900">{group.name}</span>
+    },
+    {
+      key: 'instructor_name',
+      header: t('courseDetail.instructor'),
+      cell: (group) => (
+        <span className="text-sm text-slate-600">
+          {group.instructor_name || <span className="text-slate-400 italic">{t('courseDetail.unassigned')}</span>}
+        </span>
+      )
+    },
+    {
+      key: 'current_level',
+      header: t('courseDetail.level'),
+      align: 'center',
+      cell: (group) => (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700">
+          {t('courseDetail.level')} {group.current_level}
+        </span>
+      )
+    },
+    {
+      key: 'capacity',
+      header: t('courseDetail.capacity'),
+      align: 'center',
+      cell: (group) => (
+        <span className="text-sm text-slate-600">{group.capacity} {t('courseDetail.students')}</span>
+      )
+    },
+    {
+      key: 'status',
+      header: t('common:labels.status'),
+      cell: (group) => (
+        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+          group.status === 'active'
+            ? 'bg-green-100 text-green-700'
+            : group.status === 'completed'
+              ? 'bg-blue-100 text-blue-700'
+              : 'bg-slate-100 text-slate-600'
+        }`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+          {group.status === 'active' ? t('courseDetail.active') : group.status === 'completed' ? 'Completed' : 'Archived'}
+        </span>
+      )
+    }
+  ]
 
   const [course, setCourse] = useState<Course | null>(null)
   const [stats, setStats] = useState<CourseStats | null>(null)
@@ -122,7 +124,7 @@ export function CourseDetailPage() {
       await updateCourse(course.id, data)
       setIsEditModalOpen(false)
       await loadCourseData()
-      showToast('Course updated successfully', 'success')
+      showToast(t('courseDetail.toast.update_success'), 'success')
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update course'
       setMutationError(errorMessage)
@@ -134,7 +136,7 @@ export function CourseDetailPage() {
     if (!course) return
     try {
       await deleteCourse(course.id)
-      showToast('Course deleted successfully', 'success')
+      showToast(t('courseDetail.toast.delete_success'), 'success')
       navigate('/courses')
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete course'
@@ -166,7 +168,7 @@ export function CourseDetailPage() {
         <div className="p-8 max-w-[1400px] mx-auto">
           <div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center">
             <span className="material-symbols-outlined text-4xl text-red-500 mb-2">error</span>
-            <h2 className="text-xl font-bold text-red-800 mb-2">Error</h2>
+            <h2 className="text-xl font-bold text-red-800 mb-2">{t('courseDetail.error')}</h2>
             <p className="text-red-600">{error}</p>
           </div>
         </div>
@@ -180,7 +182,7 @@ export function CourseDetailPage() {
         <TopNavbar activePage="Courses" />
         <div className="p-8 max-w-[1400px] mx-auto">
           <div className="p-12 text-center text-on-surface-variant">
-            <p>Course not found</p>
+            <p>{t('courseDetail.not_found')}</p>
           </div>
         </div>
       </div>
@@ -198,8 +200,8 @@ export function CourseDetailPage() {
             onClick={() => navigate('/courses')}
             className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 transition-colors"
           >
-            <span className="material-symbols-outlined text-sm">arrow_back</span>
-            Back to Courses
+            <span className="material-symbols-outlined text-sm icon-flip-rtl">arrow_back</span>
+            {t('courseDetail.back_to_courses')}
           </button>
 
           {/* Course Info Card */}
@@ -222,7 +224,7 @@ export function CourseDetailPage() {
                 }`}
               >
                 <span className="material-symbols-outlined text-sm">info</span>
-                Details
+                {t('courseDetail.tab_details')}
               </button>
               <button
                 onClick={() => setActiveTab('groups')}
@@ -233,7 +235,7 @@ export function CourseDetailPage() {
                 }`}
               >
                 <span className="material-symbols-outlined text-sm">group</span>
-                Groups ({groups.length})
+                {t('courseDetail.tab_groups', { count: groups.length })}
               </button>
             </div>
 
@@ -251,26 +253,26 @@ export function CourseDetailPage() {
                     <div className="p-4 bg-slate-50 rounded-lg">
                       <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
                         <span className="material-symbols-outlined text-slate-400">school</span>
-                        Course Information
+                        {t('courseDetail.course_information')}
                       </h3>
                       <dl className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <dt className="text-slate-500">Course ID</dt>
+                          <dt className="text-slate-500">{t('courseDetail.course_id')}</dt>
                           <dd className="font-medium text-slate-900">#{course.id}</dd>
                         </div>
                         <div className="flex justify-between">
-                          <dt className="text-slate-500">Category</dt>
-                          <dd className="font-medium text-slate-900">{course.category || 'Uncategorized'}</dd>
+                          <dt className="text-slate-500">{t('courseDetail.category')}</dt>
+                          <dd className="font-medium text-slate-900">{course.category || t('courses.uncategorized')}</dd>
                         </div>
                         <div className="flex justify-between">
-                          <dt className="text-slate-500">Status</dt>
+                          <dt className="text-slate-500">{t('courseDetail.status')}</dt>
                           <dd className="font-medium">
                             <span className={`px-2 py-0.5 rounded-full text-xs ${
                               course.is_active 
                                 ? 'bg-green-100 text-green-700' 
                                 : 'bg-slate-100 text-slate-600'
                             }`}>
-                              {course.is_active ? 'Active' : 'Inactive'}
+                              {course.is_active ? t('courseDetail.active') : t('courseDetail.inactive')}
                             </span>
                           </dd>
                         </div>
@@ -280,19 +282,19 @@ export function CourseDetailPage() {
                     <div className="p-4 bg-slate-50 rounded-lg">
                       <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
                         <span className="material-symbols-outlined text-slate-400">payments</span>
-                        Pricing & Structure
+                        {t('courseDetail.pricing_structure')}
                       </h3>
                       <dl className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <dt className="text-slate-500">Price Per Level</dt>
+                          <dt className="text-slate-500">{t('courseDetail.price_per_level')}</dt>
                           <dd className="font-medium text-slate-900">{course.price_per_level?.toLocaleString() ?? '0'} EGP</dd>
                         </div>
                         <div className="flex justify-between">
-                          <dt className="text-slate-500">Sessions Per Level</dt>
-                          <dd className="font-medium text-slate-900">{course.sessions_per_level} sessions</dd>
+                          <dt className="text-slate-500">{t('courseDetail.sessions_per_level')}</dt>
+                          <dd className="font-medium text-slate-900">{course.sessions_per_level} {t('courseDetail.sessions')}</dd>
                         </div>
                         <div className="flex justify-between">
-                          <dt className="text-slate-500">Estimated Duration</dt>
+                          <dt className="text-slate-500">{t('courseDetail.estimated_duration')}</dt>
                           <dd className="font-medium text-slate-900">
                             ~{Math.ceil((course.sessions_per_level || 0))} 
                           </dd>
@@ -303,7 +305,7 @@ export function CourseDetailPage() {
 
                   {course.description && (
                     <div className="p-4 bg-slate-50 rounded-lg">
-                      <h3 className="text-sm font-semibold text-slate-900 mb-2">Description</h3>
+                      <h3 className="text-sm font-semibold text-slate-900 mb-2">{t('courseDetail.description')}</h3>
                       <p className="text-sm text-slate-600 leading-relaxed">{course.description}</p>
                     </div>
                   )}
@@ -319,7 +321,7 @@ export function CourseDetailPage() {
                   actions={{
                     view: (g) => handleViewGroup(g.id)
                   }}
-                  emptyMessage="No groups are assigned to this course"
+                  emptyMessage={t('courseDetail.no_groups')}
                   emptyIcon="inbox"
                 />
               )}
@@ -332,7 +334,7 @@ export function CourseDetailPage() {
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Edit Course"
+        title={t('courseDetail.edit_title')}
       >
         <CourseForm
           mode="edit"
@@ -345,10 +347,10 @@ export function CourseDetailPage() {
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={isDeleteDialogOpen}
-        title="Delete Course"
-        message={`Are you sure you want to delete "${course.name}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('courseDetail.delete_title')}
+        message={t('courseDetail.delete_confirm', { name: course.name })}
+        confirmText={t('common:buttons.delete')}
+        cancelText={t('common:buttons.cancel')}
         onConfirm={handleDeleteCourse}
         onCancel={() => setIsDeleteDialogOpen(false)}
         variant="danger"

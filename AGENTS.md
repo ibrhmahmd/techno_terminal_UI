@@ -177,5 +177,5 @@ queryKeys.groupAttendance(groupId, levelNumber) // ['groups', id, 'attendance', 
 - **Session notes preserve dirty state**: `useEffect` only initializes notes from `sessions` if `dirtyNotes.size === 0`
 
 <!-- SPECKIT START -->
-Active plan: `specs/070-arabic-i18n-rtl/plan.md`
+Active plan: `specs/071-i18n-complete-translations/plan.md`
 <!-- SPECKIT END -->

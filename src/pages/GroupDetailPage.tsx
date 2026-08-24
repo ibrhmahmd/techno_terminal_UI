@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
@@ -16,6 +17,7 @@ import { useToast } from '../components/common/Toast'
 import type { UpdateGroupDTO, ProgressGroupLevelRequest } from '../api/academics'
 
 export function GroupDetailPage() {
+  const { t } = useTranslation('groups')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const groupId = Number(id) || 0
@@ -72,20 +74,20 @@ export function GroupDetailPage() {
   const handleUpdateGroup = async (data: UpdateGroupDTO) => {
     try {
       await updateGroup(data)
-      showToast('Group updated successfully', 'success')
+      showToast(t('toast.updated'), 'success')
       setIsEditDialogOpen(false)
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to update group', 'error')
+      showToast(err instanceof Error ? err.message : t('toast.update_failed'), 'error')
     }
   }
 
   const handleDeleteGroup = async () => {
     try {
       await deleteGroup()
-      showToast('Group deleted successfully', 'success')
+      showToast(t('toast.deleted'), 'success')
       navigate('/groups')
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to delete group', 'error')
+      showToast(err instanceof Error ? err.message : t('toast.delete_failed'), 'error')
       setIsDeleteDialogOpen(false)
     }
   }
@@ -93,10 +95,10 @@ export function GroupDetailPage() {
   const handleArchiveGroup = async () => {
     try {
       await archiveGroup()
-      showToast('Group archived successfully', 'success')
+      showToast(t('toast.archived'), 'success')
       setIsArchiveDialogOpen(false)
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to archive group', 'error')
+      showToast(err instanceof Error ? err.message : t('toast.archive_failed'), 'error')
       setIsArchiveDialogOpen(false)
     }
   }
@@ -105,11 +107,11 @@ export function GroupDetailPage() {
     try {
       const result = await levelUp()
       showToast(
-        `Group progressed from level ${result.old_level_number} to ${result.new_level_number}. ${result.sessions_created} sessions created, ${result.enrollments_migrated} enrollments migrated.`,
+        t('toast.level_up_success', { old: result.old_level_number, new: result.new_level_number, sessions: result.sessions_created, enrollments: result.enrollments_migrated }),
         'success'
       )
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to level up group', 'error')
+      showToast(err instanceof Error ? err.message : t('toast.level_up_failed'), 'error')
     }
   }
 
@@ -121,12 +123,12 @@ export function GroupDetailPage() {
     try {
       const result = await createNewLevel(data)
       showToast(
-        `Group progressed from level ${result.old_level_number} to ${result.new_level_number}. ${result.sessions_created} sessions created, ${result.enrollments_migrated} enrollments migrated.`,
+        t('toast.level_up_success', { old: result.old_level_number, new: result.new_level_number, sessions: result.sessions_created, enrollments: result.enrollments_migrated }),
         'success'
       )
       setIsProgressLevelDialogOpen(false)
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to create new level', 'error')
+      showToast(err instanceof Error ? err.message : t('toast.new_level_failed'), 'error')
     }
   }
 
@@ -144,17 +146,17 @@ export function GroupDetailPage() {
   if (!isValidGroupId) {
     return (
       <div className="min-h-screen bg-surface">
-        <TopNavbar activePage="Groups" />
+        <TopNavbar activePage={t('page_title')} />
         <div className="p-8 max-w-[1680px] mx-auto">
           <div className="p-12 bg-amber-50 border border-amber-100 rounded-xl text-center">
             <span className="material-symbols-outlined text-4xl text-amber-500 mb-2" aria-hidden="true">warning</span>
-            <h2 className="text-xl font-bold text-amber-800 mb-2">Invalid Group ID</h2>
-            <p className="text-amber-600 mb-4">The group ID in the URL is not valid.</p>
+            <h2 className="text-xl font-bold text-amber-800 mb-2">{t('detail.invalid_id')}</h2>
+            <p className="text-amber-600 mb-4">{t('detail.invalid_id_desc')}</p>
             <button
               onClick={() => navigate('/groups')}
               className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
             >
-              Back to Groups
+              {t('detail.back_to_groups')}
             </button>
           </div>
         </div>
@@ -165,7 +167,7 @@ export function GroupDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-surface">
-        <TopNavbar activePage="Groups" />
+        <TopNavbar activePage={t('page_title')} />
         <div className="flex items-center justify-center py-20">
           <LoadingSpinner />
         </div>
@@ -176,11 +178,11 @@ export function GroupDetailPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-surface">
-        <TopNavbar activePage="Groups" />
+        <TopNavbar activePage={t('page_title')} />
         <div className="p-8 max-w-[1680px] mx-auto">
           <div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center">
             <span className="material-symbols-outlined text-4xl text-red-500 mb-2" aria-hidden="true">error</span>
-            <h2 className="text-xl font-bold text-red-800 mb-2">Error</h2>
+            <h2 className="text-xl font-bold text-red-800 mb-2">{t('detail.error')}</h2>
             <p className="text-red-600">{error}</p>
           </div>
         </div>
@@ -191,10 +193,10 @@ export function GroupDetailPage() {
   if (!group) {
     return (
       <div className="min-h-screen bg-surface">
-        <TopNavbar activePage="Groups" />
+        <TopNavbar activePage={t('page_title')} />
         <div className="p-8 max-w-[1680px] mx-auto">
           <div className="p-12 text-center text-on-surface-variant">
-            <p>Group not found</p>
+            <p>{t('detail.not_found')}</p>
           </div>
         </div>
       </div>
@@ -203,7 +205,7 @@ export function GroupDetailPage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNavbar activePage="Groups" />
+      <TopNavbar activePage={t('page_title')} />
 
       <div className="p-4 md:p-8 max-w-[1680px] mx-auto space-y-6">
         <ErrorBoundary>
@@ -224,21 +226,21 @@ export function GroupDetailPage() {
           <MetricsStripCards
             items={[
               {
-                label: 'Levels & Sessions',
+                label: t('detail.levels_sessions'),
                 icon: 'school',
                 color: 'emerald',
                 isActive: activeTab === 'levels',
                 onClick: () => setActiveTab('levels'),
               },
               {
-                label: 'History',
+                label: t('detail.history'),
                 icon: 'history',
                 color: 'secondary',
                 isActive: activeTab === 'history',
                 onClick: () => setActiveTab('history'),
               },
               {
-                label: 'Competitions (soon)',
+                label: t('detail.competitions_soon'),
                 icon: 'emoji_events',
                 color: 'slate',
                 isActive: activeTab === 'competitions',
@@ -272,9 +274,9 @@ export function GroupDetailPage() {
           {activeTab === 'competitions' && (
             <div role="tabpanel" id="panel-competitions" aria-labelledby="tab-competitions" className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
               <span className="material-symbols-outlined text-6xl text-slate-300 mb-3 block" aria-hidden="true">emoji_events</span>
-              <h3 className="text-lg font-bold font-headline text-slate-800 mb-1">Competitions Features Coming Soon</h3>
+              <h3 className="text-lg font-bold font-headline text-slate-800 mb-1">{t('detail.competitions_title')}</h3>
               <p className="text-sm text-slate-500 max-w-md mx-auto">
-                You will soon be able to track and manage student teams, competition registrations, and event statistics directly linked to this group.
+                {t('detail.competitions_desc')}
               </p>
             </div>
           )}
@@ -291,9 +293,9 @@ export function GroupDetailPage() {
             isOpen={isDeleteDialogOpen}
             onCancel={() => setIsDeleteDialogOpen(false)}
             onConfirm={handleDeleteGroup}
-            title="Delete Group"
-            message="Are you sure you want to delete this group? This action cannot be undone."
-            confirmText="Delete"
+            title={t('delete.title')}
+            message={t('delete.message')}
+            confirmText={t('delete.confirm')}
             variant="danger"
           />
 
@@ -301,9 +303,9 @@ export function GroupDetailPage() {
             isOpen={isArchiveDialogOpen}
             onCancel={() => setIsArchiveDialogOpen(false)}
             onConfirm={handleArchiveGroup}
-            title="Archive Group"
-            message="Are you sure you want to archive this group? It will be hidden from the main groups list but can be accessed later."
-            confirmText="Archive"
+            title={t('archive.title')}
+            message={t('archive.message')}
+            confirmText={t('archive.confirm')}
             variant="warning"
           />
 

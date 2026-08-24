@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ModalFooter, LoadingSpinner } from '../common'
 import { useCreateCertificate } from '../../hooks/useCertificates'
 import { useStudentsSearch } from '../../hooks/useDirectory'
@@ -37,6 +38,7 @@ function levelNumberToLevel(n: number): string {
 const TODAY = new Date().toISOString().split('T')[0]
 
 function TrackCombobox({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { t } = useTranslation('common')
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState(value)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
@@ -97,7 +99,7 @@ function TrackCombobox({ value, onChange }: { value: string; onChange: (v: strin
           }
         }}
         className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/70"
-        placeholder="Type or select a track"
+        placeholder={t('certificates.track_placeholder')}
       />
       {isOpen && filtered.length > 0 && (
         <ul className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-auto">
@@ -120,6 +122,7 @@ function TrackCombobox({ value, onChange }: { value: string; onChange: (v: strin
 }
 
 function StudentSearchCombobox({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { t } = useTranslation('common')
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState(value)
   const [selectedId, setSelectedId] = useState<number | null>(null)
@@ -193,7 +196,7 @@ function StudentSearchCombobox({ value, onChange }: { value: string; onChange: (
           }
         }}
         className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/70"
-        placeholder="Type a student name to search..."
+        placeholder={t('certificates.student_name_placeholder')}
         autoFocus
       />
       {isOpen && (
@@ -204,7 +207,7 @@ function StudentSearchCombobox({ value, onChange }: { value: string; onChange: (
             </div>
           ) : input.length >= 2 && filtered.length === 0 ? (
             <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg p-3 text-sm text-slate-400 text-center">
-              No students found
+              {t('certificates.error_no_students_found')}
             </div>
           ) : input.length >= 2 && filtered.length > 0 ? (
             <ul className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-auto">
@@ -219,7 +222,7 @@ function StudentSearchCombobox({ value, onChange }: { value: string; onChange: (
                 >
                   <span>{s.full_name}</span>
                   {s.current_group_name && (
-                    <span className="text-xs text-slate-400 ml-2 truncate max-w-[180px]">{s.current_group_name}</span>
+                    <span className="text-xs text-slate-400 ms-2 truncate max-w-[180px]">{s.current_group_name}</span>
                   )}
                 </li>
               ))}
@@ -237,6 +240,7 @@ interface CertificateFormProps {
 }
 
 export function CertificateForm({ onSuccess, onCancel }: CertificateFormProps) {
+  const { t } = useTranslation('common')
   const createMutation = useCreateCertificate()
   const [studentName, setStudentName] = useState('')
   const [courseTrack, setCourseTrack] = useState('')
@@ -274,15 +278,15 @@ export function CertificateForm({ onSuccess, onCancel }: CertificateFormProps) {
     setError(null)
 
     if (!studentName.trim()) {
-      setError('Student name is required')
+      setError(t('certificates.error_student_name_required'))
       return
     }
     if (!courseTrack.trim()) {
-      setError('Course track is required')
+      setError(t('certificates.error_course_track_required'))
       return
     }
     if (!level.trim()) {
-      setError('Level is required')
+      setError(t('certificates.error_level_required'))
       return
     }
 
@@ -300,9 +304,9 @@ export function CertificateForm({ onSuccess, onCancel }: CertificateFormProps) {
       onSuccess()
     } catch (err: unknown) {
       if (err instanceof Error && err.message?.includes('already exists')) {
-        setError('A certificate for this student, track, and level already exists.')
+        setError(t('certificates.error_already_exists'))
       } else {
-        const msg = err instanceof Error ? err.message : 'Failed to generate certificate'
+        const msg = err instanceof Error ? err.message : t('certificates.error_generate_failed')
         setError(msg)
       }
     }
@@ -320,7 +324,7 @@ export function CertificateForm({ onSuccess, onCancel }: CertificateFormProps) {
       <div className="space-y-4">
         <div>
           <label htmlFor="student-name" className="block text-sm font-medium text-slate-700 mb-1">
-            Student Name <span className="text-red-500">*</span>
+            {t('certificates.student_name_label')} <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <StudentSearchCombobox value={studentName} onChange={setStudentName} />
@@ -330,19 +334,19 @@ export function CertificateForm({ onSuccess, onCancel }: CertificateFormProps) {
               </div>
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-1">Start typing to search for a student. Selecting one auto-fills course and level from their enrollment.</p>
+          <p className="text-xs text-slate-400 mt-1">{t('certificates.student_name_hint')}</p>
         </div>
 
         <div>
           <label htmlFor="course-track-input" className="block text-sm font-medium text-slate-700 mb-1">
-            Course Track <span className="text-red-500">*</span>
+            {t('certificates.course_track_label')} <span className="text-red-500">*</span>
           </label>
           <TrackCombobox value={courseTrack} onChange={setCourseTrack} />
         </div>
 
         <div>
           <label htmlFor="level" className="block text-sm font-medium text-slate-700 mb-1">
-            Level <span className="text-red-500">*</span>
+            {t('certificates.level_label')} <span className="text-red-500">*</span>
           </label>
           <input
             id="level"
@@ -350,13 +354,13 @@ export function CertificateForm({ onSuccess, onCancel }: CertificateFormProps) {
             value={level}
             onChange={(e) => setLevel(e.target.value)}
             className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/70"
-            placeholder="e.g. Level 1, Beginner, etc."
+            placeholder={t('certificates.level_placeholder')}
           />
         </div>
 
         <div>
           <p className="block text-sm font-medium text-slate-700 mb-1">
-            Issue Date
+            {t('certificates.issue_date')}
           </p>
           <p className="text-sm text-slate-500 bg-slate-50 rounded-lg px-3 py-2 border border-slate-200">
             {TODAY}
@@ -365,7 +369,7 @@ export function CertificateForm({ onSuccess, onCancel }: CertificateFormProps) {
 
         <div>
           <p className="block text-sm font-medium text-slate-700 mb-1">
-            Branch
+            {t('certificates.branch')}
           </p>
           <p className="text-sm text-slate-500 bg-slate-50 rounded-lg px-3 py-2 border border-slate-200">
             KFS
@@ -374,7 +378,7 @@ export function CertificateForm({ onSuccess, onCancel }: CertificateFormProps) {
 
         <div>
           <label htmlFor="custom-color" className="block text-sm font-medium text-slate-700 mb-1">
-            Custom Color
+            {t('certificates.custom_color')}
           </label>
           <div className="flex items-center gap-2">
             <input
@@ -390,7 +394,7 @@ export function CertificateForm({ onSuccess, onCancel }: CertificateFormProps) {
                 onClick={() => setCustomColor('')}
                 className="text-xs text-slate-500 hover:text-slate-700"
               >
-                Reset
+                {t('certificates.reset')}
               </button>
             )}
           </div>
@@ -400,7 +404,7 @@ export function CertificateForm({ onSuccess, onCancel }: CertificateFormProps) {
       <ModalFooter
         onCancel={onCancel}
         onConfirm={handleSubmit}
-        confirmText="Generate Certificate"
+        confirmText={t('certificates.generate_certificate')}
         isProcessing={createMutation.isPending || isFetchingDetails}
       />
     </form>

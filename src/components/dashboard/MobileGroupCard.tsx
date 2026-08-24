@@ -1,4 +1,5 @@
 import type { GroupInfoDTO } from '../../api/dashboard'
+import { useTranslation } from 'react-i18next'
 import { formatInstructorName, formatTime } from '../../utils/formatting'
 
 export interface MobileGroupCardProps {
@@ -8,6 +9,7 @@ export interface MobileGroupCardProps {
 }
 
 export function MobileGroupCard({ group, instructorName, onOpenAttendance }: MobileGroupCardProps) {
+  const { t } = useTranslation('dashboard')
   const shortInstructor = formatInstructorName(instructorName)
   const scheduleDay = group.default_day
   const timeRange = group.default_time_start && group.default_time_end
@@ -25,7 +27,7 @@ export function MobileGroupCard({ group, instructorName, onOpenAttendance }: Mob
     <div
       role="button"
       tabIndex={0}
-      aria-label={`View attendance for ${group.name}`}
+      aria-label={t('mobile_group_card.view_attendance_for', { name: group.name })}
       onClick={onOpenAttendance}
       onKeyDown={handleKeyDown}
       className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30 cursor-pointer flex flex-col"
@@ -44,7 +46,7 @@ export function MobileGroupCard({ group, instructorName, onOpenAttendance }: Mob
         {/* Attendance indicator badge */}
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 text-xs font-semibold border border-teal-100 shrink-0 ml-2">
           <span className="material-symbols-outlined text-[14px]" aria-hidden="true">how_to_reg</span>
-          Attendance
+          {t('mobile_group_card.attendance_badge')}
         </span>
       </div>
 
@@ -73,7 +75,7 @@ export function MobileGroupCard({ group, instructorName, onOpenAttendance }: Mob
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/10 text-secondary text-sm font-semibold hover:bg-secondary/20 transition-colors"
         >
           <span className="material-symbols-outlined text-[18px]" aria-hidden="true">how_to_reg</span>
-          Mark Attendance
+          {t('mobile_group_card.mark_attendance')}
         </button>
       </div>
     </div>

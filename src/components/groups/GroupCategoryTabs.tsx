@@ -1,3 +1,5 @@
+import { useNavDirection } from '../../hooks/useNavDirection'
+
 interface Category {
   key: string
   label: string
@@ -13,13 +15,20 @@ interface GroupCategoryTabsProps {
 export function GroupCategoryTabs({ categories, activeKey, onChange }: GroupCategoryTabsProps) {
   if (categories.length === 0) return null
 
+  const { getNextIndex } = useNavDirection()
+
   const handleKeyDown = (index: number) => (e: React.KeyboardEvent) => {
     let next = index
-    if (e.key === 'ArrowRight') next = (index + 1) % categories.length
-    else if (e.key === 'ArrowLeft') next = (index - 1 + categories.length) % categories.length
-    else if (e.key === 'Home') next = 0
-    else if (e.key === 'End') next = categories.length - 1
-    else return
+    const navIndex = getNextIndex(e, index, categories.length)
+    if (navIndex !== null) {
+      next = navIndex
+    } else if (e.key === 'Home') {
+      next = 0
+    } else if (e.key === 'End') {
+      next = categories.length - 1
+    } else {
+      return
+    }
     e.preventDefault()
     onChange(categories[next].key)
   }

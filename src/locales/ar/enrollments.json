@@ -1,0 +1,77 @@
+{
+  "page_title": "الاشتراكات",
+  "subtitle": "اعمل اشتراكات جديدة، عدّل التفاصيل المالية، أو شيل طلاب",
+  "tabs": {
+    "create": "سجّل",
+    "modify": "عدّل",
+    "drop": "شيل"
+  },
+  "enroll_panel": {
+    "select_student": "١. اختار الطالب",
+    "select_group": "٢. اختار المجموعة",
+    "payment_details": "٣. تفاصيل الدفع",
+    "course_fee": "رسوم الكورس (جنيه)",
+    "discount": "الخصم (جنيه)",
+    "sibling_discount_auto": "(خصم الأشقاء اتلقائى)",
+    "net_amount": "المبلغ الصافي",
+    "notes": "ملاحظات",
+    "notes_placeholder": "ملاحظات اختيارية عن الاشتراك ده...",
+    "enroll_student": "سجّل الطالب"
+  },
+  "modify_panel": {
+    "title": "عدّل الاشتراك",
+    "subtitle": "عدّل التفاصيل المالية والملاحظات الإدارية",
+    "select_student": "١. اختار الطالب",
+    "choose_enrollment": "٢. اختار الاشتراك",
+    "no_enrollments": "الطالب ده مفيهوش اشتراكات شغّالة يتmanageوا.",
+    "edit_details": "٣. عدّل التفاصيل",
+    "amount_due": "المبلغ المستحق",
+    "group_default": "الافتراضى للمجموعة",
+    "leave_blank_price": "سيبه فاضى عشان تستخدم السعر الافتراضى للمجموعة.",
+    "discount_applied": "الخصم المطبّق",
+    "internal_notes": "ملاحظات داخلية",
+    "add_notes_placeholder": "أضف ملاحظات إدارية...",
+    "save_changes": "احفظ التعديلات"
+  },
+  "drop_panel": {
+    "title": "شيل أو نقل",
+    "subtitle": "اسحب الطالب أو انقله لمجموعة تانية",
+    "select_student": "١. اختار الطالب",
+    "choose_enrollment": "٢. اختار الاشتراك",
+    "no_enrollments": "الطالب ده مفيهوش اشتراكات شغّالة يتmanageوا.",
+    "choose_action": "٣. اختار الإجراء",
+    "transfer_group": "نقل المجموعة",
+    "transfer_description": "انقل الطالب ده لمجموعة شغّالة تانية.",
+    "destination_group": "المجموعة الوجهة",
+    "execute_transfer": "نفّذ النقل",
+    "drop_enrollment": "شيل الاشتراك",
+    "drop_description": "اسحب الطالب ده من المجموعة نهائى.",
+    "notes_optional": "ملاحظات (اختيارى)",
+    "reason_placeholder": "سبب الشيل...",
+    "confirm_drop": "تأكيد الشيل"
+  },
+  "edit_modal": {
+    "title": "عدّل تفاصيل الاشتراك",
+    "not_found": "تفاصيل الاشتراك ملقتش.",
+    "amount_due": "المبلغ المستحق",
+    "group_default": "الافتراضى للمجموعة",
+    "leave_blank_price": "سيبه فاضى عشان تستخدم السعر الافتراضى للمجموعة.",
+    "discount_applied": "الخصم المطبّق",
+    "internal_notes": "ملاحظات داخلية",
+    "add_notes_placeholder": "أضف ملاحظات إدارية...",
+    "cancel": "إلغاء",
+    "save_changes": "احفظ التعديلات"
+  },
+  "toast": {
+    "select_student_group": "اختار الطالب والمجموعة",
+    "enrolled_success": "اتسجّل بنجاح",
+    "enroll_failed": "مقدرش أسجّل الاشتراك",
+    "updated_success": "الاشتراك اتعدّل بنجاح",
+    "update_failed": "مقدرش أحدّث الاشتراك.",
+    "transfer_select_group": "اختار المجموعة الهدف للنقل.",
+    "transfer_success": "اتنقل بنجاح لـ",
+    "transfer_failed": "النقل فشل. تأكد من حالة الطالب وحاول تاني.",
+    "drop_success": "الاشتراك اتشال بنجاح",
+    "drop_failed": "الشيل فشل. تأكد من حالة الطالب وحاول تاني."
+  }
+}

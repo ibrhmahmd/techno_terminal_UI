@@ -9,18 +9,29 @@
   "scheduled_groups": "Scheduled groups",
   "empty": {
     "no_groups": "No groups scheduled",
-    "no_groups_today": "No groups scheduled for this day",
-    "no_progress_data": "No progress data available"
+    "no_groups_today": "No groups scheduled for this day"
   },
   "fallbacks": {
     "unknown_group": "Unknown Group",
     "unknown_course": "Unknown Course",
     "tba": "TBA"
   },
-  "progress_chart": {
-    "on_track": "On Track",
-    "at_risk": "At Risk",
-    "behind": "Behind",
-    "aria_label": "Student progress distribution chart showing on track, at risk, and behind counts"
+  "quick_actions": {
+    "aria_label": "Quick actions",
+    "quick_register": "Quick Register",
+    "quick_register_subtitle": "Register new student",
+    "create_payment": "Create Payment",
+    "create_payment_subtitle": "Record new payment",
+    "todays_sessions": "Today's Sessions",
+    "quick_reports": "Quick Reports",
+    "quick_reports_subtitle": "View insights",
+    "quick_register_student": "Quick Register Student",
+    "student_registered_success": "Student registered successfully",
+    "student_register_failed": "Failed to register student"
+  },
+  "mobile_group_card": {
+    "attendance_badge": "Attendance",
+    "mark_attendance": "Mark Attendance",
+    "view_attendance_for": "View attendance for {{name}}"
   }
 }

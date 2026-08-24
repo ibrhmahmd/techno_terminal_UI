@@ -242,7 +242,7 @@ export function PaymentsTab({ studentId, balance, loading: balanceLoading, error
               </p>
             </div>
           </div>
-          <div className="text-right text-sm text-slate-500 space-y-1">
+          <div className="text-end text-sm text-slate-500 space-y-1">
             <p>Paid: <span className="font-medium text-green-600">{totalPaid.toLocaleString()} EGP</span></p>
             <p>Due: <span className="font-medium">{totalAmountDue.toLocaleString()} EGP</span></p>
             <p>Discounts: <span className="font-medium text-purple-600">{totalDiscounts.toLocaleString()} EGP</span></p>

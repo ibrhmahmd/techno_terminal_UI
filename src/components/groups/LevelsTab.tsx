@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BookOpen, GraduationCap, CheckCircle, XCircle, AlertCircle, Edit3, FileDown, MessageCircle, Calendar, Trash2 } from 'lucide-react'
 import type { LevelDetailDTO, LevelPaymentsDTO, CourseInfoDTO, InstructorInfoDTO, PaymentDetailDTO } from '../../api/academics'
 import { LevelSelector } from './detail/LevelSelector'
@@ -20,6 +21,7 @@ const formatCurrency = (amount: number) => {
 }
 
 function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments'] }) {
+  const { t } = useTranslation('groups')
   const { showToast } = useToast()
   const [downloadingId, setDownloadingId] = useState<number | null>(null)
   const [sendingId, setSendingId] = useState<number | null>(null)
@@ -27,7 +29,7 @@ function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments
   if (!payments || payments.length === 0) {
     return (
       <div className="py-8 text-center bg-slate-50 rounded-lg">
-        <p className="text-slate-500 text-sm">No recent payments found for this level.</p>
+        <p className="text-slate-500 text-sm">{t('levelsTab.no_payments')}</p>
       </div>
     )
   }
@@ -89,7 +91,7 @@ function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <div className="text-right">
+              <div className="text-end">
                 <p className={`text-sm font-semibold ${
                   payment.status === 'completed' ? 'text-emerald-600' :
                   payment.status === 'pending' ? 'text-amber-600' :
@@ -113,7 +115,7 @@ function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments
                     onClick={(e) => handleDownloadPdf(payment, e)}
                     disabled={downloadingId === payment.payment_id}
                     className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50"
-                    title="Download PDF Receipt"
+                    title={t('levelsTab.download_pdf')}
                   >
                     <FileDown className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -121,7 +123,7 @@ function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments
                     onClick={(e) => handleSendWhatsApp(payment, e)}
                     disabled={sendingId === payment.payment_id}
                     className="p-1.5 text-slate-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors disabled:opacity-50"
-                    title="Send via WhatsApp (Soon)"
+                    title={t('levelsTab.send_whatsapp')}
                   >
                     <MessageCircle className="w-4 h-4" aria-hidden="true" />
                   </button>
@@ -160,6 +162,7 @@ export function LevelsTab({
   groupName,
   courseName,
 }: LevelsTabProps) {
+  const { t } = useTranslation('groups')
   const initialLevelId = levels.find(l => l.level_number === currentLevelNumber)?.level_id || levels[0]?.level_id || null
   const [selectedLevelId, setSelectedLevelId] = useState<number | null>(initialLevelId)
   const [viewMode, setViewMode] = useState<'attendance' | 'payments'>('attendance')
@@ -240,10 +243,10 @@ export function LevelsTab({
     setIsMutatingLevel(true)
     try {
       await updateLevel(selectedLevel.level_number, data)
-      showToast(`Level ${selectedLevel.level_number} updated successfully.`, 'success')
+      showToast(t('levelsTab.level_updated', { level: selectedLevel.level_number }), 'success')
       setIsEditLevelDialogOpen(false)
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to update level details', 'error')
+      showToast(err instanceof Error ? err.message : t('levelsTab.failed_update'), 'error')
     } finally {
       setIsMutatingLevel(false)
     }
@@ -255,7 +258,7 @@ export function LevelsTab({
     setIsMutatingLevel(true)
     try {
       await deleteLevel(selectedLevel.level_number)
-      showToast(`Level ${selectedLevel.level_number} deleted successfully.`, 'success')
+      showToast(t('levelsTab.level_deleted', { level: selectedLevel.level_number }), 'success')
       const remainingLevels = levels.filter(l => l.level_number !== selectedLevel.level_number)
       if (remainingLevels.length > 0) {
         const nextActiveId = remainingLevels.find(l => l.level_number === currentLevelNumber - 1)?.level_id || remainingLevels[remainingLevels.length - 1]?.level_id || null
@@ -265,20 +268,20 @@ export function LevelsTab({
       }
       setIsDeleteLevelDialogOpen(false)
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to delete level', 'error')
+      showToast(err instanceof Error ? err.message : t('levelsTab.failed_delete'), 'error')
     } finally {
       setIsMutatingLevel(false)
     }
   }
 
   if (levels.length === 0) {
-    return (
-      <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
-        <GraduationCap className="w-12 h-12 text-slate-300 mx-auto mb-3" aria-hidden={true} />
-        <h3 className="text-lg font-medium text-slate-700 mb-1">No Level History</h3>
-        <p className="text-slate-500">This group doesn't have any level progression data.</p>
-      </div>
-    )
+      return (
+        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+          <GraduationCap className="w-12 h-12 text-slate-300 mx-auto mb-3" aria-hidden={true} />
+          <h3 className="text-lg font-medium text-slate-700 mb-1">{t('levelsTab.no_level_history')}</h3>
+          <p className="text-slate-500">{t('levelsTab.no_level_history_desc')}</p>
+        </div>
+      )
   }
 
   if (!selectedLevel) return null
@@ -318,26 +321,26 @@ export function LevelsTab({
                   )}
                   {selectedLevel.level_number === currentLevelNumber && (
                     <span className="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
-                      Current
+                      {t('levelsTab.current')}
                     </span>
                   )}
                 </h3>
                 <p className="text-sm text-slate-500 flex items-center gap-1">
                   <BookOpen className="w-4 h-4" aria-hidden="true" />
-                  {coursesMap[selectedLevel.course_id]?.course_name || `Course ID: ${selectedLevel.course_id}`}
+                  {coursesMap[selectedLevel.course_id]?.course_name || `${t('levelsTab.course')} ID: ${selectedLevel.course_id}`}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {isAdmin && selectedLevel.status === 'active' && isLatestLevel && selectedLevel.level_number > 1 && (
-                <div className="flex items-center gap-1.5 mr-2">
+                <div className="flex items-center gap-1.5 me-2">
                   <button
                     onClick={() => setIsDeleteLevelDialogOpen(true)}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200 shadow-sm flex items-center"
-                    title="Delete this level (Undo Progression)"
+                    title={t('levelsTab.undo_level')}
                   >
                     <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
-                    Undo Level
+                    {t('levelsTab.undo_level')}
                   </button>
                 </div>
               )}
@@ -358,7 +361,7 @@ export function LevelsTab({
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
                       <Calendar className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-                      Start Date
+                      {t('levelsTab.start_date')}
                     </span>
                     <span className="font-headline text-sm font-extrabold text-slate-900 leading-tight block">
                       {formatDate(selectedLevel.start_date) || 'N/A'}
@@ -372,7 +375,7 @@ export function LevelsTab({
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
                       <Calendar className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-                      End Date
+                      {t('levelsTab.end_date')}
                     </span>
                     <span className="font-headline text-sm font-extrabold text-slate-900 leading-tight block">
                       {formatDate(selectedLevel.end_date) || 'N/A'}
@@ -380,7 +383,7 @@ export function LevelsTab({
                   </div>
                   <div>
                     <span className="text-[11px] font-extrabold text-secondary bg-secondary/10 px-2 py-0.5 rounded mt-1 inline-block">
-                      Duration: {getDurationString(selectedLevel.start_date, selectedLevel.end_date) || 'N/A'}
+                      {t('levelsTab.duration', { duration: getDurationString(selectedLevel.start_date, selectedLevel.end_date) || t('levelsTab.duration_n_a') })}
                     </span>
                   </div>
                 </div>
@@ -390,13 +393,13 @@ export function LevelsTab({
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
                       <CheckCircle className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
-                      Paid Students
+                      {t('levelsTab.paid_students')}
                     </span>
                     <span className="font-headline text-base font-extrabold text-emerald-600 leading-tight block">
-                      {paidCount} Student{paidCount !== 1 ? 's' : ''}
+                      {paidCount} {t('levelsTab.student')}{paidCount !== 1 ? 's' : ''}
                     </span>
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block font-medium">Tuition settled</span>
+                  <span className="text-[11px] text-slate-500 mt-1 block font-medium">{t('levelsTab.tuition_settled')}</span>
                 </div>
 
                 {/* Unpaid Students Card */}
@@ -404,13 +407,13 @@ export function LevelsTab({
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
                       <AlertCircle className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
-                      Unpaid Students
+                      {t('levelsTab.unpaid_students')}
                     </span>
                     <span className="font-headline text-base font-extrabold text-amber-600 leading-tight block">
-                      {unpaidCount} Student{unpaidCount !== 1 ? 's' : ''}
+                      {unpaidCount} {t('levelsTab.student')}{unpaidCount !== 1 ? 's' : ''}
                     </span>
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block font-medium">Outstanding fees</span>
+                  <span className="text-[11px] text-slate-500 mt-1 block font-medium">{t('levelsTab.outstanding_fees')}</span>
                 </div>
 
                 {/* Course Card */}
@@ -418,13 +421,13 @@ export function LevelsTab({
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1">
                       <BookOpen className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-                      Course
+                      {t('levelsTab.course')}
                     </span>
                     <span className="font-headline text-sm font-extrabold text-slate-900 leading-tight block truncate" title={coursesMap[selectedLevel.course_id]?.course_name || courseName || `ID: ${selectedLevel.course_id}`}>
                       {coursesMap[selectedLevel.course_id]?.course_name || courseName || `ID: ${selectedLevel.course_id}`}
                     </span>
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block">Curriculum standard</span>
+                  <span className="text-[11px] text-slate-500 mt-1 block">{t('levelsTab.curriculum_standard')}</span>
                 </div>
               </div>
             )
@@ -444,7 +447,7 @@ export function LevelsTab({
                   }`}
                 >
                   <span className="material-symbols-outlined text-[18px]" aria-hidden="true">groups</span>
-                  Attendance & Sessions
+                  {t('levelsTab.attendance_sessions')}
                 </button>
                 <button
                   role="tab"
@@ -457,7 +460,7 @@ export function LevelsTab({
                   }`}
                 >
                   <span className="material-symbols-outlined text-[18px]" aria-hidden="true">payments</span>
-                  Payments
+                  {t('levelsTab.payments')}
                 </button>
               </div>
             </div>
@@ -480,23 +483,23 @@ export function LevelsTab({
                 {selectedLevel.payment_summary && (
                   <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                      <p className="text-xs text-slate-500 font-medium mb-1 uppercase tracking-wider">Expected</p>
+                      <p className="text-xs text-slate-500 font-medium mb-1 uppercase tracking-wider">{t('levelsTab.expected')}</p>
                       <p className="text-xl font-bold text-slate-900 font-headline">{selectedLevel.payment_summary.total_expected} EGP</p>
                     </div>
                     <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
-                      <p className="text-xs text-emerald-600 font-medium mb-1 uppercase tracking-wider">Collected</p>
+                      <p className="text-xs text-emerald-600 font-medium mb-1 uppercase tracking-wider">{t('levelsTab.collected')}</p>
                       <p className="text-xl font-bold text-emerald-700 font-headline">
                         {selectedLevel.payment_summary.total_collected} EGP
                       </p>
                     </div>
                     <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
-                      <p className="text-xs text-amber-600 font-medium mb-1 uppercase tracking-wider">Due</p>
+                      <p className="text-xs text-amber-600 font-medium mb-1 uppercase tracking-wider">{t('levelsTab.due')}</p>
                       <p className="text-xl font-bold text-amber-700 font-headline">
                         {selectedLevel.payment_summary.total_due} EGP
                       </p>
                     </div>
                     <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                      <p className="text-xs text-blue-600 font-medium mb-1 uppercase tracking-wider">Collection Rate</p>
+                      <p className="text-xs text-blue-600 font-medium mb-1 uppercase tracking-wider">{t('levelsTab.collection_rate')}</p>
                       <p className="text-xl font-bold text-blue-700 font-headline">
                         {Math.round(selectedLevel.payment_summary.collection_rate * 100)}%
                       </p>
@@ -527,9 +530,9 @@ export function LevelsTab({
         isOpen={isDeleteLevelDialogOpen}
         onCancel={() => setIsDeleteLevelDialogOpen(false)}
         onConfirm={handleDeleteLevelConfirm}
-        title={`Undo Progression to Level ${selectedLevel.level_number}`}
-        message="Are you sure you want to delete this level and undo progression? This will permanently delete all sessions generated for this level and revert enrolled students back to active status. This action cannot be undone."
-        confirmText="Undo Progression"
+        title={t('levelsTab.undo_level_title', { level: selectedLevel.level_number })}
+        message={t('levelsTab.undo_level_message')}
+        confirmText={t('levelsTab.undo_progression')}
         variant="danger"
       />
     </div>

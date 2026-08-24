@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useToast } from '../common/Toast'
 import { useStudentsSearch } from '../../hooks/useDirectory'
@@ -21,6 +22,7 @@ interface EnrollPanelProps {
 
 
 export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedStudent, onEnrollmentSuccess }: EnrollPanelProps) {
+  const { t } = useTranslation('enrollments')
   const [studentSearch, setStudentSearch] = useState('')
   const [groupSearch, setGroupSearch] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(preSelectedStudent ?? null)
@@ -86,7 +88,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
 
   const handleEnroll = async () => {
     if (!selectedStudent || !selectedGroup) {
-      showToast('Please select both student and group', 'error')
+      showToast(t('toast.select_student_group'), 'error')
       return
     }
     
@@ -94,7 +96,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
     try {
       if (useMockData) {
         await new Promise(r => setTimeout(r, 500))
-        showToast(`Enrolled ${selectedStudent.full_name} in ${selectedGroup.name}`, 'success')
+        showToast(`${t('toast.enrolled_success')} ${selectedStudent.full_name} in ${selectedGroup.name}`, 'success')
       } else {
         await createEnrollment({
           student_id: selectedStudent.id,
@@ -103,7 +105,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
           discount,
           notes
         })
-        showToast(`Successfully enrolled ${selectedStudent.full_name}`, 'success')
+        showToast(`${t('toast.enrolled_success')} ${selectedStudent.full_name}`, 'success')
         // Cache the group selection for quick reuse
         addRecentItem('techno_recent_groups', { id: selectedGroup.id, name: selectedGroup.name })
         // Callback for parent component
@@ -119,7 +121,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
       setIsAutoDiscount(false)
       setNotes('')
     } catch {
-      showToast('Failed to create enrollment', 'error')
+      showToast(t('toast.enroll_failed'), 'error')
     } finally {
       setIsLoading(false)
     }
@@ -132,7 +134,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Student Selection - 1/3 width */}
         <div className="lg:col-span-1 space-y-3">
-          <h3 className="text-lg font-semibold text-on-surface">1. Select Student</h3>
+          <h3 className="text-lg font-semibold text-on-surface">{t('enroll_panel.select_student')}</h3>
           
           {!selectedStudent ? (
             <StudentCombobox
@@ -175,7 +177,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
 
         {/* Group Selection - 2/3 width */}
         <div className="lg:col-span-2 space-y-3">
-          <h3 className="text-lg font-semibold text-on-surface">2. Select Group</h3>
+          <h3 className="text-lg font-semibold text-on-surface">{t('enroll_panel.select_group')}</h3>
           
           {!selectedGroup ? (
             <GroupCombobox
@@ -218,10 +220,10 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
       </div>
 
       {/* Payment Details Section */}
-      <h3 className="text-lg font-semibold text-on-surface mb-4">3. Payment Details</h3>
+      <h3 className="text-lg font-semibold text-on-surface mb-4">{t('enroll_panel.payment_details')}</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-on-surface mb-2">Course Fee (EGP)</label>
+          <label className="block text-sm font-medium text-on-surface mb-2">{t('enroll_panel.course_fee')}</label>
           <input
             type="number"
             min={0}
@@ -233,9 +235,9 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
         </div>
         <div>
           <label className="block text-sm font-medium text-on-surface mb-2">
-            Discount (EGP)
+            {t('enroll_panel.discount')}
             {isAutoDiscount && (
-              <span className="ml-2 text-xs text-green-600 font-normal">(Sibling discount auto-applied)</span>
+              <span className="ml-2 text-xs text-green-600 font-normal">{t('enroll_panel.sibling_discount_auto')}</span>
             )}
           </label>
           <input
@@ -251,7 +253,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-on-surface mb-2">Net Amount</label>
+          <label className="block text-sm font-medium text-on-surface mb-2">{t('enroll_panel.net_amount')}</label>
           <div className="px-3 py-2 bg-slate-100 rounded-lg text-sm font-bold text-secondary">
             {amount - discount} EGP
           </div>
@@ -259,11 +261,11 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
       </div>
 
       <div className="mb-6">
-        <label className="block text-sm font-medium text-on-surface mb-2">Notes</label>
+        <label className="block text-sm font-medium text-on-surface mb-2">{t('enroll_panel.notes')}</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Optional notes about this enrollment..."
+          placeholder={t('enroll_panel.notes_placeholder')}
           rows={3}
           className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none"
         />
@@ -276,7 +278,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
       >
         {isLoading ? <LoadingSpinner size="sm" /> : null}
         <span className="material-symbols-outlined">person_add</span>
-        Enroll Student
+        {t('enroll_panel.enroll_student')}
       </button>
 
       {ToastComponent}

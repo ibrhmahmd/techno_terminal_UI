@@ -1,4 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { ScheduleGroupInput, ScheduleInput } from '../../api/academics'
 import type { Schedule } from '../../api/academics/types/groups'
@@ -31,6 +32,7 @@ function getScheduleField(schedule: FormSchedule | undefined, field: 'start_time
 }
 
 export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormProps) {
+  const { t } = useTranslation('groups')
   const parseTime = (timeStr?: string): TimeState => {
     if (!timeStr) return { hour: 3, minute: "00", period: 'PM' }
     const [h24, m] = timeStr.split(':').map(Number)
@@ -86,17 +88,17 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
     setIsLoading(true)
 
     if (!courseId) {
-      setError('Course is required')
+      setError(t('groupForm.course_required'))
       setIsLoading(false)
       return
     }
     if (!instructorId) {
-      setError('Instructor is required')
+      setError(t('groupForm.instructor_required'))
       setIsLoading(false)
       return
     }
     if (!name.trim()) {
-      setError('Group name is required')
+      setError(t('groupForm.group_name_required'))
       setIsLoading(false)
       return
     }
@@ -112,7 +114,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
       }
       await onSubmit(payload)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : `Failed to ${mode} group`)
+      setError(err instanceof Error ? err.message : t('groupForm.failed_generic', { mode }))
     } finally {
       setIsLoading(false)
     }
@@ -130,7 +132,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
       {/* Group Name */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="name" className="text-sm font-medium text-on-surface">
-          Group Name <span className="text-red-500">*</span>
+          {t('groupForm.group_name')} <span className="text-red-500">*</span>
         </label>
         <input
           id="name"
@@ -139,7 +141,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           onChange={(e) => setName(e.target.value)}
           required
           disabled={isLoading}
-          placeholder="e.g., Robotics - Group A"
+          placeholder={t('groupForm.group_name_placeholder')}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
         />
       </div>
@@ -147,13 +149,13 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
       {/* Course */}
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium text-on-surface">
-          Course <span className="text-red-500">*</span>
+          {t('groupForm.course')} <span className="text-red-500">*</span>
         </label>
         <SearchablePillSelector
           options={courses.filter(c => c.is_active).map(c => ({ id: c.id, label: c.name, subLabel: c.category }))}
           value={courseId}
           onChange={setCourseId}
-          placeholder="Search courses..."
+          placeholder={t('groupForm.search_courses')}
           disabled={isLoading}
         />
       </div>
@@ -161,13 +163,13 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
       {/* Instructor */}
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium text-on-surface">
-          Instructor <span className="text-red-500">*</span>
+          {t('groupForm.instructor')} <span className="text-red-500">*</span>
         </label>
         <SearchablePillSelector
           options={instructors.filter(i => i.is_active !== false).map(i => ({ id: i.id, label: i.full_name, subLabel: i.job_title }))}
           value={instructorId}
           onChange={setInstructorId}
-          placeholder="Search instructors..."
+          placeholder={t('groupForm.search_instructors')}
           disabled={isLoading || isLoadingEmployees}
         />
       </div>
@@ -176,7 +178,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="capacity" className="text-sm font-medium text-on-surface">
-            Capacity
+            {t('groupForm.capacity')}
           </label>
           <input
             id="capacity"
@@ -190,7 +192,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="default_day" className="text-sm font-medium text-on-surface">
-            Day <span className="text-red-500">*</span>
+            {t('groupForm.day')} <span className="text-red-500">*</span>
           </label>
           <select
             id="default_day"
@@ -210,7 +212,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
       {/* Start Date */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="start_date" className="text-sm font-medium text-on-surface">
-          Start Date
+          {t('groupForm.start_date')}
         </label>
         <input
           id="start_date"
@@ -224,7 +226,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
 
       {/* Start Time */}
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-on-surface">Start Time</label>
+        <label className="text-sm font-medium text-on-surface">{t('groupForm.start_time')}</label>
         <div className="grid grid-cols-3 gap-2">
           <select
             value={startTime.hour}
@@ -256,7 +258,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
 
       {/* End Time */}
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-on-surface">End Time</label>
+        <label className="text-sm font-medium text-on-surface">{t('groupForm.end_time')}</label>
         <div className="grid grid-cols-3 gap-2">
           <select
             value={endTime.hour}
@@ -294,7 +296,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           disabled={isLoading}
           className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
         >
-          Cancel
+          {t('groupForm.cancel')}
         </button>
         <button
           type="submit"
@@ -302,7 +304,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
         >
           {isLoading && <LoadingSpinner size="sm" />}
-          {mode === 'create' ? 'Create Group' : 'Update Group'}
+          {mode === 'create' ? t('groupForm.create_group') : t('groupForm.update_group')}
         </button>
       </div>
     </form>

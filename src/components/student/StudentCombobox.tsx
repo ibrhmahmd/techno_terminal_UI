@@ -222,7 +222,7 @@ export function StudentComboboxInner({
           onFocus={() => setIsOpen(true)}
           placeholder="Search student (min 2 chars)..."
           aria-label="Search student"
-          className="w-full pl-10 pr-10 py-3 text-sm border border-slate-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20 focus-visible:border-secondary transition-colors placeholder:text-slate-400"
+          className="w-full ps-10 pe-10 py-3 text-sm border border-slate-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20 focus-visible:border-secondary transition-colors placeholder:text-slate-400"
         />
         {search && (
           <button
@@ -349,7 +349,7 @@ export function StudentComboboxInner({
                       setSearch('')
                       setIsOpen(false)
                     }}
-                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-4 rounded-xl cursor-pointer transition-colors flex flex-col justify-between gap-2 shadow-sm hover:shadow-md text-left w-full"
+                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-4 rounded-xl cursor-pointer transition-colors flex flex-col justify-between gap-2 shadow-sm hover:shadow-md text-start w-full"
                   >
                     <div>
                       <div className="flex justify-between items-start gap-2">

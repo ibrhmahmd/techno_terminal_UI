@@ -1,0 +1,11 @@
+{
+  "page_title": "التقارير",
+  "subtitle": "لوحة التحليلات والرؤى",
+  "tabs": {
+    "daily_report": "التقرير اليومي",
+    "weekly_report": "التقرير الأسبوعي",
+    "monthly_report": "التقرير الشهري",
+    "revenue_collections": "الإيرادات والتحصيل",
+    "progress": "التقدم"
+  }
+}

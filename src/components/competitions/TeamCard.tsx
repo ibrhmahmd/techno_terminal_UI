@@ -50,7 +50,7 @@ export function TeamCard({ team }: TeamCardProps) {
           </div>
         </div>
       </div>
-      <span className="material-symbols-outlined text-slate-400 flex-shrink-0" aria-hidden="true">chevron_right</span>
+      <span className="material-symbols-outlined text-slate-400 flex-shrink-0 icon-flip-rtl" aria-hidden="true">chevron_right</span>
     </div>
   )
 }

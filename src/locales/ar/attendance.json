@@ -1,0 +1,113 @@
+{
+  "grid": {
+    "no_students": "مفيش طلاب متسجلين في المجموعة دي.",
+    "no_students_hint": "سجّل طلاب عشان تبدأ تسجل الحضور.",
+    "no_sessions": "مفيش جلسات اتعملت للمستوى ده لسه.",
+    "no_sessions_hint": "طالب متسجل — اعمل جلسات عشان تبدأ تسجل الحضور.",
+    "add_session": "زيد جلسة",
+    "instructor": "المدرب",
+    "session_notes": "ملاحظات الجلسة",
+    "view_group_details": "شوف تفاصيل المجموعة",
+    "grid_aria": "جدول الحضور",
+    "grid_caption": "حضور الطلاب لمجموعة {{group}} — المستوى {{level}}"
+  },
+  "cell": {
+    "toggle_aria": "غيّر الحضور: {{status}}"
+  },
+  "header": {
+    "student": "الطالب",
+    "cancelled": "ملغية"
+  },
+  "status": {
+    "present": "حاضر",
+    "absent": "غائب",
+    "not_taken": "لسه ما اتسجلش"
+  },
+  "footer": {
+    "failed_to_save": "فشل في الحفظ:",
+    "cancel": "إلغاء",
+    "save_changes": "احفظ التغييرات",
+    "saving": "بيتحفظ..."
+  },
+  "actions": {
+    "edit": "عدّل",
+    "delete": "احذف",
+    "cancel": "الغِ",
+    "reactivate": "رجّعها",
+    "mark_complete": "علّم كمنجز",
+    "completed": "منجز",
+    "cancelled": "ملغية"
+  },
+  "dialogs": {
+    "cancel_title": "الغِ الجلسة",
+    "cancel_message": "متأكد إنك عايز تلغي الجلسة دي؟ مش هترجع تاني.",
+    "cancel_confirm": "الغِ الجلسة",
+    "cancel_keep": "سيبها",
+    "delete_title": "احذف الجلسة",
+    "delete_message": "متأكد إنك عايز تحذف الجلسة دي خالص؟ العملية دي نهائية ومش هترجع تاني.",
+    "delete_confirm": "احذف الجلسة",
+    "delete_keep": "سيبها"
+  },
+  "edit": {
+    "title": "عدّل الجلسة",
+    "date": "التاريخ",
+    "status": "الحالة",
+    "start_time": "وقت البداية",
+    "end_time": "وقت النهاية",
+    "instructor": "المدرب",
+    "search_instructors": "دور على مدرب...",
+    "substitute": "مدرب بديل",
+    "substitute_hint": "المدرب بيمثل النهاردة",
+    "notes_optional": "ملاحظات (مش مطلوب)",
+    "notes_placeholder": "اكتب ملاحظات الجلسة...",
+    "cancel": "إلغاء",
+    "save_changes": "احفظ التغييرات",
+    "today": "النهاردة",
+    "plus_1_day": "يوم",
+    "plus_7_days": "أسبوع",
+    "hours": "الساعات",
+    "scheduled": "مجدول",
+    "completed": "منجز",
+    "cancelled": "ملغية"
+  },
+  "mobile": {
+    "select_session": "اختار جلسة",
+    "no_sessions": "مفيش جلسات.",
+    "today": "النهاردة",
+    "no_time": "مفيش وقت",
+    "back_to_sessions": "رجوع للجلسات",
+    "close_sheet": "قفل ورقة الحضور",
+    "save_attendance": "احفظ الحضور",
+    "saving": "بيتحفظ..."
+  },
+  "payment": {
+    "paid": "{{count}} مدفوع",
+    "due": "{{count}} مش مدفوع",
+    "remaining": "{{amount}} ج.م متبقية"
+  },
+  "billing": {
+    "paid": "مدفوع",
+    "due": "مش مدفوع",
+    "due_with_amount": "مش مدفوع: {{amount}} ج.م"
+  },
+  "toast": {
+    "session_updated": "الجلسة اتعدّلت بنجاح",
+    "session_update_failed": "مقدرش أحدّث الجلسة",
+    "session_cancelled": "الجلسة اتلغت بنجاح",
+    "session_cancel_failed": "مقدرش ألغي الجلسة",
+    "session_deleted": "الجلسة اتحذفت بنجاح",
+    "session_delete_failed": "مقدرش أحذف الجلسة",
+    "session_reactivated": "الجلسة رجعت شغّالة بنجاح",
+    "session_reactivate_failed": "مقدرش أرجّع الجلسة",
+    "session_completed": "الجلسة اتعملت كمنجزة بنجاح",
+    "session_complete_failed": "مقدرش أعلّم الجلسة كمنجزة",
+    "save_success": "اتحفظ {{count}} تغيير بنجاح!",
+    "save_all_failed": "مقدرش أحفظ التغييرات",
+    "save_partial": "اتحفظ {{saved}}، {{failed}} فشل — جرّب تاني",
+    "save_failed": "مقدرش أحفظ التغييرات",
+    "retry_success": "الجلسة اتحفظت بنجاح",
+    "retry_failed": "مقدرش أحفظ الجلسة",
+    "attendance_saved": "الحضور اتحفظ بنجاح",
+    "attendance_save_failed": "مقدرش أحفظ الحضور"
+  }
+}

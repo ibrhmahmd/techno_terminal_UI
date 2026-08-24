@@ -6,21 +6,32 @@
   "actions": {
     "new_enrollment": "اشتراك جديد"
   },
-  "scheduled_groups": "المجموعات المجدولة",
+  "scheduled_groups": "المجموعات النهاردة",
   "empty": {
-    "no_groups": "لا توجد مجموعات مجدولة",
-    "no_groups_today": "لا توجد مجموعات مجدولة لهذا اليوم",
-    "no_progress_data": "لا توجد بيانات تقدم متاحة"
+    "no_groups": "مفيش مجموعات النهاردة",
+    "no_groups_today": "مفيش مجموعات النهاردة"
   },
   "fallbacks": {
-    "unknown_group": "مجموعة غير معروفة",
-    "unknown_course": "مقرر غير معروف",
-    "tba": "يُحدد لاحقاً"
+    "unknown_group": "مجموعة مش معروفة",
+    "unknown_course": "مقرر مش معروف",
+    "tba": "يتحدد بعدين"
   },
-  "progress_chart": {
-    "on_track": "على المسار",
-    "at_risk": "تحت التهديد",
-    "behind": "متأخر",
-    "aria_label": "مخطط توزيع تقدم الطلاب يعرض عدد المتأخرين والمتlogged والمتأخرين"
+  "quick_actions": {
+    "aria_label": "إجراءات سريعة",
+    "quick_register": "تسجيل سريع",
+    "quick_register_subtitle": "سجّل طالب جديد",
+    "create_payment": "إنشاء دفعة",
+    "create_payment_subtitle": "سجّل دفعة جديدة",
+    "todays_sessions": "حصص النهاردة",
+    "quick_reports": "تقارير سريعة",
+    "quick_reports_subtitle": "شوف التقارير",
+    "quick_register_student": "تسجيل سريع للطالب",
+    "student_registered_success": "الطالب اتسجّل بنجاح",
+    "student_register_failed": "مش عارف أسجّل الطالب"
+  },
+  "mobile_group_card": {
+    "attendance_badge": "الحضور",
+    "mark_attendance": "سجّل الحضور",
+    "view_attendance_for": "شوف حضور {{name}}"
   }
 }

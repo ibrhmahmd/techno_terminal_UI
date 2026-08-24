@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Modal } from '../common/Modal'
 import { ErrorState } from '../common/ErrorState'
 import { FieldLabel } from './shared/FieldLabel'
@@ -15,6 +16,7 @@ interface EmployeeDetailModalProps {
 }
 
 export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRetry, onDelete, onRestore }: EmployeeDetailModalProps) {
+  const { t } = useTranslation('staff')
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return null
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -38,27 +40,27 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
           onClick={onRestore}
           className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
         >
-          Restore Employee
+          {t('detail_modal.restore_employee')}
         </button>
       ) : (
         <button
           onClick={onDelete}
           className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
         >
-          Delete Employee
+          {t('detail_modal.delete_employee')}
         </button>
       )}
       <button
         onClick={onClose}
         className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
       >
-        Close
+        {t('detail_modal.close')}
       </button>
     </div>
   )
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Employee Details" size="lg" footer={modalFooter}>
+    <Modal isOpen={isOpen} onClose={onClose} title={t('detail_modal.title')} size="lg" footer={modalFooter}>
       {isLoading ? (
         <div className="space-y-6">
           <div className="flex items-start gap-4 pb-6 border-b border-slate-200">
@@ -92,8 +94,8 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
       ) : !employee ? (
         <div className="py-4">
           <ErrorState
-            title="Failed to load employee details"
-            message="We could not load the employee information. Please try again."
+            title={t('detail_modal.load_error_title')}
+            message={t('detail_modal.load_error_message')}
             onRetry={onRetry}
           />
         </div>
@@ -105,17 +107,17 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
               <span className="material-symbols-outlined text-yellow-600 mt-0.5">warning</span>
               <div className="flex-1">
                 <p className="text-sm font-medium text-yellow-800">
-                  Employee was soft-deleted on {formatDate(employee.deleted_at)} by #{employee.deleted_by}
+                  {t('detail_modal.deleted_warning')} {formatDate(employee.deleted_at)} {t('detail_modal.deleted_by')} #{employee.deleted_by}
                 </p>
                 <p className="text-xs text-yellow-700 mt-1">
-                  Restoring will NOT automatically re-enable their login.
+                  {t('detail_modal.restore_warning')}
                 </p>
               </div>
               <button
                 onClick={onRestore}
                 className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors shrink-0"
               >
-                Restore
+                {t('detail_modal.restore')}
               </button>
             </div>
           )}
@@ -127,10 +129,10 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
             </div>
             <div className="flex-1">
               <h3 className="text-xl font-headline font-semibold text-on-surface">{employee.full_name}</h3>
-              <p className="text-on-surface-variant">{employee.job_title || 'No job title set'}</p>
+              <p className="text-on-surface-variant">{employee.job_title || t('detail_modal.no_job_title')}</p>
               <div className="flex items-center gap-2 mt-2">
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${employee.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                  {employee.is_active ? 'Active' : 'Inactive'}
+                  {employee.is_active ? t('employee.active') : t('employee.inactive')}
                 </span>
                 <span className="text-xs text-on-surface-variant">
                   {getEmploymentTypeLabel(employee.employment_type)}
@@ -141,9 +143,9 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
 
           {/* Personal Information */}
           <div>
-            <h4 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-3">Personal Information</h4>
+            <h4 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-3">{t('detail_modal.personal_info')}</h4>
             <div className="grid grid-cols-2 gap-4">
-              <FieldLabel label="National ID" value={employee.national_id} icon="badge" fallback="Not provided" />
+              <FieldLabel label={t('employee.role')} value={employee.national_id} icon="badge" fallback={t('detail_modal.not_provided')} />
               <FieldLabel label="Employee ID" value={`#${employee.id}`} icon="tag" />
               <FieldLabel label="Hire Date" value={formatDate(employee.hired_at)} icon="calendar_today" />
             </div>
@@ -151,7 +153,7 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
 
           {/* Contact */}
           <div>
-            <h4 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-3">Contact</h4>
+            <h4 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-3">{t('detail_modal.contact')}</h4>
             <div className="grid grid-cols-2 gap-4">
               <FieldLabel label="Email" value={employee.email} icon="mail" />
               <FieldLabel label="Phone" value={employee.phone} icon="call" />
@@ -160,28 +162,28 @@ export function EmployeeDetailModal({ employee, isLoading, isOpen, onClose, onRe
 
           {/* Employment Details */}
           <div className="p-4 bg-surface-container-low rounded-lg">
-            <h4 className="text-sm font-semibold text-on-surface uppercase tracking-wider mb-3">Employment Details</h4>
+            <h4 className="text-sm font-semibold text-on-surface uppercase tracking-wider mb-3">{t('detail_modal.employment_details')}</h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-on-surface-variant mb-1">Job Title</p>
-                <p className="text-sm font-medium text-on-surface">{employee.job_title || 'Not set'}</p>
+                <p className="text-sm font-medium text-on-surface">{employee.job_title || t('detail_modal.not_set')}</p>
               </div>
               <div>
                 <p className="text-xs text-on-surface-variant mb-1">Status</p>
-                <p className="text-sm font-medium text-on-surface">{employee.is_active ? 'Active' : 'Inactive'}</p>
+                <p className="text-sm font-medium text-on-surface">{employee.is_active ? t('employee.active') : t('employee.inactive')}</p>
               </div>
               <div>
                 <p className="text-xs text-on-surface-variant mb-1">University</p>
-                <p className="text-sm font-medium text-on-surface">{employee.university || 'Not specified'}</p>
+                <p className="text-sm font-medium text-on-surface">{employee.university || t('detail_modal.not_specified')}</p>
               </div>
               <div>
                 <p className="text-xs text-on-surface-variant mb-1">Major</p>
-                <p className="text-sm font-medium text-on-surface">{employee.major || 'Not specified'}</p>
+                <p className="text-sm font-medium text-on-surface">{employee.major || t('detail_modal.not_specified')}</p>
               </div>
               <div>
                 <p className="text-xs text-on-surface-variant mb-1">Graduate</p>
                 <p className="text-sm font-medium text-on-surface">
-                  {employee.is_graduate === undefined ? 'Not specified' : employee.is_graduate ? 'Yes' : 'No'}
+                  {employee.is_graduate === undefined ? t('detail_modal.not_specified') : employee.is_graduate ? t('detail_modal.yes') : t('detail_modal.no')}
                 </p>
               </div>
               {/* <div>

@@ -48,7 +48,7 @@ export function EmployeeCard({ employee, onView, onEdit, onCreateAccount, onDele
       {/* Header with name, ID, and status */}
       <div className="flex items-start justify-between mb-4">
         <h3 className="font-headline font-semibold text-on-surface truncate">{employee.full_name}</h3>
-        <div className="flex items-center gap-3 shrink-0 ml-2">
+        <div className="flex items-center gap-3 shrink-0 ms-2">
           <span className="text-xs text-slate-400 font-mono">#{employee.id}</span>
           <span className={`flex items-center gap-1 ${employee.is_active ? 'text-green-600' : 'text-slate-400'}`}>
             <span className={`w-2 h-2 rounded-full ${employee.is_active ? 'bg-green-500' : 'bg-gray-400'}`} />

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 import { sessionStatusColors } from '../../utils/colors'
 import { ConfirmDialog } from '../common/ConfirmDialog'
@@ -22,6 +23,7 @@ export function SessionActionsRow({
   onComplete,
   disabled
 }: SessionActionsRowProps) {
+  const { t } = useTranslation('attendance')
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [sessionToDelete, setSessionToDelete] = useState<number | null>(null)
   const [isHardDeleteDialogOpen, setIsHardDeleteDialogOpen] = useState(false)
@@ -86,7 +88,7 @@ export function SessionActionsRow({
                   {cancelled ? (
                     <>
                       <span className={`px-2 py-1 rounded-md text-xs font-bold ${sessionStatusColors.cancelled}`}>
-                        CANCELLED
+                        {t('actions.cancelled')}
                       </span>
                       <button
                         onClick={() => onReactivate(session.session_id)}
@@ -95,7 +97,7 @@ export function SessionActionsRow({
                         aria-label="Reactivate session"
                       >
                         <span className="material-symbols-outlined text-base" aria-hidden="true">restore</span>
-                        Reactivate
+                        {t('actions.reactivate')}
                       </button>
                       <button
                         onClick={() => handleHardDeleteClick(session.session_id)}
@@ -104,7 +106,7 @@ export function SessionActionsRow({
                         aria-label="Delete session"
                       >
                         <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
-                        Delete
+                        {t('actions.delete')}
                       </button>
                     </>
                   ) : (
@@ -116,7 +118,7 @@ export function SessionActionsRow({
                         aria-label="Edit session details"
                       >
                         <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
-                        Edit
+                        {t('actions.edit')}
                       </button>
 
                       {session.status === 'scheduled' && (
@@ -127,7 +129,7 @@ export function SessionActionsRow({
                           aria-label="Cancel session"
                         >
                           <span className="material-symbols-outlined text-base" aria-hidden="true">block</span>
-                          Cancel
+                          {t('actions.cancel')}
                         </button>
                       )}
                       
@@ -138,7 +140,7 @@ export function SessionActionsRow({
                         aria-label="Delete session"
                       >
                         <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
-                        Delete
+                        {t('actions.delete')}
                       </button>
                     </>
                   )}
@@ -155,12 +157,12 @@ export function SessionActionsRow({
                         aria-label="Mark session as completed"
                       >
                         <span className="material-symbols-outlined text-sm" aria-hidden="true">check_circle</span>
-                        Mark Complete
+                        {t('actions.mark_complete')}
                       </button>
                     ) : (
                       <div className="w-full flex items-center justify-center gap-1.5 py-1.5 text-sm font-extrabold text-emerald-800 bg-emerald-100/60 border border-emerald-200 rounded-md">
                         <span className="material-symbols-outlined text-sm" aria-hidden="true">check_circle</span>
-                        Completed
+                        {t('actions.completed')}
                       </div>
                     )}
                   </div>
@@ -173,10 +175,10 @@ export function SessionActionsRow({
 
       <ConfirmDialog
         isOpen={isDeleteDialogOpen}
-        title="Cancel Session"
-        message="Are you sure you want to cancel this session? This action cannot be undone."
-        confirmText="Cancel Session"
-        cancelText="Keep Session"
+        title={t('dialogs.cancel_title')}
+        message={t('dialogs.cancel_message')}
+        confirmText={t('dialogs.cancel_confirm')}
+        cancelText={t('dialogs.cancel_keep')}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDialog}
         variant="warning"
@@ -184,10 +186,10 @@ export function SessionActionsRow({
 
       <ConfirmDialog
         isOpen={isHardDeleteDialogOpen}
-        title="Delete Session"
-        message="Are you sure you want to delete this session entirely? This action is permanent and cannot be undone."
-        confirmText="Delete Session"
-        cancelText="Keep Session"
+        title={t('dialogs.delete_title')}
+        message={t('dialogs.delete_message')}
+        confirmText={t('dialogs.delete_confirm')}
+        cancelText={t('dialogs.delete_keep')}
         onConfirm={handleConfirmHardDelete}
         onCancel={handleCancelHardDeleteDialog}
         variant="danger"

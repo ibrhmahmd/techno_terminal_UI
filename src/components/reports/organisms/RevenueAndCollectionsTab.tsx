@@ -99,7 +99,7 @@ export function RevenueAndCollectionsTab() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-headline text-lg font-semibold text-on-surface">
               Receipts
-              <span className="ml-2 px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full">
+              <span className="ms-2 px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full">
                 {receipts.length}
               </span>
             </h3>
@@ -117,11 +117,11 @@ export function RevenueAndCollectionsTab() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-200">
-                    <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Receipt #</th>
-                    <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Payer</th>
-                    <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Amount</th>
-                    <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Method</th>
-                    <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Time</th>
+                    <th scope="col" className="text-start py-3 px-4 text-sm font-medium text-slate-500">Receipt #</th>
+                    <th scope="col" className="text-start py-3 px-4 text-sm font-medium text-slate-500">Payer</th>
+                    <th scope="col" className="text-start py-3 px-4 text-sm font-medium text-slate-500">Amount</th>
+                    <th scope="col" className="text-start py-3 px-4 text-sm font-medium text-slate-500">Method</th>
+                    <th scope="col" className="text-start py-3 px-4 text-sm font-medium text-slate-500">Time</th>
                   </tr>
                 </thead>
                 <tbody>

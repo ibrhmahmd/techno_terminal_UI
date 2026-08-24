@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { TopNavbar } from "../components/dashboard/TopNavbar";
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
@@ -19,6 +20,7 @@ import { extractErrorMessage, getErrorStatus } from '../utils/apiErrors'
 export function CompetitionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation('competitions')
   const competitionId = id || ''
   const numericId = parseInt(competitionId, 10)
 
@@ -67,7 +69,7 @@ export function CompetitionDetailPage() {
       navigate('/competitions')
     } catch (err: unknown) {
       if (getErrorStatus(err) === 409) {
-        setDeleteError(extractErrorMessage(err) || 'Cannot delete: this competition has registered teams.')
+        setDeleteError(extractErrorMessage(err) || t('competitionDetail.delete_conflict'))
       }
     }
   }
@@ -98,12 +100,12 @@ export function CompetitionDetailPage() {
         <TopNavbar activePage="Competitions" />
         <div className="text-center py-12">
           <span className="material-symbols-outlined text-4xl text-slate-300 mb-4" aria-hidden="true">error</span>
-          <p className="text-slate-500">Competition not found</p>
+          <p className="text-slate-500">{t('competitionDetail.not_found')}</p>
           <button
             onClick={() => navigate('/competitions')}
             className="mt-4 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
           >
-            Back to Competitions
+            {t('competitionDetail.back_to_competitions')}
           </button>
         </div>
       </div>
@@ -121,8 +123,8 @@ export function CompetitionDetailPage() {
             onClick={() => navigate('/competitions')}
             className="flex items-center gap-1 text-sm text-slate-500 hover:text-on-surface mb-2"
           >
-            <span className="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
-            Back to Competitions
+            <span className="material-symbols-outlined text-sm icon-flip-rtl" aria-hidden="true">arrow_back</span>
+            {t('competitionDetail.back_to_competitions')}
           </button>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -139,7 +141,7 @@ export function CompetitionDetailPage() {
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
               >
                 <span className="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
-                Edit
+                {t('competitionDetail.edit')}
               </button>
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
@@ -151,7 +153,7 @@ export function CompetitionDetailPage() {
                 ) : (
                   <span className="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
                 )}
-                {isDeletingCompetition ? 'Deleting...' : 'Delete'}
+                {isDeletingCompetition ? t('competitionDetail.deleting') : t('competitionDetail.delete')}
               </button>
             </div>
           </div>
@@ -169,8 +171,8 @@ export function CompetitionDetailPage() {
         <div className="mb-6 border-b border-slate-200">
           <nav role="tablist" aria-label="Competition details" className="flex gap-6">
             {[
-              { id: 'overview', label: 'Overview', icon: 'info' },
-              { id: 'teams', label: 'Teams', icon: 'groups' },
+              { id: 'overview', label: t('competitionDetail.tab_overview'), icon: 'info' },
+              { id: 'teams', label: t('competitionDetail.tab_teams'), icon: 'groups' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -194,7 +196,7 @@ export function CompetitionDetailPage() {
 
         {/* Tab Content */}
         {activeTab === 'overview' && (
-          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load overview</p></div>}>
+            <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">{t('competitionDetail.failed_overview')}</p></div>}>
           <div
             role="tabpanel"
             id="panel-overview"
@@ -203,29 +205,29 @@ export function CompetitionDetailPage() {
           >
             {/* Competition Info */}
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">About This Competition</h2>
+              <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">{t('competitionDetail.about')}</h2>
               {competition.notes && <p className="text-slate-600 mb-4">{competition.notes}</p>}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="material-symbols-outlined text-slate-400" aria-hidden="true">location_on</span>
-                  <span>{competition.location ?? 'N/A'}</span>
+                  <span>{competition.location ?? t('competitionDetail.na')}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="material-symbols-outlined text-slate-400" aria-hidden="true">payments</span>
-                  <span>{competition.fee_per_student != null ? `${competition.fee_per_student} EGP per student` : 'No fee set'}</span>
+                  <span>{competition.fee_per_student != null ? t('competitionDetail.egp_per_student', { fee: competition.fee_per_student }) : t('competitionDetail.no_fee_set')}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="material-symbols-outlined text-slate-400" aria-hidden="true">event</span>
-                  <span>{competition.competition_date ? formatDate(competition.competition_date) : 'Date TBD'}</span>
+                  <span>{competition.competition_date ? formatDate(competition.competition_date) : t('competitionDetail.date_tbd')}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="material-symbols-outlined text-slate-400" aria-hidden="true">schedule</span>
-                  <span>Created {formatDate(competition.created_at)}</span>
+                  <span>{t('competitionDetail.created', { date: formatDate(competition.created_at) })}</span>
                 </div>
               </div>
               {competition.edition && (
                 <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
-                  <span className="font-semibold">Edition:</span> {competition.edition}
+                  <span className="font-semibold">{t('competitionDetail.edition_label')}</span> {competition.edition}
                   {competition.edition_year && <span>({competition.edition_year})</span>}
                 </div>
               )}
@@ -237,14 +239,14 @@ export function CompetitionDetailPage() {
                 <div className="bg-white rounded-xl border border-slate-200 p-4">
                   <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
                     <span className="material-symbols-outlined" aria-hidden="true">groups</span>
-                    Total Teams
+                    {t('competitionDetail.total_teams')}
                   </div>
                   <p className="text-2xl font-bold text-on-surface">{summary.total_teams ?? 0}</p>
                 </div>
                 <div className="bg-white rounded-xl border border-slate-200 p-4">
                   <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
                     <span className="material-symbols-outlined" aria-hidden="true">person</span>
-                    Participants
+                    {t('competitionDetail.participants')}
                   </div>
                   <p className="text-2xl font-bold text-on-surface">{summary.total_participants ?? 0}</p>
                 </div>
@@ -254,17 +256,17 @@ export function CompetitionDetailPage() {
             {/* Categories Grid */}
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h3 className="font-headline text-lg font-semibold text-on-surface mb-4">
-                Categories {categories.length > 0 && `(${categories.length})`}
+                {t('competitionDetail.categories_title', { count: categories.length })}
               </h3>
               {categories.length === 0 ? (
                 <div className="text-center py-8">
                   <span className="material-symbols-outlined text-4xl text-slate-300 mb-2" aria-hidden="true">category</span>
-                  <p className="text-slate-500 mb-4">No categories yet. Categories are generated from team registrations.</p>
+                  <p className="text-slate-500 mb-4">{t('competitionDetail.categories_empty')}</p>
                   <button
                     onClick={() => { setSelectedCategory(null); setIsRegistrationModalOpen(true) }}
                     className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
                   >
-                    Register First Team
+                    {t('competitionDetail.register_first_team')}
                   </button>
                 </div>
               ) : (
@@ -298,13 +300,13 @@ export function CompetitionDetailPage() {
                           }}
                           className="flex-1 px-3 py-2 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
                         >
-                          View Teams
+                          {t('competitionDetail.view_teams')}
                         </button>
                         <button
                           onClick={() => { setSelectedCategory(cat.category); setIsRegistrationModalOpen(true) }}
                           className="flex-1 px-3 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
                         >
-                          Register Team
+                          {t('competitionDetail.register_team')}
                         </button>
                       </div>
                     </div>
@@ -317,7 +319,7 @@ export function CompetitionDetailPage() {
         )}
 
         {activeTab === 'teams' && (
-          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load teams</p></div>}>
+          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">{t('competitionDetail.failed_teams')}</p></div>}>
           <div role="tabpanel" id="panel-teams" aria-labelledby="tab-teams">
             <TeamsTab
               teams={teams}
@@ -357,7 +359,7 @@ export function CompetitionDetailPage() {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => { setIsDeleteModalOpen(false); setDeleteError(null) }}
-        title="Delete Competition"
+        title={t('competitionDetail.delete_title')}
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
@@ -366,7 +368,7 @@ export function CompetitionDetailPage() {
               disabled={isDeletingCompetition}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </button>
             <button
               onClick={handleDeleteCompetition}
@@ -374,17 +376,17 @@ export function CompetitionDetailPage() {
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
             >
               {isDeletingCompetition && <LoadingSpinner size="sm" />}
-              Delete
+              {t('competitionDetail.delete')}
             </button>
           </div>
         }
       >
         <div className="space-y-3">
           <p className="text-sm text-slate-600">
-            Are you sure you want to permanently delete <strong>{competition?.name}</strong>?
+            {t('competitionDetail.delete_confirm', { name: competition?.name })}
           </p>
           <p className="text-sm text-red-600">
-            This action cannot be undone. All associated data will be lost.
+            {t('competitionDetail.delete_warning')}
           </p>
           {deleteError && (
             <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">

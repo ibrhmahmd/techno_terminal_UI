@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Modal, PillSelector, SearchablePillSelector } from '../../common'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getEmployees } from '../../../api/hr'
@@ -25,6 +26,7 @@ export function AddSessionDialog({
   groupInstructorName,
   onClose
 }: AddSessionDialogProps) {
+  const { t } = useTranslation('groups')
   const queryClient = useQueryClient()
   const [date, setDate] = useState('')
   const [startTime, setStartTime] = useState('')
@@ -52,9 +54,9 @@ export function AddSessionDialog({
   }))
 
   const statusOptions = [
-    { value: 'scheduled', label: 'Scheduled', dotColor: 'bg-blue-500' },
-    { value: 'completed', label: 'Completed', dotColor: 'bg-green-500' },
-    { value: 'cancelled', label: 'Cancelled', dotColor: 'bg-red-500' },
+    { value: 'scheduled', label: t('addSessionDialog.scheduled'), dotColor: 'bg-blue-500' },
+    { value: 'completed', label: t('addSessionDialog.completed'), dotColor: 'bg-green-500' },
+    { value: 'cancelled', label: t('addSessionDialog.cancelled'), dotColor: 'bg-red-500' },
   ]
 
   // Time conversion helpers
@@ -152,7 +154,7 @@ export function AddSessionDialog({
     setError(null)
 
     if (!date) {
-      setError('Date is required')
+      setError(t('addSessionDialog.date_required'))
       return
     }
 
@@ -296,7 +298,7 @@ export function AddSessionDialog({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Add Extra Session"
+      title={t('addSessionDialog.title')}
       size="lg"
     >
       <form onSubmit={handleSubmit}>
@@ -311,7 +313,7 @@ export function AddSessionDialog({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             <div className="lg:col-span-5">
               <label htmlFor="session-date" className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                Session Date <span className="text-red-500">*</span>
+                {t('addSessionDialog.session_date')} <span className="text-red-500">*</span>
               </label>
               <input
                 id="session-date"
@@ -333,27 +335,27 @@ export function AddSessionDialog({
                   }}
                   className="px-2 py-1 text-[11px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded transition-colors"
                 >
-                  Today
+                  {t('addSessionDialog.today')}
                 </button>
                 <button
                   type="button"
                   onClick={() => adjustDate(1)}
                   className="px-2 py-1 text-[11px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded transition-colors"
                 >
-                  +1 Day
+                  {t('addSessionDialog.plus_one_day')}
                 </button>
                 <button
                   type="button"
                   onClick={() => adjustDate(7)}
                   className="px-2 py-1 text-[11px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded transition-colors"
                 >
-                  +7 Days
+                  {t('addSessionDialog.plus_seven_days')}
                 </button>
               </div>
             </div>
             <div className="lg:col-span-7">
               <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                Status
+                {t('addSessionDialog.status')}
               </label>
               <PillSelector
                 options={statusOptions}
@@ -365,28 +367,28 @@ export function AddSessionDialog({
 
           {/* Row 2: Start Time & End Time Pills */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {renderTimeGrid('Start Time', startTime, setStartTime)}
-            {renderTimeGrid('End Time', endTime, setEndTime)}
+            {renderTimeGrid(t('addSessionDialog.start_time'), startTime, setStartTime)}
+            {renderTimeGrid(t('addSessionDialog.end_time'), endTime, setEndTime)}
           </div>
 
           {/* Row 3: Instructor Selection & Substitute Toggle */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-end">
             <div>
               <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                Instructor
+                {t('addSessionDialog.instructor')}
               </label>
               <SearchablePillSelector
                 options={instructorOptions}
                 value={selectedInstructorId || null}
                 onChange={(val) => setSelectedInstructorId(val ? Number(val) : 0)}
-                placeholder="Search instructors..."
+                placeholder={t('addSessionDialog.search_instructors')}
               />
             </div>
             {/* iOS Switch Toggle for Substitute */}
             <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200/60 rounded-md h-[46px]">
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-slate-700">Substitute Instructor</span>
-                <span className="text-[10px] text-slate-400">Instructor is covering today</span>
+                <span className="text-xs font-bold text-slate-700">{t('addSessionDialog.substitute')}</span>
+                <span className="text-[10px] text-slate-400">{t('addSessionDialog.substitute_desc')}</span>
               </div>
               <button
                 type="button"
@@ -410,7 +412,7 @@ export function AddSessionDialog({
           {/* Row 4: Notes */}
           <div>
             <label htmlFor="session-notes" className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-              Notes (Optional)
+              {t('addSessionDialog.notes_optional')}
             </label>
             <textarea
               id="session-notes"
@@ -418,7 +420,7 @@ export function AddSessionDialog({
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3.5 py-2 border border-slate-200 rounded-md text-sm text-slate-800 bg-white focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none transition-all resize-none"
               rows={3}
-              placeholder="E.g., Make-up session for..."
+              placeholder={t('addSessionDialog.notes_placeholder')}
             />
           </div>
         </div>
@@ -430,7 +432,7 @@ export function AddSessionDialog({
             className="px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-md hover:bg-slate-50 transition-colors disabled:opacity-50"
             disabled={isSubmitting}
           >
-            Cancel
+            {t('addSessionDialog.cancel')}
           </button>
           <button
             type="submit"
@@ -438,7 +440,7 @@ export function AddSessionDialog({
             className="px-4 py-2 text-sm font-bold text-white bg-secondary rounded-md hover:bg-secondary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             {isSubmitting ? <LoadingSpinner size="sm" /> : null}
-            Add Session
+            {t('addSessionDialog.add_session')}
           </button>
         </div>
       </form>

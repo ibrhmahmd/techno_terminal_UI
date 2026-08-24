@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { QuickActionWidget } from './QuickActionWidget'
 import { StatWidget } from './StatWidget'
 import { Modal } from '../common'
@@ -16,6 +17,7 @@ interface QuickActionsGridProps {
 
 export function QuickActionsGrid({ todaySessionCount }: QuickActionsGridProps) {
   const navigate = useNavigate()
+  const { t } = useTranslation('dashboard')
   const { showToast, ToastComponent } = useToast()
   const [isQuickRegisterOpen, setIsQuickRegisterOpen] = useState(false)
   
@@ -48,43 +50,43 @@ export function QuickActionsGrid({ todaySessionCount }: QuickActionsGridProps) {
         })
       }
 
-      showToast('Student registered successfully', 'success')
+      showToast(t('quick_actions.student_registered_success'), 'success')
       setIsQuickRegisterOpen(false)
     } catch {
-      showToast('Failed to register student', 'error')
+      showToast(t('quick_actions.student_register_failed'), 'error')
     }
   }
 
   return (
-    <section className="w-full" aria-label="Quick actions">
+    <section className="w-full" aria-label={t('quick_actions.aria_label')}>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <QuickActionWidget
           icon="person_add"
-          title="Quick Register"
-          subtitle="Register new student"
+          title={t('quick_actions.quick_register')}
+          subtitle={t('quick_actions.quick_register_subtitle')}
           variant="primary"
           onClick={handleQuickRegister}
         />
 
         <QuickActionWidget
           icon="payment"
-          title="Create Payment"
-          subtitle="Record new payment"
+          title={t('quick_actions.create_payment')}
+          subtitle={t('quick_actions.create_payment_subtitle')}
           variant="secondary"
           onClick={() => navigate('/finance')}
         />
 
         <StatWidget
           value={todaySessionCount}
-          label="Today's Sessions"
+          label={t('quick_actions.todays_sessions')}
           icon="event_note"
           trend="neutral"
         />
 
         <QuickActionWidget
           icon="analytics"
-          title="Quick Reports"
-          subtitle="View insights"
+          title={t('quick_actions.quick_reports')}
+          subtitle={t('quick_actions.quick_reports_subtitle')}
           variant="accent"
           onClick={() => navigate('/reports')}
         />
@@ -94,7 +96,7 @@ export function QuickActionsGrid({ todaySessionCount }: QuickActionsGridProps) {
       <Modal
         isOpen={isQuickRegisterOpen}
         onClose={() => setIsQuickRegisterOpen(false)}
-        title="Quick Register Student"
+        title={t('quick_actions.quick_register_student')}
       >
         <StudentForm
           onSubmit={(data, parent, status, initialActivity) =>

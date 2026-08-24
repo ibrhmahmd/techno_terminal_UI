@@ -1,9 +1,12 @@
+import { useTranslation } from 'react-i18next'
+
 interface ViewToggleProps {
   value: 'table' | 'cards'
   onChange: (mode: 'table' | 'cards') => void
 }
 
 export function ViewToggle({ value, onChange }: ViewToggleProps) {
+  const { t } = useTranslation('groups')
   return (
     <div className="flex items-center gap-0.5 rounded-lg bg-slate-100 p-0.5" role="group" aria-label="View mode">
       <button
@@ -13,7 +16,7 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
             ? 'bg-white text-secondary shadow-sm'
             : 'text-slate-500 hover:text-secondary hover:bg-white/50'
         }`}
-        title="Table view"
+        title={t('viewToggle.table_title')}
         aria-pressed={value === 'table'}
       >
         <span className="material-symbols-outlined text-lg" aria-hidden="true">table_rows</span>
@@ -25,7 +28,7 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
             ? 'bg-white text-secondary shadow-sm'
             : 'text-slate-500 hover:text-secondary hover:bg-white/50'
         }`}
-        title="Cards view"
+        title={t('viewToggle.cards_title')}
         aria-pressed={value === 'cards'}
       >
         <span className="material-symbols-outlined text-lg" aria-hidden="true">grid_view</span>

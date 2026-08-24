@@ -110,7 +110,7 @@ export function FlatTable<T>(props: FlatTableProps<T>) {
               </th>
             ))}
             {actions && (
-              <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500 w-32">
+              <th className="px-6 py-4 text-end text-xs font-bold uppercase tracking-wider text-slate-500 w-32">
                 Actions
               </th>
             )}

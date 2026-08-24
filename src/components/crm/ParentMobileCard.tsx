@@ -39,7 +39,7 @@ export function ParentMobileCard({
         </div>
       </div>
       
-      <span className="material-symbols-outlined text-slate-400 shrink-0 ml-2" aria-hidden="true">chevron_right</span>
+      <span className="material-symbols-outlined text-slate-400 shrink-0 ml-2 icon-flip-rtl" aria-hidden="true">chevron_right</span>
     </Link>
   )
 }

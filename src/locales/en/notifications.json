@@ -1,0 +1,14 @@
+{
+  "page_title": "Notifications",
+  "subtitle": "Configure system notification rules and recipient dispatch settings.",
+  "tabs": {
+    "admin": "Admin Settings",
+    "logs": "Logs",
+    "bulk": "Bulk Messaging"
+  },
+  "metrics": {
+    "admin": "Config",
+    "logs": "Audit",
+    "bulk": "Dispatch"
+  }
+}

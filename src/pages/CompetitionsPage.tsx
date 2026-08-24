@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { Modal } from '../components/common/Modal'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
@@ -15,6 +16,7 @@ import { createCompetition, deleteCompetition } from '../api/competitions'
 import type { CreateCompetitionInput, UpdateCompetitionInput } from '../api/competitions'
 
 export function CompetitionsPage() {
+  const { t } = useTranslation('competitions')
   const navigate = useNavigate()
   const {
     competitions,
@@ -40,7 +42,7 @@ export function CompetitionsPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.competitions })
       setIsCreateModalOpen(false)
     } catch {
-      setActionError('Failed to create competition')
+      setActionError(t('toast.create_failed'))
     } finally {
       setIsProcessing(false)
     }
@@ -56,9 +58,9 @@ export function CompetitionsPage() {
     } catch (err: unknown) {
       const axiosErr = err as { response?: { status?: number; data?: { message?: string } } }
       if (axiosErr.response?.status === 409) {
-        setDeleteError(axiosErr.response.data?.message || 'Cannot delete: this competition has registered teams.')
+        setDeleteError(axiosErr.response.data?.message || t('toast.delete_conflict'))
       } else {
-        setActionError('Failed to delete competition')
+        setActionError(t('toast.delete_failed'))
       }
     } finally {
       setIsProcessing(false)
@@ -69,17 +71,17 @@ export function CompetitionsPage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNavbar activePage="Competitions" />
+      <TopNavbar activePage={t('page_title')} />
 
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-6">
         <div className="max-w-[1400px] mx-auto flex items-end justify-between">
           <div>
             <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">
-              Competitions
+              {t('page_title')}
             </h1>
             <p className="text-sm text-on-surface-variant mt-2">
-              Manage competitions and team registrations
+              {t('subtitle')}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -89,7 +91,7 @@ export function CompetitionsPage() {
               className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
             >
               <span className="material-symbols-outlined text-sm" aria-hidden="true">add</span>
-              Create Competition
+              {t('actions.create')}
             </button>
           </div>
         </div>
@@ -105,17 +107,17 @@ export function CompetitionsPage() {
         {isLoading ? (
           <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-busy="true">
             <LoadingSpinner />
-            <span className="sr-only">Loading competitions...</span>
+            <span className="sr-only">{t('loading')}</span>
           </div>
         ) : competitions.length === 0 ? (
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-4xl text-slate-300 mb-4" aria-hidden="true">emoji_events</span>
-            <p className="text-slate-500 mb-4">No competitions found</p>
+            <p className="text-slate-500 mb-4">{t('empty.no_competitions')}</p>
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
             >
-              Create First Competition
+              {t('actions.create_first')}
             </button>
           </div>
         ) : viewMode === 'table' ? (
@@ -141,7 +143,7 @@ export function CompetitionsPage() {
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title="Create Competition"
+        title={t('actions.create')}
       >
         <CompetitionForm
           onSubmit={handleCreateCompetition}
@@ -154,7 +156,7 @@ export function CompetitionsPage() {
       <Modal
         isOpen={!!deletingCompetition}
         onClose={() => { setDeletingCompetition(null); setDeleteError(null) }}
-        title="Delete Competition"
+        title={t('dialogs.delete_title')}
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
@@ -163,7 +165,7 @@ export function CompetitionsPage() {
               disabled={isProcessing}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t('dialogs.cancel')}
             </button>
             <button
               onClick={() => deletingCompetition && handleDeleteCompetition(deletingCompetition)}
@@ -171,17 +173,17 @@ export function CompetitionsPage() {
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
             >
               {isProcessing && <LoadingSpinner size="sm" />}
-              Delete
+              {t('dialogs.delete')}
             </button>
           </div>
         }
       >
         <div className="space-y-3">
           <p className="text-sm text-slate-600">
-            Are you sure you want to permanently delete this competition? This will also delete all associated categories and team registrations.
+            {t('dialogs.delete_message')}
           </p>
           <p className="text-sm text-red-600">
-            This action cannot be undone.
+            {t('dialogs.delete_warning')}
           </p>
           {deleteError && (
             <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">

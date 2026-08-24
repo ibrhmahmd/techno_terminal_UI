@@ -46,6 +46,7 @@ function AuditPasswordChangeSection() {
 }
 
 function AuditFailedAttemptsSection() {
+  const { t } = useTranslation()
   const [page, setPage] = useState(0)
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -59,7 +60,7 @@ function AuditFailedAttemptsSection() {
       <div className="mb-4"><AuditDateFilter from={from} to={to} onFromChange={(v) => { setFrom(v); setPage(0) }} onToChange={(v) => { setTo(v); setPage(0) }} /></div>
       {!hasFrom ? (
         <div className="bg-white rounded-[6px] shadow-sm p-8 text-center">
-          <p className="font-body text-slate-500">Specify a start date filter to retrieve failed authentication logs.</p>
+          <p className="font-body text-slate-500">{t('settings.specify_start_date')}</p>
         </div>
       ) : (
         <AuditLogTable data={data?.data ?? []} total={data?.total ?? 0} page={page} pageSize={limit} onPageChange={setPage} isLoading={isLoading} error={!!error} />
@@ -87,21 +88,21 @@ export function SettingsPage() {
     }[] = [
       {
         label: t('labels.name'),
-        value: 'User',
+        value: t('labels.name'),
         icon: 'person',
         color: 'secondary',
         onClick: () => setActiveTab('profile'),
       },
       {
-        label: 'Sessions & Activity',
-        value: 'Devices',
+        label: t('navigation.sessions_activity'),
+        value: t('navigation.devices'),
         icon: 'devices',
         color: 'emerald',
         onClick: () => setActiveTab('sessions-activity'),
       },
       {
         label: t('navigation.settings'),
-        value: 'Language',
+        value: t('navigation.language'),
         icon: 'language',
         color: 'slate',
         onClick: () => setActiveTab('language'),
@@ -110,8 +111,8 @@ export function SettingsPage() {
 
     if (canManageUsers) {
       items.push({
-        label: 'Users',
-        value: 'Accounts',
+        label: t('navigation.users'),
+        value: t('navigation.accounts'),
         icon: 'group',
         color: 'blue',
         onClick: () => setActiveTab('users'),
@@ -121,22 +122,22 @@ export function SettingsPage() {
     if (isSystemAdmin) {
       items.push(
         {
-          label: 'Login Logs',
-          value: 'Access',
+          label: t('navigation.login_logs'),
+          value: t('navigation.access'),
           icon: 'login',
           color: 'amber',
           onClick: () => setActiveTab('audit-logins'),
         },
         {
-          label: 'Password Changes',
-          value: 'Security',
+          label: t('navigation.password_changes'),
+          value: t('navigation.security'),
           icon: 'lock',
           color: 'slate',
           onClick: () => setActiveTab('audit-password-changes'),
         },
         {
-          label: 'Failed Attempts',
-          value: 'Alerts',
+          label: t('navigation.failed_attempts'),
+          value: t('navigation.alerts'),
           icon: 'warning',
           color: 'slate',
           onClick: () => setActiveTab('audit-failed-attempts'),
@@ -150,12 +151,12 @@ export function SettingsPage() {
   const activeIndex = useMemo(() => {
     return metricItems.findIndex((item) => {
       if (activeTab === 'profile') return item.label === t('labels.name')
-      if (activeTab === 'sessions-activity') return item.label === 'Sessions & Activity'
+      if (activeTab === 'sessions-activity') return item.label === t('navigation.sessions_activity')
       if (activeTab === 'language') return item.label === t('navigation.settings')
-      if (activeTab === 'users') return item.label === 'Users'
-      if (activeTab === 'audit-logins') return item.label === 'Login Logs'
-      if (activeTab === 'audit-password-changes') return item.label === 'Password Changes'
-      if (activeTab === 'audit-failed-attempts') return item.label === 'Failed Attempts'
+      if (activeTab === 'users') return item.label === t('navigation.users')
+      if (activeTab === 'audit-logins') return item.label === t('navigation.login_logs')
+      if (activeTab === 'audit-password-changes') return item.label === t('navigation.password_changes')
+      if (activeTab === 'audit-failed-attempts') return item.label === t('navigation.failed_attempts')
       return false
     })
   }, [metricItems, activeTab, t])
@@ -166,16 +167,16 @@ export function SettingsPage() {
       icon="notifications"
       onClick={() => navigate('/notifications')}
     >
-      Notifications
+      {t('navigation.notifications')}
     </ActionButton>
   ) : undefined
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNavbar activePage="Settings" />
+      <TopNavbar activePage={t('navigation.settings')} />
       <PageHeader
-        title="Settings"
-        subtitle="Manage your account and system preferences"
+        title={t('settings.title')}
+        subtitle={t('settings.subtitle')}
         actions={headerActions}
         sticky={false}
       />
@@ -187,7 +188,7 @@ export function SettingsPage() {
       </section>
 
       <PageSection>
-        <div role="tabpanel" aria-label={`Settings - ${activeTab.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`}>
+        <div role="tabpanel" aria-label={`${t('settings.title')} - ${activeTab.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`}>
           <ErrorBoundary>
             {activeTab === 'profile' && <ProfileTab />}
             {activeTab === 'sessions-activity' && <SessionsActivityTab />}

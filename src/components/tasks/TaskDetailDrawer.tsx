@@ -90,7 +90,7 @@ export function TaskDetailDrawer({ task, isOpen, onClose, currentUserId, isAdmin
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-200 flex items-start justify-between">
-          <div className="flex-1 min-w-0 pr-4">
+          <div className="flex-1 min-w-0 pe-4">
             <h2 className="text-lg font-semibold text-slate-900 font-headline truncate">{task.title}</h2>
             <div className="flex items-center gap-2 mt-2">
               <TaskStatusBadge status={task.status} />

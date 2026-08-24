@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 
 interface AttendanceFooterProps {
@@ -19,6 +20,7 @@ export function AttendanceFooter({
   onRetrySession,
   dirtySessions = new Set()
 }: AttendanceFooterProps) {
+  const { t } = useTranslation('attendance')
   // Get failed sessions for retry
   const failedSessions = Array.from(dirtySessions).filter(
     sessionId => saveStatus.get(sessionId) === 'error'
@@ -31,7 +33,7 @@ export function AttendanceFooter({
       {/* Failed sessions retry buttons */}
       {failedSessions.length > 0 && onRetrySession && (
         <div className="flex flex-wrap gap-2 items-center text-sm">
-          <span className="text-error font-semibold">Failed to save:</span>
+          <span className="text-error font-semibold">{t('footer.failed_to_save')}</span>
           {failedSessions.map(sessionId => (
             <button
               key={sessionId}
@@ -54,7 +56,7 @@ export function AttendanceFooter({
             className="px-4 py-2 rounded text-sm font-semibold text-outline hover:text-secondary transition-colors"
             disabled={isSaving}
           >
-            Cancel
+            {t('footer.cancel')}
           </button>
           <button
             onClick={onSave}
@@ -64,12 +66,12 @@ export function AttendanceFooter({
             {isSaving ? (
               <>
                 <LoadingSpinner size="sm" />
-                <span>Saving...</span>
+                <span>{t('footer.saving')}</span>
               </>
             ) : (
               <>
                 <span className="material-symbols-outlined text-sm" aria-hidden="true">save</span>
-                <span>Save Changes</span>
+                <span>{t('footer.save_changes')}</span>
               </>
             )}
           </button>

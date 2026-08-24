@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { X, Edit3, DollarSign, StickyNote } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { getCoursesPaginated } from '../../../api/academics'
 import { getEmployees } from '../../../api/hr'
 import { queryKeys } from '../../../hooks/queryKeys'
@@ -39,6 +40,7 @@ export function EditGroupLevelDialog({
   isLoading,
   triggerRef,
 }: EditGroupLevelDialogProps) {
+  const { t } = useTranslation('groups')
   const dialogRef = useRef<HTMLDivElement>(null)
   
   const [instructorId, setInstructorId] = useState<number | null>(null)
@@ -136,10 +138,10 @@ export function EditGroupLevelDialog({
           <div>
             <h2 id="edit-level-title" className="text-xl font-headline font-bold text-slate-900 flex items-center gap-2">
               <Edit3 className="w-5 h-5 text-secondary" />
-              Edit Level {levelNumber} Details
+              {t('editLevelDialog.title', { level: levelNumber })}
             </h2>
             <p className="text-sm text-slate-500 mt-1">
-              Modify assignment and pricing parameters for this active level.
+              {t('editLevelDialog.subtitle')}
             </p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-lg transition-colors" aria-label="Close dialog">
@@ -151,13 +153,13 @@ export function EditGroupLevelDialog({
           {/* Course Assignment */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Course
+              {t('editLevelDialog.course')}
             </label>
             <SearchablePillSelector
               options={courses.map(c => ({ id: c.id, label: c.name, subLabel: c.category }))}
               value={courseId}
               onChange={(val) => setCourseId(val ? Number(val) : null)}
-              placeholder="-- Keep Current --"
+              placeholder={t('editLevelDialog.keep_current')}
               disabled={isLoadingCourses}
             />
           </div>
@@ -165,13 +167,13 @@ export function EditGroupLevelDialog({
           {/* Instructor Assignment */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Instructor
+              {t('editLevelDialog.instructor')}
             </label>
             <SearchablePillSelector
               options={employees.map(emp => ({ id: emp.id, label: emp.full_name, subLabel: emp.job_title }))}
               value={instructorId}
               onChange={(val) => setInstructorId(val ? Number(val) : null)}
-              placeholder="-- Keep Current --"
+              placeholder={t('editLevelDialog.keep_current')}
               disabled={isLoadingEmployees}
             />
           </div>
@@ -179,7 +181,7 @@ export function EditGroupLevelDialog({
           {/* Price Override */}
           <div>
             <label htmlFor="edit-price" className="block text-sm font-medium text-slate-700 mb-1">
-              Price Override
+              {t('editLevelDialog.price_override')}
             </label>
             <div className="relative">
               <input
@@ -191,20 +193,20 @@ export function EditGroupLevelDialog({
                 onChange={(e) => setPriceOverride(e.target.value ? Number(e.target.value) : null)}
                 onWheel={(e) => (e.target as HTMLInputElement).blur()}
                 onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
-                placeholder="No price override"
-                className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
+                placeholder={t('editLevelDialog.no_price_override')}
+                className="w-full ps-9 pe-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
               />
               <DollarSign className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Specify a level-specific fee override, or leave blank to inherit default course pricing.
+              {t('editLevelDialog.price_hint')}
             </p>
           </div>
 
           {/* Notes */}
           <div>
             <label htmlFor="edit-notes" className="block text-sm font-medium text-slate-700 mb-1">
-              Internal Notes
+              {t('editLevelDialog.internal_notes')}
             </label>
             <div className="relative">
               <textarea
@@ -212,9 +214,9 @@ export function EditGroupLevelDialog({
                 rows={3}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add level notes here..."
+                placeholder={t('editLevelDialog.notes_placeholder')}
                 maxLength={500}
-                className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none resize-none"
+                className="w-full ps-9 pe-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none resize-none"
               />
               <StickyNote className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
             </div>
@@ -228,7 +230,7 @@ export function EditGroupLevelDialog({
               className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
               disabled={isLoading}
             >
-              Cancel
+              {t('editLevelDialog.cancel')}
             </button>
             <button
               type="submit"
@@ -238,10 +240,10 @@ export function EditGroupLevelDialog({
               {isLoading ? (
                 <>
                   <LoadingSpinner size="sm" variant="light" />
-                  Saving...
+                  {t('editLevelDialog.saving')}
                 </>
               ) : (
-                'Save Changes'
+                t('editLevelDialog.save_changes')
               )}
             </button>
           </div>

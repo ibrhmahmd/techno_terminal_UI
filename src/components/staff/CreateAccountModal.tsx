@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { CreateEmployeeAccountRequest } from '../../api/hr'
@@ -18,6 +19,7 @@ interface CreateAccountModalProps {
 }
 
 export function CreateAccountModal({ employee, isOpen, onClose, onSubmit, isLoading }: CreateAccountModalProps) {
+  const { t } = useTranslation('staff')
   const [formData, setFormData] = useState<CreateEmployeeAccountRequest>({
     email: employee.email || '',
     password: '',
@@ -57,7 +59,7 @@ export function CreateAccountModal({ employee, isOpen, onClose, onSubmit, isLoad
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={`Create Account for ${employee.full_name}`}
+      title={`${t('create_account.title_prefix')} ${employee.full_name}`}
       size="md"
       footer={
         <div className="flex justify-end gap-3">
@@ -67,7 +69,7 @@ export function CreateAccountModal({ employee, isOpen, onClose, onSubmit, isLoad
             className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
             disabled={isLoading}
           >
-            Cancel
+            {t('create_account.cancel')}
           </button>
           <button
             type="submit"
@@ -78,10 +80,10 @@ export function CreateAccountModal({ employee, isOpen, onClose, onSubmit, isLoad
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <LoadingSpinner size="sm" />
-                Creating...
+                {t('create_account.creating')}
               </span>
             ) : (
-              'Create Account'
+              t('create_account.create_account')
             )}
           </button>
         </div>
@@ -103,7 +105,7 @@ export function CreateAccountModal({ employee, isOpen, onClose, onSubmit, isLoad
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
-            placeholder="Enter email address"
+            placeholder={t('create_account.email_placeholder')}
             required
           />
         </div>
@@ -117,12 +119,12 @@ export function CreateAccountModal({ employee, isOpen, onClose, onSubmit, isLoad
             value={formData.password}
             onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
             className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
-            placeholder="Min 12 characters"
+            placeholder={t('create_account.password_placeholder')}
             minLength={12}
             required
           />
           <p className="mt-1 text-xs text-slate-500">
-            Must be at least 12 characters
+            {t('create_account.password_help')}
           </p>
         </div>
 
@@ -136,15 +138,15 @@ export function CreateAccountModal({ employee, isOpen, onClose, onSubmit, isLoad
             className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary bg-white"
             required
           >
-            <option value="admin">Admin</option>
-            <option value="system_admin">System Admin</option>
+            <option value="admin">{t('create_account.admin')}</option>
+            <option value="system_admin">{t('create_account.system_admin')}</option>
           </select>
         </div>
 
         <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-700">
-            <span className="font-medium">Note:</span> This will create a Supabase user account linked to {employee.full_name}. 
-            The employee will receive an email with login instructions.
+            <span className="font-medium">{t('create_account.note')}</span> {t('create_account.note_text_1')} {employee.full_name}. 
+            {t('create_account.note_text_2')}
           </p>
         </div>
       </form>

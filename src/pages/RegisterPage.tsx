@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useRegister } from '../hooks/useAuthQueries'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { AuthLayout } from '../components/auth/AuthLayout'
 
 export function RegisterPage() {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
@@ -20,17 +22,17 @@ export function RegisterPage() {
     setError(null)
 
     if (password.length < 12) {
-      setError('Password must be at least 12 characters')
+      setError(t('auth.registerPage.passwordTooShort'))
       return
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
+      setError(t('auth.registerPage.passwordMismatch'))
       return
     }
 
     if (!token) {
-      setError('Invalid or missing registration token. Please check your invite link.')
+      setError(t('auth.registerPage.invalidToken'))
       return
     }
 
@@ -38,12 +40,12 @@ export function RegisterPage() {
       await registerMutation.mutateAsync({ token, username, password })
       navigate('/login')
     } catch {
-      setError('Registration failed. The invite link may be invalid or expired. Please contact your administrator.')
+      setError(t('auth.registerPage.registrationFailed'))
     }
   }
 
   return (
-    <AuthLayout title="Complete Registration" subtitle="Set up your account to get started">
+    <AuthLayout title={t('auth.registerPage.title')} subtitle={t('auth.registerPage.subtitle')}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {error && (
           <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700" role="alert">
@@ -54,14 +56,14 @@ export function RegisterPage() {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="username" className="text-sm font-medium text-on-surface">
-            Username
+            {t('auth.registerPage.username')}
           </label>
           <input
             id="username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Choose a username"
+            placeholder={t('auth.registerPage.usernamePlaceholder')}
             required
             disabled={registerMutation.isPending}
             className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -70,14 +72,14 @@ export function RegisterPage() {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="password" className="text-sm font-medium text-on-surface">
-            Password
+            {t('auth.registerPage.password')}
           </label>
           <input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Min 12 characters"
+            placeholder={t('auth.registerPage.passwordPlaceholder')}
             required
             minLength={12}
             disabled={registerMutation.isPending}
@@ -87,14 +89,14 @@ export function RegisterPage() {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="confirmPassword" className="text-sm font-medium text-on-surface">
-            Confirm Password
+            {t('auth.registerPage.confirmPassword')}
           </label>
           <input
             id="confirmPassword"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Re-enter password"
+            placeholder={t('auth.registerPage.confirmPlaceholder')}
             required
             minLength={12}
             disabled={registerMutation.isPending}
@@ -110,7 +112,7 @@ export function RegisterPage() {
           {registerMutation.isPending ? (
             <LoadingSpinner size="sm" variant="light" />
           ) : (
-            'Complete Registration'
+            t('auth.registerPage.submitButton')
           )}
         </button>
       </form>

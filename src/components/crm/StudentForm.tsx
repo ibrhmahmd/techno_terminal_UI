@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, type FormEvent, type KeyboardEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LoadingSpinner, PillSelector } from '../common'
 import { DateInput } from '../common/DateInput'
 import { ParentSearchDropdown } from './ParentSearchDropdown'
@@ -21,6 +22,7 @@ interface StudentFormProps {
 }
 
 export function StudentForm({ initialData, initialStatus = 'active', onSubmit, onCancel, mode, onSearchParents }: StudentFormProps) {
+  const { t } = useTranslation('directory')
   const [formData, setFormData] = useState({
     full_name: initialData?.full_name || '',
     date_of_birth: initialData?.date_of_birth || '',
@@ -128,7 +130,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
         <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-700">
           <span className="material-symbols-outlined text-lg">warning</span>
           <div>
-            <span className="font-medium">Please consider adding:</span>
+            <span className="font-medium">{t('student_form.please_consider_adding')}</span>
             <ul className="mt-1 ml-4 list-disc">
               {warnings.map((w, i) => (
                 <li key={i}>{w}</li>
@@ -141,7 +143,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
       {/* Full Name */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="full_name" className="text-sm font-medium text-on-surface">
-          Full Name <span className="text-red-500">*</span>
+          {t('student_form.full_name_label')} <span className="text-red-500">*</span>
         </label>
         <input
           ref={nameInputRef}
@@ -150,7 +152,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
           value={formData.full_name}
           onChange={(e) => handleChange('full_name', e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Enter student's full name"
+          placeholder={t('student_form.full_name_placeholder')}
           required
           disabled={isLoading}
           className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -162,7 +164,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
         {/* Phone */}
         <div className="flex flex-col gap-1.5">
           <label htmlFor="phone" className="text-sm font-medium text-on-surface">
-            Phone
+            {t('student_form.phone_label')}
           </label>
           <input
             id="phone"
@@ -170,7 +172,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
             value={formData.phone}
             onChange={(e) => handleChange('phone', e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="+20 123 456 7890"
+            placeholder={t('student_form.phone_placeholder')}
             disabled={isLoading}
             className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           />
@@ -179,7 +181,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
         {/* Birth Date */}
         <DateInput
           id="date_of_birth"
-          label="Birth Date"
+          label={t('student_form.birth_date_label')}
           value={formData.date_of_birth}
           onChange={(value) => handleChange('date_of_birth', value || '')}
           disabled={isLoading}
@@ -189,7 +191,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
       {/* Gender - half width */}
       <div className="sm:w-1/2">
         <PillSelector
-          label="Gender"
+          label={t('student_form.gender_label')}
           value={formData.gender || ''}
           onChange={(value) => handleChange('gender', value || '')}
           disabled={isLoading}
@@ -203,7 +205,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
 
       {/* Status - full width */}
       <PillSelector
-        label="Status"
+        label={t('student_form.status_label')}
         value={formData.status}
         onChange={(value) => handleChange('status', value as StudentStatus)}
         disabled={isLoading}
@@ -217,13 +219,13 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
       {/* Notes - full width */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="notes" className="text-sm font-medium text-on-surface">
-          Notes
+          {t('student_form.notes_label')}
         </label>
         <textarea
           id="notes"
           value={formData.notes}
           onChange={(e) => handleChange('notes', e.target.value)}
-          placeholder="Additional notes about the student..."
+          placeholder={t('student_form.notes_placeholder')}
           rows={3}
           disabled={isLoading}
           className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed resize-none"
@@ -251,7 +253,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
               className="w-4 h-4 rounded text-secondary focus:ring-secondary/20 border-slate-300 transition-all cursor-pointer"
             />
             <span className="text-sm font-medium text-on-surface">
-              Log initial activity note
+              {t('student_form.log_initial_activity')}
             </span>
           </label>
 
@@ -259,7 +261,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
             <div className="grid grid-cols-1 gap-4 pt-2 border-t border-slate-100 animate-fadeIn">
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="activity_type" className="text-sm font-medium text-on-surface">
-                  Activity Type
+                  {t('student_form.activity_type_label')}
                 </label>
                 <select
                   id="activity_type"
@@ -279,13 +281,13 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="activity_description" className="text-sm font-medium text-on-surface">
-                  Activity Description <span className="text-red-500">*</span>
+                  {t('student_form.activity_description_label')} <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="activity_description"
                   value={activityDescription}
                   onChange={(e) => setActivityDescription(e.target.value)}
-                  placeholder="Describe the initial activity (e.g., Parent called to schedule orientation)..."
+                  placeholder={t('student_form.activity_description_placeholder')}
                   rows={2}
                   required={addInitialActivity}
                   disabled={isLoading}
@@ -305,7 +307,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
           disabled={isLoading}
           className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-[6px] hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Cancel
+          {t('student_form.cancel')}
         </button>
         <button
           type="submit"
@@ -313,7 +315,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-[6px] hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading && <LoadingSpinner size="sm" />}
-          {mode === 'create' ? 'Create Student' : 'Save Changes'}
+          {mode === 'create' ? t('student_form.create_student') : t('student_form.save_changes')}
         </button>
       </div>
     </form>

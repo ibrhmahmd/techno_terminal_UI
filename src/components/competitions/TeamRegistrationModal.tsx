@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { StudentMultiSelector, type StudentSelection } from '../common/StudentMultiSelector'
@@ -19,6 +20,7 @@ interface TeamRegistrationModalProps {
 }
 
 export function TeamRegistrationModal({ competitionId, categoryName, categorySubcategories, isOpen, onClose, onSubmit }: TeamRegistrationModalProps) {
+  const { t } = useTranslation('competitions')
   const [teamName, setTeamName] = useState('')
   const [selectedCategory, setSelectedCategory] = useState(categoryName)
   const [selectedSubcategory, setSelectedSubcategory] = useState('')
@@ -54,27 +56,27 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
     setError(null)
 
     if (!teamName.trim()) {
-      setError('Team name is required')
+      setError(t('teamRegistration.error_team_name_required'))
       return
     }
 
     if (!selectedCategory.trim()) {
-      setError('Category is required')
+      setError(t('teamRegistration.error_category_required'))
       return
     }
 
     if (categoryHasSubcategories && !selectedSubcategory.trim()) {
-      setError(`Subcategory is required for "${selectedCategory}". Existing subcategories include: ${subcategoriesForCategory.join(', ')}`)
+      setError(t('teamRegistration.error_subcategory_required', { category: selectedCategory, subcategories: subcategoriesForCategory.join(', ') }))
       return
     }
 
     if (selectionMode === 'individual' && selectedStudents.length === 0) {
-      setError('At least one student is required')
+      setError(t('teamRegistration.error_students_required'))
       return
     }
 
     if (selectionMode === 'group' && !selectedGroup) {
-      setError('Please select a group')
+      setError(t('teamRegistration.error_group_required'))
       return
     }
 
@@ -124,9 +126,9 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
       onClose()
     } catch (err: unknown) {
       if (getErrorStatus(err) === 409) {
-        setError(extractErrorMessage(err) || 'A selected student is already in another team for this competition.')
+        setError(extractErrorMessage(err) || t('teamRegistration.error_student_in_other_team'))
       } else {
-        setError('Failed to register team')
+        setError(t('teamRegistration.error_register_failed'))
       }
     } finally {
       setIsLoading(false)
@@ -137,7 +139,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Register Team"
+      title={t('teamRegistration.title')}
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -151,7 +153,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="category" className="text-sm font-medium text-on-surface">
-              Category <span className="text-red-500">*</span>
+              {t('teamRegistration.category_label')} <span className="text-red-500">*</span>
             </label>
             {existingCategories.length > 0 ? (
               <input
@@ -159,7 +161,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
                 type="text"
                 value={selectedCategory}
                 onChange={(e) => { setSelectedCategory(e.target.value); setSelectedSubcategory('') }}
-                placeholder="Type or pick a category..."
+                placeholder={t('teamRegistration.category_placeholder_existing')}
                 list="category-list"
                 required
                 disabled={isLoading}
@@ -171,7 +173,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
                 type="text"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                placeholder="e.g. Robotics, Programming..."
+                placeholder={t('teamRegistration.category_placeholder_new')}
                 required
                 disabled={isLoading}
                 className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
@@ -188,14 +190,14 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="subcategory" className="text-sm font-medium text-on-surface">
-              Subcategory{categoryHasSubcategories && <span className="text-red-500"> *</span>}
+              {t('teamRegistration.subcategory_label')}{categoryHasSubcategories && <span className="text-red-500"> *</span>}
             </label>
             <input
               id="subcategory"
               type="text"
               value={selectedSubcategory}
               onChange={(e) => setSelectedSubcategory(e.target.value)}
-              placeholder={categoryHasSubcategories ? "Required subcategory..." : "Optional subcategory..."}
+              placeholder={categoryHasSubcategories ? t('teamRegistration.subcategory_placeholder_required') : t('teamRegistration.subcategory_placeholder_optional')}
               list={categoryHasSubcategories ? "subcategory-list" : undefined}
               disabled={isLoading}
               className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
@@ -211,15 +213,15 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="team_name" className="text-sm font-medium text-on-surface">
-            Team Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="team_name"
-            type="text"
-            value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
-            placeholder="Enter team name..."
+            <label htmlFor="team_name" className="text-sm font-medium text-on-surface">
+              {t('teamRegistration.team_name_label')} <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="team_name"
+              type="text"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              placeholder={t('teamRegistration.team_name_placeholder')}
             required
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
@@ -227,29 +229,29 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="project_name" className="text-sm font-medium text-on-surface">
-            Project Name
-          </label>
-          <input
-            id="project_name"
-            type="text"
-            value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
-            placeholder="Optional project name..."
+            <label htmlFor="project_name" className="text-sm font-medium text-on-surface">
+              {t('teamRegistration.project_name_label')}
+            </label>
+            <input
+              id="project_name"
+              type="text"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              placeholder={t('teamRegistration.project_name_placeholder')}
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="project_description" className="text-sm font-medium text-on-surface">
-            Project Description
-          </label>
-          <textarea
-            id="project_description"
-            value={projectDescription}
-            onChange={(e) => setProjectDescription(e.target.value)}
-            placeholder="Optional project description..."
+            <label htmlFor="project_description" className="text-sm font-medium text-on-surface">
+              {t('teamRegistration.project_description_label')}
+            </label>
+            <textarea
+              id="project_description"
+              value={projectDescription}
+              onChange={(e) => setProjectDescription(e.target.value)}
+              placeholder={t('teamRegistration.project_description_placeholder')}
             rows={3}
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 resize-none"
@@ -258,7 +260,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
 
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-on-surface">
-            Instructor <span className="text-slate-400 font-normal">(optional)</span>
+            {t('teamRegistration.instructor_label')} <span className="text-slate-400 font-normal">{t('teamRegistration.instructor_optional')}</span>
           </label>
           <InstructorCombobox
             value={selectedInstructor}
@@ -268,7 +270,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
 
         <div>
           <div className="flex items-center gap-4 mb-4">
-            <h4 className="text-sm font-medium text-on-surface">Students</h4>
+            <h4 className="text-sm font-medium text-on-surface">{t('teamRegistration.students_label')}</h4>
             <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-0.5">
               <button
                 type="button"
@@ -279,7 +281,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
                     : 'text-slate-500 hover:text-on-surface'
                 }`}
               >
-                Select Students
+                {t('teamRegistration.select_students')}
               </button>
               <button
                 type="button"
@@ -290,7 +292,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
                     : 'text-slate-500 hover:text-on-surface'
                 }`}
               >
-                From Group
+                {t('teamRegistration.from_group')}
               </button>
             </div>
           </div>
@@ -317,7 +319,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
             disabled={isLoading}
             className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
           >
-            Cancel
+            {t('teamRegistration.cancel')}
           </button>
           <button
             type="submit"
@@ -325,7 +327,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
           >
             {isLoading && <LoadingSpinner size="sm" />}
-            Register Team
+            {t('teamRegistration.register')}
           </button>
         </div>
       </form>

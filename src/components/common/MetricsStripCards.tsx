@@ -1,3 +1,5 @@
+import { useNavDirection } from '../../hooks/useNavDirection'
+
 interface MetricItem {
   label: string
   value?: string
@@ -56,42 +58,33 @@ function MetricCard({ label, value, icon, color, isLoading, isActive, id, contro
   )
 }
 
-function handleTablistKeyDown(
-  e: React.KeyboardEvent,
-  items: MetricItem[],
-  activeIndex: number = 0
-) {
-  const count = items.length
-  let newIndex: number | undefined
-  switch (e.key) {
-    case 'ArrowRight':
-      newIndex = (activeIndex + 1) % count
-      break
-    case 'ArrowLeft':
-      newIndex = (activeIndex - 1 + count) % count
-      break
-    case 'Home':
-      newIndex = 0
-      break
-    case 'End':
-      newIndex = count - 1
-      break
-  }
-  if (newIndex !== undefined) {
-    e.preventDefault()
-    const target = document.getElementById(items[newIndex].id ?? '')
-    target?.click()
-    target?.focus()
-  }
-}
-
 export function MetricsStripCards({ items, activeIndex }: MetricsStripCardsProps) {
+  const { getNextIndex } = useNavDirection()
+
+  const handleTablistKeyDown = (e: React.KeyboardEvent) => {
+    const count = items.length
+    let newIndex: number | undefined
+    const navIndex = getNextIndex(e, activeIndex ?? 0, count)
+    if (navIndex !== null) newIndex = navIndex
+    if (e.key === 'Home') {
+      newIndex = 0
+    } else if (e.key === 'End') {
+      newIndex = count - 1
+    }
+    if (newIndex !== undefined) {
+      e.preventDefault()
+      const target = document.getElementById(items[newIndex].id ?? '')
+      target?.click()
+      target?.focus()
+    }
+  }
+
   return (
     <div
       className="flex flex-wrap gap-4"
       role="tablist"
       aria-orientation="horizontal"
-      onKeyDown={(e) => handleTablistKeyDown(e, items, activeIndex)}
+      onKeyDown={handleTablistKeyDown}
     >
       {items.map((item, i) => (
         <MetricCard key={i} {...item} isActive={i === activeIndex} />

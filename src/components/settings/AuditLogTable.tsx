@@ -31,7 +31,7 @@ export function AuditLogTable({ data, total, page, pageSize, onPageChange, isLoa
   return (
     <div className="bg-white rounded-[6px] shadow-sm p-6 font-body">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm font-body">
+        <table className="w-full text-start text-sm font-body">
           <thead className="bg-slate-50/50">
             <tr>
               <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Event</th>

@@ -61,10 +61,7 @@
     "remaining": "Remaining {{amount}} EGP",
     "total_fees": "Total Fees",
     "already_paid": "Already Paid",
-    "remaining_label": "Remaining",
-    "course": "Course",
-    "instructor": "Instructor",
-    "joined": "Joined"
+    "remaining_label": "Remaining"
   },
   "line_item": {
     "student": "Student {{index}}",

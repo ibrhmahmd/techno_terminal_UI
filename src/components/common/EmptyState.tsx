@@ -1,4 +1,5 @@
 import { Search, Plus, Inbox, History, Clock, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { TerminalPattern } from './TerminalPattern'
 
 interface EmptyStateProps {
@@ -11,13 +12,17 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ 
-  title = 'No results found',
-  message = 'There are no items to display at the moment.',
+  title,
+  message,
   icon = 'inbox',
   actionLabel,
   onAction,
   className = ''
 }: EmptyStateProps) {
+  const { t } = useTranslation('common')
+  const displayTitle = title ?? t('empty.noResults')
+  const displayMessage = message ?? t('empty.noItems')
+
   const IconComponent = {
     search: Search,
     inbox: Inbox,
@@ -25,7 +30,7 @@ export function EmptyState({
     schedule: Clock,
     trash: Trash2,
     none: () => null
-  }[icon] || Inbox // fallback to Inbox for invalid values
+  }[icon] || Inbox
 
   return (
     <div className={`relative overflow-hidden flex flex-col items-center justify-center p-8 text-center ${className}`}>
@@ -36,8 +41,8 @@ export function EmptyState({
             <IconComponent className="w-8 h-8 text-slate-400" />
           </div>
         )}
-        <h3 className="text-lg font-semibold text-slate-800 mb-2">{title}</h3>
-        <p className="text-slate-600 max-w-md mb-4">{message}</p>
+        <h3 className="text-lg font-semibold text-slate-800 mb-2">{displayTitle}</h3>
+        <p className="text-slate-600 max-w-md mb-4">{displayMessage}</p>
         {actionLabel && onAction && (
           <button
             onClick={onAction}

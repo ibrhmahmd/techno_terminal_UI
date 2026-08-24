@@ -120,7 +120,7 @@ function ActiveSessions() {
                   <span>Last Active: {formatDate(session.last_active_at)}</span>
                 </div>
               </div>
-              <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-xs font-semibold bg-secondary/15 text-secondary ml-4 whitespace-nowrap">
+              <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-xs font-semibold bg-secondary/15 text-secondary ms-4 whitespace-nowrap">
                 <span className="w-1.5 h-1.5 bg-secondary rounded-full" />
                 Active
               </span>
@@ -203,7 +203,7 @@ function ActivityLog() {
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm font-body">
+            <table className="w-full text-start text-sm font-body">
               <thead className="bg-slate-50/50">
                 <tr>
                   <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Event</th>

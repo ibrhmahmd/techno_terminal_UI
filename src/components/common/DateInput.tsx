@@ -150,7 +150,7 @@ export function DateInput({
       {label && (
         <label htmlFor={id} className="text-sm font-medium text-on-surface">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-red-500 ms-1">*</span>}
         </label>
       )}
       <input

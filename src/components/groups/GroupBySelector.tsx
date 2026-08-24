@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { GroupByField } from '../../api/academics'
+import { useNavDirection } from '../../hooks/useNavDirection'
 
 type GroupBySelectorValue = GroupByField | 'search'
 
@@ -18,14 +19,21 @@ const OPTIONS: Array<{ value: GroupBySelectorValue; label: string; icon: string 
 ]
 
 export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorProps) {
+  const { getNextIndex } = useNavDirection()
+
   const handleKeyDown = (index: number) => (e: React.KeyboardEvent) => {
     if (OPTIONS.length === 0) return
     let next = index
-    if (e.key === 'ArrowRight') next = (index + 1) % OPTIONS.length
-    else if (e.key === 'ArrowLeft') next = (index - 1 + OPTIONS.length) % OPTIONS.length
-    else if (e.key === 'Home') next = 0
-    else if (e.key === 'End') next = OPTIONS.length - 1
-    else return
+    const navIndex = getNextIndex(e, index, OPTIONS.length)
+    if (navIndex !== null) {
+      next = navIndex
+    } else if (e.key === 'Home') {
+      next = 0
+    } else if (e.key === 'End') {
+      next = OPTIONS.length - 1
+    } else {
+      return
+    }
     const option = OPTIONS[next]
     if (!option) return
     e.preventDefault()
@@ -42,7 +50,7 @@ export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorP
           return (
             <div
               key={String(optVal)}
-              className={`flex-1 flex items-center ${isSearch && index > 0 ? 'border-l border-blue-200/40 pl-1' : ''}`}
+              className={`flex-1 flex items-center ${isSearch && index > 0 ? 'border-l border-blue-200/40 ps-1' : ''}`}
             >
               <button
                 onClick={() => onChange(optVal)}
@@ -64,7 +72,7 @@ export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorP
           )
         })}
         {rightSlot && (
-          <div className="ml-auto shrink-0 pl-1 border-l border-slate-200 flex items-stretch">
+          <div className="ms-auto shrink-0 ps-1 border-l border-slate-200 flex items-stretch">
             {rightSlot}
           </div>
         )}

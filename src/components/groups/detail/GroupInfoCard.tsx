@@ -1,6 +1,7 @@
 import { Edit2, Trash2, Archive, ArrowUpCircle, Users, Calendar, Clock, BookOpen, PlusCircle } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { EnrichedGroupPublic, LevelDetailDTO } from '../../../api/academics'
 import { LevelBadge } from '../shared/LevelBadge'
 import { GroupStatusBadge } from '../shared/GroupStatusBadge'
@@ -36,6 +37,7 @@ export function GroupInfoCard({
   isSavingNotes,
   isLevelUpPending = false,
 }: GroupInfoCardProps) {
+  const { t } = useTranslation('groups')
   const [notes, setNotes] = useState(group.notes || '')
   const debouncedNotes = useDebounce(notes, 500)
   const lastSavedRef = useRef(group.notes || '')
@@ -72,7 +74,7 @@ export function GroupInfoCard({
             {currentLevel && (
               <span className="flex items-center gap-1.5 text-sm text-slate-600 font-body">
                 <LevelBadge level={currentLevel.level_number} size="sm" isActive />
-                Current Level
+                {t('groupInfoCard.current_level')}
               </span>
             )}
           </div>
@@ -87,7 +89,7 @@ export function GroupInfoCard({
               {isLevelUpPending
                 ? <LoadingSpinner size="sm" />
                 : <ArrowUpCircle className="w-4 h-4" />}
-              {isLevelUpPending ? 'Leveling Up...' : 'Level Up'}
+              {isLevelUpPending ? t('groupInfoCard.leveling_up') : t('groupInfoCard.level_up')}
             </button>
           )}
           <button
@@ -95,25 +97,25 @@ export function GroupInfoCard({
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-bold text-secondary bg-secondary/15 rounded hover:bg-secondary/25 transition-colors"
           >
             <PlusCircle className="w-4 h-4" />
-            New Level
+            {t('groupInfoCard.new_level')}
           </button>
           <button
             onClick={onEdit}
-            aria-label="Edit Group"
+            aria-label={t('groupInfoCard.edit_group_aria')}
             className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors"
           >
             <Edit2 className="w-4 h-4" aria-hidden="true" />
           </button>
           <button
             onClick={onArchive}
-            aria-label="Archive Group"
+            aria-label={t('groupInfoCard.archive_group_aria')}
             className="p-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
           >
             <Archive className="w-4 h-4" aria-hidden="true" />
           </button>
           <button
             onClick={onDelete}
-            aria-label="Delete Group"
+            aria-label={t('groupInfoCard.delete_group_aria')}
             className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
           >
             <Trash2 className="w-4 h-4" aria-hidden="true" />
@@ -125,16 +127,16 @@ export function GroupInfoCard({
         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded border border-slate-100">
           <Users className="w-5 h-5 text-slate-400" aria-hidden="true" />
           <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Instructor</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('groupInfoCard.instructor')}</p>
             {group.instructor_id ? (
               <Link
                 to={`/staff?search=${encodeURIComponent(group.instructor_name || '')}`}
                 className="text-sm font-semibold text-secondary hover:underline"
               >
-                {group.instructor_name || 'Not assigned'}
+                {group.instructor_name || t('groupInfoCard.not_assigned')}
               </Link>
             ) : (
-              <p className="text-sm font-semibold text-slate-900">{group.instructor_name || 'Not assigned'}</p>
+              <p className="text-sm font-semibold text-slate-900">{group.instructor_name || t('groupInfoCard.not_assigned')}</p>
             )}
           </div>
         </div>
@@ -142,16 +144,16 @@ export function GroupInfoCard({
         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded border border-slate-100">
           <BookOpen className="w-5 h-5 text-slate-400" aria-hidden="true" />
           <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Course</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('groupInfoCard.course')}</p>
             {group.course_id ? (
               <Link
                 to={`/courses/${group.course_id}`}
                 className="text-sm font-semibold text-secondary hover:underline"
               >
-                {group.course_name || 'Not assigned'}
+                {group.course_name || t('groupInfoCard.not_assigned')}
               </Link>
             ) : (
-              <p className="text-sm font-semibold text-slate-900">{group.course_name || 'Not assigned'}</p>
+              <p className="text-sm font-semibold text-slate-900">{group.course_name || t('groupInfoCard.not_assigned')}</p>
             )}
           </div>
         </div>
@@ -159,9 +161,9 @@ export function GroupInfoCard({
         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded border border-slate-100">
           <Calendar className="w-5 h-5 text-slate-400" aria-hidden="true" />
           <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Schedule</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('groupInfoCard.schedule')}</p>
             <p className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
-              {group.schedule?.day || 'No day'}
+              {group.schedule?.day || t('groupInfoCard.no_day')}
               <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
               {formatTime(group.schedule?.start_time || '') || '--:--'} - {formatTime(group.schedule?.end_time || '') || '--:--'}
             </p>
@@ -171,7 +173,7 @@ export function GroupInfoCard({
         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded border border-slate-100">
           <Users className="w-5 h-5 text-slate-400" aria-hidden="true" />
           <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Students in Level</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('groupInfoCard.students_in_level')}</p>
             <p className="text-sm font-semibold text-slate-900">
               {group.current_student_count ?? 0}
             </p>
@@ -182,14 +184,14 @@ export function GroupInfoCard({
       {/* Notes Section */}
       <div className="mt-6 border-t border-slate-100 pt-6">
         <label htmlFor="group-notes" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-          Group Notes
-          {isSavingNotes && <span className="ml-2 text-xs text-slate-400 font-normal normal-case">Saving...</span>}
+          {t('groupInfoCard.group_notes')}
+          {isSavingNotes && <span className="ml-2 text-xs text-slate-400 font-normal normal-case">{t('groupInfoCard.saving')}</span>}
         </label>
         <textarea
           id="group-notes"
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
-          placeholder="Add notes about this group..."
+          placeholder={t('groupInfoCard.notes_placeholder')}
           className="w-full px-1 py-2 text-sm text-slate-700 bg-transparent border-b-2 border-slate-200 focus:border-secondary focus:outline-none transition-colors resize-none"
           rows={3}
         />

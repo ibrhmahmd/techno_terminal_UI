@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { TaskCommentReadDTO } from '../../api/tasks'
 import { useAddComment, useDeleteComment } from '../../hooks/useTasks'
 import { formatDate } from '../../utils/formatting'
@@ -11,6 +12,7 @@ interface CommentsFeedProps {
 }
 
 export function CommentsFeed({ comments, taskId, currentUserId, isAdmin }: CommentsFeedProps) {
+  const { t } = useTranslation('tasks')
   const [newComment, setNewComment] = useState('')
   const addMutation = useAddComment()
   const deleteMutation = useDeleteComment()
@@ -23,7 +25,7 @@ export function CommentsFeed({ comments, taskId, currentUserId, isAdmin }: Comme
   }
 
   const handleDelete = (commentId: string) => {
-    if (!window.confirm('Delete this comment?')) return
+    if (!window.confirm(t('comments.delete_confirm'))) return
     deleteMutation.mutate({ commentId, taskId })
   }
 
@@ -36,7 +38,7 @@ export function CommentsFeed({ comments, taskId, currentUserId, isAdmin }: Comme
       {/* Comment list */}
       <div className="space-y-3">
         {comments.length === 0 && (
-          <p className="text-sm text-slate-400 text-center py-4">No comments yet</p>
+          <p className="text-sm text-slate-400 text-center py-4">{t('comments.no_comments')}</p>
         )}
         {comments.map((comment) => (
           <div key={comment.id} className="group">
@@ -56,7 +58,7 @@ export function CommentsFeed({ comments, taskId, currentUserId, isAdmin }: Comme
               {canDelete(comment) && (
                 <button
                   onClick={() => handleDelete(comment.id)}
-                  aria-label="Delete comment"
+                  aria-label={t('comments.delete_aria')}
                   className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-slate-400 hover:text-red-500 transition-opacity flex-shrink-0"
                 >
                   <span className="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
@@ -74,8 +76,8 @@ export function CommentsFeed({ comments, taskId, currentUserId, isAdmin }: Comme
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
-          placeholder="Write a comment..."
-          aria-label="Write a comment"
+          placeholder={t('comments.write_comment_placeholder')}
+          aria-label={t('comments.write_comment_placeholder')}
           className="flex-1 text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
         />
         <button
@@ -83,7 +85,7 @@ export function CommentsFeed({ comments, taskId, currentUserId, isAdmin }: Comme
           disabled={!newComment.trim() || addMutation.isPending}
           className="px-4 py-2 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors disabled:opacity-50"
         >
-          Send
+          {t('comments.send')}
         </button>
       </div>
     </div>

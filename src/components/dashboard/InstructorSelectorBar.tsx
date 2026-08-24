@@ -1,4 +1,5 @@
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { useNavDirection } from '../../hooks/useNavDirection'
 import { formatInstructorName } from '../../utils/formatting'
 
 interface InstructorSelectorBarProps {
@@ -15,6 +16,7 @@ export function InstructorSelectorBar({
   disabled = false
 }: InstructorSelectorBarProps) {
   const isMobile = useIsMobile()
+  const { getNextIndex } = useNavDirection()
 
   // Don't render if no instructors
   if (instructors.length === 0) {
@@ -34,14 +36,8 @@ export function InstructorSelectorBar({
     const currentIndex = buttons.indexOf(target)
     if (currentIndex === -1) return
 
-    let nextIndex = currentIndex
-    if (e.key === 'ArrowRight') {
-      nextIndex = (currentIndex + 1) % buttons.length
-    } else if (e.key === 'ArrowLeft') {
-      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length
-    } else {
-      return
-    }
+    const nextIndex = getNextIndex(e, currentIndex, buttons.length)
+    if (nextIndex === null) return
 
     e.preventDefault()
     ;(buttons[nextIndex] as HTMLElement).focus()

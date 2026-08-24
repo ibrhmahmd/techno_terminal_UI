@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 interface PersonalInfoSectionProps {
   formData: {
     full_name: string
@@ -13,6 +15,7 @@ interface PersonalInfoSectionProps {
 }
 
 export function PersonalInfoSection({ formData, onChange, isLoading }: PersonalInfoSectionProps) {
+  const { t } = useTranslation('staff')
   return (
     <div className="space-y-4">
       {/* Name and Email */}
@@ -25,7 +28,7 @@ export function PersonalInfoSection({ formData, onChange, isLoading }: PersonalI
             type="text"
             value={formData.full_name}
             onChange={(e) => onChange('full_name', e.target.value)}
-            placeholder="Enter full name..."
+            placeholder={t('personal_info.full_name_placeholder')}
             required
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
@@ -39,7 +42,7 @@ export function PersonalInfoSection({ formData, onChange, isLoading }: PersonalI
             type="email"
             value={formData.email}
             onChange={(e) => onChange('email', e.target.value)}
-            placeholder="email@example.com"
+            placeholder={t('personal_info.email_placeholder')}
             required
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
@@ -57,7 +60,7 @@ export function PersonalInfoSection({ formData, onChange, isLoading }: PersonalI
             type="tel"
             value={formData.phone}
             onChange={(e) => onChange('phone', e.target.value)}
-            placeholder="01xxxxxxxxx"
+            placeholder={t('personal_info.phone_placeholder')}
             required
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
@@ -71,7 +74,7 @@ export function PersonalInfoSection({ formData, onChange, isLoading }: PersonalI
             type="text"
             value={formData.national_id}
             onChange={(e) => onChange('national_id', e.target.value)}
-            placeholder="290xxxxxxxxxxx"
+            placeholder={t('personal_info.national_id_placeholder')}
             required
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
@@ -87,7 +90,7 @@ export function PersonalInfoSection({ formData, onChange, isLoading }: PersonalI
             type="text"
             value={formData.university}
             onChange={(e) => onChange('university', e.target.value)}
-            placeholder="Enter university..."
+            placeholder={t('personal_info.university_placeholder')}
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
@@ -98,7 +101,7 @@ export function PersonalInfoSection({ formData, onChange, isLoading }: PersonalI
             type="text"
             value={formData.major}
             onChange={(e) => onChange('major', e.target.value)}
-            placeholder="Enter major..."
+            placeholder={t('personal_info.major_placeholder')}
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
@@ -116,13 +119,13 @@ export function PersonalInfoSection({ formData, onChange, isLoading }: PersonalI
           className="w-4 h-4 text-secondary border-slate-200 rounded focus:ring-secondary cursor-pointer"
         />
         <label htmlFor="is_graduate" className="text-sm font-medium text-on-surface cursor-pointer select-none">
-          Is Graduate
+          {t('personal_info.is_graduate')}
         </label>
       </div>
 
       {/* Note: hired_at is set by backend automatically */}
       <p className="text-xs text-slate-500 italic">
-        Hire date will be set automatically when the employee profile is created.
+        {t('personal_info.hire_date_note')}
       </p>
     </div>
   )

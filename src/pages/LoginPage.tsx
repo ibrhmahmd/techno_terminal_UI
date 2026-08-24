@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react'
 import { useNavigate, Navigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { useAuthStore } from '../store/authStore'
 import { useLogin } from '../hooks/useAuthQueries'
@@ -7,6 +8,7 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { AuthLayout } from '../components/auth/AuthLayout'
 
 export function LoginPage() {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const { isAuthenticated } = useAuthStore()
   const loginMutation = useLogin()
@@ -95,12 +97,12 @@ export function LoginPage() {
             }
           }
         } else if (!err.response) {
-          setError('Unable to connect. Please check your internet connection and try again.')
+          setError(t('messages.networkError'))
         } else {
-          setError('Invalid email or password.')
+          setError(t('auth.invalidCredentials'))
         }
       } else {
-        setError('Invalid email or password.')
+        setError(t('auth.invalidCredentials'))
       }
     }
   }
@@ -108,7 +110,7 @@ export function LoginPage() {
   const isSubmitDisabled = loginMutation.isPending || !email || !password || retryAfter !== null
 
   return (
-    <AuthLayout title="Sign In" subtitle="">
+    <AuthLayout title={t('auth.login')} subtitle="">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Error Message */}
         {error && (
@@ -122,14 +124,14 @@ export function LoginPage() {
         {retryAfter && (
           <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-800" role="alert">
             <span className="material-symbols-outlined text-lg mt-0.5 shrink-0" aria-hidden="true">timer</span>
-            <span>Too many attempts. Try again in {countdown} second{countdown !== 1 ? 's' : ''}.</span>
+            <span>{t('messages.tooManyAttempts', { count: countdown })}</span>
           </div>
         )}
 
         {/* Email Field */}
         <div className="flex flex-col gap-2">
           <label htmlFor="email" className="text-sm font-medium text-on-surface">
-            Email
+            {t('labels.email')}
           </label>
           <input
             ref={emailRef}
@@ -148,7 +150,7 @@ export function LoginPage() {
         {/* Password Field */}
         <div className="flex flex-col gap-2">
           <label htmlFor="password" className="text-sm font-medium text-on-surface">
-            Password
+            {t('labels.password')}
           </label>
           <div className="relative">
             <input
@@ -165,7 +167,7 @@ export function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-0.5"
             >
               <span className="material-symbols-outlined text-lg" aria-hidden="true">
@@ -196,7 +198,7 @@ export function LoginPage() {
             disabled={loginMutation.isPending}
             className="w-4 h-4 rounded border-slate-300 text-secondary focus:ring-2 focus:ring-secondary/20 disabled:opacity-50"
           />
-          <span className="text-sm text-on-surface-variant">Remember me</span>
+          <span className="text-sm text-on-surface-variant">{t('auth.rememberMe')}</span>
         </label>
 
         {/* Submit Button */}
@@ -208,9 +210,9 @@ export function LoginPage() {
           {loginMutation.isPending ? (
             <LoadingSpinner size="sm" variant="light" />
           ) : retryAfter ? (
-            `Try again in ${countdown}s`
+            t('messages.tryAgain', { seconds: countdown })
           ) : (
-            'Sign In'
+            t('auth.login')
           )}
         </button>
 
@@ -219,7 +221,7 @@ export function LoginPage() {
             to="/forgot-password"
             className="text-sm text-secondary font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-secondary/20 rounded"
           >
-            Forgot Password?
+            {t('auth.forgotPassword')}
           </Link>
         </div>
       </form>

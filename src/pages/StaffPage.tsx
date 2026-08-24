@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { PageHeader, PageSection, ActionButton, SearchBar, LoadingSpinner, Modal, Pagination, EmptyState, ErrorState } from '../components/common'
 import { EmployeeForm } from '../components/staff/EmployeeForm'
@@ -14,6 +15,8 @@ import { useCreateEmployeeAccount } from '../hooks/useStaffAccounts'
 import type { EmployeeCreateInput, CreateEmployeeAccountRequest } from '../api/hr'
 
 export function StaffPage() {
+  const { t } = useTranslation('staff')
+  const { t: tCommon } = useTranslation('common')
   const { showToast, ToastComponent } = useToast()
   const [searchParams] = useSearchParams()
   const initialSearch = searchParams.get('search') || ''
@@ -83,7 +86,7 @@ export function StaffPage() {
   const handleCreateEmployee = async (data: EmployeeCreateInput) => {
     await createMutation.mutateAsync(data)
     setIsAddModalOpen(false)
-    showToast('Employee created successfully', 'success')
+    showToast(t('toast.created'), 'success')
   }
 
   // Update handler
@@ -91,7 +94,7 @@ export function StaffPage() {
     if (!editingEmployee) return
     await updateMutation.mutateAsync({ id: editingEmployee, data })
     setEditingEmployee(null)
-    showToast('Employee updated successfully', 'success')
+    showToast(t('toast.updated'), 'success')
   }
 
   // Account creation handler
@@ -99,7 +102,7 @@ export function StaffPage() {
     if (!creatingAccountFor) return
     await createAccountMutation.mutateAsync({ employeeId: creatingAccountFor, data })
     setCreatingAccountFor(null)
-    showToast('Account created successfully', 'success')
+    showToast(t('toast.account_created'), 'success')
   }
 
   const handleViewEmployee = (id: number) => {
@@ -111,19 +114,17 @@ export function StaffPage() {
 
   // Delete handler
   const handleDeleteEmployee = async (id: number) => {
-    const employee = employees.find(e => e.id === id)
-    const name = employee?.full_name ?? 'this employee'
     setConfirmAction({
-      title: 'Delete Employee',
-      message: `Are you sure you want to delete ${name}? This will hide them from the staff list and block their login.`,
+      title: t('dialogs.delete_title'),
+      message: t('dialogs.delete_message'),
       variant: 'danger',
       onConfirm: async () => {
         try {
           await deleteMutation.mutateAsync(id)
           setViewingEmployeeId(null)
-          showToast('Employee deleted successfully', 'success')
+          showToast(t('toast.deleted'), 'success')
         } catch (err) {
-          showToast(err instanceof Error ? err.message : 'Failed to delete employee', 'error')
+          showToast(err instanceof Error ? err.message : t('toast.delete_failed'), 'error')
         }
       },
     })
@@ -132,16 +133,16 @@ export function StaffPage() {
   // Restore handler
   const handleRestoreEmployee = async (id: number) => {
     setConfirmAction({
-      title: 'Restore Employee',
-      message: 'This will restore the employee to the staff list. Their login will NOT be automatically re-enabled.',
+      title: t('dialogs.restore_title'),
+      message: t('dialogs.restore_message'),
       variant: 'success',
       onConfirm: async () => {
         try {
           await restoreMutation.mutateAsync(id)
           setViewingEmployeeId(null)
-          showToast('Employee restored successfully', 'success')
+          showToast(t('toast.restored'), 'success')
         } catch (err) {
-          showToast(err instanceof Error ? err.message : 'Failed to restore employee', 'error')
+          showToast(err instanceof Error ? err.message : t('toast.restore_failed'), 'error')
         }
       },
     })
@@ -154,17 +155,17 @@ export function StaffPage() {
   return (
     <div className="min-h-screen bg-surface">
       {ToastComponent}
-      <TopNavbar activePage="Staff" />
+      <TopNavbar activePage={t('page_title')} />
 
       <PageHeader
-        title="Staff Management"
-        subtitle="Manage employees, attendance, and staff accounts"
+        title={t('page_title')}
+        subtitle=""
         actions={
           <ActionButton
             icon="person_add"
             onClick={() => setIsAddModalOpen(true)}
           >
-            Add Employee
+            {t('actions.add_employee')}
           </ActionButton>
         }
       />
@@ -174,8 +175,8 @@ export function StaffPage() {
         {error && (
           <div className="mb-6">
             <ErrorState
-              title="Failed to load employees"
-              message={error instanceof Error ? error.message : 'An error occurred'}
+              title={tCommon('messages.error')}
+              message={error instanceof Error ? error.message : tCommon('messages.error')}
               onRetry={() => refetch()}
             />
           </div>
@@ -184,7 +185,7 @@ export function StaffPage() {
         {/* Filters */}
         <div className="flex items-center gap-4 mb-6">
           <SearchBar
-            placeholder="Search employees..."
+            placeholder={tCommon('labels.searchPlaceholder')}
             onSearch={setSearchInput}
             className="flex-1 max-w-md"
           />
@@ -195,7 +196,7 @@ export function StaffPage() {
               onChange={(e) => { setIncludeDeleted(e.target.checked); setPage(1) }}
               className="w-4 h-4 text-red-600 border-slate-300 rounded focus:ring-red-500"
             />
-            Include deleted
+            {t('actions.include_deleted')}
           </label>
         </div>
 
@@ -208,8 +209,8 @@ export function StaffPage() {
         ) : employees.length === 0 ? (
           <EmptyState
             icon="inbox"
-            title={debouncedSearch ? 'No employees found' : 'No employees yet'}
-            message={debouncedSearch ? 'Try adjusting your search or filters.' : 'Add your first employee to get started.'}
+            title={debouncedSearch ? t('empty.no_staff') : t('empty.no_staff')}
+            message={debouncedSearch ? t('empty.no_results') : t('empty.add_first')}
           />
         ) : (
           <>
@@ -249,7 +250,7 @@ export function StaffPage() {
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Add Employee"
+        title={t('actions.add_employee')}
         size="lg"
       >
         <EmployeeForm
@@ -267,7 +268,7 @@ export function StaffPage() {
       <Modal
         isOpen={!!editingEmployee}
         onClose={() => setEditingEmployee(null)}
-        title="Edit Employee"
+        title={t('employee.edit_employee')}
         size="lg"
       >
         {isLoadingEditDetail ? (
@@ -277,8 +278,8 @@ export function StaffPage() {
         ) : editDetailError ? (
           <div className="py-4">
             <ErrorState
-              title="Failed to load employee details"
-              message="Could not load employee data for editing. Please try again."
+              title={t('detail_modal.load_error_title')}
+              message={t('detail_modal.load_error_message')}
               onRetry={() => refetchEditDetail()}
             />
           </div>
@@ -347,7 +348,7 @@ export function StaffPage() {
               onClick={() => setConfirmAction(null)}
               className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
             >
-              Cancel
+              {t('confirm.cancel')}
             </button>
             <button
               onClick={async () => {
@@ -361,7 +362,7 @@ export function StaffPage() {
                   : 'bg-green-600 hover:bg-green-700'
               }`}
             >
-              {confirmAction?.variant === 'danger' ? 'Delete' : 'Restore'}
+              {confirmAction?.variant === 'danger' ? t('confirm.delete') : t('confirm.restore')}
             </button>
           </div>
         </div>

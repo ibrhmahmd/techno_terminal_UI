@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface StudentInfoProps {
   fullName: string
@@ -7,18 +8,19 @@ interface StudentInfoProps {
 }
 
 function BillingBadge({ status, balance }: { status: 'paid' | 'due'; balance?: number }) {
+  const { t } = useTranslation('attendance')
   if (status === 'paid') {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
         <span className="material-symbols-outlined text-[12px] font-bold text-secondary" aria-hidden="true">check</span>
-        <span>PAID</span>
+        <span>{t('billing.paid')}</span>
       </span>
     )
   }
 
   const badgeText = balance !== undefined && balance > 0
-    ? `DUE: ${balance.toLocaleString()} EGP`
-    : 'DUE'
+    ? t('billing.due_with_amount', { amount: balance.toLocaleString() })
+    : t('billing.due')
 
   return (
     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-error bg-error-container px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">

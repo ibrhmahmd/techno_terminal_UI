@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useToast } from '../common/Toast'
 import { StudentCombobox } from '../student/StudentCombobox'
@@ -15,6 +16,7 @@ interface ModifyEnrollmentPanelProps {
 }
 
 export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollmentPanelProps) {
+  const { t } = useTranslation('enrollments')
   const { showToast } = useToast()
   const updateMutation = useUpdateEnrollment()
 
@@ -86,14 +88,14 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
         }
       })
       
-      showToast('Enrollment updated successfully', 'success')
+      showToast(t('toast.updated_success'), 'success')
       setSelectedStudent(null)
       setStudentSearch('')
       setSelectedEnrollment(null)
     } catch (err: unknown) {
       const axiosError = err as AxiosError<{ message: string }>
-      setErrorMsg(axiosError.response?.data?.message || 'Failed to update enrollment.')
-      showToast('Failed to update enrollment.', 'error')
+      setErrorMsg(axiosError.response?.data?.message || t('toast.update_failed'))
+      showToast(t('toast.update_failed'), 'error')
     } finally {
       setIsLoading(false)
     }
@@ -107,8 +109,8 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
           <span className="material-symbols-outlined text-[20px]">edit_document</span>
         </div>
         <div>
-          <h2 className="font-headline text-xl font-semibold text-on-surface">Modify Enrollment</h2>
-          <p className="text-sm text-on-surface-variant mt-0.5">Edit financial details and administrative notes</p>
+          <h2 className="font-headline text-xl font-semibold text-on-surface">{t('modify_panel.title')}</h2>
+          <p className="text-sm text-on-surface-variant mt-0.5">{t('modify_panel.subtitle')}</p>
         </div>
       </div>
 
@@ -116,7 +118,7 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
 
         {/* ── STEP 1: STUDENT SELECTION ── */}
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-on-surface">1. Select Student</h3>
+          <h3 className="text-sm font-semibold text-on-surface">{t('modify_panel.select_student')}</h3>
           <StudentCombobox
             value={selectedStudent}
             onChange={(s) => {
@@ -148,13 +150,13 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
         {/* ── STEP 2: ENROLLMENT LIST ── */}
         {selectedStudent && (
           <div className="space-y-4 border-t border-slate-200 pt-6 animate-fadeIn">
-            <h3 className="text-sm font-semibold text-on-surface">2. Choose Enrollment</h3>
+            <h3 className="text-sm font-semibold text-on-surface">{t('modify_panel.choose_enrollment')}</h3>
 
             {enrollmentsLoading ? (
               <div className="flex justify-center py-8"><LoadingSpinner size="md" /></div>
             ) : enrollments.length === 0 ? (
               <div className="p-6 bg-surface-container-low border border-slate-200 rounded-xl text-center text-sm text-on-surface-variant">
-                This student has no active enrollments to manage.
+                {t('modify_panel.no_enrollments')}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -216,7 +218,7 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
         {/* ── STEP 3: ACTION FORM ── */}
         {selectedEnrollment && (
           <div className="space-y-4 border-t border-slate-200 pt-6 animate-fadeIn">
-            <h3 className="text-sm font-semibold text-on-surface">3. Edit Details</h3>
+            <h3 className="text-sm font-semibold text-on-surface">{t('modify_panel.edit_details')}</h3>
 
             <div className="bg-surface-container-low border border-slate-200 rounded-xl p-5 space-y-4 max-w-4xl">
               {errorMsg && (
@@ -227,7 +229,7 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-slate-700">Amount Due</label>
+                  <label className="block text-sm font-medium text-slate-700">{t('modify_panel.amount_due')}</label>
                   <div className="relative">
                     <input
                       type="number"
@@ -235,18 +237,18 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
                       onChange={e => setAmountDue(e.target.value)}
                       onWheel={(e) => (e.target as HTMLInputElement).blur()}
                       onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
-                      placeholder="Group Default"
+                      placeholder={t('modify_panel.group_default')}
                       min="0"
                       step="0.01"
                       className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">EGP</span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">Leave blank to use the group's default price.</p>
+                  <p className="text-xs text-slate-500 mt-1">{t('modify_panel.leave_blank_price')}</p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-slate-700">Discount Applied</label>
+                  <label className="block text-sm font-medium text-slate-700">{t('modify_panel.discount_applied')}</label>
                   <div className="relative">
                     <input
                       type="number"
@@ -264,13 +266,13 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-slate-700">Internal Notes</label>
+                <label className="block text-sm font-medium text-slate-700">{t('modify_panel.internal_notes')}</label>
                 <textarea
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   rows={3}
                   className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
-                  placeholder="Add administrative notes..."
+                  placeholder={t('modify_panel.add_notes_placeholder')}
                 />
               </div>
             </div>
@@ -286,7 +288,7 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
                   ? <LoadingSpinner size="sm" />
                   : <span className="material-symbols-outlined text-[20px]">save</span>
                 }
-                Save Changes
+                {t('modify_panel.save_changes')}
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Phone, Calendar, User, Clock, Edit2, Trash2 } from 'lucide-react'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { PageSection, Modal, LoadingSpinner, EntityPageHeader } from '../components/common'
@@ -34,6 +35,7 @@ import { enrollStudent } from '../api/academics'
 export function StudentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation('common')
   const studentId = Number(id) || 1
   const { showToast, ToastComponent } = useToast()
   const [activeTab, setActiveTab] = useState<TabId>('overview')
@@ -108,7 +110,7 @@ export function StudentDetailPage() {
       setIsEditModalOpen(false)
     } catch (err) {
       console.error('Failed to update student:', err)
-      showToast('Failed to update student. Please try again.', 'error')
+      showToast(t('studentDetail.toast.update_failed'), 'error')
     } finally {
       setIsProcessing(false)
     }
@@ -118,12 +120,12 @@ export function StudentDetailPage() {
     setIsProcessing(true)
     try {
       await softDeleteStudent(studentId)
-      showToast('Student moved to deleted items', 'success')
+      showToast(t('studentDetail.toast.soft_deleted'), 'success')
       navigate('/directory')
     } catch (err: unknown) {
       console.error('Failed to soft delete student:', err)
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'
-      showToast('Failed to delete student: ' + errorMessage, 'error')
+      showToast(t('studentDetail.toast.soft_delete_failed', { error: errorMessage }), 'error')
       setIsDeleteModalOpen(false)
     } finally {
       setIsProcessing(false)
@@ -134,13 +136,13 @@ export function StudentDetailPage() {
     setIsProcessing(true)
     try {
       await restoreStudent(studentId)
-      showToast('Student restored successfully', 'success')
+      showToast(t('studentDetail.toast.restored'), 'success')
       await handleRefresh()
       setIsRestoreModalOpen(false)
     } catch (err: unknown) {
       console.error('Failed to restore student:', err)
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'
-      showToast('Failed to restore student: ' + errorMessage, 'error')
+      showToast(t('studentDetail.toast.restore_failed', { error: errorMessage }), 'error')
       setIsRestoreModalOpen(false)
     } finally {
       setIsProcessing(false)
@@ -151,12 +153,12 @@ export function StudentDetailPage() {
     setIsProcessing(true)
     try {
       await hardDeleteStudent(studentId)
-      showToast('Student permanently deleted', 'success')
+      showToast(t('studentDetail.toast.hard_deleted'), 'success')
       navigate('/directory')
     } catch (err: unknown) {
       console.error('Failed to hard delete student:', err)
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'
-      showToast('Failed to permanently delete student: ' + errorMessage, 'error')
+      showToast(t('studentDetail.toast.hard_delete_failed', { error: errorMessage }), 'error')
       setIsHardDeleteModalOpen(false)
     } finally {
       setIsProcessing(false)
@@ -216,13 +218,13 @@ export function StudentDetailPage() {
         return <CoursesTab courses={courses || []} />
       case 'competitions':
         return (
-          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load competitions</p></div>}>
+          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">{t('studentDetail.failed_to_load_competitions')}</p></div>}>
             <CompetitionsTab competitions={competitions || []} />
           </ErrorBoundary>
         )
       case 'teams':
         return (
-          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">Failed to load teams</p></div>}>
+          <ErrorBoundary fallback={<div className="p-8 bg-red-50 border border-red-100 rounded-xl text-center"><p className="text-red-600">{t('studentDetail.failed_to_load_teams')}</p></div>}>
             <TeamsTab teams={teams || []} />
           </ErrorBoundary>
         )
@@ -259,12 +261,12 @@ export function StudentDetailPage() {
       <div className="min-h-screen bg-surface">
         <TopNavbar activePage="Directory" />
         <div className="p-8 text-center text-slate-500">
-          <p>Student not found</p>
+          <p>{t('studentDetail.not_found')}</p>
           <button
             onClick={() => navigate('/directory')}
             className="mt-4 px-4 py-2 text-sm text-secondary border border-secondary rounded hover:bg-secondary-container"
           >
-            Back to Directory
+            {t('studentDetail.back_to_directory')}
           </button>
         </div>
       </div>
@@ -280,10 +282,10 @@ export function StudentDetailPage() {
         <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
           <div className="flex items-center gap-2 text-red-700">
             <Trash2 className="w-5 h-5" />
-            <span className="font-medium">This student has been deleted</span>
+            <span className="font-medium">{t('studentDetail.deleted_banner_title')}</span>
           </div>
           <p className="text-sm text-red-600 mt-1">
-            This record is in the deleted state. Restore to enable full functionality.
+            {t('studentDetail.deleted_banner_desc')}
           </p>
         </div>
       )}
@@ -292,7 +294,7 @@ export function StudentDetailPage() {
       <EntityPageHeader
         title={student.full_name}
         status={studentIsDeleted 
-          ? { label: 'Deleted', variant: 'error' }
+          ? { label: t('studentDetail.status_deleted'), variant: 'error' }
           : {
               label: getStatusLabel(student.status),
               variant: student.status as 'active' | 'inactive' | 'pending' | 'warning' | 'error'
@@ -305,14 +307,14 @@ export function StudentDetailPage() {
           { icon: <Clock className="w-4 h-4" />, value: details?.age ? `${details.age} years` : '-' }
         ]}
         actions={studentIsDeleted ? [
-          { label: 'Restore', onClick: () => setIsRestoreModalOpen(true), icon: <Edit2 className="w-4 h-4" />, variant: 'primary' },
-          { label: 'Delete Permanently', onClick: () => setIsHardDeleteModalOpen(true), icon: <Trash2 className="w-4 h-4" />, variant: 'danger' }
+          { label: t('studentDetail.restore'), onClick: () => setIsRestoreModalOpen(true), icon: <Edit2 className="w-4 h-4" />, variant: 'primary' },
+          { label: t('studentDetail.delete_permanently'), onClick: () => setIsHardDeleteModalOpen(true), icon: <Trash2 className="w-4 h-4" />, variant: 'danger' }
         ] : [
-          { label: 'Edit', onClick: () => setIsEditModalOpen(true), icon: <Edit2 className="w-4 h-4" />, variant: 'secondary' },
-          { label: 'Delete', onClick: () => setIsDeleteModalOpen(true), icon: <Trash2 className="w-4 h-4" />, variant: 'danger' }
+          { label: t('studentDetail.edit'), onClick: () => setIsEditModalOpen(true), icon: <Edit2 className="w-4 h-4" />, variant: 'secondary' },
+          { label: t('studentDetail.delete'), onClick: () => setIsDeleteModalOpen(true), icon: <Trash2 className="w-4 h-4" />, variant: 'danger' }
         ]}
         backLink="/directory"
-        backLabel="Back to Directory"
+        backLabel={t('studentDetail.back_to_directory')}
         whatsappPhone={student.phone}
       />
 
@@ -344,7 +346,7 @@ export function StudentDetailPage() {
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Edit Student"
+        title={t('studentDetail.edit_title')}
       >
         <StudentForm
           initialData={student}
@@ -358,7 +360,7 @@ export function StudentDetailPage() {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Student"
+        title={t('studentDetail.delete_title')}
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
@@ -367,7 +369,7 @@ export function StudentDetailPage() {
               disabled={isProcessing}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </button>
             <button
               onClick={handleSoftDelete}
@@ -375,13 +377,13 @@ export function StudentDetailPage() {
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
             >
               {isProcessing && <LoadingSpinner size="sm" />}
-              Delete
+              {t('studentDetail.delete')}
             </button>
           </div>
         }
       >
         <p className="text-sm text-slate-600">
-          Are you sure you want to delete <strong>{student.full_name}</strong>? This action cannot be undone.
+          {t('studentDetail.delete_confirm', { name: student.full_name })}
         </p>
       </Modal>
 
@@ -389,7 +391,7 @@ export function StudentDetailPage() {
       <Modal
         isOpen={isRestoreModalOpen}
         onClose={() => setIsRestoreModalOpen(false)}
-        title="Restore Student"
+        title={t('studentDetail.restore_title')}
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
@@ -398,7 +400,7 @@ export function StudentDetailPage() {
               disabled={isProcessing}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </button>
             <button
               onClick={handleRestore}
@@ -406,13 +408,13 @@ export function StudentDetailPage() {
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
             >
               {isProcessing && <LoadingSpinner size="sm" />}
-              Restore
+              {t('studentDetail.restore')}
             </button>
           </div>
         }
       >
         <p className="text-sm text-slate-600">
-          Are you sure you want to restore <strong>{student.full_name}</strong>? The student will become active again.
+          {t('studentDetail.restore_confirm', { name: student.full_name })}
         </p>
       </Modal>
 
@@ -420,7 +422,7 @@ export function StudentDetailPage() {
       <Modal
         isOpen={isHardDeleteModalOpen}
         onClose={() => setIsHardDeleteModalOpen(false)}
-        title="Permanently Delete Student"
+        title={t('studentDetail.hard_delete_title')}
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
@@ -429,7 +431,7 @@ export function StudentDetailPage() {
               disabled={isProcessing}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </button>
             <button
               onClick={handleHardDelete}
@@ -437,14 +439,14 @@ export function StudentDetailPage() {
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-700 rounded-lg hover:bg-red-800 transition-colors disabled:opacity-50"
             >
               {isProcessing && <LoadingSpinner size="sm" />}
-              Delete Permanently
+              {t('studentDetail.delete_permanently')}
             </button>
           </div>
         }
       >
         <div className="text-sm text-slate-600 space-y-2">
-          <p className="font-medium text-red-600">WARNING: This action cannot be undone!</p>
-          <p>Are you sure you want to permanently delete <strong>{student.full_name}</strong>? All data associated with this student will be permanently removed from the system.</p>
+          <p className="font-medium text-red-600">{t('studentDetail.hard_delete_warning')}</p>
+          <p>{t('studentDetail.hard_delete_confirm', { name: student.full_name })}</p>
         </div>
       </Modal>
 

@@ -137,7 +137,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
             className="flex-1 px-4 py-2 rounded-md"
           />
         ))}
-        <div className="flex items-center gap-1 ml-auto shrink-0">
+        <div className="flex items-center gap-1 ms-auto shrink-0">
           <button
             onClick={handleReset}
             className="px-3 py-1.5 text-xs font-medium text-slate-600 border border-blue-200 rounded-md hover:bg-blue-50 hover:text-slate-800 transition-all focus-visible:ring-2 focus-visible:ring-secondary/30 focus-visible:outline-none"

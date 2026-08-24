@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { AttendanceStatus } from '../../api/attendance'
 
 interface AttendanceCellProps {
@@ -28,6 +29,7 @@ const ICONS = {
 }
 
 export const AttendanceCell = React.memo(function AttendanceCell({ status, onToggle, studentId, sessionId, disabled }: AttendanceCellProps) {
+  const { t } = useTranslation('attendance')
   const handleClick = useCallback(() => {
     if (!disabled) {
       onToggle(studentId, sessionId)
@@ -39,7 +41,7 @@ export const AttendanceCell = React.memo(function AttendanceCell({ status, onTog
       onClick={handleClick}
       disabled={disabled}
       className="w-full h-full flex items-center justify-center hover:bg-secondary-container/30 rounded transition-colors py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
-      aria-label={`Toggle attendance: ${status}`}
+      aria-label={t('cell.toggle_aria', { status })}
     >
       {ICONS[status]}
     </button>

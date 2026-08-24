@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { X, ArrowRightCircle, Users, BookOpen, Calendar as CalendarIcon, DollarSign, CheckCircle2, Info } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
 import { useProgressLevelForm } from '../../../hooks/useProgressLevelForm'
 import { SearchablePillSelector } from '../../common/SearchablePillSelector'
@@ -32,6 +33,7 @@ export function ProgressLevelDialog({
   isLoading,
   triggerRef,
 }: ProgressLevelDialogProps) {
+  const { t } = useTranslation('groups')
   const dialogRef = useRef<HTMLDivElement>(null)
   const {
     formData,
@@ -137,10 +139,10 @@ export function ProgressLevelDialog({
           <div>
             <h2 id="progress-level-title" className="text-xl font-headline font-bold text-slate-900 flex items-center gap-2">
               <ArrowRightCircle className="w-6 h-6 text-secondary" />
-              Progress Group Level
+              {t('progressDialog.title')}
             </h2>
             <p className="text-sm text-slate-500 mt-1">
-              Advance this group to the next level and generate new sessions.
+              {t('progressDialog.subtitle')}
             </p>
           </div>
           <button
@@ -159,44 +161,44 @@ export function ProgressLevelDialog({
           <div className="flex gap-3 p-4 rounded-lg bg-blue-50 border border-blue-200 ring-1 ring-blue-100">
             <Info className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" aria-hidden="true" />
             <div className="flex-1">
-              <p className="text-sm font-bold text-blue-800 mb-1.5">This action will:</p>
+              <p className="text-sm font-bold text-blue-800 mb-1.5">{t('progressDialog.action_will')}</p>
               <ul className="space-y-1">
                 <li className="flex items-center gap-1.5 text-sm text-blue-700">
                   <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                  Create <strong>Level {formData.target_level}</strong> for this group
+                  {t('progressDialog.create_level', { level: formData.target_level })}
                 </li>
                 {formData.complete_current_level && (
                   <li className="flex items-center gap-1.5 text-sm text-blue-700">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    Mark <strong>Level {currentLevelNumber}</strong> as completed
+                    {t('progressDialog.mark_completed', { level: currentLevelNumber })}
                   </li>
                 )}
                 {formData.auto_migrate_enrollments && (
                   <li className="flex items-center gap-1.5 text-sm text-blue-700">
                     <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                    Migrate all active enrollments into the new level
+                    {t('progressDialog.migrate_enrollments')}
                   </li>
                 )}
                 {formData.session_start_date && (
                   <li className="flex items-center gap-1.5 text-sm text-blue-700">
                     <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                    Generate new sessions starting on <strong>{formData.session_start_date}</strong>
+                    {t('progressDialog.generate_sessions', { date: formData.session_start_date })}
                   </li>
                 )}
               </ul>
-              <p className="text-xs text-blue-500 mt-2 font-medium">⚠️ This operation cannot be undone.</p>
+              <p className="text-xs text-blue-500 mt-2 font-medium">⚠️ {t('progressDialog.cannot_undone')}</p>
             </div>
           </div>
           <section>
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-secondary" />
-              Level Details
+              {t('progressDialog.level_details')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-surface-container-lowest p-4 rounded-lg border border-surface-container-low">
               
               <div>
                 <label htmlFor="target-level" className="block text-sm font-medium text-slate-700 mb-1">
-                  Target Level <span className="text-red-500">*</span>
+                  {t('progressDialog.target_level')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="target-level"
@@ -209,13 +211,13 @@ export function ProgressLevelDialog({
                   required
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                  Must be {'>'} {currentLevelNumber}
+                  {t('progressDialog.must_be_gt', { level: currentLevelNumber })}
                 </p>
               </div>
 
               <div>
                 <label htmlFor="progress-group-name" className="block text-sm font-medium text-slate-700 mb-1">
-                  Group Name Override
+                  {t('progressDialog.group_name_override')}
                 </label>
                 <input
                   id="progress-group-name"
@@ -231,26 +233,26 @@ export function ProgressLevelDialog({
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Course
+                  {t('progressDialog.course')}
                 </label>
                 <SearchablePillSelector
                   options={courses.map(c => ({ id: c.id, label: c.name, subLabel: c.category }))}
                   value={formData.course_id ?? null}
                   onChange={(val) => setCourseId(val ? Number(val) : null)}
-                  placeholder="-- Keep Current --"
+                  placeholder={t('progressDialog.keep_current')}
                   disabled={isLoadingCourses || isLoading}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Instructor
+                  {t('progressDialog.instructor')}
                 </label>
                 <SearchablePillSelector
                   options={employees.map(emp => ({ id: emp.id, label: emp.full_name, subLabel: emp.job_title }))}
                   value={formData.instructor_id ?? null}
                   onChange={(val) => setInstructorId(val ? Number(val) : null)}
-                  placeholder="-- Keep Current --"
+                  placeholder={t('progressDialog.keep_current')}
                   disabled={isLoadingEmployees || isLoading}
                 />
               </div>
@@ -262,13 +264,13 @@ export function ProgressLevelDialog({
           <section>
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-secondary" />
-              Scheduling & Pricing
+              {t('progressDialog.scheduling_pricing')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-surface-container-lowest p-4 rounded-lg border border-surface-container-low">
               
               <div>
                 <label htmlFor="progress-start-date" className="block text-sm font-medium text-slate-700 mb-1">
-                  Session Start Date <span className="text-red-500">*</span>
+                  {t('progressDialog.session_start_date')} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -286,7 +288,7 @@ export function ProgressLevelDialog({
 
               <div>
                 <label htmlFor="progress-price" className="block text-sm font-medium text-slate-700 mb-1">
-                  Price Override
+                  {t('progressDialog.price_override')}
                 </label>
                 <div className="relative">
                   <input
@@ -298,14 +300,14 @@ export function ProgressLevelDialog({
                     onChange={(e) => setPriceOverride(e.target.value ? Number(e.target.value) : null)}
                     onWheel={(e) => (e.target as HTMLInputElement).blur()}
                     onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
-                    placeholder="Course Default"
+                    placeholder={t('progressDialog.course_default')}
                     disabled={isLoading}
                     className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <DollarSign className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
                 </div>
                 <p className="text-xs text-slate-500 mt-1">
-                  Leave empty to use course default
+                  {t('progressDialog.leave_empty_hint')}
                 </p>
               </div>
 
@@ -316,7 +318,7 @@ export function ProgressLevelDialog({
           <section>
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
               <Users className="w-4 h-4 text-secondary" />
-              Lifecycle Actions
+              {t('progressDialog.lifecycle_actions')}
             </h3>
             <div className="flex flex-col gap-3">
               
@@ -332,8 +334,8 @@ export function ProgressLevelDialog({
                 }`}
               >
                 <div className="flex-1">
-                  <span className="block text-sm font-bold text-slate-900">Auto-migrate active enrollments</span>
-                  <span className="block text-xs text-slate-500 mt-0.5">Move current active students directly into this new level.</span>
+                  <span className="block text-sm font-bold text-slate-900">{t('progressDialog.auto_migrate')}</span>
+                  <span className="block text-xs text-slate-500 mt-0.5">{t('progressDialog.auto_migrate_desc')}</span>
                 </div>
                 <div className={`w-10 h-6 rounded-full transition-colors flex items-center px-1 ${
                   formData.auto_migrate_enrollments ? 'bg-secondary' : 'bg-slate-300'
@@ -364,8 +366,8 @@ export function ProgressLevelDialog({
                 }`}
               >
                 <div className="flex-1">
-                  <span className="block text-sm font-bold text-slate-900">Complete current level</span>
-                  <span className="block text-xs text-slate-500 mt-0.5">Mark the current level (Level {currentLevelNumber}) as completed.</span>
+                  <span className="block text-sm font-bold text-slate-900">{t('progressDialog.complete_level')}</span>
+                  <span className="block text-xs text-slate-500 mt-0.5">{t('progressDialog.complete_level_desc', { level: currentLevelNumber })}</span>
                 </div>
                 <div className={`w-10 h-6 rounded-full transition-colors flex items-center px-1 ${
                   formData.complete_current_level ? 'bg-emerald-500' : 'bg-slate-300'
@@ -397,7 +399,7 @@ export function ProgressLevelDialog({
             disabled={isLoading}
             className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-surface-container rounded-lg transition-colors"
           >
-            Cancel
+            {t('progressDialog.cancel')}
           </button>
           <button
             type="submit"
@@ -406,7 +408,7 @@ export function ProgressLevelDialog({
             className="px-6 py-2 bg-secondary text-white text-sm font-bold rounded-lg hover:bg-secondary/90 disabled:opacity-50 flex items-center gap-2 transition-colors shadow-sm"
           >
             {isLoading && <LoadingSpinner size="sm" />}
-            Confirm Progression
+            {t('progressDialog.confirm_progression')}
           </button>
         </div>
       </div>

@@ -1,0 +1,96 @@
+{
+  "page_title": "Staff",
+  "empty": {
+    "no_staff": "No staff members found",
+    "no_results": "No results match your search",
+    "add_first": "Add your first staff member"
+  },
+  "employee": {
+    "role": "Role",
+    "active": "Active",
+    "inactive": "Inactive",
+    "edit_employee": "Edit employee"
+  },
+  "actions": {
+    "add_employee": "Add Employee",
+    "include_deleted": "Include deleted"
+  },
+  "dialogs": {
+    "delete_title": "Delete Employee",
+    "delete_message": "Are you sure you want to delete this employee? This action can be undone.",
+    "restore_title": "Restore Employee",
+    "restore_message": "Are you sure you want to restore this employee?"
+  },
+  "toast": {
+    "created": "Employee added successfully",
+    "updated": "Employee updated successfully",
+    "deleted": "Employee deleted successfully",
+    "restored": "Employee restored successfully",
+    "create_failed": "Failed to add employee",
+    "update_failed": "Failed to update employee",
+    "delete_failed": "Failed to delete employee",
+    "restore_failed": "Failed to restore employee",
+    "account_created": "Account created successfully",
+    "account_failed": "Failed to create account"
+  },
+  "personal_info": {
+    "full_name_placeholder": "Enter full name...",
+    "email_placeholder": "email@example.com",
+    "phone_placeholder": "01xxxxxxxxx",
+    "national_id_placeholder": "290xxxxxxxxxxx",
+    "university_placeholder": "Enter university...",
+    "major_placeholder": "Enter major...",
+    "is_graduate": "Is Graduate",
+    "hire_date_note": "Hire date will be set automatically when the employee profile is created."
+  },
+  "instructor_combobox": {
+    "search_placeholder": "Search instructor by name...",
+    "change": "Change",
+    "recently_used": "Recently Used",
+    "no_recent": "No recently used instructors. Type to search.",
+    "min_chars": "Type at least 2 characters to search instructors.",
+    "no_results": "No instructors found matching",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "create_account": {
+    "title_prefix": "Create Account for",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "create_account": "Create Account",
+    "email_placeholder": "Enter email address",
+    "password_placeholder": "Min 12 characters",
+    "password_help": "Must be at least 12 characters",
+    "admin": "Admin",
+    "system_admin": "System Admin",
+    "note": "Note:",
+    "note_text_1": "This will create a Supabase user account linked to",
+    "note_text_2": "The employee will receive an email with login instructions."
+  },
+  "detail_modal": {
+    "title": "Employee Details",
+    "restore_employee": "Restore Employee",
+    "delete_employee": "Delete Employee",
+    "close": "Close",
+    "load_error_title": "Failed to load employee details",
+    "load_error_message": "Could not load employee data for editing. Please try again.",
+    "deleted_warning": "Employee was soft-deleted on",
+    "deleted_by": "by",
+    "restore_warning": "Restoring will NOT automatically re-enable their login.",
+    "restore": "Restore",
+    "no_job_title": "No job title set",
+    "personal_info": "Personal Information",
+    "not_provided": "Not provided",
+    "contact": "Contact",
+    "employment_details": "Employment Details",
+    "not_set": "Not set",
+    "not_specified": "Not specified",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "confirm": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "restore": "Restore"
+  }
+}

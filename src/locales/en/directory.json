@@ -1,0 +1,141 @@
+{
+  "page_title": "Student Directory",
+  "tabs": {
+    "students": "Students",
+    "parents": "Parents",
+    "waiting": "Waiting List",
+    "advanced": "Advanced Search"
+  },
+  "empty": {
+    "no_students": "No students found",
+    "no_parents": "No parents found",
+    "no_waiting": "No students on the waiting list",
+    "no_results": "No results match your search",
+    "select_student": "Select a student to view details",
+    "clear_filters": "Clear all filters",
+    "no_students_letter": "No students found starting with \"{{letter}}\"",
+    "no_deleted_students": "No deleted students found",
+    "no_deleted_students_letter": "No deleted students found starting with \"{{letter}}\"",
+    "no_students_match_search": "No students match your search",
+    "no_waiting_students": "No waiting students found",
+    "no_parents_match_search": "No parents match your search",
+    "no_filtered_students": "No students match your filters"
+  },
+  "actions": {
+    "add_student": "Add Student",
+    "add_parent": "Add Parent",
+    "export": "Export",
+    "filter": "Filter",
+    "group_by": "Group by",
+    "sort_by": "Sort by",
+    "refresh": "Refresh"
+  },
+  "toast": {
+    "student_created": "Student added successfully",
+    "student_updated": "Student updated successfully",
+    "student_deleted": "Student deleted successfully",
+    "parent_created": "Parent added successfully",
+    "parent_updated": "Parent updated successfully",
+    "create_failed": "Failed to add",
+    "update_failed": "Failed to update",
+    "delete_failed": "Failed to delete",
+    "activity_type_required": "Activity type required.",
+    "invalid_date_format": "Invalid date format.",
+    "activity_updated": "Activity updated.",
+    "activity_logged": "Activity logged.",
+    "operation_failed": "Operation failed."
+  },
+  "student_form": {
+    "full_name_label": "Full Name",
+    "full_name_placeholder": "Enter student's full name",
+    "phone_placeholder": "+20 123 456 7890",
+    "phone_label": "Phone",
+    "birth_date_label": "Birth Date",
+    "notes_label": "Notes",
+    "notes_placeholder": "Additional notes about the student...",
+    "gender_label": "Gender",
+    "status_label": "Status",
+    "log_initial_activity": "Log initial activity note",
+    "activity_type_label": "Activity Type",
+    "activity_description_label": "Activity Description",
+    "activity_description_placeholder": "Describe the initial activity (e.g., Parent called to schedule orientation)...",
+    "cancel": "Cancel",
+    "create_student": "Create Student",
+    "save_changes": "Save Changes",
+    "please_consider_adding": "Please consider adding:"
+  },
+  "parent_form": {
+    "full_name_placeholder": "Enter parent's full name",
+    "notes_placeholder": "Additional notes...",
+    "cancel": "Cancel",
+    "create_parent": "Create Parent",
+    "save_changes": "Save Changes"
+  },
+  "log_activity": {
+    "title_edit": "Edit Activity Log",
+    "title_log": "Log Manual Activity",
+    "activity_type_label": "Activity Type",
+    "subtype_label": "Subtype",
+    "subtype_placeholder": "e.g., system_import, manual_fix",
+    "custom_type_label": "Custom Activity Type Name *",
+    "custom_type_placeholder": "e.g., scholarship_awarded, interview_completed",
+    "description_label": "Description / Log details",
+    "description_placeholder": "Describe what occurred...",
+    "logged_date_label": "Logged Date & Time",
+    "reference_label": "Reference Entity",
+    "no_reference": "No reference",
+    "metadata_label": "Custom Metadata Fields",
+    "add_field": "Add Field",
+    "no_custom_fields": "No custom fields added yet. Add metadata tags like coupon codes, custom references, or approval details.",
+    "key_placeholder": "Key (e.g., coupon_code)",
+    "value_placeholder": "Value (e.g., SUMMER50)",
+    "cancel": "Cancel",
+    "save_changes": "Save Changes",
+    "log_activity": "Log Activity"
+  },
+  "link_parent": {
+    "title": "Link Parent to Student",
+    "search_label": "Search Parents",
+    "search_placeholder": "Search by name...",
+    "search_button": "Search",
+    "search_results": "Search Results ({{count}})",
+    "no_results": "No parents found. Try a different search term.",
+    "linked_parents": "Currently Linked Parents",
+    "no_linked": "No parents currently linked to this student.",
+    "link": "Link",
+    "unlink": "Unlink"
+  },
+  "waiting_list": {
+    "search_placeholder": "Search by name or phone...",
+    "search_label": "Search waiting list",
+    "load_failed": "Failed to load waiting list",
+    "try_again_later": "Please try again later",
+    "no_students": "No students in waiting list",
+    "no_students_hint": "Students added to waiting list will appear here",
+    "no_match": "No students match your search",
+    "title": "Waiting List ({{count}} students)"
+  },
+  "confirm": {
+    "soft_delete_title": "Move to Trash",
+    "soft_delete_message": "Are you sure you want to move \"{{name}}\" to the trash? You can restore them later.",
+    "hard_delete_title": "Permanently Delete",
+    "hard_delete_message": "Are you sure you want to permanently delete \"{{name}}\"? This action cannot be undone.",
+    "cancel": "Cancel"
+  },
+  "filter_panel": {
+    "title": "Filter Students",
+    "reset": "Reset",
+    "apply": "Apply",
+    "found_count": "Found <strong>{{count}}</strong> students",
+    "select_filters_hint": "Select filters and click Apply to search"
+  },
+  "modal": {
+    "create_student": "Create Student",
+    "edit_student": "Edit Student",
+    "create_parent": "Create Parent",
+    "enroll_student": "Enroll {{name}}"
+  },
+  "enroll_toast": {
+    "success": "Student enrolled successfully!"
+  }
+}

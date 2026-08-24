@@ -1,4 +1,5 @@
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { useNavDirection } from '../../hooks/useNavDirection'
 
 interface DaySelectorBarProps {
   selectedDate: string
@@ -10,6 +11,7 @@ const DAY_NAMES_SHORT = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 
 export function DaySelectorBar({ selectedDate, onSelectDate }: DaySelectorBarProps) {
   const isMobile = useIsMobile()
+  const { getNextIndex } = useNavDirection()
   const namesToUse = isMobile ? DAY_NAMES_SHORT : DAY_NAMES
 
   const toLocalISODate = (date: Date) => {
@@ -49,14 +51,8 @@ export function DaySelectorBar({ selectedDate, onSelectDate }: DaySelectorBarPro
     const currentIndex = buttons.indexOf(target)
     if (currentIndex === -1) return
 
-    let nextIndex = currentIndex
-    if (e.key === 'ArrowRight') {
-      nextIndex = (currentIndex + 1) % buttons.length
-    } else if (e.key === 'ArrowLeft') {
-      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length
-    } else {
-      return
-    }
+    const nextIndex = getNextIndex(e, currentIndex, buttons.length)
+    if (nextIndex === null) return
 
     e.preventDefault()
     ;(buttons[nextIndex] as HTMLElement).focus()

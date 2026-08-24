@@ -1,0 +1,11 @@
+{
+  "page_title": "Reports",
+  "subtitle": "Analytics and insights dashboard",
+  "tabs": {
+    "daily_report": "Daily Report",
+    "weekly_report": "Weekly Report",
+    "monthly_report": "Monthly Report",
+    "revenue_collections": "Revenue & Collections",
+    "progress": "Progress"
+  }
+}

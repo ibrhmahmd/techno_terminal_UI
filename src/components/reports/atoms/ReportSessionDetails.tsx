@@ -21,7 +21,7 @@ export function ReportSessionDetails({ sessions }: ReportSessionDetailsProps) {
     <div className="bg-white rounded-xl border border-slate-200 p-6">
       <h3 className="font-headline text-lg font-semibold text-on-surface mb-4">
         Session Details
-        <span className="ml-2 px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full">
+        <span className="ms-2 px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full">
           {sessions.length}
         </span>
       </h3>
@@ -29,13 +29,13 @@ export function ReportSessionDetails({ sessions }: ReportSessionDetailsProps) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200">
-              <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Instructor</th>
-              <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Time</th>
-              <th scope="col" className="text-right py-3 px-4 text-sm font-medium text-slate-500">Present</th>
-              <th scope="col" className="text-right py-3 px-4 text-sm font-medium text-slate-500">Absent</th>
-              <th scope="col" className="text-right py-3 px-4 text-sm font-medium text-slate-500">Cancelled</th>
-              <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Students Present</th>
-              <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Students Absent</th>
+              <th scope="col" className="text-start py-3 px-4 text-sm font-medium text-slate-500">Instructor</th>
+              <th scope="col" className="text-start py-3 px-4 text-sm font-medium text-slate-500">Time</th>
+              <th scope="col" className="text-end py-3 px-4 text-sm font-medium text-slate-500">Present</th>
+              <th scope="col" className="text-end py-3 px-4 text-sm font-medium text-slate-500">Absent</th>
+              <th scope="col" className="text-end py-3 px-4 text-sm font-medium text-slate-500">Cancelled</th>
+              <th scope="col" className="text-start py-3 px-4 text-sm font-medium text-slate-500">Students Present</th>
+              <th scope="col" className="text-start py-3 px-4 text-sm font-medium text-slate-500">Students Absent</th>
             </tr>
           </thead>
           <tbody>
@@ -47,13 +47,13 @@ export function ReportSessionDetails({ sessions }: ReportSessionDetailsProps) {
                 <td className="py-3 px-4 text-sm text-slate-600">
                   {session.session_time}
                 </td>
-                <td className="py-3 px-4 text-sm text-right text-green-600 font-medium">
+                <td className="py-3 px-4 text-sm text-end text-green-600 font-medium">
                   {session.present_count}
                 </td>
-                <td className="py-3 px-4 text-sm text-right text-red-600 font-medium">
+                <td className="py-3 px-4 text-sm text-end text-red-600 font-medium">
                   {session.absent_count}
                 </td>
-                <td className="py-3 px-4 text-sm text-right text-slate-500">
+                <td className="py-3 px-4 text-sm text-end text-slate-500">
                   {session.cancelled_count}
                 </td>
                 <td className="py-3 px-4 text-sm text-slate-600 max-w-[200px] truncate" title={session.student_names_present}>

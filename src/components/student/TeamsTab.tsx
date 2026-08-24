@@ -1,4 +1,5 @@
 import { UsersRound, Calendar, UserCog, Shield } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { EmptyState } from '../common/EmptyState'
 
 // Inline type definition (was in deleted legacy types)
@@ -16,6 +17,7 @@ interface TeamsTabProps {
 }
 
 export function TeamsTab({ teams }: TeamsTabProps) {
+  const { t } = useTranslation('common')
   // Separate active and former teams
   const activeTeams = teams.filter(t => t.status === 'active')
   const formerTeams = teams.filter(t => t.status === 'former')
@@ -58,7 +60,7 @@ export function TeamsTab({ teams }: TeamsTabProps) {
             ? 'bg-green-100 text-green-700' 
             : 'bg-slate-100 text-slate-600'
         }`}>
-          {team.status === 'active' ? 'Active Member' : 'Former Member'}
+          {team.status === 'active' ? t('teamsTab.active_member') : t('teamsTab.former_member')}
         </span>
       </div>
     </div>
@@ -67,8 +69,8 @@ export function TeamsTab({ teams }: TeamsTabProps) {
   if (teams.length === 0) {
     return (
       <EmptyState
-        title="No team records"
-        message="This student is not part of any teams."
+        title={t('teamsTab.no_team_records')}
+        message={t('teamsTab.no_team_records_message')}
         icon="inbox"
       />
     )
@@ -78,13 +80,13 @@ export function TeamsTab({ teams }: TeamsTabProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-on-surface">Team History</h2>
+          <h2 className="text-xl font-semibold text-on-surface">{t('teamsTab.team_history')}</h2>
           <p className="text-sm text-slate-500 mt-1">
-            View all teams this student is or was part of
+            {t('teamsTab.team_history_subtitle')}
           </p>
         </div>
         <div className="text-sm text-slate-500">
-          Total: <span className="font-medium text-on-surface">{teams.length}</span> teams
+          {t('teamsTab.total_teams', { count: teams.length })}
         </div>
       </div>
 
@@ -94,8 +96,8 @@ export function TeamsTab({ teams }: TeamsTabProps) {
           <div className="px-6 py-4 border-b border-slate-100 bg-green-50">
             <div className="flex items-center gap-2">
               <UsersRound className="w-5 h-5 text-green-600" aria-hidden="true" />
-              <h3 className="font-semibold text-on-surface">Active Teams</h3>
-              <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+              <h3 className="font-semibold text-on-surface">{t('teamsTab.active_teams')}</h3>
+              <span className="ms-2 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                 {activeTeams.length}
               </span>
             </div>
@@ -112,8 +114,8 @@ export function TeamsTab({ teams }: TeamsTabProps) {
           <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
             <div className="flex items-center gap-2">
               <UsersRound className="w-5 h-5 text-slate-500" aria-hidden="true" />
-              <h3 className="font-semibold text-on-surface">Past Teams</h3>
-              <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-600">
+              <h3 className="font-semibold text-on-surface">{t('teamsTab.past_teams')}</h3>
+              <span className="ms-2 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-600">
                 {formerTeams.length}
               </span>
             </div>

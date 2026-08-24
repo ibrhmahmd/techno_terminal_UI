@@ -111,7 +111,7 @@ function UserCard({ user, currentUser, onReset, onDeactivate, onReactivate }: Us
           </div>
           <p className="text-sm text-on-surface-variant truncate font-mono">{user.email}</p>
         </div>
-        <div className="flex items-center gap-2 shrink-0 ml-2">
+        <div className="flex items-center gap-2 shrink-0 ms-2">
           {isSelf ? (
             <RoleBadge role={user.role} />
           ) : (
@@ -457,7 +457,7 @@ export function UsersTab() {
             aria-label="Search by username or email"
             id="user-search"
             onChange={(e) => { setSearchInput(e.target.value); setPage(0) }}
-            className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 pl-8 pr-3 py-1.5 text-sm rounded-none outline-none transition-colors"
+            className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 ps-8 pe-3 py-1.5 text-sm rounded-none outline-none transition-colors"
           />
           {searchInput && (
             <button
@@ -475,7 +475,7 @@ export function UsersTab() {
             value={roleFilter}
             onChange={(e) => { setRoleFilter(e.target.value); setPage(0) }}
             aria-label="Filter by role"
-            className="bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 pl-8 pr-8 py-1.5 text-sm rounded-none outline-none appearance-none min-w-[160px] transition-colors"
+            className="bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 ps-8 pe-8 py-1.5 text-sm rounded-none outline-none appearance-none min-w-[160px] transition-colors"
           >
             <option value="">All Roles</option>
             <option value="instructor">Instructor</option>
@@ -490,7 +490,7 @@ export function UsersTab() {
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(0) }}
             aria-label="Filter by status"
-            className="bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 pl-8 pr-8 py-1.5 text-sm rounded-none outline-none appearance-none min-w-[160px] transition-colors"
+            className="bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 ps-8 pe-8 py-1.5 text-sm rounded-none outline-none appearance-none min-w-[160px] transition-colors"
           >
             <option value="">All Status</option>
             <option value="active">Active</option>

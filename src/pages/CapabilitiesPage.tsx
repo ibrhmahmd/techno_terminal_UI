@@ -113,7 +113,7 @@ export function CapabilitiesPage() {
         {sections.map((section, sIdx) => (
           <div key={sIdx} className="space-y-8">
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold font-headline tracking-tight text-white border-l-4 border-teal-500 pl-4">
+              <h2 className="text-2xl font-bold font-headline tracking-tight text-white border-s-4 border-teal-500 ps-4">
                 {section.title}
               </h2>
               {section.intro.map((introText, iIdx) => (

@@ -3,13 +3,13 @@
     "dashboard": "لوحة التحكم",
     "groups": "المجموعات",
     "directory": "دليل الطلاب",
-    "courses": "المحاضرات",
+    "courses": "المقررات",
     "enrollments": "الاشتراكات",
     "finance": "المالية",
     "competitions": "المسابقات",
     "certificates": "الشهادات",
     "reports": "التقارير",
-    "staff": "الموظفون",
+    "staff": "الموظفين",
     "tasks": "المهام",
     "notifications": "الإشعارات",
     "settings": "الإعدادات",
@@ -22,11 +22,11 @@
     "resources": "الموارد"
   },
   "brand": "تكنو تيرمينال",
-  "sign_out": "تسجيل الخروج",
-  "more": "المزيد",
+  "sign_out": "اطلع",
+  "more": "أكتر",
   "aria": {
-    "mobile_navigation": "التنقل عبر الهاتف",
-    "more_navigation_options": "خيارات تنقل إضافية",
-    "more_navigation": "تنقل إضافي"
+    "mobile_navigation": "تنقل من الموبايل",
+    "more_navigation_options": "خيارات تانية",
+    "more_navigation": "تنقل تاني"
   }
 }
