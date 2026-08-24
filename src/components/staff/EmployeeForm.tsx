@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import type { EmployeePublic, EmployeeCreateInput } from '../../api/hr'
+import type { EmployeeCreateInput, EmployeePublic } from '../../api/hr'
+import { extractApiErrorMessage } from '../../api/hr/errors'
+import { isValidEgyptianNationalId, normalizeEgyptianPhone } from '../../utils/egyptianValidators'
+import { MAX_MONTHLY_SALARY } from './EmployeeForm/WorkSettingsSection'
 import { PersonalInfoSection } from './EmployeeForm/PersonalInfoSection'
 import { WorkSettingsSection } from './EmployeeForm/WorkSettingsSection'
 
@@ -24,7 +27,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
     is_graduate: boolean
     job_title: string
     employment_type: 'full_time' | 'part_time' | 'contract'
-    monthly_salary: number
+    monthly_salary: number | ''
     contract_percentage: number | undefined
     is_active: boolean
   }>({
@@ -69,6 +72,30 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
       return
     }
 
+    if (mode === 'create' && !isValidEgyptianNationalId(formData.national_id.trim())) {
+      setError('Please enter a valid Egyptian national ID (14 digits)')
+      return
+    }
+
+    const normalizedPhone = normalizeEgyptianPhone(formData.phone)
+    if (!normalizedPhone) {
+      setError('Please enter a valid Egyptian phone number (e.g., 01012345678)')
+      return
+    }
+
+    if (typeof formData.monthly_salary === 'number' && formData.monthly_salary < 0) {
+      setError('Monthly salary cannot be negative')
+      return
+    }
+    if (typeof formData.monthly_salary === 'number' && formData.monthly_salary > MAX_MONTHLY_SALARY) {
+      setError(`Monthly salary cannot exceed ${MAX_MONTHLY_SALARY.toLocaleString()} EGP`)
+      return
+    }
+    if (formData.contract_percentage !== undefined && (formData.contract_percentage < 0 || formData.contract_percentage > 100)) {
+      setError('Contract percentage must be between 0 and 100')
+      return
+    }
+
     setIsInternalLoading(true)
     try {
       // Build API data based on mode
@@ -78,11 +105,11 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
         // Create requires all mandatory fields including national_id
         apiData = {
           full_name: formData.full_name,
-          phone: formData.phone,
-          email: formData.email || undefined,
+          phone: normalizedPhone,
+          email: formData.email,
           national_id: formData.national_id,
-          university: formData.university || 'Not Specified',
-          major: formData.major || 'Not Specified',
+          ...(formData.university.trim() && { university: formData.university }),
+          ...(formData.major.trim() && { major: formData.major }),
           is_graduate: formData.is_graduate,
           job_title: formData.job_title,
           employment_type: formData.employment_type,
@@ -95,8 +122,8 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
         // Don't send 'Not Specified' placeholders as they may fail validation
         apiData = {
           full_name: formData.full_name,
-          phone: formData.phone,
-          email: formData.email || undefined,
+          phone: normalizedPhone,
+          email: formData.email,
           // Include national_id if we have it (backend requires it)
           ...(formData.national_id?.trim() && { national_id: formData.national_id }),
           // Only include university/major if they have real values
@@ -116,8 +143,8 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
       }
 
       await onSubmit(apiData)
-    } catch {
-      setError('An error occurred while saving the employee profile.')
+    } catch (err) {
+      setError(extractApiErrorMessage(err) ?? 'An error occurred while saving the employee profile.')
     } finally {
       setIsInternalLoading(false)
     }

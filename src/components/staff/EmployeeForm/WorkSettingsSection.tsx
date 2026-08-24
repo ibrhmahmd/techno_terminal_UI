@@ -1,8 +1,10 @@
+export const MAX_MONTHLY_SALARY = 1000000
+
 interface WorkSettingsSectionProps {
   formData: {
     job_title: string
     employment_type: string
-    monthly_salary: number
+    monthly_salary: number | ''
     contract_percentage?: number
     is_active: boolean
   }
@@ -64,9 +66,9 @@ export function WorkSettingsSection({
           <input
             type="number"
             min={0}
-            step={100}
+            max={MAX_MONTHLY_SALARY}
             value={formData.monthly_salary}
-            onChange={(e) => onChange('monthly_salary', parseInt(e.target.value, 10) || 0)}
+            onChange={(e) => onChange('monthly_salary', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
             onWheel={(e) => (e.target as HTMLInputElement).blur()}
             onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
             disabled={isLoading}
