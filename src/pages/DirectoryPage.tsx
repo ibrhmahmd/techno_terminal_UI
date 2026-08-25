@@ -1,6 +1,8 @@
 import { useState, useCallback, useMemo, lazy, Suspense } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { queryKeys } from '../hooks/queryKeys'
+import { useNavDirection } from '../hooks/useNavDirection'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { Pagination, PageHeader, PageSection, ActionButton, SearchBar, Modal, ConfirmDialog } from '../components/common'
 import { useToast } from '../components/common/Toast'
@@ -35,6 +37,8 @@ import type { StudentGroupBy, WaitingGroupBy } from '../config/studentGrouping'
 const PANEL_ORDER = ['students', 'parents', 'waiting', 'advanced'] as const
 
 export function DirectoryPage() {
+  const { t } = useTranslation('directory')
+  const { t: tCommon } = useTranslation('common')
   const isMobile = useIsMobile()
   const { showToast, ToastComponent } = useToast()
   const [activeTab, setActiveTab] = useState<(typeof PANEL_ORDER)[number]>(() => 'students')
@@ -164,11 +168,11 @@ export function DirectoryPage() {
     mutationFn: createParent,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.directory.parents.all })
-      showToast('Parent created successfully', 'success')
+      showToast(t('toast.parent_created'), 'success')
       setIsCreateParentModalOpen(false)
     },
     onError: () => {
-      showToast('Failed to create parent', 'error')
+      showToast(t('toast.create_failed'), 'error')
     },
   })
 
@@ -184,10 +188,10 @@ export function DirectoryPage() {
     (student: StudentListItem | StudentFilterItem) => {
       setConfirmDialog({
         isOpen: true,
-        title: 'Move to Trash',
-        message: `Are you sure you want to move "${student.full_name}" to the trash? You can restore them later.`,
+        title: t('confirm.soft_delete_title'),
+        message: t('confirm.soft_delete_message', { name: student.full_name }),
         variant: 'warning',
-        confirmText: 'Move to Trash',
+        confirmText: tCommon('buttons.delete'),
         onConfirm: () => {
           if (isStudentListItem(student)) {
             handleSoftDeleteStudent(student)
@@ -204,10 +208,10 @@ export function DirectoryPage() {
     (student: StudentListItem | StudentFilterItem) => {
       setConfirmDialog({
         isOpen: true,
-        title: 'Permanently Delete',
-        message: `Are you sure you want to permanently delete "${student.full_name}"? This action cannot be undone.`,
+        title: t('confirm.hard_delete_title'),
+        message: t('confirm.hard_delete_message', { name: student.full_name }),
         variant: 'danger',
-        confirmText: 'Delete Permanently',
+        confirmText: tCommon('buttons.delete'),
         onConfirm: () => {
           if (isStudentListItem(student)) {
             handleHardDeleteStudent(student)
@@ -255,6 +259,7 @@ export function DirectoryPage() {
   }, [resetFilters])
 
   const activeIndex = PANEL_ORDER.indexOf(activeTab)
+  const { getNextIndex } = useNavDirection()
 
   function handleGroupTabKeyDown<T extends { key: string }>(
     e: React.KeyboardEvent,
@@ -266,19 +271,12 @@ export function DirectoryPage() {
     if (count === 0) return
     const currentIndex = groups.findIndex(g => g.key === activeKey)
     let newIndex: number | undefined
-    switch (e.key) {
-      case 'ArrowRight':
-        newIndex = (currentIndex + 1) % count
-        break
-      case 'ArrowLeft':
-        newIndex = (currentIndex - 1 + count) % count
-        break
-      case 'Home':
-        newIndex = 0
-        break
-      case 'End':
-        newIndex = count - 1
-        break
+    const navIndex = getNextIndex(e, currentIndex, count)
+    if (navIndex !== null) newIndex = navIndex
+    if (e.key === 'Home') {
+      newIndex = 0
+    } else if (e.key === 'End') {
+      newIndex = count - 1
     }
     if (newIndex !== undefined) {
       e.preventDefault()
@@ -288,7 +286,7 @@ export function DirectoryPage() {
 
   const metricItems = useMemo(() => [
     {
-      label: 'Students',
+      label: t('tabs.students'),
       value: String(totalStudents),
       icon: 'school',
       color: 'secondary' as const,
@@ -298,7 +296,7 @@ export function DirectoryPage() {
       onClick: () => handleTabChange('students'),
     },
     {
-      label: 'Parents',
+      label: t('tabs.parents'),
       value: String(totalParents),
       icon: 'family_restroom',
       color: 'emerald' as const,
@@ -308,7 +306,7 @@ export function DirectoryPage() {
       onClick: () => handleTabChange('parents'),
     },
     {
-      label: 'Waiting List',
+      label: t('tabs.waiting'),
       value: String(totalWaiting),
       icon: 'schedule',
       color: 'amber' as const,
@@ -318,7 +316,7 @@ export function DirectoryPage() {
       onClick: () => handleTabChange('waiting'),
     },
     {
-      label: 'Filter Students',
+      label: t('tabs.advanced'),
       value: undefined,
       icon: 'tune',
       color: 'blue' as const,
@@ -327,15 +325,15 @@ export function DirectoryPage() {
       controls: 'tabpanel-advanced',
       onClick: () => handleTabChange('advanced'),
     },
-  ], [totalStudents, totalParents, waitingStudents.length, appliedFilters, filteredTotal, isLoading, isLoadingFiltered, handleTabChange, students.length, parents.length])
+  ], [totalStudents, totalParents, waitingStudents.length, appliedFilters, filteredTotal, isLoading, isLoadingFiltered, handleTabChange, students.length, parents.length, t])
 
   if (isError) {
     return (
       <div role="alert" className="flex flex-col items-center justify-center py-16 text-red-500">
         <span className="material-symbols-outlined text-5xl mb-3" aria-hidden="true">error</span>
-        <p className="text-sm">Something went wrong loading data</p>
+        <p className="text-sm">{tCommon('messages.error')}</p>
         <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-secondary text-white rounded-lg">
-          Retry
+          {tCommon('buttons.retry')}
         </button>
       </div>
     )
@@ -343,17 +341,17 @@ export function DirectoryPage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNavbar activePage="Directory" />
+      <TopNavbar activePage={t('page_title')} />
 
       {/* Header */}
       <PageHeader 
-        title="Directory"
+        title={t('page_title')}
         count={activeTab === 'students' ? totalStudents : activeTab === 'advanced' ? (filteredTotal ?? 0) : totalParents}
-        subtitle="Browse and manage students and parents"
+        subtitle=""
         actions={
           <>
             <SearchBar
-              placeholder="Search by name or phone..."
+              placeholder={tCommon('labels.searchPlaceholder')}
               onSearch={setSearchTerm}
               className="min-w-[220px]"
             />
@@ -368,7 +366,7 @@ export function DirectoryPage() {
                   }
                 }}
               >
-                Add {activeTab === 'parents' ? 'Parent' : 'Student'}
+                {activeTab === 'parents' ? t('actions.add_parent') : t('actions.add_student')}
               </ActionButton>
             )}
           </>
@@ -431,10 +429,10 @@ export function DirectoryPage() {
                               : displayStudents
                           if (items.length === 0) {
                             const msg = studentGroupBy === 'deleted'
-                              ? (selectedLetter ? `No deleted students found starting with "${selectedLetter}"` : 'No deleted students found')
+                              ? (selectedLetter ? t('empty.no_deleted_students_letter', { letter: selectedLetter }) : t('empty.no_deleted_students'))
                               : searchTerm.length >= 2 
-                                ? 'No students match your search' 
-                                : (selectedLetter ? `No students found starting with "${selectedLetter}"` : 'No students found')
+                                ? t('empty.no_students_match_search') 
+                                : (selectedLetter ? t('empty.no_students_letter', { letter: selectedLetter }) : t('empty.no_students'))
                             return (
                               <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                                 <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">
@@ -489,7 +487,7 @@ export function DirectoryPage() {
                       ) : !studentsGroupedData || studentsGroupedData.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                           <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">inbox</span>
-                          <p className="text-sm">No students found</p>
+                          <p className="text-sm">{t('empty.no_students')}</p>
                         </div>
                       ) : (
                         (() => {
@@ -575,7 +573,7 @@ export function DirectoryPage() {
               {/* Group by selector for waiting list */}
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold text-on-surface font-headline">
-                  Waiting List ({waitingStudents.length} students)
+                  {t('waiting_list.title', { count: waitingStudents.length })}
                 </h2>
                 <StudentGroupBySelector
                   value={waitingGroupBy}
@@ -605,7 +603,7 @@ export function DirectoryPage() {
                   ) : !waitingGroupedData || waitingGroupedData.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                       <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">inbox</span>
-                      <p className="text-sm">No waiting students found</p>
+                      <p className="text-sm">{t('empty.no_waiting_students')}</p>
                     </div>
                   ) : (
                     (() => {
@@ -692,7 +690,7 @@ export function DirectoryPage() {
                 <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                   <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">search</span>
                   <p className="text-sm">
-                    {searchTerm.length >= 2 ? 'No parents match your search' : 'No parents found'}
+                    {searchTerm.length >= 2 ? t('empty.no_parents_match_search') : t('empty.no_parents')}
                   </p>
                 </div>
               ) : (
@@ -727,7 +725,7 @@ export function DirectoryPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-headline font-semibold text-on-surface flex items-center gap-2">
                     <span aria-hidden="true" className="material-symbols-outlined text-secondary">tune</span>
-                    Filter Students
+                    {t('filter_panel.title')}
                   </h3>
                   <div className="flex items-center gap-2">
                     <button
@@ -736,7 +734,7 @@ export function DirectoryPage() {
                       className="px-4 py-2 bg-slate-100 text-slate-600 font-medium rounded-lg hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm"
                     >
                       <span aria-hidden="true" className="material-symbols-outlined text-[18px]">refresh</span>
-                      Reset
+                      {t('filter_panel.reset')}
                     </button>
                     <button
                       onClick={handleApplyFilters}
@@ -744,7 +742,7 @@ export function DirectoryPage() {
                       className="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm"
                     >
                       <span aria-hidden="true" className="material-symbols-outlined text-[18px]">search</span>
-                      Apply
+                      {t('filter_panel.apply')}
                     </button>
                   </div>
                 </div>
@@ -817,9 +815,7 @@ export function DirectoryPage() {
                 {/* Group by selector for filtered results */}
                 <div className="flex justify-between items-center mb-4">
                   {appliedFilters && (
-                    <div className="text-sm text-slate-600">
-                      Found <span className="font-semibold text-secondary">{filteredTotal ?? 0}</span> students
-                    </div>
+                    <div className="text-sm text-slate-600" dangerouslySetInnerHTML={{ __html: t('filter_panel.found_count', { count: filteredTotal ?? 0 }) }} />
                   )}
                   <StudentGroupBySelector
                     value={filterGroupBy}
@@ -843,12 +839,12 @@ export function DirectoryPage() {
                     ) : !appliedFilters ? (
                       <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                         <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">filter_list</span>
-                        <p className="text-sm">Select filters and click Apply to search</p>
+                        <p className="text-sm">{t('filter_panel.select_filters_hint')}</p>
                       </div>
                     ) : !filteredStudents || filteredStudents.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                         <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">search</span>
-                        <p className="text-sm">No students match your filters</p>
+                        <p className="text-sm">{t('empty.no_filtered_students')}</p>
                       </div>
                     ) : (
                       <CardGrid>
@@ -890,12 +886,12 @@ export function DirectoryPage() {
                     ) : !appliedFilters ? (
                       <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                         <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">filter_list</span>
-                        <p className="text-sm">Select filters and click Apply to search</p>
+                        <p className="text-sm">{t('filter_panel.select_filters_hint')}</p>
                       </div>
                     ) : !filteredGroupedData || filteredGroupedData.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                         <span aria-hidden="true" className="material-symbols-outlined text-5xl mb-3">search</span>
-                        <p className="text-sm">No students match your filters</p>
+                        <p className="text-sm">{t('empty.no_filtered_students')}</p>
                       </div>
                     ) : (
                       (() => {
@@ -997,7 +993,7 @@ export function DirectoryPage() {
       <Modal
         isOpen={isCreateStudentModalOpen}
         onClose={() => setIsCreateStudentModalOpen(false)}
-        title="Create Student"
+        title={t('modal.create_student')}
       >
         <Suspense fallback={<div className="h-64 bg-slate-50 rounded-xl animate-pulse" />}>
           <StudentForm
@@ -1018,7 +1014,7 @@ export function DirectoryPage() {
           setIsEditStudentModalOpen(false)
           setEditingStudent(null)
         }}
-        title="Edit Student"
+        title={t('modal.edit_student')}
       >
         <Suspense fallback={<div className="h-64 bg-slate-50 rounded-xl animate-pulse" />}>
           <StudentForm
@@ -1041,7 +1037,7 @@ export function DirectoryPage() {
       <Modal
         isOpen={isCreateParentModalOpen}
         onClose={() => setIsCreateParentModalOpen(false)}
-        title="Create Parent"
+        title={t('modal.create_parent')}
       >
         <Suspense fallback={<div className="h-64 bg-slate-50 rounded-xl animate-pulse" />}>
           <ParentForm
@@ -1061,7 +1057,7 @@ export function DirectoryPage() {
         message={confirmDialog.message}
         variant={confirmDialog.variant}
         confirmText={confirmDialog.confirmText}
-        cancelText="Cancel"
+        cancelText={t('confirm.cancel')}
       />
 
       {/* Waiting List Enrollment Modal */}
@@ -1071,7 +1067,7 @@ export function DirectoryPage() {
           setIsWaitingEnrollModalOpen(false)
           setSelectedWaitingStudent(null)
         }}
-        title={`Enroll ${selectedWaitingStudent?.full_name || 'Student'}`}
+        title={t('modal.enroll_student', { name: selectedWaitingStudent?.full_name || tCommon('labels.student') })}
         size="xl"
       >
         <Suspense fallback={<div className="h-64 bg-slate-50 rounded-xl animate-pulse" />}>
@@ -1083,7 +1079,7 @@ export function DirectoryPage() {
             onEnrollmentSuccess={() => {
               setIsWaitingEnrollModalOpen(false)
               setSelectedWaitingStudent(null)
-            showToast('Student enrolled successfully!', 'success')
+            showToast(t('enroll_toast.success'), 'success')
           }}
           />
         </Suspense>

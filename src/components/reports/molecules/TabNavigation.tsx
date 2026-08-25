@@ -1,4 +1,6 @@
 import { useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavDirection } from '../../../hooks/useNavDirection'
 
 type TabId = 'daily_report' | 'weekly_report' | 'monthly_report' | 'revenue_collections' | 'progress'
 
@@ -28,21 +30,19 @@ export function TabNavigation({
   onTabChange,
   tabs = DEFAULT_TABS
 }: TabNavigationProps) {
+  const { t } = useTranslation('reports')
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
 
   const handleTabClick = useCallback((tabId: TabId) => {
     onTabChange(tabId)
   }, [onTabChange])
 
+  const { getNextIndex } = useNavDirection()
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent, currentId: TabId) => {
     const currentIndex = tabs.findIndex(t => t.id === currentId)
-    let nextIndex: number | null = null
 
-    if (e.key === 'ArrowRight') {
-      nextIndex = (currentIndex + 1) % tabs.length
-    } else if (e.key === 'ArrowLeft') {
-      nextIndex = (currentIndex - 1 + tabs.length) % tabs.length
-    }
+    const nextIndex = getNextIndex(e, currentIndex, tabs.length)
 
     if (nextIndex !== null) {
       e.preventDefault()
@@ -50,7 +50,7 @@ export function TabNavigation({
       onTabChange(nextTab.id)
       tabRefs.current.get(nextTab.id)?.focus()
     }
-  }, [tabs, onTabChange])
+  }, [tabs, onTabChange, getNextIndex])
 
   return (
     <section className="w-full pb-6">
@@ -75,9 +75,9 @@ export function TabNavigation({
               }`}
             >
               <span className="material-symbols-outlined text-sm" aria-hidden="true">{tab.icon}</span>
-              {tab.label}
+              {t(`tabs.${tab.id}`)}
               {tab.comingSoon && (
-                <span className="ml-1 px-1.5 py-0.5 text-[10px] font-semibold bg-slate-200 text-slate-500 rounded-full leading-none">
+                <span className="ms-1 px-1.5 py-0.5 text-[10px] font-semibold bg-slate-200 text-slate-500 rounded-full leading-none">
                   Soon
                 </span>
               )}

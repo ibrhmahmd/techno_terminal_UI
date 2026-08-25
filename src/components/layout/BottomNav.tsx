@@ -1,18 +1,20 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MobileNavSheet } from './MobileNavSheet'
-
-const PRIMARY_TABS = [
-  { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { path: '/groups',    label: 'Groups',    icon: 'group'      },
-  { path: '/directory', label: 'Directory', icon: 'person_search' },
-  { path: '/finance',   label: 'Finance',   icon: 'payments'   },
-]
 
 export function BottomNav() {
   const navigate = useNavigate()
   const location = useLocation()
   const [sheetOpen, setSheetOpen] = useState(false)
+  const { t } = useTranslation('layout')
+
+  const PRIMARY_TABS = [
+    { path: '/dashboard', label: t('nav.dashboard'), icon: 'dashboard' },
+    { path: '/groups',    label: t('nav.groups'),    icon: 'group'      },
+    { path: '/directory', label: t('nav.directory'), icon: 'person_search' },
+    { path: '/finance',   label: t('nav.finance'),   icon: 'payments'   },
+  ]
 
   const isActive = (path: string) => {
     if (path === '/dashboard' && (location.pathname === '/' || location.pathname === '/dashboard')) return true
@@ -25,7 +27,7 @@ export function BottomNav() {
   return (
     <>
       <nav
-        aria-label="Mobile navigation"
+        aria-label={t('aria.mobile_navigation')}
         className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-slate-950 border-t border-slate-800 flex items-stretch lg:hidden"
       >
         {PRIMARY_TABS.map(tab => {
@@ -66,7 +68,7 @@ export function BottomNav() {
         {/* More tab */}
         <button
           onClick={() => setSheetOpen(true)}
-          aria-label="More navigation options"
+          aria-label={t('aria.more_navigation_options')}
           aria-expanded={sheetOpen}
           className="flex-1 flex flex-col items-center justify-center gap-1 relative group"
         >
@@ -88,7 +90,7 @@ export function BottomNav() {
               isMoreActive ? 'text-teal-400' : 'text-slate-500 group-hover:text-slate-300'
             }`}
           >
-            More
+            {t('more')}
           </span>
         </button>
       </nav>

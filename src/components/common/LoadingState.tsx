@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { LoadingSpinner } from './LoadingSpinner'
 
 interface LoadingStateProps {
@@ -8,11 +9,14 @@ interface LoadingStateProps {
 }
 
 export function LoadingState({ 
-  message = 'Loading...',
+  message,
   size = 'md',
   className = '',
   fullHeight = false
 }: LoadingStateProps) {
+  const { t } = useTranslation('common')
+  const displayMessage = message ?? t('loading.loading')
+
   return (
     <div 
       className={`
@@ -22,7 +26,7 @@ export function LoadingState({
       `}
     >
       <LoadingSpinner size={size} />
-      <p className="mt-4 text-slate-600">{message}</p>
+      <p className="mt-4 text-slate-600">{displayMessage}</p>
     </div>
   )
 }

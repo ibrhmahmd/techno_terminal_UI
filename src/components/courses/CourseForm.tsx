@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { AddNewCourseInput, UpdateCourseDTO, Course } from '../../api/academics'
 
@@ -17,6 +18,7 @@ const CATEGORIES = [
 ]
 
 export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseFormProps) {
+  const { t } = useTranslation('courses')
   const [name, setName] = useState(initialData?.name || '')
   const [category, setCategory] = useState(initialData?.category || '')
   const [description, setDescription] = useState(initialData?.description || '')
@@ -34,39 +36,39 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
 
     // Validation
     if (!name.trim()) {
-      setError('Course name is required')
+      setError(t('courseForm.error_name_required'))
       setIsLoading(false)
       return
     }
     if (pricePerLevel <= 0) {
-      setError('Price per level must be greater than 0')
+      setError(t('courseForm.error_price_zero'))
       setIsLoading(false)
       return
     }
     if (sessionsPerLevel <= 0) {
-      setError('Sessions per level must be greater than 0')
+      setError(t('courseForm.error_sessions_zero'))
       setIsLoading(false)
       return
     }
     if (sessionsPerLevel > 100) {
-      setError('Sessions per level cannot exceed 100')
+      setError(t('courseForm.error_sessions_max'))
       setIsLoading(false)
       return
     }
     if (mode === 'create') {
       if (maxLevels <= 0) {
-        setError('Maximum levels must be greater than 0')
+        setError(t('courseForm.error_levels_zero'))
         setIsLoading(false)
         return
       }
       if (maxLevels > 30) {
-        setError('Maximum levels cannot exceed 30')
+        setError(t('courseForm.error_levels_max'))
         setIsLoading(false)
         return
       }
       const totalSessions = maxLevels * sessionsPerLevel
       if (totalSessions > 300) {
-        setError(`Course would generate ${totalSessions} sessions total (${maxLevels} levels × ${sessionsPerLevel} sessions/level). Maximum allowed is 300. Reduce levels or sessions per level.`)
+        setError(t('courseForm.error_total_sessions_max', { total: totalSessions, levels: maxLevels, sessions: sessionsPerLevel }))
         setIsLoading(false)
         return
       }
@@ -85,7 +87,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
       await onSubmit(payload)
     } catch (err: unknown) {
       console.error('[CourseForm] onSubmit threw:', err)
-      const errorMessage = err instanceof Error ? err.message : `Failed to ${mode} course`
+      const errorMessage = err instanceof Error ? err.message : mode === 'create' ? t('courseForm.error_create_failed') : t('courseForm.error_update_failed')
       setError(errorMessage)
     } finally {
       setIsLoading(false)
@@ -105,7 +107,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
       {/* Course Name */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="name" className="text-sm font-medium text-on-surface">
-          Course Name <span className="text-red-500">*</span>
+          {t('courseForm.name_label')} <span className="text-red-500">*</span>
         </label>
         <input
           id="name"
@@ -114,7 +116,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
           onChange={(e) => setName(e.target.value)}
           required
           disabled={isLoading}
-          placeholder="Enter course name..."
+          placeholder={t('courseForm.name_placeholder')}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
         />
       </div>
@@ -122,7 +124,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
       {/* Category */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="category" className="text-sm font-medium text-on-surface">
-          Category
+          {t('courseForm.category_label')}
         </label>
         <select
           id="category"
@@ -131,7 +133,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
           disabled={isLoading}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
         >
-          <option value="">Select a category...</option>
+          <option value="">{t('courseForm.category_placeholder')}</option>
           {CATEGORIES.map((cat) => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
@@ -141,7 +143,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
       {/* Description */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="description" className="text-sm font-medium text-on-surface">
-          Description
+          {t('courseForm.description_label')}
         </label>
         <textarea
           id="description"
@@ -149,7 +151,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
           onChange={(e) => setDescription(e.target.value)}
           disabled={isLoading}
           rows={3}
-          placeholder="Enter course description..."
+          placeholder={t('courseForm.description_placeholder')}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 resize-none"
         />
       </div>
@@ -158,7 +160,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="price_per_level" className="text-sm font-medium text-on-surface">
-            Price Per Level (EGP) <span className="text-red-500">*</span>
+            {t('courseForm.price_per_level')} <span className="text-red-500">*</span>
           </label>
           <input
             id="price_per_level"
@@ -176,7 +178,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="sessions_per_level" className="text-sm font-medium text-on-surface">
-            Sessions Per Level <span className="text-red-500">*</span>
+            {t('courseForm.sessions_per_level')} <span className="text-red-500">*</span>
           </label>
           <input
             id="sessions_per_level"
@@ -195,7 +197,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="max_levels" className="text-sm font-medium text-on-surface">
-            Max Levels <span className="text-red-500">*</span>
+            {t('courseForm.max_levels')} <span className="text-red-500">*</span>
           </label>
           <input
             id="max_levels"
@@ -211,7 +213,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-on-surface">
-            Total Sessions (estimated)
+            {t('courseForm.total_sessions')}
           </label>
           <div className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-600">
             {maxLevels * sessionsPerLevel || 0}
@@ -223,10 +225,9 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
       {maxLevels * sessionsPerLevel > 300 && (
         <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-700">
           <span className="material-symbols-outlined text-lg mt-0.5">warning</span>
-          <span>
-            This course will generate <strong>{maxLevels * sessionsPerLevel} sessions</strong> total
-            ({maxLevels} levels × {sessionsPerLevel} sessions/level). Maximum recommended is 300.
-          </span>
+          <span
+            dangerouslySetInnerHTML={{ __html: t('courseForm.warning_total_sessions', { total: maxLevels * sessionsPerLevel, levels: maxLevels, sessions: sessionsPerLevel }) }}
+          />
         </div>
       )}
 
@@ -242,7 +243,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
             className="w-4 h-4 text-secondary border-slate-300 rounded focus:ring-secondary"
           />
           <label htmlFor="is_active" className="text-sm font-medium text-on-surface cursor-pointer">
-            Active Course
+            {t('courseForm.active_course')}
           </label>
         </div>
       )}
@@ -255,7 +256,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
           disabled={isLoading}
           className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
         >
-          Cancel
+          {t('courseForm.cancel')}
         </button>
         <button
           type="submit"
@@ -263,7 +264,7 @@ export function CourseForm({ initialData, onSubmit, onCancel, mode }: CourseForm
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
         >
           {isLoading && <LoadingSpinner size="sm" />}
-          {mode === 'create' ? 'Create Course' : 'Update Course'}
+          {mode === 'create' ? t('courseForm.create') : t('courseForm.update')}
         </button>
       </div>
     </form>

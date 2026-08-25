@@ -62,7 +62,7 @@ export function TeamGroupBySelector({
             {opt.label}
           </button>
         ))}
-        <div className="ml-auto flex items-center gap-2 pl-2 border-l border-slate-300">
+        <div className="ms-auto flex items-center gap-2 ps-2 border-l border-slate-300">
           <span className="text-xs text-slate-500">Sub-group:</span>
           <select
             value={subgroupBy ?? ''}

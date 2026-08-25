@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { StudentListItem } from '../../api/crm'
 import { getRecentItems, addRecentItem, type RecentItem } from '../../utils/recentCache'
 
@@ -19,6 +20,7 @@ export function StudentComboboxInner({
   students, 
   isLoading 
 }: StudentComboboxProps) {
+  const { t } = useTranslation('common')
   const [groupByMode, setGroupByMode] = useState<'alphabetical' | 'status' | 'gender'>('alphabetical')
   const [recentStudents, setRecentStudents] = useState<RecentItem[]>(() =>
     getRecentItems('techno_recent_students')
@@ -159,13 +161,13 @@ export function StudentComboboxInner({
               {value.full_name}
               <span className="material-symbols-outlined text-[16px] text-slate-400 select-none">open_in_new</span>
               {value.has_unpaid_balance && (
-                <span className="material-symbols-outlined text-[16px] text-amber-500 font-bold" aria-hidden="true" title="Has unpaid balance">warning</span>
+                <span className="material-symbols-outlined text-[16px] text-amber-500 font-bold" aria-hidden="true" title={t('combobox.has_unpaid_balance')}>warning</span>
               )}
             </a>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 mt-1">
               <span className="font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">#ID: {value.id}</span>
               <span>•</span>
-              <span>{value.phone || 'No phone'}</span>
+              <span>{value.phone || t('combobox.no_phone')}</span>
               <span>•</span>
               <span className="capitalize">{value.status}</span>
               {value.gender && (
@@ -183,7 +185,7 @@ export function StudentComboboxInner({
               {value.current_group_name && (
                 <>
                   <span>•</span>
-                  <span className="bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded font-medium">Group: {value.current_group_name}</span>
+                  <span className="bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded font-medium">{t('combobox.group_label')} {value.current_group_name}</span>
                 </>
               )}
             </div>
@@ -199,7 +201,7 @@ export function StudentComboboxInner({
           aria-label={`Change student selection (currently ${value.full_name})`}
           className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
         >
-          Change
+          {t('combobox.change')}
         </button>
       </div>
     )
@@ -211,7 +213,7 @@ export function StudentComboboxInner({
     <div ref={wrapperRef} className="relative w-full">
       {/* Search Input Trigger */}
       <div className="relative">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[20px] text-slate-400" aria-hidden="true">search</span>
+        <span className="absolute start-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[20px] text-slate-400" aria-hidden="true">search</span>
         <input
           type="text"
           value={search}
@@ -220,9 +222,9 @@ export function StudentComboboxInner({
             setIsOpen(true)
           }}
           onFocus={() => setIsOpen(true)}
-          placeholder="Search student (min 2 chars)..."
-          aria-label="Search student"
-          className="w-full pl-10 pr-10 py-3 text-sm border border-slate-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20 focus-visible:border-secondary transition-colors placeholder:text-slate-400"
+          placeholder={t('combobox.search_student')}
+          aria-label={t('combobox.search_student_aria')}
+          className="w-full ps-10 pe-10 py-3 text-sm border border-slate-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20 focus-visible:border-secondary transition-colors placeholder:text-slate-400"
         />
         {search && (
           <button
@@ -231,8 +233,8 @@ export function StudentComboboxInner({
               setSearch('')
               setIsOpen(true)
             }}
-            aria-label="Clear search"
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 flex items-center justify-center"
+            aria-label={t('combobox.clear_search')}
+            className="absolute end-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 flex items-center justify-center"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
           </button>
@@ -243,15 +245,15 @@ export function StudentComboboxInner({
       {isOpen && (
         <div
           role="listbox"
-          aria-label="Student results"
-          className={`absolute z-50 left-0 right-0 md:w-[550px] w-screen max-w-[calc(100vw-2rem)] bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
+          aria-label={t('combobox.student_results')}
+          className={`absolute z-50 start-0 end-0 md:w-[550px] w-screen max-w-[calc(100vw-2rem)] bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
             dropdownAbove ? 'bottom-full mb-2' : 'top-full mt-2'
           }`}
         >
           {/* GroupBy Options Selector (Only when searching) */}
           {isSearching && (
             <div className="flex items-center gap-1.5 p-0.5 rounded-lg bg-blue-50/50 border border-blue-100/50 text-[11px] w-fit">
-              <span className="text-slate-400 px-2 font-medium">Group by:</span>
+              <span className="text-slate-400 px-2 font-medium">{t('combobox.group_by')}</span>
               {(['alphabetical', 'status', 'gender'] as const).map((mode) => {
                 const isActive = groupByMode === mode
                 const labels = { alphabetical: 'A-Z', status: 'status', gender: 'gender' }
@@ -327,10 +329,10 @@ export function StudentComboboxInner({
               <span className="material-symbols-outlined text-4xl text-slate-200" aria-hidden="true">grid_view</span>
               <p className="text-sm font-medium">
                 {search.length === 0
-                  ? "No recently selected students. Type to search."
+                  ? t('combobox.no_recently_selected')
                   : search.length === 1
-                    ? "Type at least 2 characters to search students."
-                    : `No students found matching "${search}"`}
+                    ? t('combobox.min_chars')
+                    : t('combobox.no_results_student', { search })}
               </p>
             </div>
           ) : (
@@ -349,18 +351,18 @@ export function StudentComboboxInner({
                       setSearch('')
                       setIsOpen(false)
                     }}
-                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-4 rounded-xl cursor-pointer transition-colors flex flex-col justify-between gap-2 shadow-sm hover:shadow-md text-left w-full"
+                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-4 rounded-xl cursor-pointer transition-colors flex flex-col justify-between gap-2 shadow-sm hover:shadow-md text-start w-full"
                   >
                     <div>
                       <div className="flex justify-between items-start gap-2">
                         <h4 className="font-headline font-semibold text-slate-800 text-sm leading-tight line-clamp-1 flex items-center gap-1.5">
                           {s.full_name}
                           {s.has_unpaid_balance && (
-                            <span className="material-symbols-outlined text-[16px] text-amber-500 font-bold" aria-hidden="true" title="Has unpaid balance">warning</span>
+                            <span className="material-symbols-outlined text-[16px] text-amber-500 font-bold" aria-hidden="true" title={t('combobox.has_unpaid_balance')}>warning</span>
                           )}
                         </h4>
                         {recentIdSet.has(s.id) && (
-                          <span className="material-symbols-outlined text-[15px] text-amber-500 font-bold font-headline" aria-hidden="true" title="Recently used">history</span>
+                          <span className="material-symbols-outlined text-[15px] text-amber-500 font-bold font-headline" aria-hidden="true" title={t('combobox.recently_used')}>history</span>
                         )}
                       </div>
                       {s.phone && (

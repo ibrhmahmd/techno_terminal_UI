@@ -1,5 +1,6 @@
 import { useMemo, useState, useRef, useEffect, type FormEvent } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useResetPasswordWithToken } from '../hooks/useAuthQueries'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { AuthLayout } from '../components/auth/AuthLayout'
@@ -15,6 +16,7 @@ function parseRecoveryToken(hash: string): { token: string; valid: true } | { to
 }
 
 export function ResetPasswordPage() {
+  const { t } = useTranslation('common')
   const location = useLocation()
   const { token, valid } = useMemo(() => parseRecoveryToken(location.hash), [location.hash])
   const [phase, setPhase] = useState<Phase>(valid ? 'form' : 'invalid')
@@ -37,11 +39,11 @@ export function ResetPasswordPage() {
     e.preventDefault()
     setError(null)
     if (newPassword.length < 12) {
-      setError('Password must be at least 12 characters')
+      setError(t('auth.resetPasswordPage.passwordTooShort'))
       return
     }
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match')
+      setError(t('auth.resetPasswordPage.passwordMismatch'))
       return
     }
     if (!token) {
@@ -53,21 +55,21 @@ export function ResetPasswordPage() {
       await resetMutation.mutateAsync({ recoveryToken: token, data: { new_password: newPassword } })
       setPhase('success')
     } catch {
-      setError('This link has expired or has already been used. Please request a new reset link.')
+      setError(t('auth.resetPasswordPage.invalidLink'))
     }
   }
 
   if (phase === 'invalid') {
     return (
-      <AuthLayout title="Invalid or Expired Link" subtitle="The password reset link is invalid, incomplete, or has expired.">
+      <AuthLayout title={t('auth.resetPasswordPage.invalidTitle')} subtitle={t('auth.resetPasswordPage.invalidSubtitle')}>
         <div ref={invalidRef} tabIndex={-1} className="text-center focus:outline-none">
           <span className="material-symbols-outlined text-4xl text-red-500 mb-4" aria-hidden="true">error</span>
           <Link
             to="/forgot-password"
             className="inline-flex items-center gap-2 text-sm font-medium text-secondary hover:underline focus:outline-none focus:ring-2 focus:ring-secondary/20 rounded"
           >
-            <span className="material-symbols-outlined text-base" aria-hidden="true">arrow_back</span>
-            Request New Reset Link
+            <span className="material-symbols-outlined text-base icon-flip-rtl" aria-hidden="true">arrow_back</span>
+            {t('auth.resetPasswordPage.requestNewLink')}
           </Link>
         </div>
       </AuthLayout>
@@ -76,14 +78,14 @@ export function ResetPasswordPage() {
 
   if (phase === 'success') {
     return (
-      <AuthLayout title="Password Reset Complete" subtitle="Your password has been successfully updated. You can now sign in with your new password.">
+      <AuthLayout title={t('auth.resetPasswordPage.completeTitle')} subtitle={t('auth.resetPasswordPage.completeSubtitle')}>
         <div ref={successRef} tabIndex={-1} className="text-center focus:outline-none">
           <span className="material-symbols-outlined text-4xl text-green-500 mb-4" aria-hidden="true">check_circle</span>
           <Link
             to="/login"
             className="inline-flex items-center gap-2 text-sm font-medium text-secondary hover:underline focus:outline-none focus:ring-2 focus:ring-secondary/20 rounded"
           >
-            Sign In
+            {t('auth.resetPasswordPage.signIn')}
           </Link>
         </div>
       </AuthLayout>
@@ -91,7 +93,7 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <AuthLayout title="Choose New Password" subtitle="Enter a secure new password for your account">
+    <AuthLayout title={t('auth.resetPasswordPage.title')} subtitle={t('auth.resetPasswordPage.subtitle')}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {error && (
           <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700" role="alert">
@@ -102,14 +104,14 @@ export function ResetPasswordPage() {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="new-password" className="text-sm font-medium text-on-surface">
-            New Password
+            {t('auth.resetPasswordPage.newPassword')}
           </label>
           <input
             id="new-password"
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Min 12 characters"
+            placeholder={t('auth.resetPasswordPage.minChars')}
             required
             minLength={12}
             disabled={resetMutation.isPending}
@@ -119,14 +121,14 @@ export function ResetPasswordPage() {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="confirm-password" className="text-sm font-medium text-on-surface">
-            Confirm Password
+            {t('auth.resetPasswordPage.confirmPassword')}
           </label>
           <input
             id="confirm-password"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirm new password"
+            placeholder={t('auth.resetPasswordPage.confirmPlaceholder')}
             required
             minLength={12}
             disabled={resetMutation.isPending}
@@ -142,15 +144,15 @@ export function ResetPasswordPage() {
           {resetMutation.isPending ? (
             <LoadingSpinner size="sm" variant="light" />
           ) : (
-            'Reset Password'
+            t('auth.resetPasswordPage.resetButton')
           )}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-on-surface-variant">
-        Remember your password?{' '}
+        {t('auth.resetPasswordPage.rememberPassword')}{' '}
         <Link to="/login" className="text-secondary font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-secondary/20 rounded">
-          Sign In
+          {t('auth.resetPasswordPage.signIn')}
         </Link>
       </p>
     </AuthLayout>

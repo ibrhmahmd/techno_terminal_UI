@@ -2,6 +2,8 @@
 // Reusable pill/segmented control component for selecting from mutually exclusive options
 // Supports icons, optional dot indicators, and full keyboard accessibility
 
+import { useNavDirection } from '../../hooks/useNavDirection'
+
 export interface PillOption {
   value: string
   label: string
@@ -26,6 +28,8 @@ export function PillSelector({
   disabled = false,
   required = false,
 }: PillSelectorProps) {
+  const { isRTL } = useNavDirection()
+
   const handleKeyDown = (e: React.KeyboardEvent, currentIndex: number) => {
     if (disabled) return
 
@@ -34,12 +38,16 @@ export function PillSelector({
     switch (e.key) {
       case 'ArrowLeft':
         e.preventDefault()
-        nextIndex = currentIndex > 0 ? currentIndex - 1 : options.length - 1
+        nextIndex = isRTL
+          ? (currentIndex < options.length - 1 ? currentIndex + 1 : 0)
+          : (currentIndex > 0 ? currentIndex - 1 : options.length - 1)
         onChange(options[nextIndex].value)
         break
       case 'ArrowRight':
         e.preventDefault()
-        nextIndex = currentIndex < options.length - 1 ? currentIndex + 1 : 0
+        nextIndex = isRTL
+          ? (currentIndex > 0 ? currentIndex - 1 : options.length - 1)
+          : (currentIndex < options.length - 1 ? currentIndex + 1 : 0)
         onChange(options[nextIndex].value)
         break
       case 'Home':

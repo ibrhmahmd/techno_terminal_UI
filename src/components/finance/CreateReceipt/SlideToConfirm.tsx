@@ -100,7 +100,7 @@ export function SlideToConfirm({ onConfirm, label }: SlideToConfirmProps) {
             : 'bg-secondary border-secondary text-white hover:scale-102 active:scale-98'
         }`}
       >
-        <span className="material-symbols-outlined text-xl select-none font-extrabold animate-pulse">
+        <span className="material-symbols-outlined text-xl select-none font-extrabold animate-pulse icon-flip-rtl">
           {isConfirmed ? 'check' : 'chevron_right'}
         </span>
       </div>

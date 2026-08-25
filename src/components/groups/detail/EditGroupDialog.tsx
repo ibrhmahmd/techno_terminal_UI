@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { X, Calendar as CalendarIcon, BookOpen, Clock, FileText } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
 import { type EnrichedGroupPublic, type UpdateGroupDTO } from '../../../api/academics'
 import { useAllEmployees } from '../../../hooks/useAllEmployees'
 import { useCourses } from '../../../hooks/useCourses'
 import { formatTimeInput } from '../../../utils/formatting'
 import { SearchablePillSelector } from '../../common/SearchablePillSelector'
+import { getTranslatedDays } from '../../../utils/dayTranslation'
 
 interface EditGroupDialogProps {
   isOpen: boolean
@@ -15,10 +17,11 @@ interface EditGroupDialogProps {
   triggerRef?: React.RefObject<HTMLElement | null>
 }
 
-const DAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 const STATUSES = ['active', 'inactive', 'archived', 'completed']
 
 export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: EditGroupDialogProps) {
+  const { t } = useTranslation('groups')
+  const translatedDays = getTranslatedDays(t)
   const [name, setName] = useState(group.name || '')
   const [courseId, setCourseId] = useState<string | number | null>(group.course_id ?? null)
   const [instructorId, setInstructorId] = useState<string | number | null>(group.instructor_id ?? null)
@@ -121,13 +124,13 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
         <div className="flex items-center justify-between p-6 bg-surface-container-lowest border-b border-surface-container-low">
           <div>
             <h2 id="edit-group-title" className="text-xl font-headline font-bold text-slate-900">
-              Edit Group Settings
+              {t('editGroupDialog.title')}
             </h2>
             <p className="text-sm text-slate-500 mt-1">
-              Modify configuration and scheduling for this group.
+              {t('editGroupDialog.subtitle')}
             </p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-lg transition-colors" aria-label="Close dialog">
+          <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-lg transition-colors" aria-label={t('editGroupDialog.close_aria')}>
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
@@ -138,12 +141,12 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
           <section>
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-secondary" />
-              General Configuration
+              {t('editGroupDialog.general_config')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-surface-container-lowest p-4 rounded-lg border border-surface-container-low">
               <div className="col-span-1 md:col-span-2">
                 <label htmlFor="group-name" className="block text-sm font-medium text-slate-700 mb-1">
-                  Group Name
+                  {t('editGroupDialog.group_name')}
                 </label>
                 <input
                   id="group-name"
@@ -157,33 +160,33 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
 
               <div className="col-span-1 md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Course
+                  {t('editGroupDialog.course')}
                 </label>
                 <SearchablePillSelector
                   options={courses.map(c => ({ id: c.id, label: c.name, subLabel: c.category }))}
                   value={courseId}
                   onChange={setCourseId}
-                  placeholder="Search courses..."
+                  placeholder={t('editGroupDialog.search_courses')}
                   disabled={isLoadingCourses}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Instructor
+                  {t('editGroupDialog.instructor')}
                 </label>
                 <SearchablePillSelector
                   options={instructors.map(emp => ({ id: emp.id, label: emp.full_name, subLabel: emp.job_title }))}
                   value={instructorId}
                   onChange={setInstructorId}
-                  placeholder="Search instructors..."
+                  placeholder={t('editGroupDialog.search_instructors')}
                   disabled={isLoadingEmployees}
                 />
               </div>
 
               <div>
                 <label htmlFor="capacity-input" className="block text-sm font-medium text-slate-700 mb-1">
-                  Max Capacity
+                  {t('editGroupDialog.max_capacity')}
                 </label>
                 <input
                   id="capacity-input"
@@ -199,7 +202,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
 
               <div className="col-span-1 md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Group Status
+                  {t('editGroupDialog.group_status')}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {STATUSES.map(s => {
@@ -238,12 +241,12 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
           <section>
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
               <CalendarIcon className="w-4 h-4 text-secondary" />
-              Default Schedule
+              {t('editGroupDialog.default_schedule')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-surface-container-lowest p-4 rounded-lg border border-surface-container-low">
               <div>
                 <label htmlFor="schedule-day" className="block text-sm font-medium text-slate-700 mb-1">
-                  Day
+                  {t('editGroupDialog.day')}
                 </label>
                 <select
                   id="schedule-day"
@@ -251,16 +254,16 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
                   onChange={(e) => setDay(e.target.value)}
                   className="w-full px-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
                 >
-                  <option value="">No default day</option>
-                  {DAYS.map((d) => (
-                    <option key={d} value={d}>{d}</option>
+                  <option value="">{t('editGroupDialog.no_default_day')}</option>
+                  {translatedDays.map((d) => (
+                    <option key={d.api} value={d.api}>{d.label}</option>
                   ))}
                 </select>
               </div>
               
               <div>
                 <label htmlFor="start-time" className="block text-sm font-medium text-slate-700 mb-1">
-                  Start Time
+                  {t('editGroupDialog.start_time')}
                 </label>
                 <div className="relative">
                   <input
@@ -268,15 +271,15 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
+                    className="w-full ps-9 pe-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
                   />
-                  <Clock className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
+                  <Clock className="w-4 h-4 text-slate-400 absolute start-1 top-2.5 pointer-events-none" />
                 </div>
               </div>
 
               <div>
                 <label htmlFor="end-time" className="block text-sm font-medium text-slate-700 mb-1">
-                  End Time
+                  {t('editGroupDialog.end_time')}
                 </label>
                 <div className="relative">
                   <input
@@ -284,9 +287,9 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
+                    className="w-full ps-9 pe-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
                   />
-                  <Clock className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
+                  <Clock className="w-4 h-4 text-slate-400 absolute start-1 top-2.5 pointer-events-none" />
                 </div>
               </div>
             </div>
@@ -296,12 +299,12 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
           <section>
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
               <FileText className="w-4 h-4 text-secondary" />
-              Additional Notes
+              {t('editGroupDialog.additional_notes')}
             </h3>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
-              placeholder="Add any internal notes about this group..."
+              placeholder={t('editGroupDialog.notes_placeholder')}
               className="w-full px-3 py-3 bg-surface-container-lowest border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none min-h-[100px] resize-y transition-all rounded-none"
             />
           </section>
@@ -314,7 +317,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
             className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-surface-container rounded-lg transition-colors"
             disabled={isLoading}
           >
-            Cancel
+            {t('editGroupDialog.cancel')}
           </button>
           <button
             type="submit"
@@ -323,7 +326,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
             className="px-6 py-2 bg-secondary text-white text-sm font-bold rounded-lg hover:bg-secondary/90 disabled:opacity-50 flex items-center gap-2 transition-colors shadow-sm"
           >
             {isLoading && <LoadingSpinner size="sm" />}
-            Save Changes
+            {t('editGroupDialog.save_changes')}
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { EnrollPanel } from '../components/enrollments/EnrollPanel'
 import { ModifyEnrollmentPanel } from '../components/enrollments/ModifyEnrollmentPanel'
@@ -13,6 +14,7 @@ type PanelType = 'create' | 'modify' | 'drop'
 const PANEL_ORDER: PanelType[] = ['create', 'modify', 'drop']
 
 export function EnrollmentsPage() {
+  const { t } = useTranslation('enrollments')
   const [searchParams, setSearchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')
 
@@ -49,34 +51,34 @@ export function EnrollmentsPage() {
 
   const metricItems = useMemo(() => [
     {
-      label: 'Create',
+      label: t('tabs.create'),
       icon: 'person_add',
       color: 'secondary' as const,
       onClick: () => handleTabChange('create'),
     },
     {
-      label: 'Modify',
+      label: t('tabs.modify'),
       icon: 'edit_document',
       color: 'blue' as const,
       onClick: () => handleTabChange('modify'),
     },
     {
-      label: 'Drop',
+      label: t('tabs.drop'),
       icon: 'person_remove',
       color: 'amber' as const,
       onClick: () => handleTabChange('drop'),
     },
-  ], [])
+  ], [t])
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNavbar activePage="Enrollments" />
+      <TopNavbar activePage={t('page_title')} />
 
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-6">
         <div className="max-w-[1400px] mx-auto">
-          <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">Enrollments</h1>
-          <p className="text-sm text-on-surface-variant mt-2">Create new enrollments, modify financial details, or drop students</p>
+          <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">{t('page_title')}</h1>
+          <p className="text-sm text-on-surface-variant mt-2">{t('subtitle')}</p>
         </div>
       </header>
 

@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 export function MobileDashboardFAB() {
   const [isOpen, setIsOpen] = useState(false)
   const fabRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
+  const { t } = useTranslation('dashboard')
 
   // Close when clicking outside or pressing Escape
   useEffect(() => {
@@ -51,7 +53,7 @@ export function MobileDashboardFAB() {
             }}
             className="flex items-center gap-3 bg-white text-slate-700 font-medium px-4 py-3 rounded-full shadow-lg border border-slate-200 active:bg-slate-50"
           >
-            <span className="text-sm">Quick Register</span>
+            <span className="text-sm">{t('fab.quick_register')}</span>
             <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
               <span className="material-symbols-outlined text-[20px]">person_add</span>
             </div>
@@ -64,7 +66,7 @@ export function MobileDashboardFAB() {
             }}
             className="flex items-center gap-3 bg-white text-slate-700 font-medium px-4 py-3 rounded-full shadow-lg border border-slate-200 active:bg-slate-50"
           >
-            <span className="text-sm">Create Payment</span>
+            <span className="text-sm">{t('fab.create_payment')}</span>
             <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
               <span className="material-symbols-outlined text-[20px]">payments</span>
             </div>
@@ -74,7 +76,7 @@ export function MobileDashboardFAB() {
         {/* Main FAB */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          aria-label={isOpen ? 'Close actions' : 'Open actions'}
+          aria-label={isOpen ? t('fab.close_actions') : t('fab.open_actions')}
           aria-expanded={isOpen}
           className="w-14 h-14 bg-secondary text-white rounded-full shadow-lg flex items-center justify-center transition-transform active:scale-95 focus:outline-none focus:ring-4 focus:ring-teal-500/30"
         >

@@ -7,6 +7,7 @@ import { formatDate } from '../../utils/formatting'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { InstructorCombobox } from '../staff/InstructorCombobox'
 import type { EmployeeListItem } from '../../api/hr'
+import { useTranslation } from 'react-i18next'
 
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
@@ -54,21 +55,24 @@ function getUserStatus(user: User): 'Active' | 'Invited' | 'Deactivated' {
 }
 
 function RoleBadge({ role }: { role: string }) {
+  const { t } = useTranslation('common')
   const style = ROLE_STYLES[role] || { label: role, bg: 'bg-slate-500/10', text: 'text-slate-600', icon: 'badge' }
   return (
     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[6px] text-xs font-semibold ${style.bg} ${style.text}`}>
       <span className="material-symbols-outlined text-xs" aria-hidden="true">{style.icon}</span>
-      {style.label}
+      {t(`settings_users.${role}`)}
     </span>
   )
 }
 
 function StatusBadge({ status }: { status: 'Active' | 'Invited' | 'Deactivated' }) {
+  const { t } = useTranslation('common')
   const style = STATUS_STYLES[status]
+  const statusKey = status === 'Active' ? 'active' : status === 'Deactivated' ? 'deactivated' : 'active'
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-xs font-semibold ${style.bg} ${style.text}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-      {style.label}
+      {t(`settings_users.${statusKey}`)}
     </span>
   )
 }
@@ -84,6 +88,7 @@ interface UserCardProps {
 const ROLE_OPTIONS = ['instructor', 'admin', 'system_admin'] as const
 
 function UserCard({ user, currentUser, onReset, onDeactivate, onReactivate }: UserCardProps) {
+  const { t } = useTranslation('common')
   const updateUserMutation = useUpdateUser()
   const [selectedRole, setSelectedRole] = useState(user.role)
   const isSelf = currentUser?.id === user.id
@@ -106,12 +111,12 @@ function UserCard({ user, currentUser, onReset, onDeactivate, onReactivate }: Us
           <div className="flex items-center gap-2 mb-0.5">
             <h3 className="font-headline font-semibold text-on-surface truncate">{user.username}</h3>
             {isSelf && (
-              <span className="text-[10px] px-1.5 py-0.5 bg-secondary/10 text-secondary rounded-[6px] font-semibold shrink-0">You</span>
+              <span className="text-[10px] px-1.5 py-0.5 bg-secondary/10 text-secondary rounded-[6px] font-semibold shrink-0">{t('settings_users.you')}</span>
             )}
           </div>
           <p className="text-sm text-on-surface-variant truncate font-mono">{user.email}</p>
         </div>
-        <div className="flex items-center gap-2 shrink-0 ml-2">
+        <div className="flex items-center gap-2 shrink-0 ms-2">
           {isSelf ? (
             <RoleBadge role={user.role} />
           ) : (
@@ -122,7 +127,7 @@ function UserCard({ user, currentUser, onReset, onDeactivate, onReactivate }: Us
               className="bg-transparent border border-slate-200 rounded-[6px] px-2 py-1 text-xs font-semibold outline-none focus:border-secondary transition-colors"
             >
               {ROLE_OPTIONS.map((r) => (
-                <option key={r} value={r}>{ROLE_STYLES[r]?.label ?? r}</option>
+                <option key={r} value={r}>{t(`settings_users.${r}`)}</option>
               ))}
             </select>
           )}
@@ -137,12 +142,12 @@ function UserCard({ user, currentUser, onReset, onDeactivate, onReactivate }: Us
       <div className="space-y-1 mb-4">
         <div className="flex items-center gap-2 text-on-surface-variant">
           <span className="material-symbols-outlined text-[16px]" aria-hidden="true">schedule</span>
-          <span className="text-sm">{user.last_login ? formatDate(user.last_login) : 'Never logged in'}</span>
+          <span className="text-sm">{user.last_login ? formatDate(user.last_login) : t('settings_users.never_logged_in')}</span>
         </div>
         {user.created_at && (
           <div className="flex items-center gap-2 text-on-surface-variant">
             <span className="material-symbols-outlined text-[16px]" aria-hidden="true">calendar_today</span>
-            <span className="text-sm">Joined {formatDate(user.created_at)}</span>
+            <span className="text-sm">{t('settings_users.joined', { date: formatDate(user.created_at) })}</span>
           </div>
         )}
       </div>
@@ -155,7 +160,7 @@ function UserCard({ user, currentUser, onReset, onDeactivate, onReactivate }: Us
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-amber-700 bg-amber-500/10 rounded-lg hover:bg-amber-500/15 transition-colors"
           >
             <span className="material-symbols-outlined text-lg" aria-hidden="true">person_off</span>
-            Deactivate
+            {t('settings_users.deactivate')}
           </button>
         )}
         {!isSelf && !user.is_active && (
@@ -164,7 +169,7 @@ function UserCard({ user, currentUser, onReset, onDeactivate, onReactivate }: Us
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-secondary bg-secondary/15 rounded-lg hover:bg-secondary/20 transition-colors"
           >
             <span className="material-symbols-outlined text-lg" aria-hidden="true">how_to_reg</span>
-            Reactivate
+            {t('settings_users.reactivate')}
           </button>
         )}
         <button
@@ -173,7 +178,7 @@ function UserCard({ user, currentUser, onReset, onDeactivate, onReactivate }: Us
           className={`flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${isSelf || !user.is_active ? 'flex-1' : ''} ${!isSelf && !user.is_active ? 'text-slate-700 bg-slate-50 hover:bg-slate-100' : 'flex-1 text-secondary bg-secondary-container/30 hover:bg-secondary-container/50'}`}
         >
           <span className="material-symbols-outlined text-lg" aria-hidden="true">lock_reset</span>
-          Reset
+          {t('settings_users.reset')}
         </button>
       </div>
     </div>
@@ -185,6 +190,7 @@ interface InviteModalProps {
 }
 
 function InviteModal({ onClose }: InviteModalProps) {
+  const { t } = useTranslation('common')
   const overlayRef = useRef<HTMLDivElement>(null)
   const inviteUserMutation = useInviteUser()
 
@@ -203,11 +209,11 @@ function InviteModal({ onClose }: InviteModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedEmployee) {
-      setError('Please select an employee')
+      setError(t('settings_users.please_select_employee'))
       return
     }
     if (!selectedEmployee.is_active) {
-      setError('Cannot send invite to inactive employee')
+      setError(t('settings_users.cannot_invite_inactive'))
       return
     }
     setError(null)
@@ -222,7 +228,7 @@ function InviteModal({ onClose }: InviteModalProps) {
       if (err instanceof Error) {
         setError(err.message)
       } else {
-        setError('Failed to create user. Please try again.')
+        setError(t('settings_users.failed_create_user'))
       }
     }
   }
@@ -233,11 +239,11 @@ function InviteModal({ onClose }: InviteModalProps) {
         <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-md">
           <div className="text-center">
             <span className="material-symbols-outlined text-4xl text-secondary mb-3" aria-hidden="true">mail</span>
-            <h3 className="font-headline text-lg font-semibold text-on-surface mb-2">Invite Sent!</h3>
+            <h3 className="font-headline text-lg font-semibold text-on-surface mb-2">{t('settings_users.invite_sent')}</h3>
             <p className="text-sm text-slate-600 mb-4">
-              Invite expires at {formatDate(result.invite_expires_at)}
+              {t('settings_users.invite_expires', { date: formatDate(result.invite_expires_at) })}
             </p>
-            <button onClick={onClose} className="px-4 py-2 bg-secondary text-white rounded-[6px] font-medium hover:opacity-90 duration-120">Done</button>
+            <button onClick={onClose} className="px-4 py-2 bg-secondary text-white rounded-[6px] font-medium hover:opacity-90 duration-120">{t('settings_users.done')}</button>
           </div>
         </div>
       </div>
@@ -247,21 +253,21 @@ function InviteModal({ onClose }: InviteModalProps) {
   return (
     <div ref={overlayRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label="Invite user">
       <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-md">
-        <h3 className="font-headline text-lg font-semibold text-on-surface mb-4">Invite User</h3>
+        <h3 className="font-headline text-lg font-semibold text-on-surface mb-4">{t('settings_users.invite_user_title')}</h3>
 
         {error && <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700 font-semibold" role="alert">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Employee</label>
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{t('settings_users.employee')}</label>
             <InstructorCombobox
               value={selectedEmployee}
               onChange={setSelectedEmployee}
             />
-            {!selectedEmployee && <p className="text-xs text-slate-500 mt-1">Search and select an employee to invite</p>}
+            {!selectedEmployee && <p className="text-xs text-slate-500 mt-1">{t('settings_users.search_select_employee_invite')}</p>}
           </div>
           <div>
-            <label htmlFor="invite-email" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Email *</label>
+            <label htmlFor="invite-email" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{t('settings_users.email_label')}</label>
             <input
               id="invite-email"
               type="email"
@@ -272,26 +278,26 @@ function InviteModal({ onClose }: InviteModalProps) {
             />
           </div>
           <div>
-            <label htmlFor="invite-role" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Role *</label>
+            <label htmlFor="invite-role" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{t('settings_users.role_label')}</label>
             <select
               id="invite-role"
               value={role}
               onChange={(e) => { const v = e.target.value; if (v === 'admin' || v === 'system_admin') setRole(v as 'admin' | 'system_admin') }}
               className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
             >
-              <option value="admin">Admin</option>
-              <option value="system_admin">System Admin</option>
+              <option value="admin">{t('settings_users.role_admin')}</option>
+              <option value="system_admin">{t('settings_users.role_system_admin')}</option>
             </select>
           </div>
           <div className="flex gap-3 pt-4">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-[6px] text-sm font-medium hover:bg-slate-200 duration-120">Cancel</button>
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-[6px] text-sm font-medium hover:bg-slate-200 duration-120">{t('common:buttons.cancel')}</button>
             <button
               type="submit"
               disabled={inviteUserMutation.isPending || !selectedEmployee || !selectedEmployee?.is_active}
               className="flex-1 px-4 py-2 bg-secondary text-white rounded-[6px] font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 duration-120"
             >
               {inviteUserMutation.isPending && <LoadingSpinner size="sm" variant="light" />}
-              Send Invite
+              {t('settings_users.send_invite')}
             </button>
           </div>
         </form>
@@ -301,6 +307,7 @@ function InviteModal({ onClose }: InviteModalProps) {
 }
 
 export function UsersTab() {
+  const { t } = useTranslation('common')
   const createOverlayRef = useRef<HTMLDivElement>(null)
   const resetOverlayRef = useRef<HTMLDivElement>(null)
   const deactivateConfirmRef = useRef<HTMLDivElement>(null)
@@ -363,15 +370,15 @@ export function UsersTab() {
     setCreateError(null)
     setCreateSuccess(null)
     if (!newUser.selectedEmployee) {
-      setCreateError('Please select an employee')
+      setCreateError(t('settings_users.please_select_employee'))
       return
     }
     if (!newUser.selectedEmployee.is_active) {
-      setCreateError('Cannot create account for inactive employee')
+      setCreateError(t('settings_users.cannot_create_inactive'))
       return
     }
     if (newUser.password.length < 12) {
-      setCreateError('Password must be at least 12 characters')
+      setCreateError(t('settings_users.password_min_chars'))
       return
     }
     try {
@@ -388,7 +395,7 @@ export function UsersTab() {
       if (err instanceof Error) {
         setCreateError(err.message)
       } else {
-        setCreateError('Failed to create user. Please try again.')
+        setCreateError(t('settings_users.failed_create_user'))
       }
     }
   }
@@ -400,14 +407,14 @@ export function UsersTab() {
     setResetSuccess(null)
     try {
       await resetPasswordMutation.mutateAsync({ id: selectedUser.id, data: { new_password: newPassword } })
-      setResetSuccess(`Password reset successfully for ${selectedUser.username}!`)
+      setResetSuccess(t('settings_users.password_reset_success', { username: selectedUser.username }))
       setNewPassword('')
       setTimeout(() => { setShowResetModal(false); setSelectedUser(null) }, 2000)
     } catch (err: unknown) {
       if (err instanceof Error) {
         setResetError(err.message)
       } else {
-        setResetError('Failed to reset password. Please try again.')
+        setResetError(t('settings_users.failed_reset_password'))
       }
     }
   }
@@ -434,15 +441,15 @@ export function UsersTab() {
   return (
     <div className="space-y-6 font-body">
       <div className="flex items-center justify-between">
-        <h2 className="font-headline text-xl font-semibold text-on-surface">User Management</h2>
+        <h2 className="font-headline text-xl font-semibold text-on-surface">{t('settings_users.user_management')}</h2>
         <div className="flex gap-2">
           <button onClick={() => setShowInviteModal(true)} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-[6px] font-medium hover:bg-slate-200 transition-colors flex items-center gap-2 text-sm duration-120">
             <span className="material-symbols-outlined text-base" aria-hidden="true">mail</span>
-            Invite User
+            {t('settings_users.invite_user')}
           </button>
           <button onClick={() => { setNewUser({ selectedEmployee: null, employee_id: 0, username: '', password: '', role: 'admin' }); setCreateError(null); setCreateSuccess(null); setShowCreateModal(true) }} className="px-4 py-2 bg-secondary text-white rounded-[6px] font-medium hover:opacity-90 transition-colors flex items-center gap-2 text-sm duration-120">
             <span className="material-symbols-outlined text-base" aria-hidden="true">add</span>
-            Create User
+            {t('settings_users.create_user')}
           </button>
         </div>
       </div>
@@ -450,62 +457,62 @@ export function UsersTab() {
       {/* Filters */}
       <div className="flex flex-wrap gap-6">
         <div className="relative flex-1 min-w-[200px] max-w-xs">
-          <span className="material-symbols-outlined absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" aria-hidden="true">search</span>
+          <span className="material-symbols-outlined absolute start-1 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" aria-hidden="true">search</span>
           <input
             type="text"
-            placeholder="Search by username or email..."
-            aria-label="Search by username or email"
+            placeholder={t('settings_users.search_placeholder')}
+            aria-label={t('settings_users.search_aria')}
             id="user-search"
             onChange={(e) => { setSearchInput(e.target.value); setPage(0) }}
-            className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 pl-8 pr-3 py-1.5 text-sm rounded-none outline-none transition-colors"
+            className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 ps-8 pe-3 py-1.5 text-sm rounded-none outline-none transition-colors"
           />
           {searchInput && (
             <button
               onClick={() => { setSearchInput(''); setPage(0) }}
-              className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
-              aria-label="Clear search"
+              className="absolute end-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+              aria-label={t('settings_users.clear_search')}
             >
               <span className="material-symbols-outlined text-sm" aria-hidden="true">close</span>
             </button>
           )}
         </div>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" aria-hidden="true">badge</span>
+          <span className="material-symbols-outlined absolute start-1 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" aria-hidden="true">badge</span>
           <select
             value={roleFilter}
             onChange={(e) => { setRoleFilter(e.target.value); setPage(0) }}
-            aria-label="Filter by role"
-            className="bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 pl-8 pr-8 py-1.5 text-sm rounded-none outline-none appearance-none min-w-[160px] transition-colors"
+            aria-label={t('settings_users.filter_by_role')}
+            className="bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 ps-8 pe-8 py-1.5 text-sm rounded-none outline-none appearance-none min-w-[160px] transition-colors"
           >
-            <option value="">All Roles</option>
-            <option value="instructor">Instructor</option>
-            <option value="admin">Admin</option>
-            <option value="system_admin">System Admin</option>
+            <option value="">{t('settings_users.all_roles')}</option>
+            <option value="instructor">{t('settings_users.instructor')}</option>
+            <option value="admin">{t('settings_users.admin')}</option>
+            <option value="system_admin">{t('settings_users.system_admin')}</option>
           </select>
-          <span className="material-symbols-outlined absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" aria-hidden="true">expand_more</span>
+          <span className="material-symbols-outlined absolute end-1 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" aria-hidden="true">expand_more</span>
         </div>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" aria-hidden="true">circle</span>
+          <span className="material-symbols-outlined absolute start-1 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" aria-hidden="true">circle</span>
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(0) }}
-            aria-label="Filter by status"
-            className="bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 pl-8 pr-8 py-1.5 text-sm rounded-none outline-none appearance-none min-w-[160px] transition-colors"
+            aria-label={t('settings_users.filter_by_status')}
+            className="bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 ps-8 pe-8 py-1.5 text-sm rounded-none outline-none appearance-none min-w-[160px] transition-colors"
           >
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Deactivated</option>
+            <option value="">{t('settings_users.all_status')}</option>
+            <option value="active">{t('settings_users.active')}</option>
+            <option value="inactive">{t('settings_users.deactivated')}</option>
           </select>
-          <span className="material-symbols-outlined absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" aria-hidden="true">expand_more</span>
+          <span className="material-symbols-outlined absolute end-1 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" aria-hidden="true">expand_more</span>
         </div>
       </div>
 
       {isLoading ? (
         <div className="bg-white rounded-[6px] shadow-sm p-8 text-center"><LoadingSpinner /></div>
       ) : error ? (
-        <div className="bg-white rounded-[6px] shadow-sm p-8 text-center"><p className="text-red-600">Failed to load users.</p></div>
+        <div className="bg-white rounded-[6px] shadow-sm p-8 text-center"><p className="text-red-600">{t('settings_users.failed_load_users')}</p></div>
       ) : users.length === 0 ? (
-        <div className="bg-white rounded-[6px] shadow-sm p-8 text-center" role="status"><p className="text-slate-500">No users found.</p></div>
+        <div className="bg-white rounded-[6px] shadow-sm p-8 text-center" role="status"><p className="text-slate-500">{t('settings_users.no_users')}</p></div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -525,8 +532,8 @@ export function UsersTab() {
             <div className="flex items-center justify-between pt-4 mt-4">
               <p className="text-xs text-slate-500">Showing {page * limit + 1}&#8211;{Math.min((page + 1) * limit, total)} of {total}</p>
               <div className="flex gap-2">
-                <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0} className="px-3 py-1.5 text-xs bg-slate-100 text-slate-700 rounded-[6px] hover:bg-slate-200 transition-colors duration-120 disabled:opacity-50 disabled:cursor-not-allowed font-semibold">Previous</button>
-                <button onClick={() => setPage(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1} className="px-3 py-1.5 text-xs bg-slate-100 text-slate-700 rounded-[6px] hover:bg-slate-200 transition-colors duration-120 disabled:opacity-50 disabled:cursor-not-allowed font-semibold">Next</button>
+                <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0} className="px-3 py-1.5 text-xs bg-slate-100 text-slate-700 rounded-[6px] hover:bg-slate-200 transition-colors duration-120 disabled:opacity-50 disabled:cursor-not-allowed font-semibold">{t('settings_users.previous')}</button>
+                <button onClick={() => setPage(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1} className="px-3 py-1.5 text-xs bg-slate-100 text-slate-700 rounded-[6px] hover:bg-slate-200 transition-colors duration-120 disabled:opacity-50 disabled:cursor-not-allowed font-semibold">{t('settings_users.next')}</button>
               </div>
             </div>
           )}
@@ -537,12 +544,12 @@ export function UsersTab() {
       {showCreateModal && (
         <div ref={createOverlayRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label="Create new user" onKeyDown={(e) => e.key === 'Escape' && setShowCreateModal(false)}>
           <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-md">
-            <h3 className="font-headline text-lg font-semibold text-on-surface mb-4">Create New User</h3>
+            <h3 className="font-headline text-lg font-semibold text-on-surface mb-4">{t('settings_users.create_new_user')}</h3>
             {createError && <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700 font-semibold" role="alert">{createError}</div>}
             {createSuccess && <div className="mb-4 p-3 bg-secondary/15 rounded-[6px] text-sm text-secondary font-semibold" role="alert">{createSuccess}</div>}
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Employee</label>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{t('settings_users.employee')}</label>
                 <InstructorCombobox
                   value={newUser.selectedEmployee}
                   onChange={(emp) => {
@@ -553,10 +560,10 @@ export function UsersTab() {
                     }))
                   }}
                 />
-                {!newUser.selectedEmployee && <p className="text-xs text-slate-500 mt-1">Search and select an employee</p>}
+                {!newUser.selectedEmployee && <p className="text-xs text-slate-500 mt-1">{t('settings_users.search_select_employee')}</p>}
               </div>
               <div>
-                <label htmlFor="create-username" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Username *</label>
+                <label htmlFor="create-username" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{t('settings_users.username') + ' *'}</label>
                 <input
                   id="create-username"
                   type="text"
@@ -567,7 +574,7 @@ export function UsersTab() {
                 />
               </div>
               <div>
-                <label htmlFor="create-password" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Password *</label>
+                <label htmlFor="create-password" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{t('labels.password') + ' *'}</label>
                 <input
                   id="create-password"
                   type="password"
@@ -576,32 +583,32 @@ export function UsersTab() {
                   value={newUser.password}
                   onChange={(e) => setNewUserField('password', e.target.value)}
                   className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
-                  placeholder="Min 12 characters"
+                  placeholder={t('settings_users.min_12_chars')}
                 />
-                <p className="text-xs text-slate-500 mt-1">Password must be at least 12 characters</p>
+                <p className="text-xs text-slate-500 mt-1">{t('settings_users.password_min_chars')}</p>
               </div>
               <div>
-                <label htmlFor="create-role" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Role *</label>
+                <label htmlFor="create-role" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{t('settings_users.role_label')}</label>
                 <select
                   id="create-role"
                   value={newUser.role}
                   onChange={(e) => { const v = e.target.value; if (v === 'instructor' || v === 'admin' || v === 'system_admin') setNewUserField('role', v) }}
                   className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
                 >
-                  <option value="instructor">Instructor</option>
-                  <option value="admin">Admin</option>
-                  <option value="system_admin">System Admin</option>
+                  <option value="instructor">{t('settings_users.instructor')}</option>
+                  <option value="admin">{t('settings_users.admin')}</option>
+                  <option value="system_admin">{t('settings_users.system_admin')}</option>
                 </select>
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-[6px] text-sm font-medium hover:bg-slate-200 duration-120">Cancel</button>
+                <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-[6px] text-sm font-medium hover:bg-slate-200 duration-120">{t('common:buttons.cancel')}</button>
                 <button type="submit" disabled={createUserMutation.isPending || !newUser.selectedEmployee || !newUser.selectedEmployee?.is_active} className="flex-1 px-4 py-2 bg-secondary text-white rounded-[6px] font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 duration-120">
                   {createUserMutation.isPending && <LoadingSpinner size="sm" variant="light" />}
-                  Create User
+                  {t('settings_users.create_user_button')}
                 </button>
               </div>
-              {!newUser.selectedEmployee && <p className="text-xs text-slate-500 mt-1">Search and select an employee</p>}
-              {newUser.selectedEmployee && !newUser.selectedEmployee.is_active && <p className="text-xs text-red-500 mt-1">Cannot create account for inactive employee</p>}
+              {!newUser.selectedEmployee && <p className="text-xs text-slate-500 mt-1">{t('settings_users.search_select_employee')}</p>}
+              {newUser.selectedEmployee && !newUser.selectedEmployee.is_active && <p className="text-xs text-red-500 mt-1">{t('settings_users.cannot_create_inactive')}</p>}
             </form>
           </div>
         </div>
@@ -611,13 +618,13 @@ export function UsersTab() {
       {showResetModal && selectedUser && (
         <div ref={resetOverlayRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-body" role="dialog" aria-modal="true" aria-label="Reset password" onKeyDown={(e) => e.key === 'Escape' && (setShowResetModal(false), setSelectedUser(null), setNewPassword(''))}>
           <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-md">
-            <h3 className="font-headline text-lg font-semibold text-on-surface mb-2">Reset Password</h3>
-            <p className="text-sm text-slate-600 mb-4 font-body font-normal">Enter a new password for <strong>{selectedUser.username}</strong></p>
+            <h3 className="font-headline text-lg font-semibold text-on-surface mb-2">{t('settings_users.reset_password')}</h3>
+            <p className="text-sm text-slate-600 mb-4 font-body font-normal" dangerouslySetInnerHTML={{ __html: t('settings_users.enter_new_password_for') + ' <strong>' + selectedUser.username + '</strong>' }} />
             {resetError && <div className="mb-4 p-3 bg-red-500/10 rounded-[6px] text-sm text-red-700 font-semibold" role="alert">{resetError}</div>}
             {resetSuccess && <div className="mb-4 p-3 bg-secondary/15 rounded-[6px] text-sm text-secondary font-semibold" role="alert">{resetSuccess}</div>}
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
-                <label htmlFor="reset-password" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">New Password *</label>
+                <label htmlFor="reset-password" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{t('settings_users.new_password_label')}</label>
                 <input
                   id="reset-password"
                   type="password"
@@ -626,15 +633,15 @@ export function UsersTab() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
-                  placeholder="Min 12 characters"
+                  placeholder={t('settings_users.min_12_chars')}
                 />
-                <p className="text-xs text-slate-500 mt-1">Password must be at least 12 characters</p>
+                <p className="text-xs text-slate-500 mt-1">{t('settings_users.password_min_chars')}</p>
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => { setShowResetModal(false); setSelectedUser(null); setNewPassword('') }} className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-[6px] text-sm font-medium hover:bg-slate-200 duration-120">Cancel</button>
+                <button type="button" onClick={() => { setShowResetModal(false); setSelectedUser(null); setNewPassword('') }} className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-[6px] text-sm font-medium hover:bg-slate-200 duration-120">{t('common:buttons.cancel')}</button>
                 <button type="submit" disabled={resetPasswordMutation.isPending || newPassword.length < 12} className="flex-1 px-4 py-2 bg-secondary text-white rounded-[6px] font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 duration-120">
                   {resetPasswordMutation.isPending && <LoadingSpinner size="sm" variant="light" />}
-                  Reset Password
+                  {t('settings_users.reset_password')}
                 </button>
               </div>
             </form>
@@ -646,15 +653,13 @@ export function UsersTab() {
       {deactivatingUser && (
         <div ref={deactivateConfirmRef} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label="Confirm deactivation" onKeyDown={(e) => e.key === 'Escape' && setDeactivatingUser(null)}>
           <div className="bg-white rounded-[6px] shadow-sm p-6 w-full max-w-sm">
-            <h4 className="font-headline text-base font-semibold text-on-surface mb-2">Deactivate User?</h4>
-            <p className="text-sm text-slate-600 mb-6 font-body">
-              This will soft-deactivate <strong>{deactivatingUser.username}</strong>. They will not be able to log in. This action can be reversed.
-            </p>
+            <h4 className="font-headline text-base font-semibold text-on-surface mb-2">{t('settings_users.deactivate_user')}</h4>
+            <p className="text-sm text-slate-600 mb-6 font-body" dangerouslySetInnerHTML={{ __html: t('settings_users.deactivate_desc', { username: deactivatingUser.username }) }} />
             <div className="flex gap-3">
-              <button onClick={() => setDeactivatingUser(null)} className="flex-1 px-4 py-2 bg-slate-100 text-slate-600 rounded-[6px] text-sm font-medium hover:bg-slate-200 duration-120">Cancel</button>
+              <button onClick={() => setDeactivatingUser(null)} className="flex-1 px-4 py-2 bg-slate-100 text-slate-600 rounded-[6px] text-sm font-medium hover:bg-slate-200 duration-120">{t('common:buttons.cancel')}</button>
               <button onClick={handleDeactivate} disabled={isDeactivating} className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-[6px] text-sm font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 duration-120">
                 {isDeactivating && <LoadingSpinner size="sm" variant="light" />}
-                Deactivate
+                {t('settings_users.deactivate')}
               </button>
             </div>
           </div>

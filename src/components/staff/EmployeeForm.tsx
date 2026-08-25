@@ -151,7 +151,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-h-[75vh] overflow-y-auto pr-3 no-scrollbar">
+    <form onSubmit={handleSubmit} className="space-y-6 max-h-[75vh] overflow-y-auto pe-3 no-scrollbar">
       {displayError && (
         <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700 animate-shake">
           <span className="material-symbols-outlined">error</span>

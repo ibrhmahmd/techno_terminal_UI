@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { TaskSubtaskReadDTO } from '../../api/tasks'
 import { useToggleSubtask, useAddSubtask, useDeleteSubtask } from '../../hooks/useTasks'
 
@@ -9,6 +10,7 @@ interface SubtaskChecklistProps {
 }
 
 export function SubtaskChecklist({ subtasks, taskId, isAdmin }: SubtaskChecklistProps) {
+  const { t } = useTranslation('tasks')
   const [newTitle, setNewTitle] = useState('')
   const toggleMutation = useToggleSubtask()
   const addMutation = useAddSubtask()
@@ -95,8 +97,8 @@ export function SubtaskChecklist({ subtasks, taskId, isAdmin }: SubtaskChecklist
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-            placeholder="Add subtask..."
-            aria-label="New subtask title"
+            placeholder={t('subtask.add_placeholder')}
+            aria-label={t('subtask.add_placeholder')}
             className="flex-1 text-sm px-3 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
           />
           <button
@@ -104,7 +106,7 @@ export function SubtaskChecklist({ subtasks, taskId, isAdmin }: SubtaskChecklist
             disabled={!newTitle.trim() || addMutation.isPending}
             className="px-3 py-1.5 text-sm font-medium text-teal-600 hover:bg-teal-50 rounded-lg transition-colors disabled:opacity-50"
           >
-            Add
+            {t('subtask.add')}
           </button>
         </div>
       )}

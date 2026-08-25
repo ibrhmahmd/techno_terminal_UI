@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { GroupByField } from '../../api/academics'
+import { useNavDirection } from '../../hooks/useNavDirection'
 
 type GroupBySelectorValue = GroupByField | 'search'
 
@@ -9,23 +11,31 @@ interface GroupBySelectorProps {
   rightSlot?: ReactNode
 }
 
-const OPTIONS: Array<{ value: GroupBySelectorValue; label: string; icon: string }> = [
-  { value: null,          label: 'All',          icon: 'grid_view'      },
-  { value: 'day',         label: 'Day',          icon: 'calendar_today' },
-  { value: 'course',      label: 'Course',       icon: 'menu_book'      },
-  { value: 'instructor',  label: 'Instructor',   icon: 'person'         },
-  { value: 'search',      label: 'Filter Groups', icon: 'manage_search'  },
-]
-
 export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorProps) {
+  const { t } = useTranslation('groups')
+  const { getNextIndex } = useNavDirection()
+
+  const OPTIONS: Array<{ value: GroupBySelectorValue; label: string; icon: string }> = [
+    { value: null,          label: t('groupBy.all'),          icon: 'grid_view'      },
+    { value: 'day',         label: t('groupBy.day'),          icon: 'calendar_today' },
+    { value: 'course',      label: t('groupBy.course'),       icon: 'menu_book'      },
+    { value: 'instructor',  label: t('groupBy.instructor'),   icon: 'person'         },
+    { value: 'search',      label: t('groupBy.search'),       icon: 'manage_search'  },
+  ]
+
   const handleKeyDown = (index: number) => (e: React.KeyboardEvent) => {
     if (OPTIONS.length === 0) return
     let next = index
-    if (e.key === 'ArrowRight') next = (index + 1) % OPTIONS.length
-    else if (e.key === 'ArrowLeft') next = (index - 1 + OPTIONS.length) % OPTIONS.length
-    else if (e.key === 'Home') next = 0
-    else if (e.key === 'End') next = OPTIONS.length - 1
-    else return
+    const navIndex = getNextIndex(e, index, OPTIONS.length)
+    if (navIndex !== null) {
+      next = navIndex
+    } else if (e.key === 'Home') {
+      next = 0
+    } else if (e.key === 'End') {
+      next = OPTIONS.length - 1
+    } else {
+      return
+    }
     const option = OPTIONS[next]
     if (!option) return
     e.preventDefault()
@@ -34,7 +44,7 @@ export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorP
 
   return (
     <section className="w-full">
-      <div className="flex w-full items-stretch gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1" role="radiogroup" aria-label="Group by">
+      <div className="flex w-full items-stretch gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1" role="radiogroup" aria-label={t('groupBy.aria_label')}>
         {OPTIONS.map(({ value: optVal, label, icon }, index) => {
           const isActive = value === optVal
           const isSearch = optVal === 'search'
@@ -42,7 +52,7 @@ export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorP
           return (
             <div
               key={String(optVal)}
-              className={`flex-1 flex items-center ${isSearch && index > 0 ? 'border-l border-blue-200/40 pl-1' : ''}`}
+              className={`flex-1 flex items-center ${isSearch && index > 0 ? 'border-l border-blue-200/40 ps-1' : ''}`}
             >
               <button
                 onClick={() => onChange(optVal)}
@@ -64,7 +74,7 @@ export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorP
           )
         })}
         {rightSlot && (
-          <div className="ml-auto shrink-0 pl-1 border-l border-slate-200 flex items-stretch">
+          <div className="ms-auto shrink-0 ps-1 border-l border-slate-200 flex items-stretch">
             {rightSlot}
           </div>
         )}

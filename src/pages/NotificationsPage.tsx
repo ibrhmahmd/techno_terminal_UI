@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { PageHeader, PageSection } from '../components/common'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
@@ -23,6 +24,7 @@ function getInitialTab(searchParams: URLSearchParams): TabId {
 }
 
 export function NotificationsPage() {
+  const { t } = useTranslation('notifications')
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState<TabId>(() => getInitialTab(searchParams))
 
@@ -36,34 +38,34 @@ export function NotificationsPage() {
 
   const metricItems = useMemo(() => [
     {
-      label: 'Admin Settings',
-      value: 'Config',
+      label: t('tabs.admin'),
+      value: t('metrics.admin'),
       icon: 'settings',
       color: 'secondary' as const,
       onClick: () => handleTabChange('admin'),
     },
     {
-      label: 'Logs',
-      value: 'Audit',
+      label: t('tabs.logs'),
+      value: t('metrics.logs'),
       icon: 'history',
       color: 'amber' as const,
       onClick: () => handleTabChange('logs'),
     },
     {
-      label: 'Bulk Messaging',
-      value: 'Dispatch',
+      label: t('tabs.bulk'),
+      value: t('metrics.bulk'),
       icon: 'send',
       color: 'blue' as const,
       onClick: () => handleTabChange('bulk'),
     },
-  ], [handleTabChange])
+  ], [handleTabChange, t])
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNavbar activePage="Notifications" />
+      <TopNavbar activePage={t('page_title')} />
       <PageHeader
-        title="Notifications"
-        subtitle="Configure system notification rules and recipient dispatch settings."
+        title={t('page_title')}
+        subtitle={t('subtitle')}
         sticky={false}
       />
 

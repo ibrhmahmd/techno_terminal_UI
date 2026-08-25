@@ -1,0 +1,113 @@
+{
+  "grid": {
+    "no_students": "No students enrolled in this group.",
+    "no_students_hint": "Enroll students to start marking attendance.",
+    "no_sessions": "No sessions have been generated for this level yet.",
+    "no_sessions_hint": "{{count}} student(s) enrolled — generate sessions to start marking attendance.",
+    "add_session": "Add Session",
+    "instructor": "Instructor",
+    "session_notes": "Session Notes",
+    "view_group_details": "View group details",
+    "grid_aria": "Attendance grid",
+    "grid_caption": "Student attendance for {{group}} — Level {{level}}"
+  },
+  "cell": {
+    "toggle_aria": "Toggle attendance: {{status}}"
+  },
+  "header": {
+    "student": "Student",
+    "cancelled": "CANCELLED"
+  },
+  "status": {
+    "present": "Present",
+    "absent": "Absent",
+    "not_taken": "Not Taken"
+  },
+  "footer": {
+    "failed_to_save": "Failed to save:",
+    "cancel": "Cancel",
+    "save_changes": "Save Changes",
+    "saving": "Saving..."
+  },
+  "actions": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "reactivate": "Reactivate",
+    "mark_complete": "Mark Complete",
+    "completed": "Completed",
+    "cancelled": "CANCELLED"
+  },
+  "dialogs": {
+    "cancel_title": "Cancel Session",
+    "cancel_message": "Are you sure you want to cancel this session? This action cannot be undone.",
+    "cancel_confirm": "Cancel Session",
+    "cancel_keep": "Keep Session",
+    "delete_title": "Delete Session",
+    "delete_message": "Are you sure you want to delete this session entirely? This action is permanent and cannot be undone.",
+    "delete_confirm": "Delete Session",
+    "delete_keep": "Keep Session"
+  },
+  "edit": {
+    "title": "Edit Session",
+    "date": "Date",
+    "status": "Status",
+    "start_time": "Start Time",
+    "end_time": "End Time",
+    "instructor": "Instructor",
+    "search_instructors": "Search instructors...",
+    "substitute": "Substitute Instructor",
+    "substitute_hint": "Instructor is covering today",
+    "notes_optional": "Notes (Optional)",
+    "notes_placeholder": "Enter session notes...",
+    "cancel": "Cancel",
+    "save_changes": "Save Changes",
+    "today": "Today",
+    "plus_1_day": "+1 Day",
+    "plus_7_days": "+7 Days",
+    "hours": "Hours",
+    "scheduled": "Scheduled",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "mobile": {
+    "select_session": "Select a session",
+    "no_sessions": "No sessions available.",
+    "today": "Today",
+    "no_time": "No time",
+    "back_to_sessions": "Back to sessions",
+    "close_sheet": "Close attendance sheet",
+    "save_attendance": "Save Attendance",
+    "saving": "Saving..."
+  },
+  "payment": {
+    "paid": "{{count}} paid",
+    "due": "{{count}} due",
+    "remaining": "{{amount}} EGP remaining"
+  },
+  "billing": {
+    "paid": "PAID",
+    "due": "DUE",
+    "due_with_amount": "DUE: {{amount}} EGP"
+  },
+  "toast": {
+    "session_updated": "Session updated successfully",
+    "session_update_failed": "Failed to update session",
+    "session_cancelled": "Session cancelled successfully",
+    "session_cancel_failed": "Failed to cancel session",
+    "session_deleted": "Session deleted successfully",
+    "session_delete_failed": "Failed to delete session",
+    "session_reactivated": "Session reactivated successfully",
+    "session_reactivate_failed": "Failed to reactivate session",
+    "session_completed": "Session marked as completed",
+    "session_complete_failed": "Failed to complete session",
+    "save_success": "Saved {{count}} change(s) successfully!",
+    "save_all_failed": "Failed to save all changes",
+    "save_partial": "Saved {{saved}}, {{failed}} failed — click retry",
+    "save_failed": "Failed to save changes",
+    "retry_success": "Session saved successfully",
+    "retry_failed": "Failed to save session",
+    "attendance_saved": "Attendance saved successfully",
+    "attendance_save_failed": "Failed to save attendance"
+  }
+}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { formatDate } from '../../utils/formatting'
 import type { AuditLogEntry } from '../../api/auth/types'
 import { EVENT_LABELS } from '../../constants/auditLabels'
@@ -14,6 +15,7 @@ interface AuditLogTableProps {
 }
 
 export function AuditLogTable({ data, total, page, pageSize, onPageChange, isLoading, error }: AuditLogTableProps) {
+  const { t } = useTranslation('common')
   const totalPages = Math.ceil(total / pageSize)
 
   if (isLoading) {
@@ -21,23 +23,23 @@ export function AuditLogTable({ data, total, page, pageSize, onPageChange, isLoa
   }
 
   if (error) {
-    return <div className="bg-white rounded-[6px] shadow-sm p-8 text-center font-body"><p className="text-red-600">Failed to load audit data.</p></div>
+    return <div className="bg-white rounded-[6px] shadow-sm p-8 text-center font-body"><p className="text-red-600">{t('settings_users.failed_load_audit')}</p></div>
   }
 
   if (data.length === 0) {
-    return <div className="bg-white rounded-[6px] shadow-sm p-8 text-center font-body" role="status"><p className="text-slate-500">No records found.</p></div>
+    return <div className="bg-white rounded-[6px] shadow-sm p-8 text-center font-body" role="status"><p className="text-slate-500">{t('settings_users.no_records')}</p></div>
   }
 
   return (
     <div className="bg-white rounded-[6px] shadow-sm p-6 font-body">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm font-body">
+        <table className="w-full text-start text-sm font-body">
           <thead className="bg-slate-50/50">
             <tr>
-              <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Event</th>
-              <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">User ID</th>
-              <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">IP Address</th>
-              <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">Date</th>
+              <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">{t('settings_sessions.event')}</th>
+              <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">{t('settings_users.user_id')}</th>
+              <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">{t('settings_sessions.ip_address')}</th>
+              <th scope="col" className="py-2.5 px-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">{t('settings_sessions.date')}</th>
             </tr>
           </thead>
           <tbody>
@@ -66,14 +68,14 @@ export function AuditLogTable({ data, total, page, pageSize, onPageChange, isLoa
               disabled={page === 0}
               className="px-3 py-1.5 text-xs bg-slate-100 text-slate-700 rounded-[6px] hover:bg-slate-200 transition-colors duration-120 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
-              Previous
+              {t('common:pagination.previous')}
             </button>
             <button
               onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
               disabled={page >= totalPages - 1}
               className="px-3 py-1.5 text-xs bg-slate-100 text-slate-700 rounded-[6px] hover:bg-slate-200 transition-colors duration-120 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
-              Next
+              {t('common:pagination.next')}
             </button>
           </div>
         </div>
@@ -90,10 +92,11 @@ interface AuditDateFilterProps {
 }
 
 export function AuditDateFilter({ from, to, onFromChange, onToChange }: AuditDateFilterProps) {
+  const { t } = useTranslation('common')
   return (
     <div className="flex gap-3 items-end font-body">
       <div>
-        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">From</label>
+        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{t('settings_audit.from')}</label>
         <input
           type="date"
           value={from}
@@ -102,7 +105,7 @@ export function AuditDateFilter({ from, to, onFromChange, onToChange }: AuditDat
         />
       </div>
       <div>
-        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">To</label>
+        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{t('settings_audit.to')}</label>
         <input
           type="date"
           value={to}

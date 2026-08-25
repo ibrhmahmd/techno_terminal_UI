@@ -70,7 +70,7 @@ export function EntitySelectionDialog({
           key={entity.id}
           onClick={() => !entity.isDisabled && onSelect(entity.id)}
           disabled={entity.isDisabled}
-          className={`w-full p-4 text-left border rounded-lg transition-colors ${
+          className={`w-full p-4 text-start border rounded-lg transition-colors ${
             selectedId === entity.id
               ? 'border-secondary bg-secondary/5'
               : entity.isDisabled
@@ -88,7 +88,7 @@ export function EntitySelectionDialog({
                 <p className="text-xs text-red-500 mt-1">{entity.disabledReason}</p>
               )}
             </div>
-            <div className="flex items-center gap-2 ml-2">
+            <div className="flex items-center gap-2 ms-2">
               {entity.meta && (
                 <span className="text-xs text-slate-400">{entity.meta}</span>
               )}
@@ -148,7 +148,7 @@ export function EntitySelectionDialog({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
+            className="w-full ps-10 pe-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
           />
         </div>
 

@@ -1,47 +1,49 @@
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/authStore'
-
-const navSections = [
-  {
-    title: 'Core Operations',
-    items: [
-      { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-      { path: '/groups', label: 'Groups', icon: 'group' },
-      { path: '/directory', label: 'Directory', icon: 'person_search' },
-      { path: '/courses', label: 'Courses', icon: 'school' },
-    ],
-  },
-  {
-    title: 'Management',
-    items: [
-      { path: '/enrollments', label: 'Enrollments', icon: 'assignment_ind' },
-      { path: '/finance', label: 'Finance', icon: 'payments' },
-    ],
-  },
-  {
-    title: 'Programs',
-    items: [
-      { path: '/competitions', label: 'Competitions', icon: 'emoji_events' },
-      { path: '/certificates', label: 'Certificates', icon: 'verified' },
-      { path: '/reports', label: 'Reports', icon: 'assessment' },
-    ],
-  },
-  {
-    title: 'Resources',
-    items: [
-      { path: '/staff', label: 'Staff', icon: 'people' },
-      { path: '/tasks', label: 'Tasks', icon: 'task_alt' },
-      // { path: '/capabilities', label: 'Capabilities', icon: 'article' },
-      { path: '/notifications', label: 'Notifications', icon: 'notifications' },
-      { path: '/settings', label: 'Settings', icon: 'settings' },
-    ],
-  },
-]
 
 export function Sidebar() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuthStore()
+  const { t } = useTranslation('layout')
+
+  const navSections = [
+    {
+      title: t('sections.core_operations'),
+      items: [
+        { path: '/dashboard', label: t('nav.dashboard'), icon: 'dashboard' },
+        { path: '/groups', label: t('nav.groups'), icon: 'group' },
+        { path: '/directory', label: t('nav.directory'), icon: 'person_search' },
+        { path: '/courses', label: t('nav.courses'), icon: 'school' },
+      ],
+    },
+    {
+      title: t('sections.management'),
+      items: [
+        { path: '/enrollments', label: t('nav.enrollments'), icon: 'assignment_ind' },
+        { path: '/finance', label: t('nav.finance'), icon: 'payments' },
+      ],
+    },
+    {
+      title: t('sections.programs'),
+      items: [
+        { path: '/competitions', label: t('nav.competitions'), icon: 'emoji_events' },
+        { path: '/certificates', label: t('nav.certificates'), icon: 'verified' },
+        { path: '/reports', label: t('nav.reports'), icon: 'assessment' },
+      ],
+    },
+    {
+      title: t('sections.resources'),
+      items: [
+        { path: '/staff', label: t('nav.staff'), icon: 'people' },
+        { path: '/tasks', label: t('nav.tasks'), icon: 'task_alt' },
+        // { path: '/capabilities', label: t('nav.capabilities'), icon: 'article' },
+        { path: '/notifications', label: t('nav.notifications'), icon: 'notifications' },
+        { path: '/settings', label: t('nav.settings'), icon: 'settings' },
+      ],
+    },
+  ]
 
   const handleLogout = async () => {
     await logout()
@@ -85,7 +87,7 @@ export function Sidebar() {
           onClick={() => handleNavigate('/dashboard')}
           className="text-left hover:opacity-85 transition-opacity"
         >
-          <h1 className="text-xl font-bold font-headline text-white tracking-tight">TechnoTerminal</h1>
+          <h1 className="text-xl font-bold font-headline text-white tracking-tight">{t('brand')}</h1>
         </button>
       </div>
 
@@ -139,7 +141,7 @@ export function Sidebar() {
           className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-red-400 hover:bg-red-400/10 rounded-[6px] transition-colors"
         >
           <span className="material-symbols-outlined text-base">logout</span>
-          <span>Sign Out</span>
+          <span>{t('sign_out')}</span>
         </button>
       </div>
     </aside>

@@ -50,7 +50,7 @@ export function CategoryTeamsModal({ category, isOpen, onClose }: CategoryTeamsM
                   )}
                 </div>
               </div>
-              <span className="material-symbols-outlined text-slate-400" aria-hidden="true">chevron_right</span>
+              <span className="material-symbols-outlined text-slate-400 icon-flip-rtl" aria-hidden="true">chevron_right</span>
             </div>
           ))}
         </div>

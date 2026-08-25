@@ -1,4 +1,5 @@
 import { Trophy, Calendar, Medal, Award, Star } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { CompetitionRecord } from '../../api/competitions'
 import { formatDate } from '../../utils/formatting'
 import { EmptyState } from '../common/EmptyState'
@@ -8,6 +9,7 @@ interface CompetitionsTabProps {
 }
 
 export function CompetitionsTab({ competitions }: CompetitionsTabProps) {
+  const { t } = useTranslation('common')
   const getAchievementIcon = (achievement?: string | null) => {
     if (!achievement) return <Trophy className="w-5 h-5 text-slate-500" aria-hidden="true" />
     const lower = achievement.toLowerCase()
@@ -47,8 +49,8 @@ export function CompetitionsTab({ competitions }: CompetitionsTabProps) {
   if (competitions.length === 0) {
     return (
       <EmptyState
-        title="No competition records"
-        message="This student has not participated in any competitions yet."
+        title={t('competitionsTab.no_competition_records')}
+        message={t('competitionsTab.no_competition_records_message')}
         icon="inbox"
       />
     )
@@ -58,34 +60,34 @@ export function CompetitionsTab({ competitions }: CompetitionsTabProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-on-surface">Competition History</h2>
+          <h2 className="text-xl font-semibold text-on-surface">{t('competitionsTab.competition_history')}</h2>
           <p className="text-sm text-slate-500 mt-1">
-            View all competitions this student has participated in
+            {t('competitionsTab.competition_history_subtitle')}
           </p>
         </div>
         <div className="text-sm text-slate-500">
-          Total: <span className="font-medium text-on-surface">{competitions.length}</span> competitions
+          {t('competitionsTab.total_competitions', { count: competitions.length })}
         </div>
       </div>
 
       {/* Achievements Summary */}
       {competitions.some(c => c.achievement) && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {['Gold', 'Silver', 'Bronze', 'Participation'].map((type) => {
+          {[{ key: 'Gold', label: t('competitionsTab.gold') }, { key: 'Silver', label: t('competitionsTab.silver') }, { key: 'Bronze', label: t('competitionsTab.bronze') }, { key: 'Participation', label: t('competitionsTab.participation') }].map(({ key, label }) => {
             const count = competitions.filter(c => 
-              c.achievement?.toLowerCase().includes(type.toLowerCase())
+              c.achievement?.toLowerCase().includes(key.toLowerCase())
             ).length
             if (count === 0) return null
             return (
-              <div key={type} className="bg-white rounded-lg border border-slate-200 p-4 text-center">
+              <div key={key} className="bg-white rounded-lg border border-slate-200 p-4 text-center">
                 <Medal aria-hidden="true" className={`w-6 h-6 mx-auto mb-2 ${
-                  type === 'Gold' ? 'text-yellow-500' :
-                  type === 'Silver' ? 'text-slate-400' :
-                  type === 'Bronze' ? 'text-amber-700' :
+                  key === 'Gold' ? 'text-yellow-500' :
+                  key === 'Silver' ? 'text-slate-400' :
+                  key === 'Bronze' ? 'text-amber-700' :
                   'text-slate-500'
                 }`} />
                 <p className="text-2xl font-bold text-on-surface">{count}</p>
-                <p className="text-xs text-slate-500">{type === 'Participation' ? 'Participation' : `${type} ${count === 1 ? 'Medal' : 'Medals'}`}</p>
+                <p className="text-xs text-slate-500">{key === 'Participation' ? label : `${label} ${count === 1 ? t('competitionsTab.medal') : t('competitionsTab.medals')}`}</p>
               </div>
             )
           })}
@@ -95,7 +97,7 @@ export function CompetitionsTab({ competitions }: CompetitionsTabProps) {
       {/* Competitions List */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-          <h3 className="font-semibold text-on-surface">All Competitions</h3>
+          <h3 className="font-semibold text-on-surface">{t('competitionsTab.all_competitions')}</h3>
         </div>
         <div className="divide-y divide-slate-100">
           {competitions.map((competition) => (
@@ -115,7 +117,7 @@ export function CompetitionsTab({ competitions }: CompetitionsTabProps) {
                     </div>
                     {competition.result && (
                       <p className="text-sm text-slate-600 mt-2">
-                        Result: {competition.result}
+                        {t('competitionsTab.result', { result: competition.result })}
                       </p>
                     )}
                   </div>

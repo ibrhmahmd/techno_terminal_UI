@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { useAuthStore } from './store/authStore'
+import { useSettingsStore } from './store/settingsStore'
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { AppLayout } from './components/layout/AppLayout'
 import { AuthLayout } from './components/auth/AuthLayout'
@@ -63,6 +64,13 @@ function PublicRoute() {
 }
 
 function App() {
+  const { locale, direction } = useSettingsStore()
+
+  useEffect(() => {
+    document.documentElement.lang = locale
+    document.documentElement.dir = direction
+  }, [locale, direction])
+
   return (
     <BrowserRouter>
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-secondary focus:rounded-lg focus:shadow-lg">

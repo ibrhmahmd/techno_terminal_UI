@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 interface PaginationProps {
   currentPage: number
   totalPages: number
@@ -21,6 +23,8 @@ export function Pagination({
   loading = false,
   totalRecords,
 }: PaginationProps) {
+  const { t } = useTranslation('common')
+
   if (totalPages <= 0) return null
 
   const pageNumbers = Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -35,19 +39,19 @@ export function Pagination({
       {/* Left: Page size selector */}
       {onPageSizeChange && pageSize && (
         <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-500">Show</span>
+          <span className="text-sm text-slate-500">{t('pagination.showing')}</span>
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
             disabled={loading}
-            aria-label="Page size"
+            aria-label={t('pagination.rowsPerPage')}
             className="px-2 py-1 text-sm border border-slate-200 rounded bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary disabled:opacity-50"
           >
             {pageSizeOptions.map((opt) => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
           </select>
-          <span className="text-sm text-slate-500">per page</span>
+          <span className="text-sm text-slate-500">{t('pagination.perPage')}</span>
         </div>
       )}
 
@@ -56,20 +60,20 @@ export function Pagination({
         <button
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1 || loading}
-          aria-label="First Page"
+          aria-label={t('pagination.firstPage')}
           className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          title="First Page"
+          title={t('pagination.firstPage')}
         >
-          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">first_page</span>
+          <span className="material-symbols-outlined text-[18px] icon-flip-rtl" aria-hidden="true">first_page</span>
         </button>
         <button
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1 || loading}
-          aria-label="Previous Page"
+          aria-label={t('pagination.previousPage')}
           className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          title="Previous Page"
+          title={t('pagination.previousPage')}
         >
-          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">chevron_left</span>
+          <span className="material-symbols-outlined text-[18px] icon-flip-rtl" aria-hidden="true">chevron_left</span>
         </button>
 
         {pageNumbers.map((pageNum) => (
@@ -91,20 +95,20 @@ export function Pagination({
         <button
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages || loading}
-          aria-label="Next Page"
+          aria-label={t('pagination.nextPage')}
           className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          title="Next Page"
+          title={t('pagination.nextPage')}
         >
-          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">chevron_right</span>
+          <span className="material-symbols-outlined text-[18px] icon-flip-rtl" aria-hidden="true">chevron_right</span>
         </button>
         <button
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages || loading}
-          aria-label="Last Page"
+          aria-label={t('pagination.lastPage')}
           className="px-2 cursor-pointer py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          title="Last Page"
+          title={t('pagination.lastPage')}
         >
-          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">last_page</span>
+          <span className="material-symbols-outlined text-[18px] icon-flip-rtl" aria-hidden="true">last_page</span>
         </button>
       </div>
 
@@ -113,11 +117,11 @@ export function Pagination({
         <div className="flex items-center gap-2">
           {totalRecords !== undefined && (
             <span className="text-sm text-slate-500">
-              Showing {Math.min((currentPage - 1) * (pageSize ?? 10) + 1, totalRecords)}–{Math.min(currentPage * (pageSize ?? 10), totalRecords)} of {totalRecords} records
+              {t('pagination.showing')} {Math.min((currentPage - 1) * (pageSize ?? 10) + 1, totalRecords)}–{Math.min(currentPage * (pageSize ?? 10), totalRecords)} {t('pagination.of')} {totalRecords} {t('pagination.records')}
             </span>
           )}
           <span className="text-sm text-slate-500">
-            Page {currentPage} of {totalPages}
+            {t('pagination.page')} {currentPage} {t('pagination.ofPages', { totalPages })}
           </span>
         </div>
       )}

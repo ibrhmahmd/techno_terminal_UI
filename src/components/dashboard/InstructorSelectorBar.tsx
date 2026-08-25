@@ -1,4 +1,6 @@
+import { useTranslation } from 'react-i18next'
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { useNavDirection } from '../../hooks/useNavDirection'
 import { formatInstructorName } from '../../utils/formatting'
 
 interface InstructorSelectorBarProps {
@@ -15,6 +17,8 @@ export function InstructorSelectorBar({
   disabled = false
 }: InstructorSelectorBarProps) {
   const isMobile = useIsMobile()
+  const { getNextIndex } = useNavDirection()
+  const { t } = useTranslation('dashboard')
 
   // Don't render if no instructors
   if (instructors.length === 0) {
@@ -24,7 +28,7 @@ export function InstructorSelectorBar({
   const sortedInstructors = [...instructors].sort()
 
   const isSelected = (name: string | null) => selectedInstructor === name
-  const allButton = { name: null, label: isMobile ? <span className="material-symbols-outlined flex items-center justify-center text-[20px]" aria-hidden="true">groups</span> : 'All' }
+  const allButton = { name: null, label: isMobile ? <span className="material-symbols-outlined flex items-center justify-center text-[20px]" aria-hidden="true">groups</span> : t('instructor_filter.all') }
   const instructorButtons = sortedInstructors.map(name => ({ name, label: isMobile ? formatInstructorName(name) : name }))
   const allTabs = [allButton, ...instructorButtons]
 
@@ -34,14 +38,8 @@ export function InstructorSelectorBar({
     const currentIndex = buttons.indexOf(target)
     if (currentIndex === -1) return
 
-    let nextIndex = currentIndex
-    if (e.key === 'ArrowRight') {
-      nextIndex = (currentIndex + 1) % buttons.length
-    } else if (e.key === 'ArrowLeft') {
-      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length
-    } else {
-      return
-    }
+    const nextIndex = getNextIndex(e, currentIndex, buttons.length)
+    if (nextIndex === null) return
 
     e.preventDefault()
     ;(buttons[nextIndex] as HTMLElement).focus()
@@ -51,7 +49,7 @@ export function InstructorSelectorBar({
   return (
     <section className="w-full pb-6">
       <div className="overflow-x-auto">
-        <div role="tablist" aria-label="Filter by instructor" className="flex min-w-[300px] items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-100 p-1" onKeyDown={handleTablistKeyDown}>
+        <div role="tablist" aria-label={t('instructor_filter.filter_by_instructor')} className="flex min-w-[300px] items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-100 p-1" onKeyDown={handleTablistKeyDown}>
           {allTabs.map(({ name }) => (
             <button
               key={name ?? 'all'}
@@ -65,7 +63,7 @@ export function InstructorSelectorBar({
                   : 'text-slate-600 hover:text-secondary hover:bg-white/70'
               } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => onSelectInstructor(name)}
-              title={name ?? 'All'}
+              title={name ?? t('instructor_filter.all')}
             >
               {name === null ? allButton.label : (isMobile ? formatInstructorName(name) : name)}
             </button>

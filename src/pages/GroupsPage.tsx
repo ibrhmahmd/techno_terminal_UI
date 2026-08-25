@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DataTable, PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialog } from '../components/common'
@@ -20,12 +21,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createGroup, updateGroup, deleteGroup } from '../api/academics'
 import { queryKeys } from '../hooks/queryKeys'
 import { getUpcomingDates } from '../utils/date'
-import { groupColumns } from '../components/groups/GroupColumns'
+import { useGroupColumns } from '../components/groups/GroupColumns'
 import { GroupFilters } from '../components/groups/GroupFilters'
 import { useCourses } from '../hooks/useCourses'
 import { useEmployees } from '../hooks/useStaff'
 
 export function GroupsPage() {
+  const { t } = useTranslation('groups')
+  const groupColumns = useGroupColumns()
   const navigate = useNavigate()
   
   const {
@@ -70,26 +73,26 @@ export function GroupsPage() {
     
     filters.selectedCourses.forEach(id => {
       const course = courses.find(c => c.id === id)
-      if (course) tags.push({ id: `course-${id}`, label: 'Course', value: course.name })
+      if (course) tags.push({ id: `course-${id}`, label: t('filters.course'), value: course.name })
     })
     
     filters.selectedInstructors.forEach(id => {
       const instructor = staff.find(s => s.id === id)
-      if (instructor) tags.push({ id: `instructor-${id}`, label: 'Instructor', value: instructor.full_name })
+      if (instructor) tags.push({ id: `instructor-${id}`, label: t('filters.instructor'), value: instructor.full_name })
     })
 
     filters.selectedDays.forEach(day => {
-      tags.push({ id: `day-${day}`, label: 'Day', value: day })
+      tags.push({ id: `day-${day}`, label: t('filters.day'), value: day })
     })
     
     filters.selectedLevels.forEach(level => {
-      tags.push({ id: `level-${level}`, label: 'Level', value: `Level ${level}` })
+      tags.push({ id: `level-${level}`, label: t('filters.level'), value: t('filters.level_value', { level }) })
     })
 
     filters.selectedStatuses.forEach(status => {
       // Don't show tag for default active if it's the only one
       if (filters.selectedStatuses.length === 1 && status === 'active') return;
-      tags.push({ id: `status-${status}`, label: 'Status', value: status.charAt(0).toUpperCase() + status.slice(1) })
+      tags.push({ id: `status-${status}`, label: t('filters.status'), value: status.charAt(0).toUpperCase() + status.slice(1) })
     })
 
     return tags
@@ -166,9 +169,9 @@ export function GroupsPage() {
     setMutationError(null)
     try {
       await deleteGroupMutation.mutateAsync(deletingGroupId)
-      showToast('Group deleted successfully', 'success')
+      showToast(t('toast.deleted'), 'success')
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to delete group'
+      const msg = err instanceof Error ? err.message : t('toast.delete_failed')
       setMutationError(msg)
       showToast(msg, 'error')
     } finally {
@@ -189,7 +192,7 @@ export function GroupsPage() {
       setIsCreateModalOpen(false)
     } catch (err: unknown) {
       const detail = isAxiosError(err) ? err.response?.data?.detail : undefined
-      let errorMsg = 'Failed to create group.'
+      let errorMsg = t('toast.create_failed')
       
       if (Array.isArray(detail)) {
         errorMsg = detail.map((d: { loc?: string[]; msg?: string }) => `${d.loc?.[d.loc.length - 1] || 'Field'}: ${d.msg}`).join(', ')
@@ -221,14 +224,14 @@ export function GroupsPage() {
       setIsEditModalOpen(false)
       setSelectedGroup(null)
     } catch (err: unknown) {
-      setMutationError(err instanceof Error ? err.message : 'Failed to update group')
+      setMutationError(err instanceof Error ? err.message : t('toast.update_failed'))
       throw err
     }
   }
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNavbar activePage="Groups" />
+      <TopNavbar activePage={t('page_title')} />
       
       <GroupsHeader 
         totalGroups={totalGroups}
@@ -290,7 +293,7 @@ export function GroupsPage() {
             <div className="flex flex-col items-center justify-center py-28 gap-3 text-center">
               <span className="material-symbols-outlined text-6xl text-slate-200" aria-hidden="true">grid_view</span>
               <p className="text-slate-400 text-sm font-medium">
-                Select a view above to load groups
+                {t('empty.select_view')}
               </p>
             </div>
           )}
@@ -315,7 +318,7 @@ export function GroupsPage() {
                       <div role="tabpanel" id={`panel-${activeCategoryKey ?? groupedData[0]?.key ?? ''}`} aria-labelledby={`tab-${activeCategoryKey ?? groupedData[0]?.key ?? ''}`}>
                         <GroupCardGrid
                           isLoading={isLoading}
-                          emptyMessage="No groups matched your selection"
+                          emptyMessage={t('empty.no_groups')}
                           emptyIcon="grid_view"
                         >
                           {(groupedData.find(g => g.key === (activeCategoryKey ?? groupedData[0]?.key))?.groups ?? []).map((g) => (
@@ -336,7 +339,7 @@ export function GroupsPage() {
                     <>
                       <GroupCardGrid
                         isLoading={isLoading}
-                        emptyMessage="No groups matched your selection"
+                        emptyMessage={t('empty.no_groups')}
                         emptyIcon="grid_view"
                       >
                         {isLoading ? null : paginatedGroups.map((g) => (
@@ -391,7 +394,7 @@ export function GroupsPage() {
                         edit: handleEdit,
                         delete: (g) => handleDeleteClick(g.id)
                       }}
-                      emptyMessage="No groups matched your selection"
+                      emptyMessage={t('empty.no_groups')}
                       emptyIcon="none"
                       defaultActiveGroup={groupedData[0]?.key}
                     />
@@ -402,15 +405,15 @@ export function GroupsPage() {
                         <div className="flex flex-col items-center justify-center py-28 gap-4 text-center" role="status">
                           <span className="material-symbols-outlined text-6xl text-slate-200" aria-hidden="true">search_off</span>
                           <div>
-                            <p className="text-slate-500 font-medium">No groups found</p>
+                            <p className="text-slate-500 font-medium">{t('empty.no_groups_found')}</p>
                             {hasActiveFilters && (
                               <p className="text-slate-400 text-sm mt-1">
-                                Your filters returned no results.{' '}
+                                {t('empty.filters_returned_no_results')}{' '}
                                 <button
                                   onClick={handleClearAllFilters}
                                   className="text-secondary underline hover:text-secondary/80 font-medium"
                                 >
-                                  Clear all filters
+                                  {t('empty.clear_filters')}
                                 </button>
                               </p>
                             )}
@@ -430,7 +433,7 @@ export function GroupsPage() {
                             edit: handleEdit,
                             delete: (g) => handleDeleteClick(g.id)
                           }}
-                          emptyMessage="No groups matched your selection"
+                          emptyMessage={t('empty.no_groups')}
                           emptyIcon="none"
                         />
                       )}
@@ -464,7 +467,7 @@ export function GroupsPage() {
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title="Create Group"
+        title={t('modal.create')}
       >
         <GroupForm
           mode="create"
@@ -477,7 +480,7 @@ export function GroupsPage() {
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => { setIsEditModalOpen(false); setSelectedGroup(null) }}
-        title="Edit Group"
+        title={t('modal.edit')}
       >
         {selectedGroup && (
           <GroupForm
@@ -503,10 +506,10 @@ export function GroupsPage() {
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={isDeleteDialogOpen}
-        title="Delete Group"
-        message="Are you sure you want to delete this group? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('delete.title')}
+        message={t('delete.message')}
+        confirmText={t('delete.confirm')}
+        cancelText={t('delete.cancel')}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
         variant="danger"

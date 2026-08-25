@@ -24,7 +24,7 @@ export function ReportDebtorsDetails({ topDebtors, unpaidAttendees }: ReportDebt
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <h3 className="font-headline text-lg font-semibold text-on-surface mb-4">
             Top Debtors
-            <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">
+            <span className="ms-2 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">
               {topDebtors.length} Top
             </span>
           </h3>
@@ -32,15 +32,15 @@ export function ReportDebtorsDetails({ topDebtors, unpaidAttendees }: ReportDebt
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200">
-                  <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Student Name</th>
-                  <th scope="col" className="text-right py-3 px-4 text-sm font-medium text-slate-500">Amount Owed</th>
+                  <th scope="col" className="text-start py-3 px-4 text-sm font-medium text-slate-500">Student Name</th>
+                  <th scope="col" className="text-end py-3 px-4 text-sm font-medium text-slate-500">Amount Owed</th>
                 </tr>
               </thead>
               <tbody>
                 {topDebtors.map((debtor, idx) => (
                   <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
                     <td className="py-3 px-4 text-sm font-medium text-on-surface">{debtor.student_name}</td>
-                    <td className="py-3 px-4 text-sm text-right text-red-600 font-medium">
+                    <td className="py-3 px-4 text-sm text-end text-red-600 font-medium">
                       EGP {debtor.amount_owed.toLocaleString()}
                     </td>
                   </tr>
@@ -55,7 +55,7 @@ export function ReportDebtorsDetails({ topDebtors, unpaidAttendees }: ReportDebt
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <h3 className="font-headline text-lg font-semibold text-on-surface mb-4">
             Cumulative Unpaid Attendees
-            <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
+            <span className="ms-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
               {unpaidAttendees.length} Students
             </span>
           </h3>
@@ -63,9 +63,9 @@ export function ReportDebtorsDetails({ topDebtors, unpaidAttendees }: ReportDebt
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200">
-                  <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Student Name</th>
-                  <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-slate-500">Group Name</th>
-                  <th scope="col" className="text-right py-3 px-4 text-sm font-medium text-slate-500">Amount Owed</th>
+                  <th scope="col" className="text-start py-3 px-4 text-sm font-medium text-slate-500">Student Name</th>
+                  <th scope="col" className="text-start py-3 px-4 text-sm font-medium text-slate-500">Group Name</th>
+                  <th scope="col" className="text-end py-3 px-4 text-sm font-medium text-slate-500">Amount Owed</th>
                 </tr>
               </thead>
               <tbody>
@@ -73,7 +73,7 @@ export function ReportDebtorsDetails({ topDebtors, unpaidAttendees }: ReportDebt
                   <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
                     <td className="py-3 px-4 text-sm font-medium text-on-surface">{attendee.student_name}</td>
                     <td className="py-3 px-4 text-sm text-slate-600">{attendee.group_name}</td>
-                    <td className="py-3 px-4 text-sm text-right text-orange-600 font-medium">
+                    <td className="py-3 px-4 text-sm text-end text-orange-600 font-medium">
                       EGP {attendee.amount_owed.toLocaleString()}
                     </td>
                   </tr>

@@ -1,0 +1,72 @@
+{
+  "page_title": "Tasks",
+  "subtitle": "Manage and track employee tasks",
+  "actions": {
+    "new_task": "New Task"
+  },
+  "filters": {
+    "all_statuses": "All Statuses",
+    "all_priorities": "All Priorities",
+    "all_assignees": "All Assignees",
+    "recurring_only": "Recurring only",
+    "clear": "Clear filters",
+    "by_status": "Filter by status",
+    "by_priority": "Filter by priority",
+    "by_assignee": "Filter by assignee"
+  },
+  "loading": "Loading tasks...",
+  "toast": {
+    "load_failed": "Failed to load tasks",
+    "created_successfully": "Task created successfully",
+    "create_failed": "Failed to create task"
+  },
+  "create_modal": {
+    "title": "Create Task",
+    "title_label": "Title *",
+    "title_placeholder": "Task title",
+    "description_label": "Description",
+    "description_placeholder": "Optional description",
+    "priority_label": "Priority",
+    "due_date_label": "Due Date",
+    "assign_to_label": "Assign To",
+    "unassigned": "Unassigned",
+    "est_hours_label": "Est. Hours",
+    "tags_label": "Tags",
+    "tags_placeholder": "Comma-separated",
+    "recurring_task": "Recurring task",
+    "pattern_label": "Pattern",
+    "day_of_week_label": "Day of Week",
+    "any": "Any",
+    "interval_days_label": "Interval (days)",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "create_task": "Create Task"
+  },
+  "comments": {
+    "no_comments": "No comments yet",
+    "write_comment_placeholder": "Write a comment...",
+    "send": "Send",
+    "delete_confirm": "Delete this comment?",
+    "delete_aria": "Delete comment"
+  },
+  "time_log": {
+    "total_logged": "Total logged",
+    "no_time_logged": "No time logged yet",
+    "hours_placeholder": "Hours",
+    "note_placeholder": "Optional note...",
+    "log": "Log"
+  },
+  "subtask": {
+    "add_placeholder": "Add subtask...",
+    "add": "Add"
+  },
+  "table": {
+    "no_tasks": "No tasks found",
+    "title": "Title",
+    "priority": "Priority",
+    "status": "Status",
+    "assigned_to": "Assigned To",
+    "due_date": "Due Date",
+    "recurring_title": "Recurring"
+  }
+}

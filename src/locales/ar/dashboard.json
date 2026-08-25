@@ -1,0 +1,64 @@
+{
+  "page_title": "الصفحه الرئيسية",
+  "breadcrumb": {
+    "home": "الرئيسية"
+  },
+  "actions": {
+    "new_enrollment": "اشتراك جديد"
+  },
+  "scheduled_groups": "المجموعات النهاردة",
+  "empty": {
+    "no_groups": "مفيش مجموعات",
+    "no_groups_today": "مفيش مجموعات النهاردة"
+  },
+  "fallbacks": {
+    "unknown_group": "مجموعة مش معروفة",
+    "unknown_course": "كورس مش معروف",
+    "tba": "يتحدد بعدين"
+  },
+  "quick_actions": {
+    "aria_label": "إجراءات ",
+    "quick_register": "تسجيل ",
+    "quick_register_subtitle": "سجّل طالب جديد",
+    "create_payment": "فاتورة جديدة",
+    "create_payment_subtitle": "سجّل فاتورة جديدة",
+    "todays_sessions": "سيشنز النهاردة",
+    "quick_reports": "تقارير ",
+    "quick_reports_subtitle": "شوف التقارير",
+    "quick_register_student": "تسجيل  للطالب",
+    "student_registered_success": "الطالب اتسجّل بنجاح",
+    "student_register_failed": "مش عارف أسجّل الطالب"
+  },
+  "mobile_group_card": {
+    "attendance_badge": "الحضور",
+    "mark_attendance": "سجّل الحضور",
+    "view_attendance_for": "شوف حضور {{name}}"
+  },
+  "fab": {
+    "open_actions": "افتح",
+    "close_actions": "اقفل",
+    "quick_register": "سجّل طالب",
+    "create_payment": "فاتورة جديدة"
+  },
+  "days": {
+    "saturday": "السبت",
+    "sunday": "الأحد",
+    "monday": "الاثنين",
+    "tuesday": "الثلاثاء",
+    "wednesday": "الأربعاء",
+    "thursday": "الخميس",
+    "friday": "الجمعة",
+    "saturday_short": "سبت",
+    "sunday_short": "أحد",
+    "monday_short": "اتنين",
+    "tuesday_short": "ثلاتاء",
+    "wednesday_short": "أربعاء",
+    "thursday_short": "خميس",
+    "friday_short": "جمعة",
+    "select_day": "اختر يوم"
+  },
+  "instructor_filter": {
+    "all": "الكل",
+    "filter_by_instructor": "تصفية حسب المهندس"
+  }
+}

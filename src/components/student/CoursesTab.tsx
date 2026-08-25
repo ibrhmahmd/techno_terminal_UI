@@ -1,4 +1,5 @@
 import { BookOpen, Calendar, Award, Clock, GraduationCap } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { EmptyState } from '../common/EmptyState'
 
 // Inline type definition (was in deleted legacy types)
@@ -18,6 +19,7 @@ interface CoursesTabProps {
 }
 
 export function CoursesTab({ courses }: CoursesTabProps) {
+  const { t } = useTranslation('common')
   // Separate courses by status
   const inProgressCourses = courses.filter(c => c.status === 'in_progress')
   const completedCourses = courses.filter(c => c.status === 'completed')
@@ -57,7 +59,7 @@ export function CoursesTab({ courses }: CoursesTabProps) {
           <div>
             <p className="font-semibold text-on-surface">{course.course_name}</p>
             {course.level && (
-              <p className="text-sm text-slate-500">Level {course.level}</p>
+              <p className="text-sm text-slate-500">{t('overviewTab.level', { number: course.level })}</p>
             )}
             <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
               <span className="flex items-center gap-1">
@@ -68,7 +70,7 @@ export function CoursesTab({ courses }: CoursesTabProps) {
             </div>
           </div>
         </div>
-        <div className="text-right">
+        <div className="text-end">
           <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(course.status)}`}>
             {course.status === 'in_progress' && <Clock className="w-3 h-3" />}
             {course.status === 'completed' && <Award className="w-3 h-3" />}
@@ -76,7 +78,7 @@ export function CoursesTab({ courses }: CoursesTabProps) {
           </span>
           {course.final_grade && (
             <p className="text-sm font-medium text-on-surface mt-2">
-              Grade: {course.final_grade}
+              {t('coursesTab.grade', { grade: course.final_grade })}
             </p>
           )}
         </div>
@@ -87,8 +89,8 @@ export function CoursesTab({ courses }: CoursesTabProps) {
   if (courses.length === 0) {
     return (
       <EmptyState
-        title="No course records"
-        message="This student has not been enrolled in any courses yet."
+        title={t('coursesTab.no_course_records')}
+        message={t('coursesTab.no_course_records_message')}
         icon="inbox"
       />
     )
@@ -98,13 +100,13 @@ export function CoursesTab({ courses }: CoursesTabProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-on-surface">Course History</h2>
+          <h2 className="text-xl font-semibold text-on-surface">{t('coursesTab.course_history')}</h2>
           <p className="text-sm text-slate-500 mt-1">
-            View all courses this student has taken or is currently taking
+            {t('coursesTab.course_history_subtitle')}
           </p>
         </div>
         <div className="text-sm text-slate-500">
-          Total: <span className="font-medium text-on-surface">{courses.length}</span> courses
+          {t('coursesTab.total_courses', { count: courses.length })}
         </div>
       </div>
 
@@ -114,8 +116,8 @@ export function CoursesTab({ courses }: CoursesTabProps) {
           <div className="px-6 py-4 border-b border-slate-100 bg-amber-50">
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-amber-600" />
-              <h3 className="font-semibold text-on-surface">In Progress</h3>
-              <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+              <h3 className="font-semibold text-on-surface">{t('coursesTab.in_progress')}</h3>
+              <span className="ms-2 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
                 {inProgressCourses.length}
               </span>
             </div>
@@ -132,8 +134,8 @@ export function CoursesTab({ courses }: CoursesTabProps) {
           <div className="px-6 py-4 border-b border-slate-100 bg-blue-50">
             <div className="flex items-center gap-2">
               <Award className="w-5 h-5 text-blue-600" />
-              <h3 className="font-semibold text-on-surface">Completed</h3>
-              <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+              <h3 className="font-semibold text-on-surface">{t('coursesTab.completed')}</h3>
+              <span className="ms-2 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
                 {completedCourses.length}
               </span>
             </div>
@@ -150,8 +152,8 @@ export function CoursesTab({ courses }: CoursesTabProps) {
           <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-5 h-5 text-slate-500" />
-              <h3 className="font-semibold text-on-surface">Dropped</h3>
-              <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-600">
+              <h3 className="font-semibold text-on-surface">{t('coursesTab.dropped')}</h3>
+              <span className="ms-2 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-600">
                 {droppedCourses.length}
               </span>
             </div>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -17,15 +18,18 @@ export function ConfirmDialog({
   isOpen,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText,
+  cancelText,
   onConfirm,
   onCancel,
   variant = 'info',
   children,
   disabled = false,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation('common')
   const dialogRef = useRef<HTMLDivElement>(null)
+  const displayConfirmText = confirmText ?? t('confirm.confirm')
+  const displayCancelText = cancelText ?? t('confirm.cancel')
 
   useEffect(() => {
     if (!isOpen) return
@@ -116,14 +120,14 @@ export function ConfirmDialog({
             onClick={onCancel}
             className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            {cancelText}
+            {displayCancelText}
           </button>
           <button
             onClick={onConfirm}
             disabled={disabled}
             className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${styles.confirmBtn} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {confirmText}
+            {displayConfirmText}
           </button>
         </div>
       </div>

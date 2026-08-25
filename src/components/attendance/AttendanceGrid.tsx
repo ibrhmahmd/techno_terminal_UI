@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../../hooks/queryKeys'
 import type { UpdateSessionDTO } from '../../api/academics'
@@ -40,6 +41,7 @@ interface AttendanceGridProps {
 }
 
 export function AttendanceGrid({ sessions, roster, groupId, level, groupInstructorName, groupName, courseName, selectedDate }: AttendanceGridProps) {
+  const { t } = useTranslation('attendance')
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [isSaving, setIsSaving] = useState(false)
@@ -136,7 +138,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     try {
       await cancelSession(sessionId)
       setHasChanges(true)
-      showToast('Session cancelled successfully', 'success')
+      showToast(t('toast.session_cancelled'), 'success')
       if (selectedDate) {
         await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       }
@@ -144,7 +146,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       await refetchData()
     } catch (err) {
       console.error('Failed to cancel session:', err)
-      showToast('Failed to cancel session', 'error')
+      showToast(t('toast.session_cancel_failed'), 'error')
     }
   }, [refetchData, showToast, selectedDate, qc, groupId])
 
@@ -153,7 +155,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     try {
       await deleteSession(sessionId)
       setHasChanges(true)
-      showToast('Session deleted successfully', 'success')
+      showToast(t('toast.session_deleted'), 'success')
       if (selectedDate) {
         await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       }
@@ -161,7 +163,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       await refetchData()
     } catch (err) {
       console.error('Failed to delete session:', err)
-      showToast('Failed to delete session', 'error')
+      showToast(t('toast.session_delete_failed'), 'error')
     }
   }, [refetchData, showToast, selectedDate, qc, groupId])
 
@@ -170,7 +172,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     try {
       await reactivateSession(sessionId)
       setHasChanges(true)
-      showToast('Session reactivated successfully', 'success')
+      showToast(t('toast.session_reactivated'), 'success')
       if (selectedDate) {
         await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       }
@@ -178,7 +180,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       await refetchData()
     } catch (err) {
       console.error('Failed to reactivate session:', err)
-      showToast('Failed to reactivate session', 'error')
+      showToast(t('toast.session_reactivate_failed'), 'error')
     }
   }, [refetchData, showToast, selectedDate, qc, groupId])
 
@@ -187,7 +189,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     try {
       await updateSession(sessionId, { status: 'completed' })
       setHasChanges(true)
-      showToast('Session marked as completed successfully', 'success')
+      showToast(t('toast.session_completed'), 'success')
       if (selectedDate) {
         await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       }
@@ -195,7 +197,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       await refetchData()
     } catch (err) {
       console.error('Failed to complete session:', err)
-      showToast('Failed to complete session', 'error')
+      showToast(t('toast.session_complete_failed'), 'error')
     }
   }, [refetchData, showToast, selectedDate, qc, groupId])
 
@@ -205,7 +207,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       await updateSession(sessionId, data)
       setIsEditModalOpen(false)
       setEditingSession(null)
-      showToast('Session updated successfully', 'success')
+      showToast(t('toast.session_updated'), 'success')
       if (selectedDate) {
         await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
       }
@@ -213,7 +215,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       await refetchData()
     } catch (err) {
       console.error('Failed to update session:', err)
-      showToast('Failed to update session', 'error')
+      showToast(t('toast.session_update_failed'), 'error')
     }
   }, [refetchData, showToast, selectedDate, qc, groupId])
 
@@ -390,16 +392,16 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       if (failedSessions.length === 0) {
         const notesSaved = results.filter(r => r.status === 'fulfilled' && 'type' in r.value && r.value.type === 'notes' && r.value.status === 'success').length
         const totalSaved = successfulSessions.length + notesSaved
-        showToast(`Saved ${totalSaved} change(s) successfully!`, 'success')
+        showToast(t('toast.save_success', { count: totalSaved }), 'success')
       } else if (successfulSessions.length === 0) {
-        showToast('Failed to save all changes', 'error')
+        showToast(t('toast.save_all_failed'), 'error')
       } else {
-        showToast(`Saved ${successfulSessions.length}, ${failedSessions.length} failed - click retry`, 'error')
+        showToast(t('toast.save_partial', { saved: successfulSessions.length, failed: failedSessions.length }), 'error')
       }
     } catch (err) {
       console.error('[Save] Failed to save:', err)
-      setError('Failed to save changes')
-      showToast('Failed to save changes', 'error')
+      setError(t('toast.save_failed'))
+      showToast(t('toast.save_failed'), 'error')
     } finally {
       setIsSaving(false)
     }
@@ -449,11 +451,11 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         qc.invalidateQueries({ queryKey: queryKeys.groupAttendance(groupId, level) }),
       ])
       
-      showToast('Session saved successfully', 'success')
+      showToast(t('toast.retry_success'), 'success')
     } catch (err) {
       console.error(`[Retry] Failed to save session ${sessionId}:`, err)
       setSessionSaveStatus(prev => new Map(prev).set(sessionId, 'error'))
-      showToast('Failed to save session', 'error')
+      showToast(t('toast.retry_failed'), 'error')
     }
   }, [pendingChanges, showToast, selectedDate, qc, groupId, level])
 
@@ -474,8 +476,8 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   if (students.length === 0) {
     return (
       <div className="p-8 text-center text-outline-variant">
-        <p className="mb-2">No students enrolled in this group.</p>
-        <p className="text-sm">Enroll students to start marking attendance.</p>
+        <p className="mb-2">{t('grid.no_students')}</p>
+        <p className="text-sm">{t('grid.no_students_hint')}</p>
       </div>
     )
   }
@@ -483,8 +485,8 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   if (sessions.length === 0) {
     return (
       <div className="p-8 text-center text-outline-variant">
-        <p className="mb-2">No sessions have been generated for this level yet.</p>
-        <p className="text-sm">{students.length} student{students.length !== 1 ? 's' : ''} enrolled — generate sessions to start marking attendance.</p>
+        <p className="mb-2">{t('grid.no_sessions')}</p>
+        <p className="text-sm">{t('grid.no_sessions_hint', { count: students.length })}</p>
       </div>
     )
   }
@@ -505,8 +507,8 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       )}
 
       <div className="w-full overflow-x-auto">
-        <table className="text-left border-collapse border border-outline-variant/20" style={{ width: '100%', minWidth: `${Math.max(700, 200 + sessions.length * 160)}px` }} aria-label="Attendance grid">
-          <caption className="sr-only">Student attendance for {groupName || 'group'} — Level {level}</caption>
+        <table className="text-start border-collapse border border-outline-variant/20" style={{ width: '100%', minWidth: `${Math.max(700, 200 + sessions.length * 160)}px` }} aria-label={t('grid.grid_aria')}>
+          <caption className="sr-only">{t('grid.grid_caption', { group: groupName || 'group', level })}</caption>
           {/* Group Header Row */}
           {groupName && (
             <thead>
@@ -523,7 +525,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
                         <button
                           onClick={handleCardClick}
                           className="p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-secondary transition-colors"
-                          aria-label="View group details"
+                          aria-label={t('grid.view_group_details')}
                         >
                           <span className="material-symbols-outlined text-[18px]" aria-hidden="true">info</span>
                         </button>
@@ -531,9 +533,9 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
                     </div>
                     <div className="flex items-center gap-6">
                       <div className="flex items-center gap-4">
-                        <div className="text-right">
+                        <div className="text-end">
                           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
-                            Instructor
+                            {t('grid.instructor')}
                           </p>
                           <p className="font-bold text-sm text-slate-900">{currentInstructorName}</p>
                         </div>
@@ -556,7 +558,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors shadow-sm"
                       >
                         <span className="material-symbols-outlined text-sm" aria-hidden="true">add</span>
-                        Add Session
+                        {t('grid.add_session')}
                       </button>
                     </div>
                   </div>

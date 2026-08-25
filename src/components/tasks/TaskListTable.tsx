@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { TaskReadDTO } from '../../api/tasks'
 import { TaskStatusBadge } from './TaskStatusBadge'
 import { TaskPriorityBadge } from './TaskPriorityBadge'
@@ -9,11 +10,13 @@ interface TaskListTableProps {
 }
 
 export function TaskListTable({ tasks, onRowClick }: TaskListTableProps) {
+  const { t } = useTranslation('tasks')
+
   if (tasks.length === 0) {
     return (
       <div className="text-center py-12">
         <span className="material-symbols-outlined text-4xl text-slate-400 mb-3 block">task_alt</span>
-        <p className="text-sm text-slate-500">No tasks found</p>
+        <p className="text-sm text-slate-500">{t('table.no_tasks')}</p>
       </div>
     )
   }
@@ -23,11 +26,11 @@ export function TaskListTable({ tasks, onRowClick }: TaskListTableProps) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-slate-200">
-            <th className="text-left py-3 px-4 font-medium text-slate-500">Title</th>
-            <th className="text-left py-3 px-4 font-medium text-slate-500">Priority</th>
-            <th className="text-left py-3 px-4 font-medium text-slate-500">Status</th>
-            <th className="text-left py-3 px-4 font-medium text-slate-500 hidden md:table-cell">Assigned To</th>
-            <th className="text-left py-3 px-4 font-medium text-slate-500 hidden lg:table-cell">Due Date</th>
+            <th className="text-start py-3 px-4 font-medium text-slate-500">{t('table.title')}</th>
+            <th className="text-start py-3 px-4 font-medium text-slate-500">{t('table.priority')}</th>
+            <th className="text-start py-3 px-4 font-medium text-slate-500">{t('table.status')}</th>
+            <th className="text-start py-3 px-4 font-medium text-slate-500 hidden md:table-cell">{t('table.assigned_to')}</th>
+            <th className="text-start py-3 px-4 font-medium text-slate-500 hidden lg:table-cell">{t('table.due_date')}</th>
           </tr>
         </thead>
         <tbody>
@@ -44,7 +47,7 @@ export function TaskListTable({ tasks, onRowClick }: TaskListTableProps) {
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-slate-900 truncate max-w-[280px]">{task.title}</span>
                   {task.is_recurring && (
-                    <span className="material-symbols-outlined text-xs text-slate-400" title="Recurring">repeat</span>
+                    <span className="material-symbols-outlined text-xs text-slate-400" title={t('table.recurring_title')}>repeat</span>
                   )}
                 </div>
                 {task.tags.length > 0 && (

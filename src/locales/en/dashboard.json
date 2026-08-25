@@ -1,0 +1,64 @@
+{
+  "page_title": "Dashboard",
+  "breadcrumb": {
+    "home": "Home"
+  },
+  "actions": {
+    "new_enrollment": "New Enrollment"
+  },
+  "scheduled_groups": "Scheduled groups",
+  "empty": {
+    "no_groups": "No groups scheduled",
+    "no_groups_today": "No groups scheduled for this day"
+  },
+  "fallbacks": {
+    "unknown_group": "Unknown Group",
+    "unknown_course": "Unknown Course",
+    "tba": "TBA"
+  },
+  "quick_actions": {
+    "aria_label": "Quick actions",
+    "quick_register": "Quick Register",
+    "quick_register_subtitle": "Register new student",
+    "create_payment": "Create Payment",
+    "create_payment_subtitle": "Record new payment",
+    "todays_sessions": "Today's Sessions",
+    "quick_reports": "Quick Reports",
+    "quick_reports_subtitle": "View insights",
+    "quick_register_student": "Quick Register Student",
+    "student_registered_success": "Student registered successfully",
+    "student_register_failed": "Failed to register student"
+  },
+  "mobile_group_card": {
+    "attendance_badge": "Attendance",
+    "mark_attendance": "Mark Attendance",
+    "view_attendance_for": "View attendance for {{name}}"
+  },
+  "fab": {
+    "open_actions": "Open actions",
+    "close_actions": "Close actions",
+    "quick_register": "Quick Register",
+    "create_payment": "Create Payment"
+  },
+  "days": {
+    "saturday": "Saturday",
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday_short": "Sat",
+    "sunday_short": "Sun",
+    "monday_short": "Mon",
+    "tuesday_short": "Tue",
+    "wednesday_short": "Wed",
+    "thursday_short": "Thu",
+    "friday_short": "Fri",
+    "select_day": "Select day"
+  },
+  "instructor_filter": {
+    "all": "All",
+    "filter_by_instructor": "Filter by instructor"
+  }
+}

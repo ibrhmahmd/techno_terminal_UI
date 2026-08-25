@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
@@ -10,6 +11,7 @@ import type { StudentListItem } from '../api/crm'
 export function ParentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation('common')
   const parentId = Number(id) || 1
 
   const [parent, setParent] = useState<Parent | null>(null)
@@ -32,7 +34,7 @@ export function ParentDetailPage() {
         setParent(data)
       } catch (err) {
         console.error('API Error:', err)
-        setError('Failed to load parent. Please try again.')
+        setError(t('parentDetail.load_failed'))
         setParent(null)
       } finally {
         setIsLoading(false)
@@ -76,7 +78,7 @@ export function ParentDetailPage() {
       setError(null)
     } catch (error: any) {
       console.error('Failed to update parent:', error);
-      setError('Failed to update parent')
+      setError(t('parentDetail.update_failed'))
     } finally {
       setIsProcessing(false)
     }
@@ -89,7 +91,7 @@ export function ParentDetailPage() {
       navigate('/directory')
     } catch (error: any) {
       console.error('Failed to delete parent:', error);
-      setError('Failed to delete parent')
+      setError(t('parentDetail.delete_failed'))
       setIsDeleteModalOpen(false)
       setIsProcessing(false)
     }
@@ -111,12 +113,12 @@ export function ParentDetailPage() {
       <div className="min-h-screen bg-surface">
         <TopNavbar activePage="Directory" />
         <div className="p-8 text-center text-slate-500">
-          <p>Parent not found</p>
+          <p>{t('parentDetail.not_found')}</p>
           <button
             onClick={() => navigate('/directory')}
             className="mt-4 px-4 py-2 text-sm text-secondary border border-secondary rounded hover:bg-secondary-container"
           >
-            Back to Directory
+            {t('parentDetail.back_to_directory')}
           </button>
         </div>
       </div>
@@ -134,8 +136,8 @@ export function ParentDetailPage() {
             onClick={() => navigate('/directory')}
             className="flex items-center gap-1 text-sm text-slate-500 hover:text-on-surface mb-2"
           >
-            <span className="material-symbols-outlined text-sm">arrow_back</span>
-            Back to Directory
+            <span className="material-symbols-outlined text-sm icon-flip-rtl">arrow_back</span>
+            {t('parentDetail.back_to_directory')}
           </button>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -147,14 +149,14 @@ export function ParentDetailPage() {
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
               >
                 <span className="material-symbols-outlined text-sm">edit</span>
-                Edit
+                {t('parentDetail.edit')}
               </button>
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
               >
                 <span className="material-symbols-outlined text-sm">delete</span>
-                Delete
+                {t('parentDetail.delete')}
               </button>
             </div>
           </div>
@@ -172,13 +174,13 @@ export function ParentDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left: Contact Info */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <h2 className="font-headline text-xl font-semibold text-on-surface mb-4">Contact Information</h2>
+            <h2 className="font-headline text-xl font-semibold text-on-surface mb-4">{t('parentDetail.contact_information')}</h2>
             <div className="space-y-4">
               {parent.phone_primary && (
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-slate-400">phone</span>
                   <div>
-                    <p className="text-sm text-slate-500">Phone</p>
+                    <p className="text-sm text-slate-500">{t('parentDetail.phone')}</p>
                     <p className="text-on-surface">{parent.phone_primary}</p>
                   </div>
                 </div>
@@ -187,7 +189,7 @@ export function ParentDetailPage() {
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-slate-400">phone_iphone</span>
                   <div>
-                    <p className="text-sm text-slate-500">Secondary Phone</p>
+                    <p className="text-sm text-slate-500">{t('parentDetail.secondary_phone')}</p>
                     <p className="text-on-surface">{parent.phone_secondary}</p>
                   </div>
                 </div>
@@ -196,7 +198,7 @@ export function ParentDetailPage() {
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-slate-400">email</span>
                   <div>
-                    <p className="text-sm text-slate-500">Email</p>
+                    <p className="text-sm text-slate-500">{t('parentDetail.email')}</p>
                     <p className="text-on-surface">{parent.email}</p>
                   </div>
                 </div>
@@ -205,7 +207,7 @@ export function ParentDetailPage() {
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-slate-400">group</span>
                   <div>
-                    <p className="text-sm text-slate-500">Relation</p>
+                    <p className="text-sm text-slate-500">{t('parentDetail.relation')}</p>
                     <p className="text-on-surface capitalize">{parent.relation}</p>
                   </div>
                 </div>
@@ -215,13 +217,13 @@ export function ParentDetailPage() {
 
           {/* Right: Students */}
           <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <h2 className="font-headline text-xl font-semibold text-on-surface mb-4">Children</h2>
+            <h2 className="font-headline text-xl font-semibold text-on-surface mb-4">{t('parentDetail.children')}</h2>
             {isLoadingStudents ? (
               <div className="flex items-center justify-center py-8">
                 <LoadingSpinner size="sm" />
               </div>
             ) : linkedStudents.length === 0 ? (
-              <p className="text-slate-500 text-sm">No students linked</p>
+              <p className="text-slate-500 text-sm">{t('parentDetail.no_students_linked')}</p>
             ) : (
               <div className="space-y-3">
                 {linkedStudents.map((student) => (
@@ -239,9 +241,9 @@ export function ParentDetailPage() {
                       student.status === 'waiting' ? 'bg-amber-100 text-amber-700' : 
                       'bg-slate-100 text-slate-600'
                     }`}>
-                      {student.status === 'active' ? 'Active' : 
-                       student.status === 'waiting' ? 'Waiting' : 
-                       'Inactive'}
+                    {student.status === 'active' ? t('parentDetail.status_active') : 
+                     student.status === 'waiting' ? t('parentDetail.status_waiting') : 
+                     t('parentDetail.status_inactive')}
                     </span>
                   </div>
                 ))}
@@ -255,7 +257,7 @@ export function ParentDetailPage() {
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Edit Parent"
+        title={t('parentDetail.edit_title')}
       >
         <ParentForm
           initialData={parent}
@@ -269,7 +271,7 @@ export function ParentDetailPage() {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Parent"
+        title={t('parentDetail.delete_title')}
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
@@ -278,7 +280,7 @@ export function ParentDetailPage() {
               disabled={isProcessing}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </button>
             <button
               onClick={handleDeleteParent}
@@ -286,13 +288,13 @@ export function ParentDetailPage() {
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
             >
               {isProcessing && <LoadingSpinner size="sm" />}
-              Delete
+              {t('parentDetail.delete')}
             </button>
           </div>
         }
       >
         <p className="text-sm text-slate-600">
-          Are you sure you want to delete <strong>{parent.full_name}</strong>? This action cannot be undone.
+          {t('parentDetail.delete_confirm', { name: parent.full_name })}
         </p>
       </Modal>
     </div>

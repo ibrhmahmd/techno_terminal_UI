@@ -1,0 +1,96 @@
+{
+  "page_title": "الموظفين",
+  "empty": {
+    "no_staff": "مفيش موظفين",
+    "no_results": "ملحقناش نتائج تطابق بحثك",
+    "add_first": "سجّل أول موظف"
+  },
+  "employee": {
+    "role": "الدور",
+    "active": "شغّال",
+    "inactive": "مش شغّال",
+    "edit_employee": "عدّل الموظف"
+  },
+  "actions": {
+    "add_employee": "اضافه موظف",
+    "include_deleted": "اعرض المحذوفين"
+  },
+  "dialogs": {
+    "delete_title": "احذف الموظف",
+    "delete_message": "متأكد إنك عايز تحذف الموظف ده؟ العملية دي ممكن تتراجع.",
+    "restore_title": "رجّع الموظف",
+    "restore_message": "متأكد إنك عايز ترجّع الموظف ده؟"
+  },
+  "toast": {
+    "created": "الموظف اتضاف بنجاح",
+    "updated": "الموظف اتعدّل بنجاح",
+    "deleted": "الموظف اتحذف بنجاح",
+    "restored": "الموظف اترجّع بنجاح",
+    "create_failed": "مقدرش أضيف الموظف",
+    "update_failed": "مقدرش أحدّث الموظف",
+    "delete_failed": "مقدرش أحذف الموظف",
+    "restore_failed": "مقدرش أرجّع الموظف",
+    "account_created": "الحساب اتعمل بنجاح",
+    "account_failed": "مقدرش أعمل الحساب"
+  },
+  "personal_info": {
+    "full_name_placeholder": "اكتب الاسم الكامل...",
+    "email_placeholder": "email@example.com",
+    "phone_placeholder": "01xxxxxxxxx",
+    "national_id_placeholder": "290xxxxxxxxxxx",
+    "university_placeholder": "اكتب الجامعة...",
+    "major_placeholder": "اكتب التخصص...",
+    "is_graduate": "خريج",
+    "hire_date_note": "تاريخ التعيين هيتلقائى تلقائى لما ملف الموظف يتعمل."
+  },
+  "instructor_combobox": {
+    "search_placeholder": "ابحث عن المهندس بالاسم...",
+    "change": "غيّر",
+    "recently_used": "اتستخدم مؤخراً",
+    "no_recent": "مفيش مهندسين اتستخدموا مؤخراً. اكتب للبحث.",
+    "min_chars": "اكتب على الأقل حرفين للبحث عن مهندسين.",
+    "no_results": "ملقيناش مهندسين يطابقوا",
+    "active": "شغّال",
+    "inactive": "مش شغّال"
+  },
+  "create_account": {
+    "title_prefix": "اضافه حساب لـ",
+    "cancel": "إلغاء",
+    "creating": "بيتعمّل...",
+    "create_account": "اضافه حساب",
+    "email_placeholder": "اكتب البريد الإلكتروني",
+    "password_placeholder": "١٢ حرف على الأقل",
+    "password_help": "لازم يكون ١٢ حرف على الأقل",
+    "admin": "Admin",
+    "system_admin": "System Admin",
+    "note": "ملحوظة:",
+    "note_text_1": "ده هيعمل حساب Supabase مربوط بـ",
+    "note_text_2": "الموظف هيستقبل إيميل بتعليمات الدخول."
+  },
+  "detail_modal": {
+    "title": "تفاصيل الموظف",
+    "restore_employee": "رجّع الموظف",
+    "delete_employee": "احذف الموظف",
+    "close": "إغلاق",
+    "load_error_title": "مقدرش أحمّل تفاصيل الموظف",
+    "load_error_message": "مقدرش نحمّل بيانات الموظف للتعديل. حاول تاني.",
+    "deleted_warning": "الموظف اتحذف بشكل مؤقت في",
+    "deleted_by": "من قِبل",
+    "restore_warning": "الرجوع مش هيشغّل تلقائى حساب الدخول بتاعه.",
+    "restore": "رجّع",
+    "no_job_title": "مفيش وظيفة محددة",
+    "personal_info": "بيانات شخصية",
+    "not_provided": "مش مقدّم",
+    "contact": "التواصل",
+    "employment_details": "تفاصيل التوظيف",
+    "not_set": "مش متحدد",
+    "not_specified": "مش محدّد",
+    "yes": "أيوه",
+    "no": "لأ"
+  },
+  "confirm": {
+    "cancel": "إلغاء",
+    "delete": "احذف",
+    "restore": "رجّع"
+  }
+}

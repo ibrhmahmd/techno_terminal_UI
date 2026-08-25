@@ -106,7 +106,7 @@ export function CertificateCard({
         {onRevoke && !isRevoked && (
           <button
             onClick={() => onRevoke(certificate.cert_id)}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors ml-auto"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors ms-auto"
           >
             <span className="material-symbols-outlined text-sm" aria-hidden="true">gavel</span>
             Revoke

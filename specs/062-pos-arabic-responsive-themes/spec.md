@@ -6,7 +6,7 @@
 
 Polish the Create Receipt flow based on final user requests:
 1. **Arabic Translations**: Translate all warning messages, payment statuses (Paid/Unpaid), input validation status indicators, and helper texts to Arabic.
-2. **Paid/Unpaid Terminology**: Ensure all references use "Paid" and "Unpaid" (in Arabic: `مدفوع` / `غير مدفوع`) instead of "Due" or other terminology.
+2. **Paid/Unpaid Terminology**: Ensure all references use "Paid" and "Unpaid" (in Arabic: `مدفوع` / `مش مدفوع`) instead of "Due" or other terminology.
 3. **Card Borders & Halos**: Color the card borders and halos based on the payment status:
    * **Paid (Emerald)**: Emerald border and green shadow/bg.
    * **Unpaid (Rose)**: Rose border and red shadow/bg.
@@ -20,9 +20,9 @@ Polish the Create Receipt flow based on final user requests:
 ### 2.1 Arabic Translations Map
 - **Warning Banner** (top of EnrollmentSelection):
   * Title: `تحذير: اشتراك مدفوع بالكامل`
-  * Body: `المستوى المختار لـ {group_name} مدفوع بالكامل بالفعل (المتبقي 0.00 جنيه). تسجيل دفعة جديدة سيؤدي إلى دفع زائد. يرجى التأكيد مع ولي الأمر قبل المتابعة.`
+  * Body: `المستوى المختار لـ {group_name} مدفوع بالكامل بالفعل (المتبقي 0.00 جنيه). تسجيل فاتورة جديدة سيؤدي إلى دفع زائد. يرجى التأكيد مع ولي الأمر قبل المتابعة.`
 - **Payment Status Badges**:
-  * Unpaid: `غير مدفوع`
+  * Unpaid: `مش مدفوع`
   * Paid: `مدفوع`
 - **Remaining Balance Text**:
   * Unpaid: `{amount} ج.م متبقي`
@@ -30,7 +30,7 @@ Polish the Create Receipt flow based on final user requests:
 - **Sidebar Status & Helper Texts**:
   * Exceeds Balance: `يتجاوز الرصيد المتبقي ({balance} ج.م)`
   * Perfect Match: `تطابق كامل مع الرصيد المتبقي`
-  * Partial Payment: `دفعة جزئية من الرصيد المتبقي`
+  * Partial Payment: `فاتورة جزئية من الرصيد المتبقي`
   * Fallback Message: `اختر طالباً واشتراكاً من اليسار لإدخال قيمة الدفع.`
 
 ### 2.2 Payment-colored Card Borders (EnrollmentSelection)

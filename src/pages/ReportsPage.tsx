@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { PageSection, PageHeader } from '../components/common'
 import { TabNavigation, type TabId } from '../components/reports/molecules/TabNavigation'
@@ -10,15 +11,16 @@ import { WeeklyReportTab } from '../components/reports/organisms/WeeklyReportTab
 import { MonthlyReportTab } from '../components/reports/organisms/MonthlyReportTab'
 
 export function ReportsPage() {
+  const { t } = useTranslation('reports')
   const [activeTab, setActiveTab] = useState<TabId>('daily_report')
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNavbar activePage="Reports" />
+      <TopNavbar activePage={t('page_title')} />
 
       <PageHeader
-        title="Reports"
-        subtitle="Analytics and insights dashboard"
+        title={t('page_title')}
+        subtitle={t('subtitle')}
       />
 
       <PageSection>

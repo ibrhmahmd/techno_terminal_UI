@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Modal } from '../components/common/Modal'
@@ -16,6 +17,7 @@ import { extractErrorMessage, getErrorStatus } from '../utils/apiErrors'
 export function TeamDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation('groups')
   const teamId = id || ''
 
   // Team data
@@ -124,7 +126,7 @@ export function TeamDetailPage() {
       navigate('/competitions')
     } catch (err: unknown) {
       if (getErrorStatus(err) === 409) {
-        setDeleteError(extractErrorMessage(err) || 'Cannot delete: this team has members who have already paid.')
+        setDeleteError(extractErrorMessage(err) || t('team.delete_conflict'))
       }
     }
   }
@@ -133,7 +135,7 @@ export function TeamDetailPage() {
     if (!selectedMember) return
     const amount = parseFloat(payAmount)
     if (isNaN(amount) || amount <= 0) {
-      setPayError('Enter a valid payment amount greater than 0')
+      setPayError(t('team.pay_invalid_amount'))
       return
     }
 
@@ -151,7 +153,7 @@ export function TeamDetailPage() {
       setParentSearch('')
       setParentResults([])
     } catch {
-      setPayError('Payment failed. Please try again.')
+      setPayError(t('team.pay_failed'))
     }
   }
 
@@ -159,11 +161,11 @@ export function TeamDetailPage() {
     if (!selectedMember) return
     const amount = parseFloat(refundAmount)
     if (isNaN(amount) || amount <= 0) {
-      setRefundError('Enter a valid refund amount greater than 0')
+      setRefundError(t('team.refund_invalid_amount'))
       return
     }
     if (amount > selectedMember.amount_paid) {
-      setRefundError(`Refund amount cannot exceed the amount paid (${selectedMember.amount_paid} EGP)`)
+      setRefundError(t('team.refund_exceeds_paid', { amount: selectedMember.amount_paid }))
       return
     }
 
@@ -174,7 +176,7 @@ export function TeamDetailPage() {
       setSelectedMember(null)
       setRefundAmount('')
     } catch {
-      setRefundError('Refund failed. Please try again.')
+      setRefundError(t('team.refund_failed'))
     }
   }
 
@@ -184,7 +186,7 @@ export function TeamDetailPage() {
       await removeMember(member.student_id)
     } catch (err: unknown) {
       if (getErrorStatus(err) === 400) {
-        setRemoveError(extractErrorMessage(err) || `Cannot remove ${member.student_name}: they have already paid (${member.amount_paid} EGP).`)
+        setRemoveError(extractErrorMessage(err) || t('team.remove_member_conflict', { name: member.student_name, amount: member.amount_paid }))
       }
     }
   }
@@ -201,16 +203,16 @@ export function TeamDetailPage() {
       })
       setPlacementRank('')
       setPlacementLabel('')
-      setPlacementResult('Placement updated successfully')
+      setPlacementResult(t('team.placement_updated'))
     } catch (err: unknown) {
       if (getErrorStatus(err) === 400) {
-        setPlacementResult(extractErrorMessage(err) || 'Cannot set placement before the competition date has passed.')
+        setPlacementResult(extractErrorMessage(err) || t('team.placement_invalid_date'))
       }
     }
   }
 
   const handleAddMember = async () => {
-    if (!selectedStudent) { setAddMemberError('Select a student to add'); return }
+    if (!selectedStudent) { setAddMemberError(t('team.select_student_required')); return }
     setIsAddingMember(true)
     setAddMemberError(null)
     try {
@@ -219,7 +221,7 @@ export function TeamDetailPage() {
       setSelectedStudent(null)
       setStudentSearch('')
     } catch (err: unknown) {
-      setAddMemberError(extractErrorMessage(err) || 'Failed to add member')
+      setAddMemberError(extractErrorMessage(err) || t('team.add_member_failed'))
     } finally {
       setIsAddingMember(false)
     }
@@ -227,9 +229,9 @@ export function TeamDetailPage() {
 
   const getPaymentStatus = (member: TeamMemberRosterDTO) => {
     const remaining = member.amount_due - member.amount_paid
-    if (remaining <= 0) return { label: 'Paid', color: 'bg-green-100 text-green-700' }
-    if (member.amount_paid > 0) return { label: 'Partial', color: 'bg-blue-100 text-blue-700' }
-    return { label: 'Pending', color: 'bg-amber-100 text-amber-700' }
+    if (remaining <= 0) return { label: t('team.status_paid'), color: 'bg-green-100 text-green-700' }
+    if (member.amount_paid > 0) return { label: t('team.status_partial'), color: 'bg-blue-100 text-blue-700' }
+    return { label: t('team.status_pending'), color: 'bg-amber-100 text-amber-700' }
   }
 
   if (isLoading) {
@@ -249,12 +251,12 @@ export function TeamDetailPage() {
         <TopNavbar activePage="Competitions" />
         <div className="text-center py-12">
           <span className="material-symbols-outlined text-4xl text-slate-300 mb-4" aria-hidden="true">error</span>
-          <p className="text-slate-500">{teamError || 'Team not found'}</p>
+          <p className="text-slate-500">{teamError || t('team.not_found')}</p>
           <button
             onClick={() => navigate(-1)}
             className="mt-4 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
           >
-            Go Back
+            {t('team.back')}
           </button>
         </div>
       </div>
@@ -276,7 +278,7 @@ export function TeamDetailPage() {
             onClick={() => navigate(-1)}
             className="flex items-center gap-1 text-sm text-slate-500 hover:text-on-surface mb-2"
           >
-            <span className="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
+            <span className="material-symbols-outlined text-sm icon-flip-rtl" aria-hidden="true">arrow_back</span>
             Back
           </button>
           <div className="flex items-center justify-between">
@@ -284,7 +286,7 @@ export function TeamDetailPage() {
               <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">{team.team_name}</h1>
               {team.placement_rank && (
                 <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-                  Rank #{team.placement_rank}
+                  {t('team.rank', { rank: team.placement_rank })}
                 </span>
               )}
             </div>
@@ -294,14 +296,14 @@ export function TeamDetailPage() {
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
               >
                 <span className="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
-                Edit
+                {t('team.edit')}
               </button>
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
               >
                 <span className="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
-                Delete
+                {t('team.delete')}
               </button>
             </div>
           </div>
@@ -320,7 +322,7 @@ export function TeamDetailPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Team Info */}
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Team Information</h2>
+              <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">{t('team.information')}</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="material-symbols-outlined text-slate-400" aria-hidden="true">category</span>
@@ -334,18 +336,18 @@ export function TeamDetailPage() {
                 )}
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="material-symbols-outlined text-slate-400" aria-hidden="true">schedule</span>
-                  <span>Created {formatDate(team.created_at)}</span>
+                  <span>{t('team.created', { date: formatDate(team.created_at) })}</span>
                 </div>
                 {instructor && (
                   <div className="flex items-center gap-2 text-sm text-slate-600">
                     <span className="material-symbols-outlined text-slate-400" aria-hidden="true">school</span>
-                    <span>Instructor: {instructor.full_name}</span>
+                    <span>{t('team.instructor', { name: instructor.full_name })}</span>
                   </div>
                 )}
               </div>
               {team.project_name && (
                 <div className="mt-4 pt-4 border-t border-slate-100">
-                  <p className="text-sm font-medium text-on-surface">Project: {team.project_name}</p>
+                  <p className="text-sm font-medium text-on-surface">{t('team.project', { name: team.project_name })}</p>
                   {team.project_description && (
                     <p className="text-sm text-slate-600 mt-1">{team.project_description}</p>
                   )}
@@ -361,15 +363,15 @@ export function TeamDetailPage() {
             {/* Members */}
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-headline text-lg font-semibold text-on-surface">Team Members</h2>
+                <h2 className="font-headline text-lg font-semibold text-on-surface">{t('team.members_title')}</h2>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-500">{members.length} members</span>
+                  <span className="text-sm text-slate-500">{t('team.members_count', { count: members.length })}</span>
                   <button
                     onClick={() => { setSelectedStudent(null); setStudentSearch(''); setAddMemberError(null); setIsAddMemberModalOpen(true) }}
                     className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors"
                   >
                     <span className="material-symbols-outlined text-sm" aria-hidden="true">add</span>
-                    Add Member
+                    {t('team.add_member')}
                   </button>
                 </div>
               </div>
@@ -381,7 +383,7 @@ export function TeamDetailPage() {
               )}
 
               {members.length === 0 ? (
-                <p className="text-center text-slate-500 py-8">No members yet</p>
+                <p className="text-center text-slate-500 py-8">{t('team.no_members')}</p>
               ) : (
                 <div className="space-y-3">
                   {members.map((member) => {
@@ -396,8 +398,8 @@ export function TeamDetailPage() {
                           <div>
                             <p className="font-medium text-on-surface">{member.student_name}</p>
                             <p className="text-sm text-slate-500">
-                              Due: {member.amount_due} EGP · Paid: {member.amount_paid} EGP
-                              {remaining > 0 && <span className="text-red-500"> · Remaining: {remaining} EGP</span>}
+                              {t('team.due', { amount: member.amount_due })} · {t('team.paid', { amount: member.amount_paid })}
+                              {remaining > 0 && <span className="text-red-500"> · {t('team.remaining', { amount: remaining })}</span>}
                             </p>
                           </div>
                         </div>
@@ -405,7 +407,7 @@ export function TeamDetailPage() {
                           <button
                             onClick={() => handleRemoveMember(member)}
                             className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
-                            title="Remove member"
+                            title={t('team.remove_member')}
                           >
                             <span className="material-symbols-outlined text-sm" aria-hidden="true">person_remove</span>
                           </button>
@@ -422,7 +424,7 @@ export function TeamDetailPage() {
                               }}
                               className="px-3 py-1 text-xs font-medium text-white bg-secondary rounded hover:bg-secondary/90 transition-colors"
                             >
-                              Pay
+                              {t('team.pay')}
                             </button>
                           )}
                           {member.amount_paid > 0 && (
@@ -435,7 +437,7 @@ export function TeamDetailPage() {
                               }}
                               className="px-3 py-1 text-xs font-medium text-red-600 border border-red-200 rounded hover:bg-red-50 transition-colors"
                             >
-                              Refund
+                              {t('team.refund')}
                             </button>
                           )}
                         </div>
@@ -448,7 +450,7 @@ export function TeamDetailPage() {
 
             {/* Placement */}
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">Competition Placement</h2>
+              <h2 className="font-headline text-lg font-semibold text-on-surface mb-4">{t('team.placement_title')}</h2>
               {placementResult && (
                 <div className={`mb-4 p-3 rounded-lg text-sm ${placementResult.startsWith('Cannot') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
                   {placementResult}
@@ -456,7 +458,7 @@ export function TeamDetailPage() {
               )}
               <div className="flex items-end gap-4">
                 <div>
-                  <label htmlFor="placement-rank" className="block text-sm font-medium text-slate-700 mb-1">Rank</label>
+                  <label htmlFor="placement-rank" className="block text-sm font-medium text-slate-700 mb-1">{t('team.placement_rank_label')}</label>
                   <input
                     id="placement-rank"
                     type="number"
@@ -468,13 +470,13 @@ export function TeamDetailPage() {
                   />
                 </div>
                 <div className="flex-1">
-                  <label htmlFor="placement-label" className="block text-sm font-medium text-slate-700 mb-1">Label (optional)</label>
+                  <label htmlFor="placement-label" className="block text-sm font-medium text-slate-700 mb-1">{t('team.placement_label_label')}</label>
                   <input
                     id="placement-label"
                     type="text"
                     value={placementLabel}
                     onChange={(e) => setPlacementLabel(e.target.value)}
-                    placeholder={team.placement_label || 'Gold, Silver, etc.'}
+                    placeholder={team.placement_label || t('team.placement_label_placeholder')}
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
                   />
                 </div>
@@ -483,7 +485,7 @@ export function TeamDetailPage() {
                   disabled={placementUpdating || !placementRank}
                   className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
                 >
-                  {placementUpdating ? 'Saving...' : 'Update'}
+                  {placementUpdating ? t('team.saving') : t('team.update')}
                 </button>
               </div>
             </div>
@@ -492,22 +494,22 @@ export function TeamDetailPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h3 className="font-semibold text-on-surface mb-4">Team Stats</h3>
+              <h3 className="font-semibold text-on-surface mb-4">{t('team.team_stats')}</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Members</span>
+                  <span className="text-sm text-slate-600">{t('team.members_title')}</span>
                   <span className="font-semibold text-on-surface">{members.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Total Fees Due</span>
+                  <span className="text-sm text-slate-600">{t('team.total_fees_due')}</span>
                   <span className="font-semibold text-on-surface">{totalDue} EGP</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Total Paid</span>
+                  <span className="text-sm text-slate-600">{t('team.total_paid')}</span>
                   <span className="font-semibold text-green-600">{totalPaid} EGP</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Fully Paid</span>
+                  <span className="text-sm text-slate-600">{t('team.fully_paid')}</span>
                   <span className="font-semibold text-green-600">
                     {fullyPaidCount}/{members.length}
                   </span>
@@ -515,7 +517,7 @@ export function TeamDetailPage() {
                 {team.placement_rank && (
                   <div className="pt-4 border-t border-slate-100">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">Placement</span>
+                      <span className="text-sm text-slate-600">{t('team.placement')}</span>
                       <span className="font-semibold text-amber-600">#{team.placement_rank}</span>
                     </div>
                     {team.placement_label && (
@@ -533,7 +535,7 @@ export function TeamDetailPage() {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => { setIsDeleteModalOpen(false); setDeleteError(null) }}
-        title="Delete Team"
+        title={t('team.delete_title')}
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
@@ -541,23 +543,23 @@ export function TeamDetailPage() {
               onClick={() => { setIsDeleteModalOpen(false); setDeleteError(null) }}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </button>
             <button
               onClick={handleDelete}
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
             >
-              Delete
+              {t('team.delete')}
             </button>
           </div>
         }
       >
         <div className="space-y-3">
           <p className="text-sm text-slate-600">
-            Are you sure you want to permanently delete <strong>{team.team_name}</strong>?
+            {t('team.delete_confirm', { name: team.team_name })}
           </p>
           <p className="text-sm text-red-600">
-            This action cannot be undone.
+            {t('team.delete_warning')}
           </p>
           {deleteError && (
             <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
@@ -571,7 +573,7 @@ export function TeamDetailPage() {
       <Modal
         isOpen={isAddMemberModalOpen}
         onClose={() => setIsAddMemberModalOpen(false)}
-        title="Add Team Member"
+        title={t('team.add_member_title')}
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
@@ -580,7 +582,7 @@ export function TeamDetailPage() {
               disabled={isAddingMember}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </button>
             <button
               onClick={handleAddMember}
@@ -588,7 +590,7 @@ export function TeamDetailPage() {
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
             >
               {isAddingMember && <LoadingSpinner size="sm" />}
-              Add Member
+              {t('team.add_member')}
             </button>
           </div>
         }
@@ -602,7 +604,7 @@ export function TeamDetailPage() {
             )}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-on-surface mb-1">
-                Select Student <span className="text-red-500">*</span>
+                {t('team.select_student')} <span className="text-red-500">*</span>
               </label>
               <StudentCombobox
                 value={selectedStudent}
@@ -628,7 +630,7 @@ export function TeamDetailPage() {
           setParentSearch('')
           setParentResults([])
         }}
-        title="Pay Competition Fee"
+        title={t('team.pay_title')}
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
@@ -645,14 +647,14 @@ export function TeamDetailPage() {
               disabled={isPaying}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </button>
             <button
               onClick={handlePayFee}
               disabled={isPaying}
               className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
             >
-              {isPaying ? 'Processing...' : 'Pay'}
+              {isPaying ? t('team.pay_processing') : t('team.pay')}
             </button>
           </div>
         }
@@ -666,11 +668,11 @@ export function TeamDetailPage() {
               </div>
             )}
             <p className="text-sm text-slate-600">
-              Payment for <strong>{selectedMember.student_name}</strong>
+              {t('team.payment_for', { name: selectedMember.student_name })}
             </p>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="parent_search" className="text-sm font-medium text-on-surface">
-                Parent <span className="text-slate-400 font-normal">(optional)</span>
+                {t('team.parent_label')} <span className="text-slate-400 font-normal">{t('team.parent_optional')}</span>
               </label>
               <div className="relative">
                 <input
@@ -681,7 +683,7 @@ export function TeamDetailPage() {
                     setParentSearch(e.target.value)
                     setSelectedParent(null)
                   }}
-                  placeholder="Search parent by name..."
+                  placeholder={t('team.parent_search_placeholder')}
                   className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
                 />
                 {isSearchingParents && (
@@ -720,7 +722,7 @@ export function TeamDetailPage() {
                         setParentResults([])
                       }}
                       className="ml-auto text-slate-400 hover:text-red-500 transition-colors"
-                      aria-label="Clear parent selection"
+                      aria-label={t('team.clear_parent')}
                     >
                       <span className="material-symbols-outlined text-base">close</span>
                     </button>
@@ -730,21 +732,21 @@ export function TeamDetailPage() {
             </div>
             <div className="p-4 bg-slate-50 rounded-lg space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-600">Amount Due</span>
+                <span className="text-slate-600">{t('team.amount_due')}</span>
                 <span className="font-semibold text-on-surface">{selectedMember.amount_due} EGP</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-600">Already Paid</span>
+                <span className="text-slate-600">{t('team.already_paid')}</span>
                 <span className="font-semibold text-green-600">{selectedMember.amount_paid} EGP</span>
               </div>
               <div className="flex items-center justify-between text-sm pt-2 border-t border-slate-200">
-                <span className="text-slate-600">Remaining</span>
+                <span className="text-slate-600">{t('team.remaining_amount')}</span>
                 <span className="font-semibold text-red-600">{selectedMember.amount_due - selectedMember.amount_paid} EGP</span>
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="pay_amount" className="text-sm font-medium text-on-surface">
-                Payment Amount <span className="text-red-500">*</span>
+                {t('team.payment_amount')} <span className="text-red-500">*</span>
               </label>
               <input
                 id="pay_amount"
@@ -758,7 +760,7 @@ export function TeamDetailPage() {
                 min="0.01"
                 className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
               />
-              <p className="text-xs text-slate-500">Supports partial payments. Enter any amount greater than 0.</p>
+              <p className="text-xs text-slate-500">{t('team.partial_payments_hint')}</p>
             </div>
           </div>
         )}
@@ -773,7 +775,7 @@ export function TeamDetailPage() {
           setRefundAmount('')
           setRefundError(null)
         }}
-        title="Refund Competition Fee"
+        title={t('team.refund_title')}
         size="sm"
         footer={
           <div className="flex justify-end gap-3 font-body">
@@ -787,14 +789,14 @@ export function TeamDetailPage() {
               disabled={isRefunding}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </button>
             <button
               onClick={handleRefund}
               disabled={isRefunding}
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
             >
-              {isRefunding ? 'Processing...' : 'Refund'}
+              {isRefunding ? t('team.refund_processing') : t('team.refund')}
             </button>
           </div>
         }
@@ -808,21 +810,21 @@ export function TeamDetailPage() {
               </div>
             )}
             <p className="text-sm text-slate-600">
-              Refund for <strong>{selectedMember.student_name}</strong>
+              {t('team.refund_for', { name: selectedMember.student_name })}
             </p>
             <div className="p-4 bg-slate-50 rounded-lg space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-600">Amount Due</span>
+                <span className="text-slate-600">{t('team.amount_due')}</span>
                 <span className="font-semibold text-on-surface">{selectedMember.amount_due} EGP</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-600">Already Paid</span>
+                <span className="text-slate-600">{t('team.already_paid')}</span>
                 <span className="font-semibold text-green-600">{selectedMember.amount_paid} EGP</span>
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="refund_amount" className="text-sm font-medium text-on-surface">
-                Refund Amount <span className="text-red-500">*</span>
+                {t('team.refund_amount')} <span className="text-red-500">*</span>
               </label>
               <input
                 id="refund_amount"
@@ -831,13 +833,13 @@ export function TeamDetailPage() {
                 onChange={(e) => setRefundAmount(e.target.value)}
                 onWheel={(e) => (e.target as HTMLInputElement).blur()}
                 onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
-                placeholder="Enter amount..."
+                placeholder={t('team.enter_amount')}
                 step="0.01"
                 min="0.01"
                 max={selectedMember.amount_paid}
                 className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
               />
-              <p className="text-xs text-slate-500 font-body">Supports partial refunds. Enter any amount up to {selectedMember.amount_paid} EGP.</p>
+              <p className="text-xs text-slate-500 font-body">{t('team.partial_refunds_hint', { amount: selectedMember.amount_paid })}</p>
             </div>
           </div>
         )}

@@ -10,7 +10,7 @@
 
 #### [MODIFY] [EnrollmentSelection.tsx](file:///e:/Users/ibrahim/Desktop/techno_terminal_UI/src/components/finance/CreateReceipt/EnrollmentSelection.tsx)
 - Translate warning banner title and text to Arabic.
-- Translate status badges to "مدفوع" and "غير مدفوع".
+- Translate status badges to "مدفوع" and "مش مدفوع".
 - Translate balance values under card to Arabic: `{remaining} ج.م متبقي` or `0.00 ج.م متبقي`.
 - Compute `gridClass` based on `enrollments.length`:
   * `1` card -> `grid grid-cols-1 max-w-sm gap-3.5`
@@ -28,7 +28,7 @@
 - Translate sidebar warnings and helper texts to Arabic:
   - Exceeds: `يتجاوز الرصيد المتبقي ({balance} ج.م)`
   - Match: `تطابق كامل مع الرصيد المتبقي`
-  - Partial: `دفعة جزئية من الرصيد المتبقي`
+  - Partial: `فاتورة جزئية من الرصيد المتبقي`
   - Fallback message: `اختر طالباً واشتراكاً من اليسار لإدخال قيمة الدفع.`
 - Convert POS Checkout Summary box to light mode:
   - Container classes: `bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-sm space-y-4 text-slate-800`

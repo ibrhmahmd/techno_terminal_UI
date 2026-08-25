@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useEmployees } from '../../hooks/useStaff'
 import type { EmployeeListItem } from '../../api/hr'
 import { getRecentItems, addRecentItem, type RecentItem } from '../../utils/recentCache'
@@ -9,6 +10,7 @@ export interface InstructorComboboxProps {
 }
 
 export function InstructorComboboxInner({ value, onChange }: InstructorComboboxProps) {
+  const { t } = useTranslation('staff')
   const [search, setSearch] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<string>('')
@@ -82,7 +84,7 @@ export function InstructorComboboxInner({ value, onChange }: InstructorComboboxP
 
       return [{
         key: 'recents',
-        label: 'Recently Used',
+        label: t('instructor_combobox.recently_used'),
         groups: list,
       }]
     }
@@ -104,7 +106,7 @@ export function InstructorComboboxInner({ value, onChange }: InstructorComboboxP
       label: k,
       groups: grouped[k],
     }))
-  }, [data?.items, search, recentInstructors])
+  }, [data?.items, search, recentInstructors, t])
 
   // Automatically pick the first category key as active if current one doesn't exist
   const categories = useMemo(() => {
@@ -149,7 +151,7 @@ export function InstructorComboboxInner({ value, onChange }: InstructorComboboxP
           aria-label={`Change instructor selection (currently ${value.full_name})`}
           className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
         >
-          Change
+          {t('instructor_combobox.change')}
         </button>
       </div>
     )
@@ -168,9 +170,9 @@ export function InstructorComboboxInner({ value, onChange }: InstructorComboboxP
             setIsOpen(true)
           }}
           onFocus={() => setIsOpen(true)}
-          placeholder="Search instructor by name..."
-          aria-label="Search instructor"
-          className="w-full pl-10 pr-10 py-3 text-sm border border-slate-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20 focus-visible:border-secondary transition-colors placeholder:text-slate-400"
+          placeholder={t('instructor_combobox.search_placeholder')}
+          aria-label={t('instructor_combobox.search_placeholder')}
+          className="w-full ps-10 pe-10 py-3 text-sm border border-slate-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20 focus-visible:border-secondary transition-colors placeholder:text-slate-400"
         />
         {search && (
           <button
@@ -248,10 +250,10 @@ export function InstructorComboboxInner({ value, onChange }: InstructorComboboxP
               <span className="material-symbols-outlined text-4xl text-slate-200" aria-hidden="true">grid_view</span>
               <p className="text-sm font-medium">
                 {search.length === 0
-                  ? "No recently used instructors. Type to search."
+                  ? t('instructor_combobox.no_recent')
                   : search.length === 1
-                    ? "Type at least 2 characters to search instructors."
-                    : `No instructors found matching "${search}"`}
+                    ? t('instructor_combobox.min_chars')
+                    : `${t('instructor_combobox.no_results')} "${search}"`}
               </p>
             </div>
           ) : (
@@ -270,7 +272,7 @@ export function InstructorComboboxInner({ value, onChange }: InstructorComboboxP
                       setSearch('')
                       setIsOpen(false)
                     }}
-                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-4 rounded-xl cursor-pointer transition-colors flex flex-col justify-between gap-2 shadow-sm hover:shadow-md text-left w-full"
+                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-4 rounded-xl cursor-pointer transition-colors flex flex-col justify-between gap-2 shadow-sm hover:shadow-md text-start w-full"
                   >
                     <div>
                       <div className="flex justify-between items-start gap-2">
@@ -291,7 +293,7 @@ export function InstructorComboboxInner({ value, onChange }: InstructorComboboxP
                       <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold border shadow-sm ${
                         i.is_active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'
                       }`}>
-                        {i.is_active ? 'Active' : 'Inactive'}
+                        {i.is_active ? t('instructor_combobox.active') : t('instructor_combobox.inactive')}
                       </span>
                     </div>
                   </button>

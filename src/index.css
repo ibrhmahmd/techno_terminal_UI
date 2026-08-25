@@ -45,4 +45,13 @@
   .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
+
+  /* RTL: flip directional icons automatically */
+  html[dir="rtl"] .material-symbols-outlined,
+  html[dir="rtl"] span[aria-hidden="true"] {
+    /* Only flip specific directional icons, not all icons */
+  }
+  html[dir="rtl"] .icon-flip-rtl {
+    transform: scaleX(-1);
+  }
 }

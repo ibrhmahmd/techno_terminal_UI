@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
 import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashboard'
 import type { AttendanceStatus, AttendanceEntry } from '../../api/attendance'
@@ -30,6 +31,7 @@ export function AttendanceMobileSheet({
   selectedDate,
   onClose
 }: AttendanceMobileSheetProps) {
+  const { t } = useTranslation('attendance')
   const qc = useQueryClient()
   const { showToast } = useToast()
   const [activeStep, setActiveStep] = useState<'sessions' | 'students'>('sessions')
@@ -141,12 +143,12 @@ export function AttendanceMobileSheet({
         qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) }),
         qc.invalidateQueries({ queryKey: queryKeys.groupAttendance(groupId, selectedSession.level_number ?? -1) }),
       ])
-      showToast('Attendance saved successfully', 'success')
+      showToast(t('toast.attendance_saved'), 'success')
       setPendingEntries([])
       setActiveStep('sessions')
       onClose() // or keep it open at sessions view, let's close it to reflect completion
     } catch (err) {
-      showToast('Failed to save attendance', 'error')
+      showToast(t('toast.attendance_save_failed'), 'error')
       console.error(err)
     } finally {
       setIsSaving(false)
@@ -169,7 +171,7 @@ export function AttendanceMobileSheet({
         ref={sheetRef}
         role="dialog"
         aria-modal="true"
-        aria-label={`Attendance for ${groupName}`}
+        aria-label={t('grid.grid_caption', { group: groupName, level: '' })}
         tabIndex={-1}
         className="fixed inset-x-0 bottom-0 z-[60] bg-surface rounded-t-2xl shadow-2xl lg:hidden flex flex-col max-h-[90vh] motion-reduce:transition-none transition-transform duration-300 translate-y-0"
       >
@@ -186,15 +188,15 @@ export function AttendanceMobileSheet({
               <button 
                 onClick={() => setActiveStep('sessions')}
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"
-                aria-label="Back to sessions"
+                aria-label={t('mobile.back_to_sessions')}
               >
-                <span className="material-symbols-outlined text-xl" aria-hidden="true">arrow_back</span>
+                <span className="material-symbols-outlined text-xl icon-flip-rtl" aria-hidden="true">arrow_back</span>
               </button>
             )}
             <div>
               <h2 className="font-headline font-bold text-slate-900 text-lg leading-tight">{groupName}</h2>
               {activeStep === 'sessions' ? (
-                <p className="text-sm text-slate-500 font-medium">Select a session</p>
+                <p className="text-sm text-slate-500 font-medium">{t('mobile.select_session')}</p>
               ) : (
                 <p className="text-sm text-slate-500 font-medium">
                   Session {selectedSession?.session_number} • {selectedSession?.time_start ? formatTime(selectedSession.time_start) : ''}
@@ -202,7 +204,7 @@ export function AttendanceMobileSheet({
               )}
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:bg-slate-100 rounded-full" aria-label="Close attendance sheet">
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:bg-slate-100 rounded-full" aria-label={t('mobile.close_sheet')}>
             <span className="material-symbols-outlined text-xl" aria-hidden="true">close</span>
           </button>
         </div>
@@ -217,7 +219,7 @@ export function AttendanceMobileSheet({
           {activeStep === 'sessions' ? (
             <div className="divide-y divide-slate-100 pb-20">
               {sessions.length === 0 ? (
-                <div className="p-8 text-center text-on-surface-variant">No sessions available.</div>
+                <div className="p-8 text-center text-on-surface-variant">{t('mobile.no_sessions')}</div>
               ) : (
                 sessions.map(session => {
                   const isCancelled = session.status === 'cancelled'
@@ -233,11 +235,11 @@ export function AttendanceMobileSheet({
                         }
                       }}
                       disabled={isCancelled}
-                      className={`w-full flex items-center p-4 text-left transition-colors ${
+                      className={`w-full flex items-center p-4 text-start transition-colors ${
                         isCancelled ? 'opacity-50 cursor-not-allowed' : 'active:bg-slate-50'
                       }`}
                     >
-                      <div className="w-12 h-12 rounded-lg bg-slate-900 text-white flex items-center justify-center font-headline font-bold text-lg shrink-0 mr-4">
+                      <div className="w-12 h-12 rounded-lg bg-slate-900 text-white flex items-center justify-center font-headline font-bold text-lg shrink-0 me-4">
                         {String(session.session_number).padStart(2, '0')}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -246,11 +248,11 @@ export function AttendanceMobileSheet({
                             {session.date}
                           </span>
                           {isToday && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-700 uppercase">Today</span>
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-700 uppercase">{t('mobile.today')}</span>
                           )}
                         </div>
                         <div className="flex items-center gap-3 text-sm text-slate-500 font-medium">
-                          <span>{session.time_start ? formatTime(session.time_start) : 'No time'}</span>
+                          <span>{session.time_start ? formatTime(session.time_start) : t('mobile.no_time')}</span>
                           <span>•</span>
                           <span className="truncate" title={session.instructor_name || instructorName || 'TBA'}>
                             {formatInstructorName(session.instructor_name || instructorName || 'TBA')}
@@ -259,9 +261,9 @@ export function AttendanceMobileSheet({
                       </div>
                       
                       {isCancelled ? (
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${sessionStatusColors.cancelled}`}>CANCELLED</span>
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${sessionStatusColors.cancelled}`}>{t('actions.cancelled')}</span>
                       ) : (
-                        <span className="material-symbols-outlined text-slate-400" aria-hidden="true">chevron_right</span>
+                        <span className="material-symbols-outlined text-slate-400 icon-flip-rtl" aria-hidden="true">chevron_right</span>
                       )}
                     </button>
                   )
@@ -273,16 +275,16 @@ export function AttendanceMobileSheet({
               {roster.map(student => {
                 const status = localAttendance.get(student.student_id) ?? 'absent'
                 const statusConfig = {
-                  present: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200', icon: 'check_circle', label: 'Present' },
-                  absent: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', icon: 'cancel', label: 'Absent' },
-                  not_taken: { bg: 'bg-slate-100', text: 'text-slate-500', border: 'border-slate-200', icon: 'radio_button_unchecked', label: 'Not Taken' },
+                  present: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200', icon: 'check_circle', label: t('status.present') },
+                  absent: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', icon: 'cancel', label: t('status.absent') },
+                  not_taken: { bg: 'bg-slate-100', text: 'text-slate-500', border: 'border-slate-200', icon: 'radio_button_unchecked', label: t('status.not_taken') },
                 }
                 const conf = statusConfig[status]
                 const isDue = student.billing_status === 'due'
 
                 return (
                   <div key={student.student_id} className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
+                      <div className="flex items-center gap-3 flex-1 min-w-0 pe-4">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                         student.gender === 'male' ? 'bg-blue-50 text-blue-500' : 'bg-pink-50 text-pink-500'
                       }`}>
@@ -299,13 +301,13 @@ export function AttendanceMobileSheet({
                               <span>
                                 {student.balance !== undefined && student.balance > 0
                                   ? `${student.balance.toLocaleString()} EGP`
-                                  : 'DUE'}
+                                  : t('billing.due')}
                               </span>
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-on-secondary-container bg-secondary-container px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0 animate-fadeIn motion-reduce:animate-none">
                               <span className="material-symbols-outlined text-[10px] font-bold text-secondary" aria-hidden="true">check</span>
-                              <span>PAID</span>
+                              <span>{t('billing.paid')}</span>
                             </span>
                           )}
                         </div>
@@ -337,12 +339,12 @@ export function AttendanceMobileSheet({
               {isSaving ? (
                 <>
                   <span className="material-symbols-outlined animate-spin motion-reduce:animate-none" aria-hidden="true">refresh</span>
-                  <span>Saving...</span>
+                  <span>{t('mobile.saving')}</span>
                 </>
               ) : (
                 <>
                   <span className="material-symbols-outlined" aria-hidden="true">save</span>
-                  <span>Save Attendance {pendingEntries.length > 0 ? `(${pendingEntries.length})` : ''}</span>
+                  <span>{t('mobile.save_attendance')} {pendingEntries.length > 0 ? `(${pendingEntries.length})` : ''}</span>
                 </>
               )}
             </button>

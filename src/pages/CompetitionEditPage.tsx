@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { CompetitionForm } from '../components/competitions/CompetitionForm'
@@ -9,6 +10,7 @@ import type { UpdateCompetitionInput, CreateCompetitionInput } from '../api/comp
 export function CompetitionEditPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation('competitions')
   const competitionId = id || ''
 
   const { competition, isLoading, error, update } = useCompetition(competitionId)
@@ -20,7 +22,7 @@ export function CompetitionEditPage() {
       await update(data as UpdateCompetitionInput)
       navigate(`/competitions/${competitionId}`)
     } catch (err: unknown) {
-      setSaveError(err instanceof Error ? err.message : 'Failed to update competition')
+      setSaveError(err instanceof Error ? err.message : t('competitionEdit.save_failed'))
     }
   }
 
@@ -39,9 +41,9 @@ export function CompetitionEditPage() {
         <TopNavbar activePage="Competitions" />
         <div className="text-center py-12">
           <span className="material-symbols-outlined text-4xl text-slate-300 mb-4" aria-hidden="true">error</span>
-          <p className="text-slate-500">Competition not found</p>
+          <p className="text-slate-500">{t('competitionEdit.not_found')}</p>
           <button onClick={() => navigate('/competitions')} className="mt-4 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors">
-            Back to Competitions
+            {t('competitionEdit.back_to_competitions')}
           </button>
         </div>
       </div>
@@ -54,10 +56,10 @@ export function CompetitionEditPage() {
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-6">
         <div className="max-w-[1400px] mx-auto">
           <button onClick={() => navigate(`/competitions/${competitionId}`)} className="flex items-center gap-1 text-sm text-slate-500 hover:text-on-surface mb-2">
-            <span className="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
-            Back to Competition
+            <span className="material-symbols-outlined text-sm icon-flip-rtl" aria-hidden="true">arrow_back</span>
+            {t('competitionEdit.back_to_competition')}
           </button>
-          <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">Edit Competition</h1>
+          <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">{t('competitionEdit.title')}</h1>
         </div>
       </header>
       <section className="p-8 max-w-[700px] mx-auto">

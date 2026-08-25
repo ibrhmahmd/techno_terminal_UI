@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 
 interface SessionNotesRowProps {
@@ -8,6 +9,7 @@ interface SessionNotesRowProps {
 }
 
 export function SessionNotesRow({ sessions, notes, onNoteChange, disabled }: SessionNotesRowProps) {
+  const { t } = useTranslation('attendance')
   const isCancelled = (session: SessionWithAttendanceDTO) => session.status === 'cancelled'
 
   return (
@@ -15,7 +17,7 @@ export function SessionNotesRow({ sessions, notes, onNoteChange, disabled }: Ses
       {/* Empty student cell */}
       <td className="px-6 py-3 border-y border-slate-200 border-r border-slate-200">
         <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-[0.2em]">
-          Session Notes
+          {t('grid.session_notes')}
         </span>
       </td>
 
@@ -32,7 +34,7 @@ export function SessionNotesRow({ sessions, notes, onNoteChange, disabled }: Ses
             <textarea
               value={notes[session.session_id] || ''}
               onChange={(e) => onNoteChange(session.session_id, e.target.value)}
-              placeholder={cancelled ? 'Session cancelled' : 'Add session notes...'}
+              placeholder={cancelled ? t('toast.session_cancelled') : t('edit.notes_placeholder')}
               disabled={disabled || cancelled}
               rows={3}
               aria-label={`Notes for session ${sessions.findIndex(s => s.session_id === session.session_id) + 1}`}

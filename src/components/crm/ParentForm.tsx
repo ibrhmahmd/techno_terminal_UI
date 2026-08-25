@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { Parent, ParentCreate } from '../../api/crm'
 
@@ -10,6 +11,7 @@ interface ParentFormProps {
 }
 
 export function ParentForm({ initialData, onSubmit, onCancel, mode }: ParentFormProps) {
+  const { t } = useTranslation('directory')
   const [formData, setFormData] = useState({
     full_name: initialData?.full_name || '',
     phone_primary: initialData?.phone_primary || '',
@@ -74,7 +76,7 @@ export function ParentForm({ initialData, onSubmit, onCancel, mode }: ParentForm
           type="text"
           value={formData.full_name}
           onChange={(e) => handleChange('full_name', e.target.value)}
-          placeholder="Enter parent's full name"
+          placeholder={t('parent_form.full_name_placeholder')}
           required
           disabled={isLoading}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
@@ -158,7 +160,7 @@ export function ParentForm({ initialData, onSubmit, onCancel, mode }: ParentForm
           id="notes"
           value={formData.notes}
           onChange={(e) => handleChange('notes', e.target.value)}
-          placeholder="Additional notes..."
+          placeholder={t('parent_form.notes_placeholder')}
           rows={2}
           disabled={isLoading}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 disabled:cursor-not-allowed resize-none"
@@ -174,7 +176,7 @@ export function ParentForm({ initialData, onSubmit, onCancel, mode }: ParentForm
           disabled={isLoading}
           className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Cancel
+          {t('parent_form.cancel')}
         </button>
         <button
           type="submit"
@@ -182,7 +184,7 @@ export function ParentForm({ initialData, onSubmit, onCancel, mode }: ParentForm
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading && <LoadingSpinner size="sm" />}
-          {mode === 'create' ? 'Create Parent' : 'Save Changes'}
+          {mode === 'create' ? t('parent_form.create_parent') : t('parent_form.save_changes')}
         </button>
       </div>
     </form>

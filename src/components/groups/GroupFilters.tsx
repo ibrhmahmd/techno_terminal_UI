@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FilterPill, ActiveFilterTagsList } from '../common'
 import { useCourses } from '../../hooks/useCourses'
 import { useEmployees } from '../../hooks/useStaff'
+import { getTranslatedDays } from '../../utils/dayTranslation'
 
 interface GroupFiltersProps {
   isOpen: boolean
@@ -24,16 +26,7 @@ interface GroupFiltersProps {
   onClearAllFilters?: () => void
 }
 
-const FILTER_CATEGORIES = [
-  { id: 'course',    label: 'Course',     icon: 'menu_book'      },
-  { id: 'instructor', label: 'Instructor', icon: 'person'        },
-  { id: 'level',     label: 'Level',      icon: 'layers'         },
-  { id: 'day',       label: 'Day',        icon: 'calendar_today' },
-  { id: 'status',    label: 'Status',     icon: 'toggle_on'      },
-] as const
-
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-const STATUSES = ['active', 'inactive', 'archived', 'completed']
+const STATUSES = ['active', 'inactive', 'archived', 'completed'] as const
 const LEVELS = [1, 2, 3, 4, 5, 6, 7, 8]
 
 function OptionPill({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
@@ -54,6 +47,7 @@ function OptionPill({ selected, onClick, children }: { selected: boolean; onClic
 }
 
 export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTags, onRemoveFilter, onClearAllFilters }: GroupFiltersProps) {
+  const { t } = useTranslation('groups')
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
 
   // Local temp state — initialized from committed filter values on mount (sync ensured by GroupsPage `key` prop)
@@ -66,6 +60,22 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
   const { courses } = useCourses()
   const { data: staffData } = useEmployees('', 1, 100)
   const staff = staffData?.items || []
+  const translatedDays = getTranslatedDays(t)
+
+  const filterCategories = [
+    { id: 'course',    label: t('filters.course'),    icon: 'menu_book'      },
+    { id: 'instructor', label: t('filters.instructor'), icon: 'person'        },
+    { id: 'level',     label: t('filters.level'),     icon: 'layers'         },
+    { id: 'day',       label: t('filters.day'),       icon: 'calendar_today' },
+    { id: 'status',    label: t('filters.status'),    icon: 'toggle_on'      },
+  ]
+
+  const statusLabels: Record<string, string> = {
+    active: t('common:status.active'),
+    inactive: t('common:status.inactive'),
+    archived: t('common:status.archived'),
+    completed: t('common:status.completed'),
+  }
 
   const sortedCourses = useMemo(
     () => [...courses].sort((a, b) => a.name.localeCompare(b.name)),
@@ -112,12 +122,12 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
   }
 
   return (
-    <div role="region" aria-label="Filter groups" className="bg-white/95 backdrop-blur-sm border-b border-blue-100 px-4 sm:px-6 lg:px-8 py-3 animate-in slide-in-from-top-2">
+    <div role="region" aria-label={t('filters.panel_heading')} className="bg-white/95 backdrop-blur-sm border-b border-blue-100 px-4 sm:px-6 lg:px-8 py-3 animate-in slide-in-from-top-2">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Filter Groups</h3>
+        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('filters.panel_heading')}</h3>
         <button
           onClick={onClose}
-          aria-label="Close filters"
+          aria-label={t('filters.close_aria')}
           className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center rounded hover:bg-slate-200"
         >
           <span className="material-symbols-outlined text-[16px]" aria-hidden="true">close</span>
@@ -125,7 +135,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
       </div>
 
       <div className="flex flex-wrap items-center gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1 mb-3">
-        {FILTER_CATEGORIES.map(cat => (
+        {filterCategories.map(cat => (
           <FilterPill
             key={cat.id}
             icon={cat.icon}
@@ -137,18 +147,18 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
             className="flex-1 px-4 py-2 rounded-md"
           />
         ))}
-        <div className="flex items-center gap-1 ml-auto shrink-0">
+        <div className="flex items-center gap-1 ms-auto shrink-0">
           <button
             onClick={handleReset}
             className="px-3 py-1.5 text-xs font-medium text-slate-600 border border-blue-200 rounded-md hover:bg-blue-50 hover:text-slate-800 transition-all focus-visible:ring-2 focus-visible:ring-secondary/30 focus-visible:outline-none"
           >
-            Reset
+            {t('common:buttons.reset', { ns: 'common' })}
           </button>
           <button
             onClick={handleApply}
             className="px-4 py-1.5 text-xs font-medium text-white bg-secondary rounded-md hover:bg-secondary/90 transition-all focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
           >
-            Apply
+            {t('common:buttons.apply', { ns: 'common' })}
           </button>
         </div>
       </div>
@@ -157,7 +167,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
         <div className="bg-white rounded-lg p-3 border border-blue-100 mb-3" aria-live="polite">
           {expandedCategory === 'course' && (
             <div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2 text-center">Course</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2 text-center">{t('filters.course')}</span>
               <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto justify-center">
                 {sortedCourses.map(course => (
                   <OptionPill
@@ -174,7 +184,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
                   </OptionPill>
                 ))}
                 {sortedCourses.length === 0 && (
-                  <p className="text-sm text-slate-400">No courses available</p>
+                  <p className="text-sm text-slate-400">{t('filters.no_courses')}</p>
                 )}
               </div>
             </div>
@@ -182,7 +192,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
 
           {expandedCategory === 'instructor' && (
             <div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2 text-center">Instructor</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2 text-center">{t('filters.instructor')}</span>
               <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto justify-center">
                 {sortedStaff.map(instructor => (
                   <OptionPill
@@ -199,7 +209,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
                   </OptionPill>
                 ))}
                 {sortedStaff.length === 0 && (
-                  <p className="text-sm text-slate-400">No instructors available</p>
+                  <p className="text-sm text-slate-400">{t('filters.no_instructors')}</p>
                 )}
               </div>
             </div>
@@ -207,7 +217,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
 
           {expandedCategory === 'level' && (
             <div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2 text-center">Level</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2 text-center">{t('filters.level')}</span>
               <div className="flex flex-wrap gap-1.5 justify-center">
                 {LEVELS.map(level => (
                   <OptionPill
@@ -220,7 +230,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
                       setTempLevels(newLevels)
                     }}
                   >
-                    Level {level}
+                    {t('filters.level_value', { level })}
                   </OptionPill>
                 ))}
               </div>
@@ -229,20 +239,20 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
 
           {expandedCategory === 'day' && (
             <div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2 text-center">Day</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2 text-center">{t('filters.day')}</span>
               <div className="flex flex-wrap gap-1.5 justify-center">
-                {DAYS.map(day => (
+                {translatedDays.map(day => (
                   <OptionPill
-                    key={day}
-                    selected={tempDays.includes(day)}
+                    key={day.api}
+                    selected={tempDays.includes(day.api)}
                     onClick={() => {
-                      const newDays = tempDays.includes(day)
-                        ? tempDays.filter(d => d !== day)
-                        : [...tempDays, day]
+                      const newDays = tempDays.includes(day.api)
+                        ? tempDays.filter(d => d !== day.api)
+                        : [...tempDays, day.api]
                       setTempDays(newDays)
                     }}
                   >
-                    {day.slice(0, 3)}
+                    {day.label}
                   </OptionPill>
                 ))}
               </div>
@@ -251,7 +261,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
 
           {expandedCategory === 'status' && (
             <div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2 text-center">Status</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2 text-center">{t('filters.status')}</span>
               <div className="flex flex-wrap gap-1.5 justify-center">
                 {STATUSES.map(status => (
                   <OptionPill
@@ -264,7 +274,7 @@ export function GroupFilters({ isOpen, onClose, onApply, filters, activeFilterTa
                       setTempStatuses(newStatuses)
                     }}
                   >
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                    {statusLabels[status] || status}
                   </OptionPill>
                 ))}
               </div>

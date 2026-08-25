@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { CreateCompetitionInput, UpdateCompetitionInput } from '../../api/competitions'
 
@@ -10,6 +11,7 @@ interface CompetitionFormProps {
 }
 
 export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: CompetitionFormProps) {
+  const { t } = useTranslation('competitions')
   const [formData, setFormData] = useState<CreateCompetitionInput>({
     name: initialData?.name || '',
     edition: initialData?.edition || '',
@@ -31,15 +33,15 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
     setError(null)
 
     if (!formData.name.trim()) {
-      setError('Competition name is required')
+      setError(t('form.error_name_required'))
       return
     }
     if (!formData.location?.trim()) {
-      setError('Location is required')
+      setError(t('form.error_location_required'))
       return
     }
     if ((formData.fee_per_student ?? 0) < 0) {
-      setError('Fee cannot be negative')
+      setError(t('form.error_fee_negative'))
       return
     }
 
@@ -54,7 +56,7 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
       }
       await onSubmit(cleanedData)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : `Failed to ${mode} competition`)
+      setError(err instanceof Error ? err.message : mode === 'create' ? t('form.error_create_failed') : t('form.error_update_failed'))
     } finally {
       setIsLoading(false)
     }
@@ -70,15 +72,15 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
       )}
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="name" className="text-sm font-medium text-on-surface">
-          Competition Name <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="name"
-          type="text"
-          value={formData.name}
-          onChange={(e) => handleChange('name', e.target.value)}
-          placeholder="Enter competition name..."
+          <label htmlFor="name" className="text-sm font-medium text-on-surface">
+            {t('form.name_label')} <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="name"
+            type="text"
+            value={formData.name}
+            onChange={(e) => handleChange('name', e.target.value)}
+            placeholder={t('form.name_placeholder')}
           required
           disabled={isLoading}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
@@ -87,13 +89,13 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="notes" className="text-sm font-medium text-on-surface">
-          Notes / Description
+          {t('form.notes_label')}
         </label>
         <textarea
           id="notes"
           value={formData.notes || ''}
           onChange={(e) => handleChange('notes', e.target.value)}
-          placeholder="Enter competition notes or description..."
+          placeholder={t('form.notes_placeholder')}
           rows={3}
           disabled={isLoading}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50 resize-none"
@@ -101,15 +103,15 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="location" className="text-sm font-medium text-on-surface">
-          Location <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="location"
-          type="text"
-          value={formData.location}
-          onChange={(e) => handleChange('location', e.target.value)}
-          placeholder="Enter competition location..."
+          <label htmlFor="location" className="text-sm font-medium text-on-surface">
+            {t('form.location_label')} <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="location"
+            type="text"
+            value={formData.location}
+            onChange={(e) => handleChange('location', e.target.value)}
+            placeholder={t('form.location_placeholder')}
           required
           disabled={isLoading}
           className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
@@ -119,7 +121,7 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="competition_date" className="text-sm font-medium text-on-surface">
-            Competition Date
+            {t('form.date_label')}
           </label>
           <input
             id="competition_date"
@@ -132,14 +134,14 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="edition" className="text-sm font-medium text-on-surface">
-            Edition
+            {t('form.edition_label')}
           </label>
           <input
             id="edition"
             type="text"
             value={formData.edition || ''}
             onChange={(e) => handleChange('edition', e.target.value)}
-            placeholder="e.g., 2024, Summer, etc."
+            placeholder={t('form.edition_placeholder')}
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           />
@@ -147,8 +149,8 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="fee_per_student" className="text-sm font-medium text-on-surface">
-          Fee per Student (EGP) <span className="text-red-500">*</span>
+          <label htmlFor="fee_per_student" className="text-sm font-medium text-on-surface">
+            {t('form.fee_label')} <span className="text-red-500">*</span>
         </label>
         <input
           id="fee_per_student"
@@ -171,7 +173,7 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
           disabled={isLoading}
           className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
         >
-          Cancel
+          {t('form.cancel')}
         </button>
         <button
           type="submit"
@@ -179,7 +181,7 @@ export function CompetitionForm({ initialData, onSubmit, onCancel, mode }: Compe
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50"
         >
           {isLoading && <LoadingSpinner size="sm" />}
-          {mode === 'create' ? 'Create Competition' : 'Update Competition'}
+          {mode === 'create' ? t('form.create') : t('form.update')}
         </button>
       </div>
     </form>

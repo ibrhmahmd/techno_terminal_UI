@@ -1,4 +1,5 @@
 import type { LevelDetailDTO } from '../../../api/academics'
+import { useTranslation } from 'react-i18next'
 
 interface LevelSelectorProps {
   levels: LevelDetailDTO[]
@@ -15,6 +16,7 @@ export function LevelSelector({
   currentLevelNumber,
   onAddLevel,
 }: LevelSelectorProps) {
+  const { t } = useTranslation('groups')
   if (levels.length === 0) {
     return null
   }
@@ -24,7 +26,7 @@ export function LevelSelector({
   return (
     <section className="w-full pb-4">
       <div className="overflow-x-auto">
-        <div role="tablist" aria-label="Select level" className="flex w-full min-w-fit items-center gap-1 rounded-md bg-surface-container-low border border-surface-container-low p-1">
+        <div role="tablist" aria-label={t('levelSelector.aria_label')} className="flex w-full min-w-fit items-center gap-1 rounded-md bg-surface-container-low border border-surface-container-low p-1">
           <div className="flex flex-1 items-center gap-1">
           {levels.map((level, index) => {
             const isActive = level.level_id === activeLevelId
@@ -54,7 +56,7 @@ export function LevelSelector({
           {onAddLevel && (
             <button
               onClick={onAddLevel}
-              className="flex items-center gap-1.5 px-4 py-2 ml-4 rounded-md transition-all whitespace-nowrap text-secondary hover:bg-secondary/10 font-bold border border-transparent hover:border-secondary/20"
+              className="flex items-center gap-1.5 px-4 py-2 ms-4 rounded-md transition-all whitespace-nowrap text-secondary hover:bg-secondary/10 font-bold border border-transparent hover:border-secondary/20"
             >
               <span className="material-symbols-outlined text-[18px]" aria-hidden="true">add</span>
               <span className="font-headline text-sm uppercase tracking-wider">Add Level</span>

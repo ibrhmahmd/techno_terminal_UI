@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { TaskTimeLogReadDTO } from '../../api/tasks'
 import { useAddTimeLog } from '../../hooks/useTasks'
 import { formatDate } from '../../utils/formatting'
@@ -10,6 +11,7 @@ interface TimeLogPanelProps {
 }
 
 export function TimeLogPanel({ timeLogs, taskId, isAssigned }: TimeLogPanelProps) {
+  const { t } = useTranslation('tasks')
   const [hours, setHours] = useState('')
   const [note, setNote] = useState('')
   const addMutation = useAddTimeLog()
@@ -31,14 +33,14 @@ export function TimeLogPanel({ timeLogs, taskId, isAssigned }: TimeLogPanelProps
     <div className="space-y-4">
       {/* Total */}
       <div className="flex items-center justify-between">
-        <span className="text-sm text-slate-500">Total logged</span>
+        <span className="text-sm text-slate-500">{t('time_log.total_logged')}</span>
         <span className="text-sm font-semibold text-slate-900">{totalHours.toFixed(1)}h</span>
       </div>
 
       {/* Log list */}
       <div className="space-y-2">
         {timeLogs.length === 0 && (
-          <p className="text-sm text-slate-400 text-center py-4">No time logged yet</p>
+          <p className="text-sm text-slate-400 text-center py-4">{t('time_log.no_time_logged')}</p>
         )}
         {timeLogs.map((log) => (
           <div key={log.id} className="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
@@ -65,8 +67,8 @@ export function TimeLogPanel({ timeLogs, taskId, isAssigned }: TimeLogPanelProps
               type="number"
               value={hours}
               onChange={(e) => setHours(e.target.value)}
-              placeholder="Hours"
-              aria-label="Hours logged"
+              placeholder={t('time_log.hours_placeholder')}
+              aria-label={t('time_log.hours_placeholder')}
               min="0.5"
               step="0.5"
               className="w-24 text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
@@ -76,8 +78,8 @@ export function TimeLogPanel({ timeLogs, taskId, isAssigned }: TimeLogPanelProps
               value={note}
               onChange={(e) => setNote(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder="Optional note..."
-              aria-label="Time log note"
+              placeholder={t('time_log.note_placeholder')}
+              aria-label={t('time_log.note_placeholder')}
               className="flex-1 text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
             />
             <button
@@ -85,7 +87,7 @@ export function TimeLogPanel({ timeLogs, taskId, isAssigned }: TimeLogPanelProps
               disabled={!hours || parseFloat(hours) <= 0 || addMutation.isPending}
               className="px-4 py-2 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors disabled:opacity-50"
             >
-              Log
+              {t('time_log.log')}
             </button>
           </div>
         </div>

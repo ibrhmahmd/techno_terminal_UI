@@ -1,7 +1,9 @@
 import { useState, useMemo, useEffect, useRef, memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { EnrichedGroupPublic } from '../../api/academics'
 import { getRecentItems, addRecentItem, type RecentItem } from '../../utils/recentCache'
 import { useGroupSearch } from '../../hooks/useGroupSearch'
+import { translateDay } from '../../utils/dayTranslation'
 
 export interface GroupComboboxProps {
   value: EnrichedGroupPublic | null
@@ -27,6 +29,7 @@ export function GroupComboboxInner({
   const [recentGroups, setRecentGroups] = useState<RecentItem[]>(() =>
     getRecentItems('techno_recent_groups')
   )
+  const { t } = useTranslation('groups')
   const recentIdSet = useMemo(() => new Set(recentGroups.map(r => r.id)), [recentGroups])
   const [isOpen, setIsOpen] = useState(false)
   const [dropdownAbove, setDropdownAbove] = useState(false)
@@ -94,7 +97,7 @@ export function GroupComboboxInner({
       let list: EnrichedGroupPublic[] = recentGroups.map(r => ({
         id: Number(r.id),
         name: r.name,
-        course_name: 'Recently Used',
+        course_name: t('groupCombobox.recently_used'),
         status: 'active',
         capacity: 0,
         current_level: 1,
@@ -112,7 +115,7 @@ export function GroupComboboxInner({
 
       return [{
         key: 'recents',
-        label: 'Recently Used',
+        label: t('groupCombobox.recently_used'),
         groups: list,
       }]
     }
@@ -123,9 +126,9 @@ export function GroupComboboxInner({
     const grouped: Record<string, EnrichedGroupPublic[]> = {}
     filteredSearchGroups.forEach(g => {
       let key = 'Others'
-      if (groupByMode === 'course') key = g.course_name || 'Uncategorized Course'
-      else if (groupByMode === 'instructor') key = g.instructor_name || 'No Instructor'
-      else if (groupByMode === 'day') key = g.schedule?.day || 'No Specific Day'
+      if (groupByMode === 'course') key = g.course_name || t('combobox.uncategorized_course')
+      else if (groupByMode === 'instructor') key = g.instructor_name || t('combobox.no_instructor')
+      else if (groupByMode === 'day') key = g.schedule?.day || t('combobox.no_specific_day')
 
       if (!grouped[key]) grouped[key] = []
       grouped[key].push(g)
@@ -141,7 +144,7 @@ export function GroupComboboxInner({
 
     return sortedKeys.map(k => ({
       key: k,
-      label: k,
+      label: groupByMode === 'day' ? translateDay(k, t) : k,
       groups: grouped[k],
     }))
   }, [filteredSearchGroups, search, groupByMode, recentGroups, excludeSet])
@@ -200,10 +203,10 @@ export function GroupComboboxInner({
             setSearch('')
             setGroupByMode('course')
           }}
-          aria-label={`Change group selection (currently ${value.name})`}
+          aria-label={t('groupCombobox.change_aria', { name: value.name })}
           className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
         >
-          Change
+          {t('groupCombobox.change')}
         </button>
       </div>
     )
@@ -215,7 +218,7 @@ export function GroupComboboxInner({
     <div ref={wrapperRef} className="relative w-full">
       {/* Search Input Trigger */}
       <div className="relative">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[20px] text-slate-400" aria-hidden="true">search</span>
+        <span className="absolute start-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[20px] text-slate-400" aria-hidden="true">search</span>
         <input
           type="text"
           value={search}
@@ -224,9 +227,9 @@ export function GroupComboboxInner({
             setIsOpen(true)
           }}
           onFocus={() => setIsOpen(true)}
-          placeholder="Search groups by name, course, or instructor..."
-          aria-label="Search group"
-          className="w-full pl-10 pr-10 py-3 text-sm border border-slate-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20 focus-visible:border-secondary transition-colors placeholder:text-slate-400"
+          placeholder={t('groupCombobox.search_placeholder')}
+          aria-label={t('groupCombobox.search_aria')}
+          className="w-full ps-10 pe-10 py-3 text-sm border border-slate-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20 focus-visible:border-secondary transition-colors placeholder:text-slate-400"
         />
         {search && (
           <button
@@ -235,8 +238,8 @@ export function GroupComboboxInner({
               setSearch('')
               setIsOpen(true)
             }}
-            aria-label="Clear search"
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 flex items-center justify-center"
+            aria-label={t('groupCombobox.clear_aria')}
+            className="absolute end-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 flex items-center justify-center"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
           </button>
@@ -247,15 +250,15 @@ export function GroupComboboxInner({
       {isOpen && (
         <div
           role="listbox"
-          aria-label="Group results"
-          className={`absolute z-50 left-0 right-0 md:w-[600px] w-screen max-w-[calc(100vw-2rem)] bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
+          aria-label={t('groupCombobox.results_aria')}
+          className={`absolute z-50 start-0 end-0 md:w-[600px] w-screen max-w-[calc(100vw-2rem)] bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
             dropdownAbove ? 'bottom-full mb-2' : 'top-full mt-2'
           }`}
         >
           {/* GroupBy Options Selector (Only when searching) */}
           {isSearching && (
             <div className="flex items-center gap-1.5 p-0.5 rounded-lg bg-blue-50/50 border border-blue-100/50 text-[11px] w-fit">
-              <span className="text-slate-400 px-2 font-medium">Group by:</span>
+              <span className="text-slate-400 px-2 font-medium">{t('groupCombobox.group_by')}</span>
               {(['course', 'instructor', 'day'] as const).map((mode) => {
                 const isActive = groupByMode === mode
                 const icons = { course: 'menu_book', instructor: 'person', day: 'calendar_today' }
@@ -330,10 +333,10 @@ export function GroupComboboxInner({
               <span className="material-symbols-outlined text-4xl text-slate-200" aria-hidden="true">grid_view</span>
               <p className="text-sm font-medium">
                 {search.length === 0
-                  ? "No recently used groups. Type to search."
+                  ? t('groupCombobox.no_recently_used')
                   : search.length === 1
-                    ? "Type at least 2 characters to search groups."
-                    : `No groups found matching "${search}"`}
+                    ? t('groupCombobox.min_chars')
+                    : t('groupCombobox.no_results', { search })}
               </p>
             </div>
           ) : (
@@ -342,7 +345,7 @@ export function GroupComboboxInner({
               {activeCategoryGroups.map((g) => {
                 const hasTime = g.schedule?.start_time && g.schedule?.end_time
                 const scheduleDisplay = g.schedule 
-                  ? `${g.schedule.day} ${hasTime ? `${g.schedule.start_time.slice(0, 5)}-${g.schedule.end_time.slice(0, 5)}` : ''}`
+                  ? `${translateDay(g.schedule.day, t)} ${hasTime ? `${g.schedule.start_time.slice(0, 5)}-${g.schedule.end_time.slice(0, 5)}` : ''}`
                   : null
 
                 return (
@@ -357,13 +360,13 @@ export function GroupComboboxInner({
                       setSearch('')
                       setIsOpen(false)
                     }}
-                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-4 rounded-xl cursor-pointer transition-colors flex flex-col justify-between gap-2 shadow-sm hover:shadow-md text-left w-full"
+                    className="border border-slate-200 bg-white hover:border-secondary/40 hover:bg-secondary/[0.02] active:bg-secondary/[0.04] p-4 rounded-xl cursor-pointer transition-colors flex flex-col justify-between gap-2 shadow-sm hover:shadow-md text-start w-full"
                   >
                     <div>
                       <div className="flex justify-between items-start gap-2">
                         <h4 className="font-headline font-semibold text-slate-800 text-sm leading-tight line-clamp-1">{g.name}</h4>
                         {recentIdSet.has(g.id) && (
-                          <span className="material-symbols-outlined text-[15px] text-amber-500 font-bold" aria-hidden="true" title="Recently used">history</span>
+                          <span className="material-symbols-outlined text-[15px] text-amber-500 font-bold" aria-hidden="true" title={t('groupCombobox.recently_used')}>history</span>
                         )}
                       </div>
                       {g.course_name && (
@@ -390,7 +393,7 @@ export function GroupComboboxInner({
                       {g.capacity > 0 && (
                         <div className="flex items-center gap-1">
                           <span className="material-symbols-outlined text-[13px]" aria-hidden="true">group</span>
-                          <span>{(g.current_student_count ?? 0)} / {g.capacity} students</span>
+                          <span>{(g.current_student_count ?? 0)} / {g.capacity}</span>
                         </div>
                       )}
                     </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Plus, Trash2 } from 'lucide-react'
 import { Modal } from '../common'
 import {
@@ -41,6 +42,7 @@ export function LogActivityModal({
   onSuccess,
 }: LogActivityModalProps) {
   const { showToast } = useToast()
+  const { t } = useTranslation('directory')
   const [loading, setLoading] = useState(false)
 
   // Form State
@@ -201,7 +203,7 @@ export function LogActivityModal({
 
     const finalType = isCustomType ? customType.trim() : activityType
     if (!finalType) {
-      showToast('Activity type required.', 'error')
+      showToast(t('toast.activity_type_required'), 'error')
       return
     }
 
@@ -234,7 +236,7 @@ export function LogActivityModal({
       try {
         finalCreatedAt = new Date(createdAt).toISOString()
       } catch {
-        showToast('Invalid date format.', 'error')
+        showToast(t('toast.invalid_date_format'), 'error')
         return
       }
     }
@@ -253,15 +255,15 @@ export function LogActivityModal({
 
       if (activity) {
         await updateActivity(studentId, activity.id, payload)
-        showToast('Activity updated.', 'success')
+        showToast(t('toast.activity_updated'), 'success')
       } else {
         await logActivity(studentId, payload)
-        showToast('Activity logged.', 'success')
+        showToast(t('toast.activity_logged'), 'success')
       }
       onSuccess()
       onClose()
     } catch (err: any) {
-      showToast(err?.response?.data?.message || 'Operation failed.', 'error')
+      showToast(err?.response?.data?.message || t('toast.operation_failed'), 'error')
     } finally {
       setLoading(false)
     }
@@ -271,14 +273,14 @@ export function LogActivityModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={activity ? 'Edit Activity Log' : 'Log Manual Activity'}
+      title={activity ? t('log_activity.title_edit') : t('log_activity.title_log')}
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Type Selection */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-              Activity Type
+              {t('log_activity.activity_type_label')}
             </label>
             <select
               value={activityType}
@@ -296,11 +298,11 @@ export function LogActivityModal({
 
           <div>
             <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-              Subtype
+              {t('log_activity.subtype_label')}
             </label>
             <input
               type="text"
-              placeholder="e.g., system_import, manual_fix"
+              placeholder={t('log_activity.subtype_placeholder')}
               value={activitySubtype}
               onChange={(e) => setActivitySubtype(e.target.value)}
               className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1.5 text-sm"
@@ -312,12 +314,12 @@ export function LogActivityModal({
         {isCustomType && (
           <div>
             <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-              Custom Activity Type Name *
+              {t('log_activity.custom_type_label')}
             </label>
             <input
               type="text"
               required
-              placeholder="e.g., scholarship_awarded, interview_completed"
+              placeholder={t('log_activity.custom_type_placeholder')}
               value={customType}
               onChange={(e) => setCustomType(e.target.value)}
               className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1.5 font-mono text-sm"
@@ -328,11 +330,11 @@ export function LogActivityModal({
         {/* Description */}
         <div>
           <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-            Description / Log details
+            {t('log_activity.description_label')}
           </label>
           <textarea
             rows={2}
-            placeholder="Describe what occurred..."
+            placeholder={t('log_activity.description_placeholder')}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1.5 text-sm resize-none"
@@ -343,7 +345,7 @@ export function LogActivityModal({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-              Logged Date & Time
+              {t('log_activity.logged_date_label')}
             </label>
             <input
               type="datetime-local"
@@ -355,14 +357,14 @@ export function LogActivityModal({
 
           <div>
             <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-              Reference Entity
+              {t('log_activity.reference_label')}
             </label>
             <select
               value={referenceType}
               onChange={(e) => handleReferenceTypeChange(e.target.value as ReferenceType | '')}
               className="w-full bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1.5 text-sm cursor-pointer"
             >
-              <option value="">No reference</option>
+              <option value="">{t('log_activity.no_reference')}</option>
               <option value="student">Student</option>
               <option value="enrollment">Enrollment</option>
               <option value="payment">Payment</option>
@@ -517,7 +519,7 @@ export function LogActivityModal({
         <div className="bg-slate-100/50 rounded-[6px] p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-              Custom Metadata Fields
+              {t('log_activity.metadata_label')}
             </span>
             <button
               type="button"
@@ -525,13 +527,13 @@ export function LogActivityModal({
               className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-secondary hover:text-secondary/80 bg-slate-200/50 hover:bg-slate-200/80 rounded-[6px] transition-all"
             >
               <Plus className="w-3.5 h-3.5" />
-              Add Field
+              {t('log_activity.add_field')}
             </button>
           </div>
 
           {metadataRows.length === 0 ? (
             <p className="text-xs text-slate-400 italic">
-              No custom fields added yet. Add metadata tags like coupon codes, custom references, or approval details.
+              {t('log_activity.no_custom_fields')}
             </p>
           ) : (
             <div className="space-y-3 max-h-40 overflow-y-auto pr-1 scrollbar-thin">
@@ -539,14 +541,14 @@ export function LogActivityModal({
                 <div key={idx} className="flex items-center gap-3">
                   <input
                     type="text"
-                    placeholder="Key (e.g., coupon_code)"
+                    placeholder={t('log_activity.key_placeholder')}
                     value={row.key}
                     onChange={(e) => updateMetadataRow(idx, 'key', e.target.value)}
                     className="flex-1 min-w-0 bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1 text-xs"
                   />
                   <input
                     type="text"
-                    placeholder="Value (e.g., SUMMER50)"
+                    placeholder={t('log_activity.value_placeholder')}
                     value={row.value}
                     onChange={(e) => updateMetadataRow(idx, 'value', e.target.value)}
                     className="flex-1 min-w-0 bg-transparent border-b border-slate-300 focus:border-secondary focus:outline-none transition-all py-1 text-xs"
@@ -571,7 +573,7 @@ export function LogActivityModal({
             onClick={onClose}
             className="px-4 py-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-[6px] text-xs font-semibold transition-colors"
           >
-            Cancel
+            {t('log_activity.cancel')}
           </button>
           <button
             type="submit"
@@ -579,7 +581,7 @@ export function LogActivityModal({
             className="px-4 py-2 text-white bg-secondary hover:bg-secondary/90 disabled:bg-secondary/50 rounded-[6px] text-xs font-semibold transition-colors flex items-center gap-2"
           >
             {loading && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />}
-            {activity ? 'Save Changes' : 'Log Activity'}
+            {activity ? t('log_activity.save_changes') : t('log_activity.log_activity')}
           </button>
         </div>
       </form>

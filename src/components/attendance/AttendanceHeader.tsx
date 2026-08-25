@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 import { formatTime } from '../../utils/formatting'
 import { sessionStatusColors } from '../../utils/colors'
@@ -8,7 +9,7 @@ interface AttendanceHeaderProps {
 }
 
 export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHeaderProps) {
-
+  const { t } = useTranslation('attendance')
 
   const isCancelled = (session: SessionWithAttendanceDTO) => session.status === 'cancelled'
 
@@ -43,7 +44,7 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
           className="px-6 py-4 text-xs font-extrabold text-slate-800 uppercase tracking-[0.2em] border-b border-slate-300 border-r border-slate-200"
           style={{ width: 280 }}
         >
-          Student
+          {t('header.student')}
         </th>
         {sessions.map((session, sessionIdx) => {
           const cancelled = isCancelled(session)
@@ -66,7 +67,7 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
                     {String(sessionNum).padStart(2, '0')}
                   </div>
                   {/* Right: Date and Time Stack */}
-                  <div className="text-left flex flex-col justify-center">
+                  <div className="text-start flex flex-col justify-center">
                     <span className={`block text-[16px] font-extrabold text-slate-900 leading-tight tracking-tight ${
                       cancelled ? 'line-through text-slate-400' : ''
                     }`}>
@@ -86,7 +87,7 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
                 </span>
                 {cancelled && (
                   <span className={`mt-1 px-3 py-1 rounded-full text-[11px] font-bold ${sessionStatusColors.cancelled}`}>
-                    CANCELLED
+                    {t('header.cancelled')}
                   </span>
                 )}
               </div>

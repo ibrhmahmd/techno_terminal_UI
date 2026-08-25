@@ -50,7 +50,7 @@ export function PageHeader({
           <h1 className="font-headline text-3xl font-bold text-on-surface tracking-tight">
             {title}
             {count !== undefined && (
-              <span className="ml-2 text-2xl text-slate-400">({count})</span>
+              <span className="ms-2 text-2xl text-slate-400">({count})</span>
             )}
           </h1>
           {subtitle && (

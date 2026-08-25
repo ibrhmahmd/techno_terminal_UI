@@ -44,7 +44,7 @@ export function QuickActionWidget({
             </p>
           )}
         </div>
-        <span className="material-symbols-outlined text-slate-300 text-xl" aria-hidden="true">
+        <span className="material-symbols-outlined text-slate-300 text-xl icon-flip-rtl" aria-hidden="true">
           arrow_forward
         </span>
       </div>

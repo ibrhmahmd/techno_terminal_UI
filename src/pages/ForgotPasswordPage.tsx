@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { useForgotPassword } from '../hooks/useAuthQueries'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { AuthLayout } from '../components/auth/AuthLayout'
 
 export function ForgotPasswordPage() {
+  const { t } = useTranslation('common')
   const forgotPasswordMutation = useForgotPassword()
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -26,28 +28,25 @@ export function ForgotPasswordPage() {
       await forgotPasswordMutation.mutateAsync({ email })
       setSubmitted(true)
     } catch (err) {
-      // Always show success to avoid leaking account existence, but surface
-      // real network/server errors so the user knows something went wrong
       if (isAxiosError(err) && err.response) {
-        // Account-not-found returns non-error status — still show success
         setSubmitted(true)
       } else {
-        setError('Unable to connect. Please check your internet connection and try again.')
+        setError(t('auth.forgotPasswordPage.unableToConnect'))
       }
     }
   }
 
   if (submitted) {
     return (
-      <AuthLayout title="Check Your Email" subtitle="If an account with that email exists, we've sent password reset instructions.">
+      <AuthLayout title={t('auth.forgotPasswordPage.title')} subtitle={t('auth.forgotPasswordPage.subtitle')}>
         <div ref={successRef} tabIndex={-1} className="text-center focus:outline-none">
           <span className="material-symbols-outlined text-4xl text-green-500 mb-4" aria-hidden="true">mail</span>
           <Link
             to="/login"
             className="inline-flex items-center gap-2 text-sm font-medium text-secondary hover:underline focus:outline-none focus:ring-2 focus:ring-secondary/20 rounded"
           >
-            <span className="material-symbols-outlined text-base" aria-hidden="true">arrow_back</span>
-            Back to Login
+            <span className="material-symbols-outlined text-base icon-flip-rtl" aria-hidden="true">arrow_back</span>
+            {t('auth.forgotPasswordPage.backToLogin')}
           </Link>
         </div>
       </AuthLayout>
@@ -55,7 +54,7 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <AuthLayout title="Reset Password" subtitle="Enter your email and we'll send you reset instructions">
+    <AuthLayout title={t('auth.forgotPasswordPage.resetTitle')} subtitle={t('auth.forgotPasswordPage.resetSubtitle')}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {error && (
           <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700" role="alert">
@@ -66,7 +65,7 @@ export function ForgotPasswordPage() {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="email" className="text-sm font-medium text-on-surface">
-            Email
+            {t('auth.email')}
           </label>
           <input
             id="email"
@@ -89,15 +88,15 @@ export function ForgotPasswordPage() {
           {forgotPasswordMutation.isPending ? (
             <LoadingSpinner size="sm" variant="light" />
           ) : (
-            'Send Reset Instructions'
+            t('auth.forgotPasswordPage.sendReset')
           )}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-on-surface-variant">
-        Remember your password?{' '}
+        {t('auth.forgotPasswordPage.rememberPassword')}{' '}
         <Link to="/login" className="text-secondary font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-secondary/20 rounded">
-          Sign In
+          {t('auth.forgotPasswordPage.signIn')}
         </Link>
       </p>
     </AuthLayout>

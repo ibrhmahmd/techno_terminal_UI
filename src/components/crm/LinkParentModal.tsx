@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { 
@@ -18,6 +19,7 @@ interface LinkParentModalProps {
 }
 
 export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkParentModalProps) {
+  const { t } = useTranslation('directory')
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Parent[]>([])
   const [linkedParents, setLinkedParents] = useState<ParentInfo[]>([])
@@ -95,7 +97,7 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Link Parent to Student"
+      title={t('link_parent.title')}
       size="lg"
     >
       <div className="space-y-6">
@@ -109,13 +111,13 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
 
         {/* Search Section */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-on-surface">Search Parents</label>
+          <label className="text-sm font-medium text-on-surface">{t('link_parent.search_label')}</label>
           <div className="flex gap-2">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name..."
+              placeholder={t('link_parent.search_placeholder')}
               className="flex-1 px-4 py-2 text-sm border border-slate-200 rounded-lg bg-white text-on-surface placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             />
@@ -125,7 +127,7 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
               className="px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSearching ? <LoadingSpinner size="sm" /> : <span className="material-symbols-outlined text-sm">search</span>}
-              Search
+              {t('link_parent.search_button')}
             </button>
           </div>
 
@@ -133,7 +135,7 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
           {searchResults.length > 0 && (
             <div className="border border-slate-200 rounded-lg overflow-hidden">
               <div className="bg-slate-50 px-4 py-2 text-xs font-medium text-slate-500 uppercase tracking-wide border-b border-slate-200">
-                Search Results ({searchResults.length})
+                {t('link_parent.search_results', { count: searchResults.length })}
               </div>
               <div className="divide-y divide-slate-100 max-h-48 overflow-y-auto">
                 {searchResults.map((parent) => (
@@ -152,7 +154,7 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
                       disabled={isLoading}
                       className="px-3 py-1.5 text-sm font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary-container transition-colors disabled:opacity-50"
                     >
-                      Link
+                      {t('link_parent.link')}
                     </button>
                   </div>
                 ))}
@@ -162,14 +164,14 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
 
           {searchResults.length === 0 && searchQuery && !isSearching && (
             <p className="text-sm text-slate-500 text-center py-4">
-              No parents found. Try a different search term.
+              {t('link_parent.no_results')}
             </p>
           )}
         </div>
 
         {/* Currently Linked Parents */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-on-surface">Currently Linked Parents</h4>
+          <h4 className="text-sm font-medium text-on-surface">{t('link_parent.linked_parents')}</h4>
           {linkedParents.length > 0 ? (
             <div className="border border-slate-200 rounded-lg overflow-hidden">
               <div className="divide-y divide-slate-100">
@@ -189,7 +191,7 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
                       disabled={isLoading}
                       className="px-3 py-1.5 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
                     >
-                      Unlink
+                      {t('link_parent.unlink')}
                     </button>
                   </div>
                 ))}
@@ -197,7 +199,7 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
             </div>
           ) : (
             <p className="text-sm text-slate-500 py-4 text-center bg-slate-50 rounded-lg">
-              No parents currently linked to this student.
+              {t('link_parent.no_linked')}
             </p>
           )}
         </div>

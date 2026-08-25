@@ -35,7 +35,7 @@ export function FilterPill({
       <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{icon}</span>
       <span>{label}</span>
       {hasFilters && filterCount > 0 && (
-        <span className="ml-1 w-5 h-5 rounded-full bg-secondary text-white text-xs flex items-center justify-center tabular-nums">
+        <span className="ms-1 w-5 h-5 rounded-full bg-secondary text-white text-xs flex items-center justify-center tabular-nums">
           {filterCount}
         </span>
       )}
