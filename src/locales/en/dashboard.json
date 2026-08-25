@@ -33,5 +33,32 @@
     "attendance_badge": "Attendance",
     "mark_attendance": "Mark Attendance",
     "view_attendance_for": "View attendance for {{name}}"
+  },
+  "fab": {
+    "open_actions": "Open actions",
+    "close_actions": "Close actions",
+    "quick_register": "Quick Register",
+    "create_payment": "Create Payment"
+  },
+  "days": {
+    "saturday": "Saturday",
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday_short": "Sat",
+    "sunday_short": "Sun",
+    "monday_short": "Mon",
+    "tuesday_short": "Tue",
+    "wednesday_short": "Wed",
+    "thursday_short": "Thu",
+    "friday_short": "Fri",
+    "select_day": "Select day"
+  },
+  "instructor_filter": {
+    "all": "All",
+    "filter_by_instructor": "Filter by instructor"
   }
 }

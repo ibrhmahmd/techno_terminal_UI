@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { useNavDirection } from '../../hooks/useNavDirection'
 
@@ -6,13 +7,21 @@ interface DaySelectorBarProps {
   onSelectDate: (date: string) => void
 }
 
-const DAY_NAMES = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-const DAY_NAMES_SHORT = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri']
-
 export function DaySelectorBar({ selectedDate, onSelectDate }: DaySelectorBarProps) {
   const isMobile = useIsMobile()
   const { getNextIndex } = useNavDirection()
-  const namesToUse = isMobile ? DAY_NAMES_SHORT : DAY_NAMES
+  const { t } = useTranslation('dashboard')
+
+  // Day keys in order starting from Saturday (week starts Saturday in Egypt)
+  const DAY_KEYS = [
+    { full: 'days.saturday', short: 'days.saturday_short' },
+    { full: 'days.sunday',   short: 'days.sunday_short'   },
+    { full: 'days.monday',   short: 'days.monday_short'   },
+    { full: 'days.tuesday',  short: 'days.tuesday_short'  },
+    { full: 'days.wednesday',short: 'days.wednesday_short'},
+    { full: 'days.thursday', short: 'days.thursday_short' },
+    { full: 'days.friday',   short: 'days.friday_short'   },
+  ]
 
   const toLocalISODate = (date: Date) => {
     const year = date.getFullYear()
@@ -32,11 +41,11 @@ export function DaySelectorBar({ selectedDate, onSelectDate }: DaySelectorBarPro
     const saturday = new Date(today)
     saturday.setDate(today.getDate() - ((dayOfWeek + 1) % 7))
     
-    return namesToUse.map((dayName, index) => {
+    return DAY_KEYS.map((keys, index) => {
       const date = new Date(saturday)
       date.setDate(saturday.getDate() + index)
       return {
-        dayName,
+        dayName: t(isMobile ? keys.short : keys.full),
         date: toLocalISODate(date),
         isToday: date.toDateString() === new Date().toDateString(),
       }
@@ -63,7 +72,7 @@ export function DaySelectorBar({ selectedDate, onSelectDate }: DaySelectorBarPro
     <section className="w-full pb-4">
       
       <div className="overflow-x-auto">
-        <div role="tablist" aria-label="Select day" className="flex min-w-[320px] lg:min-w-[680px] items-center gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1" onKeyDown={handleTablistKeyDown}>
+        <div role="tablist" aria-label={t('days.select_day')} className="flex min-w-[320px] lg:min-w-[680px] items-center gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1" onKeyDown={handleTablistKeyDown}>
           {weekDates.map(({ dayName, date }) => (
             <button
               key={date}
