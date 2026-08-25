@@ -9,7 +9,7 @@ export function LanguageSettings() {
     <div className="bg-white rounded-[6px] shadow-sm p-6">
       <h3 className="text-lg font-semibold text-on-surface mb-4">{t('navigation.settings')}</h3>
       <p className="text-sm text-on-surface-variant mb-4">
-        {locale === 'ar' ? 'اختر لغة العرض' : 'Choose display language'}
+        {t('settings.choose_language')}
       </p>
 
       <div className="space-y-3">

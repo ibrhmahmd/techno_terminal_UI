@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/authStore'
 import { formatDate } from '../../utils/formatting'
 import { useUpdateProfile, useChangePassword, useMfaStatus } from '../../hooks/useAuthQueries'
@@ -6,6 +7,7 @@ import { LoadingSpinner } from '../common/LoadingSpinner'
 
 
 export function ProfileTab() {
+  const { t } = useTranslation('common')
   const { user } = useAuthStore()
   const updateProfileMutation = useUpdateProfile()
   const changePasswordMutation = useChangePassword()
@@ -65,10 +67,10 @@ export function ProfileTab() {
 
     try {
       await updateProfileMutation.mutateAsync(payload)
-      setProfileSuccess('Profile updated successfully!')
+      setProfileSuccess(t('settings_profile.profile_updated'))
       setIsEditing(false)
     } catch {
-      setProfileError('Failed to update profile. Please try again.')
+      setProfileError(t('settings_profile.profile_update_failed'))
     }
   }
 
@@ -78,12 +80,12 @@ export function ProfileTab() {
     setPasswordSuccess(null)
 
     if (newPassword.length < 12) {
-      setPasswordError('Password must be at least 12 characters')
+      setPasswordError(t('settings_profile.password_too_short'))
       return
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError('Passwords do not match')
+      setPasswordError(t('settings_profile.password_mismatch'))
       return
     }
 
@@ -92,19 +94,19 @@ export function ProfileTab() {
         current_password: currentPassword,
         new_password: newPassword,
       })
-      setPasswordSuccess('Password changed successfully!')
+      setPasswordSuccess(t('settings_profile.password_changed'))
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch {
-      setPasswordError('Failed to change password. Please check your current password and try again.')
+      setPasswordError(t('settings_profile.password_change_failed'))
     }
   }
 
   const profileFields = [
-    { label: 'Username', value: displayUser.username || 'N/A' },
-    { label: 'Role', value: displayUser.role?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'N/A' },
-    { label: 'Last Login', value: displayUser.last_login ? formatDate(displayUser.last_login) : 'N/A' },
+    { label: t('settings_profile.username'), value: displayUser.username || t('settings_profile.not_available') },
+    { label: t('settings_profile.role'), value: displayUser.role?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || t('settings_profile.not_available') },
+    { label: t('settings_profile.last_login'), value: displayUser.last_login ? formatDate(displayUser.last_login) : t('settings_profile.not_available') },
   ]
 
   return (
@@ -112,7 +114,7 @@ export function ProfileTab() {
       {/* Profile Information */}
       <div className="bg-white rounded-[6px] shadow-sm p-6">
         <h2 className="font-headline text-xl font-semibold text-on-surface mb-6">
-          Profile Information
+          {t('settings_profile.information')}
         </h2>
 
         {profileError && (
@@ -129,7 +131,7 @@ export function ProfileTab() {
         {isEditing ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
-              <label htmlFor="edit-username" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Username</label>
+              <label htmlFor="edit-username" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('settings_profile.username')}</label>
               <input
                 id="edit-username"
                 type="text"
@@ -139,7 +141,7 @@ export function ProfileTab() {
               />
             </div>
             <div className="space-y-1">
-              <label htmlFor="edit-email" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</label>
+              <label htmlFor="edit-email" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('settings_profile.email')}</label>
               <input
                 id="edit-email"
                 type="email"
@@ -155,13 +157,13 @@ export function ProfileTab() {
                 className="px-4 py-2 bg-secondary text-white rounded-[6px] font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-2 text-sm transition-opacity duration-120"
               >
                 {updateProfileMutation.isPending && <LoadingSpinner size="sm" variant="light" />}
-                Save Changes
+                {t('settings_profile.save_changes')}
               </button>
               <button
                 onClick={cancelEditing}
                 className="px-4 py-2 bg-slate-100 text-slate-600 rounded-[6px] text-sm font-medium hover:bg-slate-200 transition-colors duration-120"
               >
-                Cancel
+                {t('common:buttons.cancel')}
               </button>
             </div>
           </div>
@@ -183,7 +185,7 @@ export function ProfileTab() {
                 className="px-4 py-2 bg-slate-100 text-slate-700 rounded-[6px] text-sm font-medium hover:bg-slate-200 transition-colors flex items-center gap-2 duration-120"
               >
                 <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
-                Edit Profile
+                {t('settings_profile.edit')}
               </button>
             </div>
           </>
@@ -193,7 +195,7 @@ export function ProfileTab() {
       {/* Change Password */}
       <div className="bg-white rounded-[6px] shadow-sm p-6">
         <h2 className="font-headline text-xl font-semibold text-on-surface mb-6">
-          Change Password
+          {t('settings_profile.change_password')}
         </h2>
 
         {passwordError && (
@@ -211,7 +213,7 @@ export function ProfileTab() {
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
             <label htmlFor="current-password" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-              Current Password *
+              {t('settings_profile.current_password')}
             </label>
             <input
               id="current-password"
@@ -220,13 +222,13 @@ export function ProfileTab() {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
-              placeholder="Enter current password"
+              placeholder={t('settings_profile.enter_current_password')}
             />
           </div>
 
           <div>
             <label htmlFor="new-password" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-              New Password *
+              {t('settings_profile.new_password')}
             </label>
             <input
               id="new-password"
@@ -236,16 +238,16 @@ export function ProfileTab() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
-              placeholder="Enter new password"
+              placeholder={t('settings_profile.enter_new_password')}
             />
             <p className="text-xs text-slate-400 mt-1">
-              Password must be at least 12 characters
+              {t('settings_profile.password_min_chars')}
             </p>
           </div>
 
           <div>
             <label htmlFor="confirm-password" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-              Confirm Password *
+              {t('settings_profile.confirm_password')}
             </label>
             <input
               id="confirm-password"
@@ -255,7 +257,7 @@ export function ProfileTab() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full bg-transparent border-0 border-b border-slate-300 focus:border-secondary focus:ring-0 px-1 py-1.5 text-sm rounded-none outline-none transition-colors"
-              placeholder="Confirm new password"
+              placeholder={t('settings_profile.confirm_new_password')}
             />
           </div>
 
@@ -266,7 +268,7 @@ export function ProfileTab() {
               className="px-4 py-2 bg-secondary text-white rounded-[6px] font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-2 text-sm transition-opacity duration-120"
             >
               {changePasswordMutation.isPending && <LoadingSpinner size="sm" variant="light" />}
-              Change Password
+              {t('settings_profile.change_password_button')}
             </button>
           </div>
         </form>
@@ -275,17 +277,17 @@ export function ProfileTab() {
       {/* Multi-Factor Authentication */}
       <div className="bg-white rounded-[6px] shadow-sm p-6">
         <h2 className="font-headline text-xl font-semibold text-on-surface mb-6">
-          Multi-Factor Authentication
+          {t('settings_profile.mfa')}
         </h2>
         
         {mfaLoading ? (
           <div className="flex items-center gap-2 text-slate-500 text-sm">
             <LoadingSpinner size="sm" />
-            <span>Checking MFA status...</span>
+            <span>{t('settings_profile.mfa_checking')}</span>
           </div>
         ) : mfaError ? (
           <div className="text-slate-500 text-sm italic">
-            Status unavailable
+            {t('settings_profile.mfa_unavailable')}
           </div>
         ) : (
           <div className="flex items-start gap-4">
@@ -294,23 +296,23 @@ export function ProfileTab() {
             </span>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-on-surface">MFA Status:</span>
+                <span className="text-sm font-medium text-on-surface">{t('settings_profile.mfa_status')}</span>
                 {mfaData?.enrolled ? (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-xs font-semibold bg-secondary/15 text-secondary">
                     <span className="h-1.5 w-1.5 rounded-full bg-secondary"></span>
-                    Enrolled ({mfaData.method || 'Unknown'})
+                    {t('settings_profile.mfa_enrolled')} ({mfaData.method || 'Unknown'})
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] text-xs font-semibold bg-amber-500/10 text-amber-700">
                     <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
-                    Not Enrolled
+                    {t('settings_profile.mfa_not_enrolled')}
                   </span>
                 )}
               </div>
               <p className="text-xs text-slate-500 font-body">
                 {!mfaData?.enrolled 
-                  ? 'Multi-Factor Authentication (MFA) enrollment is coming soon to secure your account.'
-                  : 'Your account is secured with Multi-Factor Authentication.'
+                  ? t('settings_profile.mfa_coming_soon')
+                  : t('settings_profile.mfa_secured')
                 }
               </p>
             </div>
