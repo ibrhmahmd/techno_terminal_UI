@@ -167,7 +167,7 @@ export function HistoryTab({ groupId }: HistoryTabProps) {
             {instructorHistory.instructors.map((instructor: InstructorHistoryItem) => (
               <div key={instructor.instructor_id} className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 relative overflow-hidden">
                 {instructor.is_current && (
-                  <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-lg">
+                  <div className="absolute top-0 end-0 bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-lg">
                     {t('historyTab.current')}
                   </div>
                 )}

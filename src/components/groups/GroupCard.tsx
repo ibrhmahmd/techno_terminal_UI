@@ -1,8 +1,10 @@
 import type { EnrichedGroupPublic } from '../../api/academics'
+import { useTranslation } from 'react-i18next'
 import { RowActions } from '../common/RowActions'
 import { CardSkeleton } from '../directory/shared/CardSkeleton'
 import { GroupStatusBadge } from './shared/GroupStatusBadge'
 import { formatTimeDisplay } from '../../utils/formatting'
+import { translateDay } from '../../utils/dayTranslation'
 
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { formatInstructorName } from '../../utils/formatting'
@@ -20,6 +22,7 @@ export interface GroupCardProps {
 }
 
 export function GroupCard({ group, actions, loading = false }: GroupCardProps) {
+  const { t } = useTranslation('groups')
   const isMobile = useIsMobile()
   
   if (loading) return <CardSkeleton />
@@ -29,7 +32,7 @@ export function GroupCard({ group, actions, loading = false }: GroupCardProps) {
   const endTime = group.schedule?.end_time
 
   const schedule = [
-    day,
+    day ? translateDay(day, t) : null,
     formatTimeDisplay(startTime),
     formatTimeDisplay(endTime),
   ].filter((s) => s !== '--:--' && Boolean(s)).join(' ')
@@ -48,13 +51,13 @@ export function GroupCard({ group, actions, loading = false }: GroupCardProps) {
 
   const instructorDisplay = group.instructor_name 
     ? (isMobile ? formatInstructorName(group.instructor_name) : group.instructor_name)
-    : 'Unassigned'
+    : t('groupInfoCard.not_assigned')
 
   return (
     <div
       role="button"
       tabIndex={0}
-      aria-label={`View ${group.name}`}
+      aria-label={t('groupInfoCard.view_aria', { name: group.name })}
       onClick={actions.onView}
       onKeyDown={handleKeyDown}
       className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30 cursor-pointer flex flex-col"

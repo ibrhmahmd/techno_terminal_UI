@@ -7,6 +7,7 @@ import { useAllEmployees } from '../../../hooks/useAllEmployees'
 import { useCourses } from '../../../hooks/useCourses'
 import { formatTimeInput } from '../../../utils/formatting'
 import { SearchablePillSelector } from '../../common/SearchablePillSelector'
+import { getTranslatedDays } from '../../../utils/dayTranslation'
 
 interface EditGroupDialogProps {
   isOpen: boolean
@@ -16,11 +17,11 @@ interface EditGroupDialogProps {
   triggerRef?: React.RefObject<HTMLElement | null>
 }
 
-const DAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 const STATUSES = ['active', 'inactive', 'archived', 'completed']
 
 export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: EditGroupDialogProps) {
   const { t } = useTranslation('groups')
+  const translatedDays = getTranslatedDays(t)
   const [name, setName] = useState(group.name || '')
   const [courseId, setCourseId] = useState<string | number | null>(group.course_id ?? null)
   const [instructorId, setInstructorId] = useState<string | number | null>(group.instructor_id ?? null)
@@ -129,7 +130,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
               {t('editGroupDialog.subtitle')}
             </p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-lg transition-colors" aria-label="Close dialog">
+          <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-lg transition-colors" aria-label={t('editGroupDialog.close_aria')}>
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
@@ -254,8 +255,8 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
                   className="w-full px-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
                 >
                   <option value="">{t('editGroupDialog.no_default_day')}</option>
-                  {DAYS.map((d) => (
-                    <option key={d} value={d}>{d}</option>
+                  {translatedDays.map((d) => (
+                    <option key={d.api} value={d.api}>{d.label}</option>
                   ))}
                 </select>
               </div>
@@ -272,7 +273,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
                     onChange={(e) => setStartTime(e.target.value)}
                     className="w-full ps-9 pe-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
                   />
-                  <Clock className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
+                  <Clock className="w-4 h-4 text-slate-400 absolute start-1 top-2.5 pointer-events-none" />
                 </div>
               </div>
 
@@ -288,7 +289,7 @@ export function EditGroupDialog({ isOpen, group, onClose, onSave, triggerRef }: 
                     onChange={(e) => setEndTime(e.target.value)}
                     className="w-full ps-9 pe-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
                   />
-                  <Clock className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
+                  <Clock className="w-4 h-4 text-slate-400 absolute start-1 top-2.5 pointer-events-none" />
                 </div>
               </div>
             </div>

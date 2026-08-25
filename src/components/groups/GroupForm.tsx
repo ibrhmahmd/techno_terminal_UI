@@ -7,6 +7,7 @@ import { useCourses } from '../../hooks/useCourses'
 import { useAllEmployees } from '../../hooks/useAllEmployees'
 import { formToSchedule } from '../../utils/scheduleTransform'
 import { SearchablePillSelector } from '../common/SearchablePillSelector'
+import { getTranslatedDays } from '../../utils/dayTranslation'
 
 type FormSchedule = Pick<ScheduleInput, 'day'> & Partial<ScheduleInput & Schedule>
 
@@ -17,7 +18,6 @@ interface GroupFormProps {
   mode: 'create' | 'edit'
 }
 
-const DAYS = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 const HOURS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const MINUTES = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"]
 
@@ -33,6 +33,7 @@ function getScheduleField(schedule: FormSchedule | undefined, field: 'start_time
 
 export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormProps) {
   const { t } = useTranslation('groups')
+  const translatedDays = getTranslatedDays(t)
   const parseTime = (timeStr?: string): TimeState => {
     if (!timeStr) return { hour: 3, minute: "00", period: 'PM' }
     const [h24, m] = timeStr.split(':').map(Number)
@@ -202,8 +203,8 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
             disabled={isLoading}
             className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all disabled:bg-slate-50"
           >
-            {DAYS.map(day => (
-              <option key={day} value={day}>{day}</option>
+            {translatedDays.map(day => (
+              <option key={day.api} value={day.api}>{day.label}</option>
             ))}
           </select>
         </div>
@@ -231,7 +232,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           <select
             value={startTime.hour}
             onChange={(e) => setStartTime(prev => ({ ...prev, hour: parseInt(e.target.value) }))}
-            aria-label="Start time hour"
+            aria-label={t('groupForm.start_hour_aria')}
             className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
           >
             {HOURS.map(h => <option key={h} value={h}>{String(h).padStart(2, '0')}</option>)}
@@ -239,7 +240,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           <select
             value={startTime.minute}
             onChange={(e) => setStartTime(prev => ({ ...prev, minute: e.target.value }))}
-            aria-label="Start time minute"
+            aria-label={t('groupForm.start_minute_aria')}
             className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
           >
             {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
@@ -247,7 +248,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           <select
             value={startTime.period}
             onChange={(e) => setStartTime(prev => ({ ...prev, period: e.target.value as 'AM' | 'PM' }))}
-            aria-label="Start time period"
+            aria-label={t('groupForm.start_period_aria')}
             className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
           >
             <option value="AM">AM</option>
@@ -263,7 +264,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           <select
             value={endTime.hour}
             onChange={(e) => setEndTime(prev => ({ ...prev, hour: parseInt(e.target.value) }))}
-            aria-label="End time hour"
+            aria-label={t('groupForm.end_hour_aria')}
             className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
           >
             {HOURS.map(h => <option key={h} value={h}>{String(h).padStart(2, '0')}</option>)}
@@ -271,7 +272,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           <select
             value={endTime.minute}
             onChange={(e) => setEndTime(prev => ({ ...prev, minute: e.target.value }))}
-            aria-label="End time minute"
+            aria-label={t('groupForm.end_minute_aria')}
             className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
           >
             {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
@@ -279,7 +280,7 @@ export function GroupForm({ initialData, onSubmit, onCancel, mode }: GroupFormPr
           <select
             value={endTime.period}
             onChange={(e) => setEndTime(prev => ({ ...prev, period: e.target.value as 'AM' | 'PM' }))}
-            aria-label="End time period"
+            aria-label={t('groupForm.end_period_aria')}
             className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
           >
             <option value="AM">AM</option>

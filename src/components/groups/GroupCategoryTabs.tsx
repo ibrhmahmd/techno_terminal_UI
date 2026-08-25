@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useNavDirection } from '../../hooks/useNavDirection'
 
 interface Category {
@@ -13,6 +14,7 @@ interface GroupCategoryTabsProps {
 }
 
 export function GroupCategoryTabs({ categories, activeKey, onChange }: GroupCategoryTabsProps) {
+  const { t } = useTranslation('groups')
   if (categories.length === 0) return null
 
   const { getNextIndex } = useNavDirection()
@@ -34,7 +36,7 @@ export function GroupCategoryTabs({ categories, activeKey, onChange }: GroupCate
   }
 
   return (
-    <div id="group-category-tablist" className="mb-4" role="tablist" aria-label="Group categories">
+    <div id="group-category-tablist" className="mb-4" role="tablist" aria-label={t('groupCategoryTabs.aria_label')}>
       <div className="flex flex-wrap items-center gap-1 rounded-xl bg-slate-800 p-1.5">
         {categories.map((cat, index) => {
           const isActive = cat.key === activeKey

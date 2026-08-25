@@ -21,13 +21,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createGroup, updateGroup, deleteGroup } from '../api/academics'
 import { queryKeys } from '../hooks/queryKeys'
 import { getUpcomingDates } from '../utils/date'
-import { groupColumns } from '../components/groups/GroupColumns'
+import { useGroupColumns } from '../components/groups/GroupColumns'
 import { GroupFilters } from '../components/groups/GroupFilters'
 import { useCourses } from '../hooks/useCourses'
 import { useEmployees } from '../hooks/useStaff'
 
 export function GroupsPage() {
   const { t } = useTranslation('groups')
+  const groupColumns = useGroupColumns()
   const navigate = useNavigate()
   
   const {

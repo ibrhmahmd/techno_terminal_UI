@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { EnrichedGroupPublic } from '../../api/academics'
 import { getRecentItems, addRecentItem, type RecentItem } from '../../utils/recentCache'
 import { useGroupSearch } from '../../hooks/useGroupSearch'
+import { translateDay } from '../../utils/dayTranslation'
 
 export interface GroupComboboxProps {
   value: EnrichedGroupPublic | null
@@ -125,9 +126,9 @@ export function GroupComboboxInner({
     const grouped: Record<string, EnrichedGroupPublic[]> = {}
     filteredSearchGroups.forEach(g => {
       let key = 'Others'
-      if (groupByMode === 'course') key = g.course_name || 'Uncategorized Course'
-      else if (groupByMode === 'instructor') key = g.instructor_name || 'No Instructor'
-      else if (groupByMode === 'day') key = g.schedule?.day || 'No Specific Day'
+      if (groupByMode === 'course') key = g.course_name || t('combobox.uncategorized_course')
+      else if (groupByMode === 'instructor') key = g.instructor_name || t('combobox.no_instructor')
+      else if (groupByMode === 'day') key = g.schedule?.day || t('combobox.no_specific_day')
 
       if (!grouped[key]) grouped[key] = []
       grouped[key].push(g)
@@ -143,7 +144,7 @@ export function GroupComboboxInner({
 
     return sortedKeys.map(k => ({
       key: k,
-      label: k,
+      label: groupByMode === 'day' ? translateDay(k, t) : k,
       groups: grouped[k],
     }))
   }, [filteredSearchGroups, search, groupByMode, recentGroups, excludeSet])
@@ -344,7 +345,7 @@ export function GroupComboboxInner({
               {activeCategoryGroups.map((g) => {
                 const hasTime = g.schedule?.start_time && g.schedule?.end_time
                 const scheduleDisplay = g.schedule 
-                  ? `${g.schedule.day} ${hasTime ? `${g.schedule.start_time.slice(0, 5)}-${g.schedule.end_time.slice(0, 5)}` : ''}`
+                  ? `${translateDay(g.schedule.day, t)} ${hasTime ? `${g.schedule.start_time.slice(0, 5)}-${g.schedule.end_time.slice(0, 5)}` : ''}`
                   : null
 
                 return (

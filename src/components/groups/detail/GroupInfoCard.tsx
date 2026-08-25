@@ -8,6 +8,7 @@ import { GroupStatusBadge } from '../shared/GroupStatusBadge'
 import { useDebounce } from '../../../hooks/useDebounce'
 import { formatTime } from '../../../utils/formatting'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
+import { translateDay } from '../../../utils/dayTranslation'
 
 
 interface GroupInfoCardProps {
@@ -163,7 +164,7 @@ export function GroupInfoCard({
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('groupInfoCard.schedule')}</p>
             <p className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
-              {group.schedule?.day || t('groupInfoCard.no_day')}
+              {group.schedule?.day ? translateDay(group.schedule.day, t) : t('groupInfoCard.no_day')}
               <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
               {formatTime(group.schedule?.start_time || '') || '--:--'} - {formatTime(group.schedule?.end_time || '') || '--:--'}
             </p>
@@ -185,7 +186,7 @@ export function GroupInfoCard({
       <div className="mt-6 border-t border-slate-100 pt-6">
         <label htmlFor="group-notes" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
           {t('groupInfoCard.group_notes')}
-          {isSavingNotes && <span className="ml-2 text-xs text-slate-400 font-normal normal-case">{t('groupInfoCard.saving')}</span>}
+          {isSavingNotes && <span className="ms-2 text-xs text-slate-400 font-normal normal-case">{t('groupInfoCard.saving')}</span>}
         </label>
         <textarea
           id="group-notes"

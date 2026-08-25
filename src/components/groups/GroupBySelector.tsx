@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { GroupByField } from '../../api/academics'
 import { useNavDirection } from '../../hooks/useNavDirection'
 
@@ -10,16 +11,17 @@ interface GroupBySelectorProps {
   rightSlot?: ReactNode
 }
 
-const OPTIONS: Array<{ value: GroupBySelectorValue; label: string; icon: string }> = [
-  { value: null,          label: 'All',          icon: 'grid_view'      },
-  { value: 'day',         label: 'Day',          icon: 'calendar_today' },
-  { value: 'course',      label: 'Course',       icon: 'menu_book'      },
-  { value: 'instructor',  label: 'Instructor',   icon: 'person'         },
-  { value: 'search',      label: 'Filter Groups', icon: 'manage_search'  },
-]
-
 export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorProps) {
+  const { t } = useTranslation('groups')
   const { getNextIndex } = useNavDirection()
+
+  const OPTIONS: Array<{ value: GroupBySelectorValue; label: string; icon: string }> = [
+    { value: null,          label: t('groupBy.all'),          icon: 'grid_view'      },
+    { value: 'day',         label: t('groupBy.day'),          icon: 'calendar_today' },
+    { value: 'course',      label: t('groupBy.course'),       icon: 'menu_book'      },
+    { value: 'instructor',  label: t('groupBy.instructor'),   icon: 'person'         },
+    { value: 'search',      label: t('groupBy.search'),       icon: 'manage_search'  },
+  ]
 
   const handleKeyDown = (index: number) => (e: React.KeyboardEvent) => {
     if (OPTIONS.length === 0) return
@@ -42,7 +44,7 @@ export function GroupBySelector({ value, onChange, rightSlot }: GroupBySelectorP
 
   return (
     <section className="w-full">
-      <div className="flex w-full items-stretch gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1" role="radiogroup" aria-label="Group by">
+      <div className="flex w-full items-stretch gap-1 rounded-lg bg-blue-50 border border-blue-100 p-1" role="radiogroup" aria-label={t('groupBy.aria_label')}>
         {OPTIONS.map(({ value: optVal, label, icon }, index) => {
           const isActive = value === optVal
           const isSearch = optVal === 'search'

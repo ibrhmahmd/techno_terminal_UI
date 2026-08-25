@@ -376,5 +376,10 @@
     "refund_failed": "Refund failed. Please try again.",
     "placement_updated": "Placement updated successfully",
     "placement_invalid_date": "Cannot set placement before the competition date has passed."
+  },
+  "combobox": {
+    "no_specific_day": "No Specific Day",
+    "no_instructor": "No Instructor",
+    "uncategorized_course": "Uncategorized Course"
   }
 }

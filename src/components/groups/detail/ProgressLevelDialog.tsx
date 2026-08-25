@@ -149,7 +149,7 @@ export function ProgressLevelDialog({
             onClick={onClose}
             disabled={isLoading}
             className="p-2 hover:bg-surface-container rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            aria-label="Close dialog"
+            aria-label={t('progressDialog.close_aria')}
           >
             <X className="w-5 h-5 text-slate-500" />
           </button>
@@ -279,10 +279,10 @@ export function ProgressLevelDialog({
                     value={formData.session_start_date}
                     onChange={(e) => setSessionStartDate(e.target.value)}
                     disabled={isLoading}
-                    className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full ps-9 pe-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                     required
                   />
-                  <CalendarIcon className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
+                  <CalendarIcon className="w-4 h-4 text-slate-400 absolute start-1 top-2.5 pointer-events-none" />
                 </div>
               </div>
 
@@ -302,9 +302,9 @@ export function ProgressLevelDialog({
                     onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                     placeholder={t('progressDialog.course_default')}
                     disabled={isLoading}
-                    className="w-full pl-9 pr-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full ps-9 pe-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  <DollarSign className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
+                  <DollarSign className="w-4 h-4 text-slate-400 absolute start-1 top-2.5 pointer-events-none" />
                 </div>
                 <p className="text-xs text-slate-500 mt-1">
                   {t('progressDialog.leave_empty_hint')}

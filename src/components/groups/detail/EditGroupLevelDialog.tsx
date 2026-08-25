@@ -144,7 +144,7 @@ export function EditGroupLevelDialog({
               {t('editLevelDialog.subtitle')}
             </p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-lg transition-colors" aria-label="Close dialog">
+          <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-lg transition-colors" aria-label={t('editLevelDialog.close_aria')}>
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
@@ -196,7 +196,7 @@ export function EditGroupLevelDialog({
                 placeholder={t('editLevelDialog.no_price_override')}
                 className="w-full ps-9 pe-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none"
               />
-              <DollarSign className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
+              <DollarSign className="w-4 h-4 text-slate-400 absolute start-1 top-2.5 pointer-events-none" />
             </div>
             <p className="text-xs text-slate-500 mt-1">
               {t('editLevelDialog.price_hint')}
@@ -218,7 +218,7 @@ export function EditGroupLevelDialog({
                 maxLength={500}
                 className="w-full ps-9 pe-3 py-2 bg-transparent border-0 border-b-2 border-surface-container-high focus:ring-0 focus:border-secondary outline-none transition-all rounded-none resize-none"
               />
-              <StickyNote className="w-4 h-4 text-slate-400 absolute left-1 top-2.5 pointer-events-none" />
+              <StickyNote className="w-4 h-4 text-slate-400 absolute start-1 top-2.5 pointer-events-none" />
             </div>
           </div>
 

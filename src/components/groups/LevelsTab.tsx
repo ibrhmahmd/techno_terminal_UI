@@ -312,9 +312,9 @@ export function LevelsTab({
                   {isAdmin && selectedLevel.status === 'active' && (
                     <button
                       onClick={() => setIsEditLevelDialogOpen(true)}
-                      title="Edit Level Details"
+                      title={t('levelsTab.edit_level_aria')}
                       className="p-1 hover:bg-slate-200 rounded-md transition-colors text-slate-500 hover:text-slate-700 flex items-center justify-center"
-                      aria-label="Edit level details"
+                      aria-label={t('levelsTab.edit_level_aria')}
                     >
                       <Edit3 className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
@@ -435,7 +435,7 @@ export function LevelsTab({
 
           <div className="mt-6 border-t border-slate-200 pt-6">
             <div className="flex justify-center mb-6">
-              <div role="tablist" aria-label="Select view" className="flex items-center gap-1 rounded-md bg-surface-container-low border border-surface-container-low p-1 w-full max-w-md">
+              <div role="tablist" aria-label={t('levelsTab.select_view_aria')} className="flex items-center gap-1 rounded-md bg-surface-container-low border border-surface-container-low p-1 w-full max-w-md">
                 <button
                   role="tab"
                   aria-selected={viewMode === 'attendance'}
