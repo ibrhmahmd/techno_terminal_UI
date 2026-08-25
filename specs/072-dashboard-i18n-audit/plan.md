@@ -31,7 +31,7 @@ Finalize the localization of the Dashboard page and all its component dependenci
 |-----|--------|--------|--------|
 | `empty.no_groups` | `"مفيش مجموعات النهاردة"` | `"مفيش مجموعات"` | Mobile should be shorter |
 | `empty.no_groups_today` | same | kept | Desktop stays same |
-| `quick_actions.create_payment` | `"إنشاء دفعة"` | `"فاتورة جديدة"` | User preference |
+| `quick_actions.create_payment` | `"إنشاء فاتورة"` | `"فاتورة جديدة"` | User preference |
 | `layout.sign_out` | `"اطلع"` | `"تسجيل خروج"` | More standard Arabic |
 
 ## New Keys Added
@@ -88,5 +88,5 @@ Finalize the localization of the Dashboard page and all its component dependenci
 | `fallbacks.unknown_group` | `"مجموعة مش معروفة"` | ✅ |
 | `fallbacks.unknown_course` | `"كورس مش معروف"` | ✅ |
 | `quick_actions.quick_reports_subtitle` | `"شوف التقارير"` | ✅ Close enough for this context |
-| `quick_actions.todays_sessions` | `"حصص النهاردة"` | ✅ |
+| `quick_actions.todays_sessions` | `"سيشنز النهاردة"` | ✅ |
 | All `mobile_group_card.*` | — | ✅ |

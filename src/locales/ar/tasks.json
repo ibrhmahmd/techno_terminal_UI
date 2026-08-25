@@ -1,8 +1,8 @@
 {
-  "page_title": "المهام",
+  "page_title": "التاسكات",
   "subtitle": "إدارة وتتبع مهام الموظفين",
   "actions": {
-    "new_task": "مهمة جديدة"
+    "new_task": "تاسك جديدة"
   },
   "filters": {
     "all_statuses": "كل الحالات",
@@ -14,33 +14,33 @@
     "by_priority": "تصفية حسب الأولوية",
     "by_assignee": "تصفية حسب المسؤول"
   },
-  "loading": "المهام بتتحمّل...",
+  "loading": "التاسكات بتتحمّل...",
   "toast": {
-    "load_failed": "مقدرش أحمّل المهام",
-    "created_successfully": "المهمة اتعملت بنجاح",
-    "create_failed": "مقدرش أعمل المهمة"
+    "load_failed": "مقدرش أحمّل التاسكات",
+    "created_successfully": "التاسك اتعملت بنجاح",
+    "create_failed": "مقدرش أعمل التاسك"
   },
   "create_modal": {
-    "title": "عمل مهمة",
+    "title": "عمل تاسك",
     "title_label": "العنوان *",
-    "title_placeholder": "عنوان المهمة",
+    "title_placeholder": "عنوان التاسك",
     "description_label": "الوصف",
     "description_placeholder": "وصف اختياري",
     "priority_label": "الأولوية",
     "due_date_label": "تاريخ التسليم",
     "assign_to_label": "تعيين لـ",
-    "unassigned": "من غير تعيين",
+    "unassigned": "من مش تعيين",
     "est_hours_label": "الساعات المتوقعة",
     "tags_label": "العلامات",
     "tags_placeholder": "مفصولة بفواصل",
-    "recurring_task": "مهمة متكررة",
+    "recurring_task": "تاسك متكررة",
     "pattern_label": "النمط",
     "day_of_week_label": "يوم الأسبوع",
     "any": "أي يوم",
     "interval_days_label": "الفاصل (أيام)",
     "cancel": "إلغاء",
     "creating": "بيتعمّل...",
-    "create_task": "عمل مهمة"
+    "create_task": "عمل تاسك"
   },
   "comments": {
     "no_comments": "مفيش تعليقات لسه",
@@ -57,8 +57,8 @@
     "log": "تسجيل"
   },
   "subtask": {
-    "add_placeholder": "أضف مهمة فرعية...",
-    "add": "أضف"
+    "add_placeholder": "زود تاسك فرعية...",
+    "add": "زود"
   },
   "table": {
     "no_tasks": "مفيش مهام",

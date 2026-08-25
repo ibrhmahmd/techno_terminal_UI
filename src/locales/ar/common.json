@@ -6,7 +6,7 @@
   },
   "status": {
     "active": "نشط",
-    "inactive": "غير نشط",
+    "inactive": "مش نشط",
     "archived": "مؤرشف",
     "completed": "اتنهى",
     "unknown": "مش معروف"
@@ -22,15 +22,15 @@
     "tooManyAttempts": "حاولت كتير. استنى {{count}} ثانية وجرّب تاني."
   },
   "navigation": {
-    "dashboard": "لوحة التحكم",
+    "dashboard": "الصفحه الرئيسية",
     "groups": "المجموعات",
     "courses": "الكورسات",
-    "directory": "دليل الطلاب",
+    "directory": "الطلاب",
     "enrollments": "الاشتراكات",
     "finance": "الفواتير",
     "reports": "التقارير",
     "staff": "الموظفين",
-    "tasks": "المهام",
+    "tasks": "التاسكات",
     "settings": "الإعدادات",
     "notifications": "الإشعارات",
     "competitions": "المسابقات",
@@ -93,7 +93,7 @@
     "description": "الميزة دي لسه في التطوير وهيبان قريب."
   },
   "auth": {
-    "login": "ادخل",
+    "login": "تسجيل دخول",
     "register": "سجّل",
     "forgotPassword": "نسيت كلمة المرور؟",
     "resetPassword": "غيّر كلمة المرور",
@@ -104,7 +104,7 @@
     "hidePassword": "خبّي كلمة المرور",
     "invalidCredentials": "البريد أو كلمة المرور غلط.",
     "connectionError": "مش قادر أوصلك للخادم.",
-    "loginSuccess": "ادخلت بنجاح",
+    "loginSuccess": "تسجيل دخول ناجحناجحناجح",
     "logoutSuccess": "طلعت بنجاح",
     "forgotPasswordPage": {
       "title": "نسيت كلمة المرور؟",
@@ -114,7 +114,7 @@
       "sendReset": "ابعت رابط إعادة التعيين",
       "backToLogin": "رجوع لتسجيل الدخول",
       "rememberPassword": "فتكرت كلمة المرور؟",
-      "signIn": "ادخل",
+      "signIn": "تسجيل دخولل دخول",
       "unableToConnect": "مش قادر أوصلك. حاول تاني."
     },
     "resetPasswordPage": {
@@ -127,13 +127,13 @@
       "resetButton": "غيّر كلمة المرور",
       "passwordTooShort": "كلمة المرور لازم يكون فيها 12 حرف على الأقل",
       "passwordMismatch": "كلمات المرور مش متطابقة",
-      "invalidLink": "رابط إعادة التعيين غير صالح أو منتهي الصلاحية",
-      "invalidTitle": "رابط إعادة التعيين غير صالح",
-      "invalidSubtitle": "رابط إعادة التعيين غير صالح أو منتهي الصلاحية",
+      "invalidLink": "رابط إعادة التعيين مش صالح أو منتهي الصلاحية",
+      "invalidTitle": "رابط إعادة التعيين مش صالح",
+      "invalidSubtitle": "رابط إعادة التعيين مش صالح أو منتهي الصلاحية",
       "requestNewLink": "طلب رابط جديد",
-      "completeTitle": "اتغيرت كلمة المرور بنجاح",
+      "completeTitle": "اتمشت كلمة المرور بنجاح",
       "completeSubtitle": "تقدر دلوقتي تدخل بكلمة المرور الجديدة",
-      "signIn": "ادخل",
+      "signIn": "تسجيل دخول",
       "rememberPassword": "فتكرت كلمة المرور؟"
     },
     "registerPage": {
@@ -148,7 +148,7 @@
       "submitButton": "اعمل حساب",
       "passwordTooShort": "كلمة المرور لازم يكون فيها 12 حرف على الأقل",
       "passwordMismatch": "كلمات المرور مش متطابقة",
-      "invalidToken": "رابط التسجيل غير صالح أو منتهي الصلاحية",
+      "invalidToken": "رابط التسجيل مش صالح أو منتهي الصلاحية",
       "registrationFailed": "التسجيل فشل. حاول تاني."
     }
   },
@@ -197,7 +197,7 @@
     "no_students_linked": "مفيش طلاب مرتبطين",
     "status_active": "نشط",
     "status_waiting": "في الانتظار",
-    "status_inactive": "غير نشط",
+    "status_inactive": "مش نشط",
     "edit_title": "عدّل ولي الأمر",
     "delete_title": "احذف ولي الأمر",
     "delete_confirm": "متأكد إنك عايز تحذف <strong>{{name}}</strong>? العملية دي مش هترجع تاني.",
@@ -216,7 +216,7 @@
     "course": "الكورس",
     "instructor": "المهندس",
     "not_assigned": "مش معيّن",
-    "last_session": "آخر حصة",
+    "last_session": "آخر سيشن",
     "notes": "ملاحظات",
     "attendance_summary": "ملخص الحضور",
     "present": "حاضر",
@@ -357,13 +357,13 @@
     "password_mismatch": "كلمتا المرور مش متطابقتين"
   },
   "settings_sessions": {
-    "active_sessions": "الجلسات النشطة",
-    "logout_all": "تسجيل خروج كل الجلسات التانية",
-    "no_sessions": "مفيش جلسات نشطة.",
+    "active_sessions": "السيشنز النشطة",
+    "logout_all": "تسجيل خروج كل السيشنز التانية",
+    "no_sessions": "مفيش سيشنز نشطة.",
     "unknown_device": "جهاز مش معروف",
     "active": "نشط",
-    "confirm_logout_title": "تسجيل خروج كل الجلسات التانية؟",
-    "confirm_logout_desc": "ده هيلغي كل الجلسات النشطة غير الحالية. هتحتاج تسجل دخول تاني على الأجهزة التانية.",
+    "confirm_logout_title": "تسجيل خروج كل السيشنز التانية؟",
+    "confirm_logout_desc": "ده هيلغي كل السيشنز النشطة مش الحالية. هتحتاج تسجل دخول تاني على الأجهزة التانية.",
     "cancel": "إلغاء",
     "logout_all_button": "تسجيل خروج الكل",
     "account_activity": "نشاط الحساب",
@@ -371,7 +371,7 @@
     "event": "حدث",
     "ip_address": "عنوان IP",
     "date": "التاريخ",
-    "failed_load_sessions": "مقدرش أحمل الجلسات.",
+    "failed_load_sessions": "مقدرش أحمل السيشنز.",
     "failed_load_activity": "مقدرش أحمل سجل النشاط."
   },
   "settings_users": {

@@ -1,8 +1,8 @@
 {
   "nav": {
-    "dashboard": "لوحة التحكم",
+    "dashboard": "الصفحه الرئيسية",
     "groups": "المجموعات",
-    "directory": "دليل الطلاب",
+    "directory": "الطلاب",
     "courses": "الكورسات",
     "enrollments": "الاشتراكات",
     "finance": "الفواتير",
@@ -10,7 +10,7 @@
     "certificates": "الشهادات",
     "reports": "التقارير",
     "staff": "الموظفين",
-    "tasks": "المهام",
+    "tasks": "التاسكات",
     "notifications": "الإشعارات",
     "settings": "الإعدادات",
     "capabilities": "القدرات"

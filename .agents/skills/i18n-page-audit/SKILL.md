@@ -91,10 +91,10 @@ For any translation that meets any of the following criteria, present options an
 | Condition | Why Review is Required | Example |
 |-----------|------------------------|---------|
 | **Ambiguous / Polysemous** | Word has multiple valid meanings | "Balance" → رصيد vs توازن |
-| **Register / Dialect Conflict** | Formal (MSA) vs Colloquial | "Create payment" → إنشاء دفعة vs فاتورة جديدة |
+| **Register / Dialect Conflict** | Formal (MSA) vs Colloquial | "Create payment" → إنشاء فاتورة vs فاتورة جديدة |
 | **Length / UI Fit** | Target text may truncate on mobile | Mobile empty state: "مفيش مجموعات" vs desktop "مفيش مجموعات النهاردة" |
 | **Technical / Brand Terms** | Should remain untranslated or transliterated | "TechnoTerminal", "TBA" → يتحدد بعدين |
-| **Button vs Heading Style** | Verbs vs Noun phrases | "Quick Register" → سجّل طالب (verb) vs تسجيل سريع (noun) |
+| **Button vs Heading Style** | Verbs vs Noun phrases | "Quick Register" → سجّل طالب (verb) vs تسجيل  (noun) |
 
 #### Question Batching Rule
 - Group questions by similarity (max 3–4 questions per interactive modal).

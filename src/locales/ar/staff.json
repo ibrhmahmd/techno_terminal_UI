@@ -12,7 +12,7 @@
     "edit_employee": "عدّل الموظف"
   },
   "actions": {
-    "add_employee": "أضف موظف",
+    "add_employee": "زود موظف",
     "include_deleted": "اعرض المحذوفين"
   },
   "dialogs": {

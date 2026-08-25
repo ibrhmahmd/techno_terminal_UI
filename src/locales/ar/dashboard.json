@@ -1,5 +1,5 @@
 {
-  "page_title": "لوحة التحكم",
+  "page_title": "الصفحه الرئيسية",
   "breadcrumb": {
     "home": "الرئيسية"
   },
@@ -17,15 +17,15 @@
     "tba": "يتحدد بعدين"
   },
   "quick_actions": {
-    "aria_label": "إجراءات سريعة",
-    "quick_register": "تسجيل سريع",
+    "aria_label": "إجراءات ",
+    "quick_register": "تسجيل ",
     "quick_register_subtitle": "سجّل طالب جديد",
     "create_payment": "فاتورة جديدة",
-    "create_payment_subtitle": "سجّل دفعة جديدة",
-    "todays_sessions": "حصص النهاردة",
-    "quick_reports": "تقارير سريعة",
+    "create_payment_subtitle": "سجّل فاتورة جديدة",
+    "todays_sessions": "سيشنز النهاردة",
+    "quick_reports": "تقارير ",
     "quick_reports_subtitle": "شوف التقارير",
-    "quick_register_student": "تسجيل سريع للطالب",
+    "quick_register_student": "تسجيل  للطالب",
     "student_registered_success": "الطالب اتسجّل بنجاح",
     "student_register_failed": "مش عارف أسجّل الطالب"
   },

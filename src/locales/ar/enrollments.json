@@ -10,7 +10,7 @@
     "select_student": "١. اختار الطالب",
     "select_group": "٢. اختار المجموعة",
     "payment_details": "٣. تفاصيل الدفع",
-    "course_fee": "رسوم الكورس (ج.م)",
+    "course_fee": "فواتير الكورس (ج.م)",
     "discount": "الخصم (ج.م)",
     "sibling_discount_auto": "(خصم الأشقاء اتلقائى)",
     "sibling_discount_badge": "تم العثور على {{count}} أخ(姐妹) - خصم 50 ج.م تلقائي",
@@ -38,7 +38,7 @@
     "amount_cannot_be_negative": "المبلغ المستحقة مش ممكن يكون سالب.",
     "discount_must_be_valid": "الخصم لازم يكون رقم صحيح ومش سالب.",
     "internal_notes": "ملاحظات داخلية",
-    "add_notes_placeholder": "أضف ملاحظات إدارية...",
+    "add_notes_placeholder": "زود ملاحظات إدارية...",
     "save_changes": "احفظ التعديلات"
   },
   "drop_panel": {
@@ -54,7 +54,7 @@
     "execute_transfer": "نفّذ النقل",
     "drop_enrollment": "حذف الاشتراك",
     "drop_description": "اسحب الطالب ده من المجموعة نهائى.",
-    "unpaid_balance": "الرصيد غير المدفوع",
+    "unpaid_balance": "الرصيد مش المدفوع",
     "outstanding_amount": "التسجيل ده فيه {{amount}} ج.م لسه مدفوعش. ممكن تحتاج تسوية مالية قبل ما تكمل.",
     "notes_optional": "ملاحظات (اختيارى)",
     "reason_placeholder": "سبب الحذف...",
@@ -68,7 +68,7 @@
     "leave_blank_price": "سيبه فاضى عشان تستخدم السعر الافتراضى للمجموعة.",
     "discount_applied": "الخصم المطبّق",
     "internal_notes": "ملاحظات داخلية",
-    "add_notes_placeholder": "أضف ملاحظات إدارية...",
+    "add_notes_placeholder": "زود ملاحظات إدارية...",
     "cancel": "إلغاء",
     "save_changes": "احفظ التعديلات"
   },

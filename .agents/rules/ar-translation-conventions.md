@@ -17,8 +17,8 @@ editing any key in `src/locales/ar/`.
 | Sign Out / Logout | `تسجيل خروج` | `"اطلع"` (too informal) |
 | TBA (instructor not assigned) | `يتحدد بعدين` | `"TBA"` or MSA |
 | All (filter button) | `الكل` | `"كل"` or `"الجميع"` |
-| Create Payment (widget title) | `فاتورة جديدة` | `"إنشاء دفعة"` (MSA) |
-| Quick Register (FAB) | `سجّل طالب` | `"تسجيل سريع"` (too formal for mobile) |
+| Create Payment (widget title) | `فاتورة جديدة` | `"إنشاء فاتورة"` (MSA) |
+| Quick Register (FAB) | `سجّل طالب` | `"تسجيل "` (too formal for mobile) |
 | View insights (subtitle) | `شوف التقارير` | Literal "insights" translation |
 | Open (aria, FAB) | `افتح` | `"فتح"` |
 | Close (aria, FAB) | `اقفل` | `"إغلاق"` (MSA) |
@@ -39,7 +39,7 @@ Short/mobile forms (Egyptian colloquial, no ال article):
 ## Page Titles
 
 Page titles use semi-formal Arabic (with ال article, noun phrases):
-`لوحة التحكم / المجموعات / دليل الطلاب / الفواتير`
+`الصفحه الرئيسية / المجموعات / الطلاب / الفواتير`
 
 ## Negation Pattern
 
