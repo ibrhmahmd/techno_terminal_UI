@@ -1,10 +1,10 @@
 {
   "page_title": "الاشتراكات",
-  "subtitle": "اعمل اشتراكات جديدة، عدّل التفاصيل المالية، أو امسح طلاب",
+  "subtitle": "اعمل اشتراكات جديدة، عدّل التفاصيل المالية، أو حذفح طلاب",
   "tabs": {
     "create": "سجّل",
     "modify": "عدّل",
-    "drop": "امسح"
+    "drop": "حذفح"
   },
   "enroll_panel": {
     "select_student": "١. اختار الطالب",
@@ -42,7 +42,7 @@
     "save_changes": "احفظ التعديلات"
   },
   "drop_panel": {
-    "title": "شيل أو نقل",
+    "title": "حذف أو نقل",
     "subtitle": "اسحب الطالب أو انقله لمجموعة تانية",
     "select_student": "١. اختار الطالب",
     "choose_enrollment": "٢. اختار الاشتراك",
@@ -52,13 +52,13 @@
     "transfer_description": "انقل الطالب ده لمجموعة شغّالة تانية.",
     "destination_group": "المجموعة الوجهة",
     "execute_transfer": "نفّذ النقل",
-    "drop_enrollment": "شيل الاشتراك",
+    "drop_enrollment": "حذف الاشتراك",
     "drop_description": "اسحب الطالب ده من المجموعة نهائى.",
     "unpaid_balance": "الرصيد غير المدفوع",
     "outstanding_amount": "التسجيل ده فيه {{amount}} ج.م لسه مدفوعش. ممكن تحتاج تسوية مالية قبل ما تكمل.",
     "notes_optional": "ملاحظات (اختيارى)",
-    "reason_placeholder": "سبب الشيل...",
-    "confirm_drop": "تأكيد الشيل"
+    "reason_placeholder": "سبب الحذف...",
+    "confirm_drop": "تأكيد الحذف"
   },
   "edit_modal": {
     "title": "عدّل تفاصيل الاشتراك",
@@ -82,6 +82,6 @@
     "transfer_success": "اتنقل بنجاح لـ",
     "transfer_failed": "النقل فشل. تأكد من حالة الطالب وحاول تاني.",
     "drop_success": "الاشتراك اتشال بنجاح",
-    "drop_failed": "الشيل فشل. تأكد من حالة الطالب وحاول تاني."
+    "drop_failed": "الحذف فشل. تأكد من حالة الطالب وحاول تاني."
   }
 }
