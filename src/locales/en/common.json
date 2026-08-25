@@ -77,7 +77,52 @@
     "invalidCredentials": "Invalid email or password.",
     "connectionError": "Unable to connect to server.",
     "loginSuccess": "Signed in successfully",
-    "logoutSuccess": "Signed out successfully"
+    "logoutSuccess": "Signed out successfully",
+    "forgotPasswordPage": {
+      "title": "Forgot Password?",
+      "subtitle": "Enter your email and we'll send you a reset link",
+      "resetTitle": "Reset Your Password",
+      "resetSubtitle": "Enter your email to receive a reset link",
+      "sendReset": "Send Reset Link",
+      "backToLogin": "Back to Login",
+      "rememberPassword": "Remember your password?",
+      "signIn": "Sign In",
+      "unableToConnect": "Unable to connect. Please try again."
+    },
+    "resetPasswordPage": {
+      "title": "Reset Password",
+      "subtitle": "Choose a new password for your account",
+      "newPassword": "New Password",
+      "minChars": "At least 12 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPlaceholder": "Re-enter your password",
+      "resetButton": "Reset Password",
+      "passwordTooShort": "Password must be at least 12 characters",
+      "passwordMismatch": "Passwords do not match",
+      "invalidLink": "Invalid or expired reset link",
+      "invalidTitle": "Invalid Reset Link",
+      "invalidSubtitle": "The reset link is invalid or has expired",
+      "requestNewLink": "Request a new link",
+      "completeTitle": "Password Reset Complete",
+      "completeSubtitle": "You can now sign in with your new password",
+      "signIn": "Sign In",
+      "rememberPassword": "Remember your password?"
+    },
+    "registerPage": {
+      "title": "Create Account",
+      "subtitle": "Set up your account to get started",
+      "username": "Username",
+      "usernamePlaceholder": "Choose a username",
+      "password": "Password",
+      "passwordPlaceholder": "At least 12 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPlaceholder": "Re-enter your password",
+      "submitButton": "Create Account",
+      "passwordTooShort": "Password must be at least 12 characters",
+      "passwordMismatch": "Passwords do not match",
+      "invalidToken": "Invalid or expired registration link",
+      "registrationFailed": "Registration failed. Please try again."
+    }
   },
   "studentDetail": {
     "not_found": "Student not found",

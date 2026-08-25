@@ -5,9 +5,9 @@ Central progress tracker for full page-by-page i18n audits, translations, RTL/Bi
 ## Status Overview
 
 - **Total Pages**: 25
-- **Completed**: 1
+- **Completed**: 4
 - **In Progress**: 0
-- **Pending**: 24
+- **Pending**: 21
 
 ---
 
@@ -36,7 +36,7 @@ Central progress tracker for full page-by-page i18n audits, translations, RTL/Bi
 | 19 | **Capabilities** | `src/pages/CapabilitiesPage.tsx` | `layout`, `common` | ⏳ Pending | — | — | — |
 | 20 | **Settings** | `src/pages/SettingsPage.tsx` | `common`, `layout` | ⏳ Pending | — | — | — |
 | 21 | **Notifications** | `src/pages/NotificationsPage.tsx` | `notifications` | ⏳ Pending | — | — | — |
-| 22 | **Login** | `src/pages/LoginPage.tsx` | `common` | ⏳ Pending | — | — | — |
-| 23 | **Register** | `src/pages/RegisterPage.tsx` | `common` | ⏳ Pending | — | — | — |
-| 24 | **Forgot Password** | `src/pages/ForgotPasswordPage.tsx` | `common` | ⏳ Pending | — | — | — |
-| 25 | **Reset Password** | `src/pages/ResetPasswordPage.tsx` | `common` | ⏳ Pending | — | — | — |
+| 22 | **Login** | `src/pages/LoginPage.tsx` | `common` | ✅ Completed | — | Verified | — |
+| 23 | **Register** | `src/pages/RegisterPage.tsx` | `common` | ✅ Completed | 13 keys added | Verified | [Spec 071](../specs/071-i18n-complete-translations/plan.md) |
+| 24 | **Forgot Password** | `src/pages/ForgotPasswordPage.tsx` | `common` | ✅ Completed | 9 keys added | Verified | [Spec 071](../specs/071-i18n-complete-translations/plan.md) |
+| 25 | **Reset Password** | `src/pages/ResetPasswordPage.tsx` | `common` | ✅ Completed | 17 keys added | Verified | [Spec 071](../specs/071-i18n-complete-translations/plan.md) |

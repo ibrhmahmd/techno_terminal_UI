@@ -93,7 +93,52 @@
     "invalidCredentials": "البريد أو كلمة المرور غلط.",
     "connectionError": "مش قادر أوصلك للخادم.",
     "loginSuccess": "ادخلت بنجاح",
-    "logoutSuccess": "طلعت بنجاح"
+    "logoutSuccess": "طلعت بنجاح",
+    "forgotPasswordPage": {
+      "title": "نسيت كلمة المرور؟",
+      "subtitle": "اكتب بريدك وهنبعتلك رابط إعادة التعيين",
+      "resetTitle": "غيّر كلمة المرور",
+      "resetSubtitle": "اكتب بريدك عشان تستقبل رابط إعادة التعيين",
+      "sendReset": "ابعت رابط إعادة التعيين",
+      "backToLogin": "رجوع لتسجيل الدخول",
+      "rememberPassword": "فتكرت كلمة المرور؟",
+      "signIn": "ادخل",
+      "unableToConnect": "مش قادر أوصلك. حاول تاني."
+    },
+    "resetPasswordPage": {
+      "title": "غيّر كلمة المرور",
+      "subtitle": "اختار كلمة مرور جديدة لحسابك",
+      "newPassword": "كلمة المرور الجديدة",
+      "minChars": "12 حرف على الأقل",
+      "confirmPassword": "أكّد كلمة المرور",
+      "confirmPlaceholder": "اكتب كلمة المرور تاني",
+      "resetButton": "غيّر كلمة المرور",
+      "passwordTooShort": "كلمة المرور لازم يكون فيها 12 حرف على الأقل",
+      "passwordMismatch": "كلمات المرور مش متطابقة",
+      "invalidLink": "رابط إعادة التعيين غير صالح أو منتهي الصلاحية",
+      "invalidTitle": "رابط إعادة التعيين غير صالح",
+      "invalidSubtitle": "رابط إعادة التعيين غير صالح أو منتهي الصلاحية",
+      "requestNewLink": "طلب رابط جديد",
+      "completeTitle": "اتغيرت كلمة المرور بنجاح",
+      "completeSubtitle": "تقدر دلوقتي تدخل بكلمة المرور الجديدة",
+      "signIn": "ادخل",
+      "rememberPassword": "فتكرت كلمة المرور؟"
+    },
+    "registerPage": {
+      "title": "اعمل حساب",
+      "subtitle": "عرّف حسابك عشان تبدأ",
+      "username": "اسم المستخدم",
+      "usernamePlaceholder": "اختار اسم مستخدم",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "12 حرف على الأقل",
+      "confirmPassword": "أكّد كلمة المرور",
+      "confirmPlaceholder": "اكتب كلمة المرور تاني",
+      "submitButton": "اعمل حساب",
+      "passwordTooShort": "كلمة المرور لازم يكون فيها 12 حرف على الأقل",
+      "passwordMismatch": "كلمات المرور مش متطابقة",
+      "invalidToken": "رابط التسجيل غير صالح أو منتهي الصلاحية",
+      "registrationFailed": "التسجيل فشل. حاول تاني."
+    }
   },
   "studentDetail": {
     "not_found": "الطالب مش موجود",
