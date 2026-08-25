@@ -25,7 +25,13 @@
     "course_required": "Course is required",
     "instructor_required": "Instructor is required",
     "group_name_required": "Group name is required",
-    "failed_generic": "Failed to {{mode}} group"
+    "failed_generic": "Failed to {{mode}} group",
+    "start_hour_aria": "Start hour",
+    "start_minute_aria": "Start minute",
+    "start_period_aria": "Start period",
+    "end_hour_aria": "End hour",
+    "end_minute_aria": "End minute",
+    "end_period_aria": "End period"
   },
   "groupCombobox": {
     "recently_used": "Recently Used",
@@ -43,7 +49,8 @@
   },
   "viewToggle": {
     "table_title": "Table view",
-    "cards_title": "Cards view"
+    "cards_title": "Cards view",
+    "aria_label": "View mode"
   },
   "filters": {
     "course": "Course",
@@ -51,7 +58,11 @@
     "day": "Day",
     "level": "Level",
     "level_value": "Level {{level}}",
-    "status": "Status"
+    "status": "Status",
+    "panel_heading": "Filter Groups",
+    "close_aria": "Close filters",
+    "no_courses": "No courses available",
+    "no_instructors": "No instructors available"
   },
   "empty": {
     "select_view": "Select a view above to load groups",
@@ -60,9 +71,29 @@
     "filters_returned_no_results": "Your filters returned no results.",
     "clear_filters": "Clear all filters"
   },
+  "groupBy": {
+    "all": "All",
+    "day": "Day",
+    "course": "Course",
+    "instructor": "Instructor",
+    "search": "Filter Groups",
+    "aria_label": "Group by"
+  },
   "modal": {
     "create": "Create Group",
     "edit": "Edit Group"
+  },
+  "columns": {
+    "group_name": "Group Name",
+    "course": "Course",
+    "instructor": "Instructor",
+    "schedule": "Schedule",
+    "capacity": "Capacity",
+    "status": "Status",
+    "unassigned": "Unassigned"
+  },
+  "groupCategoryTabs": {
+    "aria_label": "Group categories"
   },
   "delete": {
     "title": "Delete Group",
@@ -118,7 +149,9 @@
     "level_updated": "Level {{level}} updated successfully.",
     "level_deleted": "Level {{level}} deleted successfully.",
     "failed_update": "Failed to update level details",
-    "failed_delete": "Failed to delete level"
+    "failed_delete": "Failed to delete level",
+    "edit_level_aria": "Edit level details",
+    "select_view_aria": "Select view"
   },
   "historyTab": {
     "enrollment_history": "Enrollment History",
@@ -170,7 +203,8 @@
     "plus_one_day": "+1 Day",
     "plus_seven_days": "+7 Days",
     "hours": "Hours",
-    "date_required": "Date is required"
+    "date_required": "Date is required",
+    "toggle_substitute_aria": "Toggle substitute instructor"
   },
   "groupInfoCard": {
     "instructor": "Instructor",
@@ -188,7 +222,8 @@
     "new_level": "New Level",
     "edit_group_aria": "Edit Group",
     "archive_group_aria": "Archive Group",
-    "delete_group_aria": "Delete Group"
+    "delete_group_aria": "Delete Group",
+    "view_aria": "View {{name}}"
   },
   "editGroupDialog": {
     "title": "Edit Group Settings",
@@ -209,7 +244,8 @@
     "additional_notes": "Additional Notes",
     "notes_placeholder": "Add any internal notes about this group...",
     "cancel": "Cancel",
-    "save_changes": "Save Changes"
+    "save_changes": "Save Changes",
+    "close_aria": "Close dialog"
   },
   "editLevelDialog": {
     "title": "Edit Level {{level}} Details",
@@ -224,7 +260,8 @@
     "cancel": "Cancel",
     "save_changes": "Save Changes",
     "saving": "Saving...",
-    "keep_current": "-- Keep Current --"
+    "keep_current": "-- Keep Current --",
+    "close_aria": "Close dialog"
   },
   "progressDialog": {
     "title": "Progress Group Level",
@@ -253,7 +290,8 @@
     "complete_level": "Complete current level",
     "complete_level_desc": "Mark the current level (Level {{level}}) as completed.",
     "cancel": "Cancel",
-    "confirm_progression": "Confirm Progression"
+    "confirm_progression": "Confirm Progression",
+    "close_aria": "Close dialog"
   },
   "detail": {
     "invalid_id": "Invalid Group ID",
@@ -266,6 +304,9 @@
     "competitions_soon": "Competitions (soon)",
     "competitions_title": "Competitions Features Coming Soon",
     "competitions_desc": "You will soon be able to track and manage student teams, competition registrations, and event statistics directly linked to this group."
+  },
+  "levelSelector": {
+    "aria_label": "Select level"
   },
   "team": {
     "back": "Back",

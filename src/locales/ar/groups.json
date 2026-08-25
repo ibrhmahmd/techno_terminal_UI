@@ -6,14 +6,26 @@
     "day": "اليوم",
     "level": "المستوى",
     "level_value": "المستوى {{level}}",
-    "status": "الحالة"
+    "status": "الحالة",
+    "panel_heading": "فلتر المجموعات",
+    "close_aria": "قفل الفلتر",
+    "no_courses": "مفيش كورسات متاحة",
+    "no_instructors": "مفيش مهندسين متاحين"
   },
   "empty": {
-    "select_view": "اختار عرض من الأعلى عشان يتحمّلوا",
+    "select_view": "اختار عرض من الأعلى عشان الجروبات تحمل",
     "no_groups": "مفيش مجموعات تطابق اللي اخترته",
     "no_groups_found": "مفيش مجموعات",
     "filters_returned_no_results": "الفلاتر مرجعتش حاجة.",
     "clear_filters": "امسح كل الفلاتر"
+  },
+  "groupBy": {
+    "all": "الكل",
+    "day": "اليوم",
+    "course": "الكورس",
+    "instructor": "المهندس",
+    "search": "فلتر المجموعات", 
+    "aria_label": "ترتيب حسب"
   },
   "modal": {
     "create": "اعمل مجموعة",
@@ -55,7 +67,7 @@
     "course": "الكورس",
     "search_courses": "ابحث عن كورسات...",
     "instructor": "المهندس",
-    "search_instructors": "ابحث عن مدرّبين...",
+    "search_instructors": "ابحث عن مهندسين...",
     "capacity": "السعة",
     "day": "اليوم",
     "start_date": "تاريخ البداية",
@@ -67,7 +79,13 @@
     "course_required": "الكورس مطلوب",
     "instructor_required": "المهندس مطلوب",
     "group_name_required": "اسم المجموعة مطلوب",
-    "failed_generic": "مقدرش أعمل {{mode}} للمجموعة"
+    "failed_generic": "مقدرش أعمل {{mode}} للمجموعة",
+    "start_hour_aria": "ساعة البداية",
+    "start_minute_aria": "دقيقة البداية",
+    "start_period_aria": "فترة البداية",
+    "end_hour_aria": "ساعة النهاية",
+    "end_minute_aria": "دقيقة النهاية",
+    "end_period_aria": "فترة النهاية"
   },
   "groupCombobox": {
     "recently_used": "اتستخدمت مؤخراً",
@@ -85,7 +103,8 @@
   },
   "viewToggle": {
     "table_title": "عرض جدول",
-    "cards_title": "عرض بطاقات"
+    "cards_title": "عرض بطاقات",
+    "aria_label": "وضع العرض"
   },
   "levelsTab": {
     "no_level_history": "مفيش سجل مستويات",
@@ -118,11 +137,13 @@
     "level_updated": "المستوى {{level}} اتحدّث بنجاح.",
     "level_deleted": "المستوى {{level}} اتحذف بنجاح.",
     "failed_update": "مقدرش أحدّث تفاصيل المستوى",
-    "failed_delete": "مقدرش أحذف المستوى"
+    "failed_delete": "مقدرش أحذف المستوى",
+    "edit_level_aria": "عدّل تفاصيل المستوى",
+    "select_view_aria": "اختار العرض"
   },
   "historyTab": {
     "enrollment_history": "سجل الاشتراكات",
-    "instructor_history": "سجل المدرّبين",
+    "instructor_history": "سجل المهندسين",
     "loading": "بيتحمّل سجل المجموعة...",
     "student": "الطالب",
     "level_enrolled": "المستوى المسجّل فيه",
@@ -139,8 +160,8 @@
     "no_enrollments": "مفيش اشتراكات",
     "no_enrollments_desc": "المجموعة دي مفيش فيها أي سجل اشتراكات لسه.",
     "no_enrollments_filtered": "مفيش اشتراكات تطابق حالة \"{{status}}\".",
-    "no_instructor_history": "مفيش سجل مدرّبين",
-    "no_instructor_history_desc": "مفيش مدرّبين اتعيّنوا للمجموعة دي لسه.",
+    "no_instructor_history": "مفيش سجل مهندسين",
+    "no_instructor_history_desc": "مفيش مهندسين اتعيّنوا للمجموعة دي لسه.",
     "current": "الحالي",
     "levels_taught": "{{count}} مستوى{{plural}} اتدرّبت",
     "first_assigned": "أول تعيين",
@@ -159,7 +180,7 @@
     "start_time": "وقت البداية",
     "end_time": "وقت النهاية",
     "instructor": "المهندس",
-    "search_instructors": "ابحث عن مدرّبين...",
+    "search_instructors": "ابحث عن مهندسين...",
     "substitute": "المهندس بديل",
     "substitute_desc": "المهندسيغطّي النهارده",
     "notes_optional": "ملاحظات (اختياري)",
@@ -170,10 +191,11 @@
     "plus_one_day": "+يوم",
     "plus_seven_days": "+أيام",
     "hours": "الساعات",
-    "date_required": "التاريخ مطلوب"
+    "date_required": "التاريخ مطلوب",
+    "toggle_substitute_aria": "بدّل المهندس البديل"
   },
   "groupInfoCard": {
-    "instructor": "المهندس
+    "instructor": "المهندس",
     "not_assigned": "مش معيّن",
     "course": "الكورس",
     "schedule": "الجدول",
@@ -188,7 +210,8 @@
     "new_level": "مستوى جديد",
     "edit_group_aria": "عدّل المجموعة",
     "archive_group_aria": "أرشفة المجموعة",
-    "delete_group_aria": "حذف المجموعة"
+    "delete_group_aria": "حذف المجموعة",
+    "view_aria": "عرض {{name}}"
   },
   "editGroupDialog": {
     "title": "عدّل إعدادات المجموعة",
@@ -197,8 +220,8 @@
     "group_name": "اسم المجموعة",
     "course": "الكورس",
     "search_courses": "ابحث عن كورسات...",
-    "instructor": "المهندس
-    "search_instructors": "ابحث عن مدرّبين...",
+    "instructor": "المهندس",
+    "search_instructors": "ابحث عن مهندسين...",
     "max_capacity": "السعة القصوى",
     "group_status": "حالة المجموعة",
     "default_schedule": "الجدول الأساسي",
@@ -209,7 +232,8 @@
     "additional_notes": "ملاحظات إضافية",
     "notes_placeholder": "زود أي ملاحظات داخلية عن المجموعة دي...",
     "cancel": "إلغاء",
-    "save_changes": "احفظ التعديلات"
+    "save_changes": "احفظ التعديلات",
+    "close_aria": "قفل النافذة"
   },
   "editLevelDialog": {
     "title": "عدّل تفاصيل المستوى {{level}}",
@@ -224,7 +248,8 @@
     "cancel": "إلغاء",
     "save_changes": "احفظ التعديلات",
     "saving": "بيتحفظ...",
-    "keep_current": "-- اسيب الحالي --"
+    "keep_current": "-- اسيب الحالي --",
+    "close_aria": "قفل النافذة"
   },
   "progressDialog": {
     "title": "رقّي مستوى المجموعة",
@@ -253,7 +278,8 @@
     "complete_level": "تمّم المستوى الحالي",
     "complete_level_desc": "تمّم المستوى الحالي (المستوى {{level}}).",
     "cancel": "إلغاء",
-    "confirm_progression": "تأكيد الترقية"
+    "confirm_progression": "تأكيد الترقية",
+    "close_aria": "قفل النافذة"
   },
   "detail": {
     "invalid_id": "معرف المجموعة مش صحيح",
@@ -266,6 +292,9 @@
     "competitions_soon": "المسابقات (قريباً)",
     "competitions_title": "مسابقات قريباً",
     "competitions_desc": "قريباً هتقدر تتبع فرق الطلاب وتسجل في المسابقات وتشوف الإحصائيات."
+  },
+  "levelSelector": {
+    "aria_label": "اختار المستوى"
   },
   "team": {
     "back": "رجوع",

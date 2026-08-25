@@ -1,6 +1,15 @@
 {
   "buttons": {
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "reset": "Reset",
+    "apply": "Apply"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "archived": "Archived",
+    "completed": "Completed",
+    "unknown": "Unknown"
   },
   "labels": {
     "name": "Name",
@@ -63,7 +72,9 @@
   },
   "empty": {
     "noResults": "No results found",
-    "noItems": "There are no items to display at the moment."
+    "noItems": "There are no items to display at the moment.",
+    "noData": "No data found",
+    "noEntries": "No entries"
   },
   "errors": {
     "somethingWentWrong": "Something went wrong",

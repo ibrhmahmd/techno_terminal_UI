@@ -1,6 +1,15 @@
 {
   "buttons": {
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "reset": "إعادة تعيين",
+    "apply": "تطبيق"
+  },
+  "status": {
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "archived": "مؤرشف",
+    "completed": "اتنهى",
+    "unknown": "مش معروف"
   },
   "labels": {
     "name": "الاسم",
@@ -63,7 +72,9 @@
   },
   "empty": {
     "noResults": "ملحقناش نتائج تطابق اللي بتدور عليه",
-    "noItems": "مفيش حاجة تتعرض دلوقتي."
+    "noItems": "مفيش حاجة تتعرض دلوقتي.",
+    "noData": "مفيش بيانات",
+    "noEntries": "مفيش سجلات"
   },
   "errors": {
     "somethingWentWrong": "حصل غلطة",
