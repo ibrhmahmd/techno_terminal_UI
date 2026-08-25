@@ -64,7 +64,7 @@ Finalize the localization of the Dashboard page and all its component dependenci
 ```json
 "instructor_filter": {
   "all": "الكل",
-  "filter_by_instructor": "تصفية حسب المدرب"
+  "filter_by_instructor": "تصفية حسب المهندس"
 }
 ```
 
@@ -86,7 +86,7 @@ Finalize the localization of the Dashboard page and all its component dependenci
 | `scheduled_groups` | `"المجموعات النهاردة"` | ✅ Intentional (dashboard is always day-focused) |
 | `fallbacks.tba` | `"يتحدد بعدين"` | ✅ Natural Egyptian |
 | `fallbacks.unknown_group` | `"مجموعة مش معروفة"` | ✅ |
-| `fallbacks.unknown_course` | `"مقرر مش معروف"` | ✅ |
+| `fallbacks.unknown_course` | `"كورس مش معروف"` | ✅ |
 | `quick_actions.quick_reports_subtitle` | `"شوف التقارير"` | ✅ Close enough for this context |
 | `quick_actions.todays_sessions` | `"حصص النهاردة"` | ✅ |
 | All `mobile_group_card.*` | — | ✅ |

@@ -39,7 +39,7 @@ Short/mobile forms (Egyptian colloquial, no ال article):
 ## Page Titles
 
 Page titles use semi-formal Arabic (with ال article, noun phrases):
-`لوحة التحكم / المجموعات / دليل الطلاب / المالية`
+`لوحة التحكم / المجموعات / دليل الطلاب / الفواتير`
 
 ## Negation Pattern
 

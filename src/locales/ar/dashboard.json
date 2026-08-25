@@ -13,7 +13,7 @@
   },
   "fallbacks": {
     "unknown_group": "مجموعة مش معروفة",
-    "unknown_course": "مقرر مش معروف",
+    "unknown_course": "كورس مش معروف",
     "tba": "يتحدد بعدين"
   },
   "quick_actions": {
@@ -59,6 +59,6 @@
   },
   "instructor_filter": {
     "all": "الكل",
-    "filter_by_instructor": "تصفية حسب المدرب"
+    "filter_by_instructor": "تصفية حسب المهندس"
   }
 }
