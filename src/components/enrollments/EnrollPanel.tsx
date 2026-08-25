@@ -22,7 +22,7 @@ interface EnrollPanelProps {
 
 
 export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedStudent, onEnrollmentSuccess }: EnrollPanelProps) {
-  const { t } = useTranslation('enrollments')
+  const { t } = useTranslation(['enrollments', 'common'])
   const [studentSearch, setStudentSearch] = useState('')
   const [groupSearch, setGroupSearch] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<StudentListItem | null>(preSelectedStudent ?? null)
@@ -158,7 +158,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
                 <button
                   onClick={() => handleStudentChange(null)}
                   className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Change student"
+                  title={t('enrollments:enroll_panel.change_student')}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -168,7 +168,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
               {siblings.length > 0 && (
                 <div className="mt-3 flex items-center gap-2 text-xs text-green-600 bg-green-50 px-3 py-2 rounded-lg">
                   <Info className="w-3 h-3" />
-                  <span>{siblings.length} sibling(s) found - 50 EGP discount auto-applied</span>
+                  <span>{t('enrollments:enroll_panel.sibling_discount_badge', { count: siblings.length })}</span>
                 </div>
               )}
             </div>
@@ -201,14 +201,14 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
                     </p>
                     <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
                       <Calendar className="w-3 h-3" />
-                      Level {selectedGroup.current_level}
+                      {t('enrollments:enroll_panel.level', { level: selectedGroup.current_level })}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={clearGroupSelection}
                   className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Change group"
+                  title={t('enrollments:enroll_panel.change_group')}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -237,7 +237,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
           <label className="block text-sm font-medium text-on-surface mb-2">
             {t('enroll_panel.discount')}
             {isAutoDiscount && (
-              <span className="ml-2 text-xs text-green-600 font-normal">{t('enroll_panel.sibling_discount_auto')}</span>
+              <span className="ms-2 text-xs text-green-600 font-normal">{t('enroll_panel.sibling_discount_auto')}</span>
             )}
           </label>
           <input
@@ -255,7 +255,7 @@ export function EnrollPanel({ useMockData, isLoading, setIsLoading, preSelectedS
         <div>
           <label className="block text-sm font-medium text-on-surface mb-2">{t('enroll_panel.net_amount')}</label>
           <div className="px-3 py-2 bg-slate-100 rounded-lg text-sm font-bold text-secondary">
-            {amount - discount} EGP
+            {amount - discount} ج.م
           </div>
         </div>
       </div>

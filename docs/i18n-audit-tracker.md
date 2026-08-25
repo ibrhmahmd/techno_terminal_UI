@@ -5,9 +5,9 @@ Central progress tracker for full page-by-page i18n audits, translations, RTL/Bi
 ## Status Overview
 
 - **Total Pages**: 25
-- **Completed**: 6
+- **Completed**: 7
 - **In Progress**: 0
-- **Pending**: 19
+- **Pending**: 18
 
 ---
 
@@ -21,7 +21,7 @@ Central progress tracker for full page-by-page i18n audits, translations, RTL/Bi
 | 04 | **Directory** | `src/pages/DirectoryPage.tsx` | `directory` | ⏳ Pending | — | — | — |
 | 05 | **Student Detail** | `src/pages/StudentDetailPage.tsx` | `directory`, `common` | ⏳ Pending | — | — | — |
 | 06 | **Parent Detail** | `src/pages/ParentDetailPage.tsx` | `directory`, `common` | ⏳ Pending | — | — | — |
-| 07 | **Enrollments** | `src/pages/EnrollmentsPage.tsx` | `enrollments` | ⏳ Pending | — | — | — |
+| 07 | **Enrollments** | `src/pages/EnrollmentsPage.tsx` | `enrollments`, `common` | ✅ Completed | ~25 strings | 21 DirCSS fixed | — |
 | 08 | **Finance** | `src/pages/FinancePage.tsx` | `finance` | ⏳ Pending | — | — | — |
 | 09 | **Courses** | `src/pages/CoursesPage.tsx` | `courses` | ⏳ Pending | — | — | — |
 | 10 | **Course Detail** | `src/pages/CourseDetailPage.tsx` | `courses`, `groups` | ⏳ Pending | — | — | — |

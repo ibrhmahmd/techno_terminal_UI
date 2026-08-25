@@ -425,5 +425,22 @@
   "settings_audit": {
     "from": "من",
     "to": "لحد"
+  },
+  "combobox": {
+    "search_student": "ابحث عن طالب (حرفين على الأقل)...",
+    "search_student_aria": "ابحث عن طالب",
+    "clear_search": "مسح البحث",
+    "student_results": "نتائج البحث عن الطلاب",
+    "group_by": "تجميع حسب:",
+    "recently_used": "مستخدم مؤخراً",
+    "has_unpaid_balance": "فيه رصيد مش مدفوع",
+    "no_recently_selected": "مفيش طلاب مختارين مؤخراً. اكتب للبحث.",
+    "min_chars": "اكتب حرفين على الأقل للبحث عن طلاب.",
+    "no_results_student": "مفيش طلاب名matches \"{{search}}\"",
+    "change": "غيّر",
+    "no_phone": "مفيش تليفون",
+    "group_label": "المجموعة:",
+    "course_default": "الافتراضي للكورس",
+    "unknown_instructor": "مدرب مش معروف"
   }
 }

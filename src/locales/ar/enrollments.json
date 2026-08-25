@@ -10,13 +10,17 @@
     "select_student": "١. اختار الطالب",
     "select_group": "٢. اختار المجموعة",
     "payment_details": "٣. تفاصيل الدفع",
-    "course_fee": "رسوم الكورس (جنيه)",
-    "discount": "الخصم (جنيه)",
+    "course_fee": "رسوم الكورس (ج.م)",
+    "discount": "الخصم (ج.م)",
     "sibling_discount_auto": "(خصم الأشقاء اتلقائى)",
+    "sibling_discount_badge": "تم العثور على {{count}} أخ(姐妹) - خصم 50 ج.م تلقائي",
     "net_amount": "المبلغ الصافي",
     "notes": "ملاحظات",
     "notes_placeholder": "ملاحظات اختيارية عن الاشتراك ده...",
-    "enroll_student": "سجّل الطالب"
+    "enroll_student": "سجّل الطالب",
+    "change_student": "تغيير الطالب",
+    "change_group": "تغيير المجموعة",
+    "level": "المستوى {{level}}"
   },
   "modify_panel": {
     "title": "عدّل الاشتراك",
@@ -29,6 +33,10 @@
     "group_default": "الافتراضى للمجموعة",
     "leave_blank_price": "سيبه فاضى عشان تستخدم السعر الافتراضى للمجموعة.",
     "discount_applied": "الخصم المطبّق",
+    "due_disc": "المطلوب / الخصم",
+    "balance": "الرصيد",
+    "amount_cannot_be_negative": "المبلغ المستحقة مش ممكن يكون سالب.",
+    "discount_must_be_valid": "الخصم لازم يكون رقم صحيح ومش سالب.",
     "internal_notes": "ملاحظات داخلية",
     "add_notes_placeholder": "أضف ملاحظات إدارية...",
     "save_changes": "احفظ التعديلات"
@@ -46,6 +54,8 @@
     "execute_transfer": "نفّذ النقل",
     "drop_enrollment": "شيل الاشتراك",
     "drop_description": "اسحب الطالب ده من المجموعة نهائى.",
+    "unpaid_balance": "الرصيد غير المدفوع",
+    "outstanding_amount": "التسجيل ده فيه {{amount}} ج.م لسه مدفوعش. ممكن تحتاج تسوية مالية قبل ما تكمل.",
     "notes_optional": "ملاحظات (اختيارى)",
     "reason_placeholder": "سبب الشيل...",
     "confirm_drop": "تأكيد الشيل"

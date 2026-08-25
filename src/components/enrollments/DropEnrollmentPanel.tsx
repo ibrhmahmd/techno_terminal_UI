@@ -17,7 +17,7 @@ interface DropEnrollmentPanelProps {
 }
 
 export function DropEnrollmentPanel({ isLoading, setIsLoading }: DropEnrollmentPanelProps) {
-  const { t } = useTranslation('enrollments')
+  const { t } = useTranslation(['enrollments', 'common'])
   const { showToast } = useToast()
 
   // Step 1: Student Selection
@@ -164,7 +164,7 @@ export function DropEnrollmentPanel({ isLoading, setIsLoading }: DropEnrollmentP
                       <button
                         key={e.enrollment_id}
                         onClick={() => setSelectedEnrollment(e)}
-                        className={`p-5 text-left border-2 rounded-xl transition-all ${
+                        className={`p-5 text-start border-2 rounded-xl transition-all ${
                           selectedEnrollment?.enrollment_id === e.enrollment_id
                             ? 'border-amber-500 bg-amber-50'
                             : 'border-slate-200 hover:border-slate-300 bg-white'
@@ -173,38 +173,38 @@ export function DropEnrollmentPanel({ isLoading, setIsLoading }: DropEnrollmentP
                         <div className="flex justify-between items-start gap-2 mb-3">
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-base text-on-surface truncate" title={e.course_name || e.group_name}>
-                              📚 {e.course_name || 'Course Default'}
+                              📚 {e.course_name || t('common:combobox.course_default')}
                             </p>
                           </div>
                           {e.remaining_balance > 0 && (
                             <span className="shrink-0 px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-semibold rounded-full">
-                              ⚠️ {e.remaining_balance.toFixed(0)} EGP
+                              ⚠️ {e.remaining_balance.toFixed(0)} ج.م
                             </span>
                           )}
                         </div>
                         
                         <div className="space-y-1 mb-4">
                           <p className="text-sm text-on-surface-variant truncate">
-                            <span className="material-symbols-outlined text-[14px] align-middle mr-1">group</span>
+                            <span className="material-symbols-outlined text-[14px] align-middle me-1">group</span>
                             {e.group_name} (Level {e.level_number})
                           </p>
                           <p className="text-sm text-on-surface-variant truncate">
-                            <span className="material-symbols-outlined text-[14px] align-middle mr-1">person</span>
-                            {e.instructor_name || 'Unknown Instructor'}
+                            <span className="material-symbols-outlined text-[14px] align-middle me-1">person</span>
+                            {e.instructor_name || t('common:combobox.unknown_instructor')}
                           </p>
                         </div>
 
                         <div className="pt-3 border-t border-slate-200 flex justify-between items-end">
                           <div className="space-y-1">
-                            <p className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Due / Disc</p>
+                            <p className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">{t('modify_panel.due_disc')}</p>
                             <p className="text-xs text-on-surface-variant">
-                              {e.amount_due ?? 'Default'} / {e.discount_applied > 0 ? `-${e.discount_applied}` : '0'} EGP
+                              {e.amount_due ?? 'Default'} / {e.discount_applied > 0 ? `-${e.discount_applied}` : '0'} ج.م
                             </p>
                           </div>
-                          <div className="text-right">
-                            <p className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Balance</p>
+                          <div className="text-end">
+                            <p className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">{t('modify_panel.balance')}</p>
                             <span className={`text-sm font-bold ${e.remaining_balance > 0 ? 'text-error' : 'text-amber-600'}`}>
-                              {e.remaining_balance.toFixed(2)} EGP
+                              {e.remaining_balance.toFixed(2)} ج.م
                             </span>
                           </div>
                         </div>
@@ -219,10 +219,10 @@ export function DropEnrollmentPanel({ isLoading, setIsLoading }: DropEnrollmentP
                 <div className="w-full xl:w-72 shrink-0 p-4 bg-red-50 border border-red-200 rounded-xl flex flex-col gap-2">
                   <div className="flex items-center gap-2 text-red-800">
                     <span className="material-symbols-outlined text-[20px]">warning</span>
-                    <p className="text-sm font-semibold">Unpaid Balance</p>
+                    <p className="text-sm font-semibold">{t('drop_panel.unpaid_balance')}</p>
                   </div>
                   <p className="text-xs text-red-700 leading-relaxed">
-                    This enrollment has an outstanding <strong>{selectedEnrollment!.remaining_balance.toFixed(2)} EGP</strong>. Financial reconciliation may be required before passing to target.
+                    {t('drop_panel.outstanding_amount', { amount: selectedEnrollment!.remaining_balance.toFixed(2) })}
                   </p>
                 </div>
               )}

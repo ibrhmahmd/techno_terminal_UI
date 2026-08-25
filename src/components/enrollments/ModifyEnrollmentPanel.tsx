@@ -69,11 +69,11 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
     const discountVal = parseFloat(discountApplied)
 
     if (amountDueVal !== null && amountDueVal < 0) {
-      setErrorMsg("Amount due cannot be negative.")
+      setErrorMsg(t('modify_panel.amount_cannot_be_negative'))
       return
     }
     if (isNaN(discountVal) || discountVal < 0) {
-      setErrorMsg("Discount applied must be a valid non-negative number.")
+      setErrorMsg(t('modify_panel.discount_must_be_valid'))
       return
     }
 
@@ -164,7 +164,7 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
                   <button
                     key={e.enrollment_id}
                     onClick={() => setSelectedEnrollment(e)}
-                    className={`p-5 text-left border-2 rounded-xl transition-all ${
+                    className={`p-5 text-start border-2 rounded-xl transition-all ${
                       selectedEnrollment?.enrollment_id === e.enrollment_id
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-slate-200 hover:border-slate-300 bg-white'
@@ -173,38 +173,38 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
                     <div className="flex justify-between items-start gap-2 mb-3">
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-base text-on-surface truncate" title={e.course_name || e.group_name}>
-                          📚 {e.course_name || 'Course Default'}
+                              📚 {e.course_name || t('common:combobox.course_default')}
                         </p>
                       </div>
                       {e.remaining_balance > 0 && (
                         <span className="shrink-0 px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-semibold rounded-full">
-                          ⚠️ {e.remaining_balance.toFixed(0)} EGP
+                          ⚠️ {e.remaining_balance.toFixed(0)} ج.م
                         </span>
                       )}
                     </div>
                     
                     <div className="space-y-1 mb-4">
                       <p className="text-sm text-on-surface-variant truncate">
-                        <span className="material-symbols-outlined text-[14px] align-middle mr-1">group</span>
+                        <span className="material-symbols-outlined text-[14px] align-middle me-1">group</span>
                         {e.group_name} (Level {e.level_number})
                       </p>
                       <p className="text-sm text-on-surface-variant truncate">
-                        <span className="material-symbols-outlined text-[14px] align-middle mr-1">person</span>
-                        {e.instructor_name || 'Unknown Instructor'}
+                        <span className="material-symbols-outlined text-[14px] align-middle me-1">person</span>
+                        {e.instructor_name || t('common:combobox.unknown_instructor')}
                       </p>
                     </div>
 
                     <div className="pt-3 border-t border-slate-200 flex justify-between items-end">
                       <div className="space-y-1">
-                        <p className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Due / Disc</p>
+                        <p className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">{t('modify_panel.due_disc')}</p>
                         <p className="text-xs text-on-surface-variant">
-                          {e.amount_due ?? 'Default'} / {e.discount_applied > 0 ? `-${e.discount_applied}` : '0'} EGP
+                          {e.amount_due ?? 'Default'} / {e.discount_applied > 0 ? `-${e.discount_applied}` : '0'} ج.م
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Balance</p>
+                      <div className="text-end">
+                        <p className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">{t('modify_panel.balance')}</p>
                         <span className={`text-sm font-bold ${e.remaining_balance > 0 ? 'text-error' : 'text-blue-600'}`}>
-                          {e.remaining_balance.toFixed(2)} EGP
+                          {e.remaining_balance.toFixed(2)} ج.م
                         </span>
                       </div>
                     </div>
@@ -240,9 +240,9 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
                       placeholder={t('modify_panel.group_default')}
                       min="0"
                       step="0.01"
-                      className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      className="w-full ps-3 pe-10 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">EGP</span>
+                    <span className="absolute end-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">ج.م</span>
                   </div>
                   <p className="text-xs text-slate-500 mt-1">{t('modify_panel.leave_blank_price')}</p>
                 </div>
@@ -258,9 +258,9 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
                       onKeyDown={(e) => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
                       min="0"
                       step="0.01"
-                      className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      className="w-full ps-3 pe-10 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">EGP</span>
+                    <span className="absolute end-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">ج.م</span>
                   </div>
                 </div>
               </div>

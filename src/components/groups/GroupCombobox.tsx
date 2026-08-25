@@ -217,7 +217,7 @@ export function GroupComboboxInner({
     <div ref={wrapperRef} className="relative w-full">
       {/* Search Input Trigger */}
       <div className="relative">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[20px] text-slate-400" aria-hidden="true">search</span>
+        <span className="absolute start-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[20px] text-slate-400" aria-hidden="true">search</span>
         <input
           type="text"
           value={search}
@@ -238,7 +238,7 @@ export function GroupComboboxInner({
               setIsOpen(true)
             }}
             aria-label={t('groupCombobox.clear_aria')}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 flex items-center justify-center"
+            className="absolute end-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 flex items-center justify-center"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
           </button>
@@ -250,7 +250,7 @@ export function GroupComboboxInner({
         <div
           role="listbox"
           aria-label={t('groupCombobox.results_aria')}
-          className={`absolute z-50 left-0 right-0 md:w-[600px] w-screen max-w-[calc(100vw-2rem)] bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
+          className={`absolute z-50 start-0 end-0 md:w-[600px] w-screen max-w-[calc(100vw-2rem)] bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl p-4 flex flex-col gap-3 ${
             dropdownAbove ? 'bottom-full mb-2' : 'top-full mt-2'
           }`}
         >
@@ -365,7 +365,7 @@ export function GroupComboboxInner({
                       <div className="flex justify-between items-start gap-2">
                         <h4 className="font-headline font-semibold text-slate-800 text-sm leading-tight line-clamp-1">{g.name}</h4>
                         {recentIdSet.has(g.id) && (
-                          <span className="material-symbols-outlined text-[15px] text-amber-500 font-bold" aria-hidden="true" title="Recently used">history</span>
+                          <span className="material-symbols-outlined text-[15px] text-amber-500 font-bold" aria-hidden="true" title={t('groupCombobox.recently_used')}>history</span>
                         )}
                       </div>
                       {g.course_name && (

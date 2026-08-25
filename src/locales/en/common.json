@@ -425,5 +425,22 @@
   "settings_audit": {
     "from": "From",
     "to": "To"
+  },
+  "combobox": {
+    "search_student": "Search student (min 2 chars)...",
+    "search_student_aria": "Search student",
+    "clear_search": "Clear search",
+    "student_results": "Student results",
+    "group_by": "Group by:",
+    "recently_used": "Recently used",
+    "has_unpaid_balance": "Has unpaid balance",
+    "no_recently_selected": "No recently selected students. Type to search.",
+    "min_chars": "Type at least 2 characters to search students.",
+    "no_results_student": "No students found matching \"{{search}}\"",
+    "change": "Change",
+    "no_phone": "No phone",
+    "group_label": "Group:",
+    "course_default": "Course Default",
+    "unknown_instructor": "Unknown Instructor"
   }
 }

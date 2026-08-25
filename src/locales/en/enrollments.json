@@ -13,10 +13,14 @@
     "course_fee": "Course Fee (EGP)",
     "discount": "Discount (EGP)",
     "sibling_discount_auto": "(Sibling discount auto-applied)",
+    "sibling_discount_badge": "{{count}} sibling(s) found - 50 EGP discount auto-applied",
     "net_amount": "Net Amount",
     "notes": "Notes",
     "notes_placeholder": "Optional notes about this enrollment...",
-    "enroll_student": "Enroll Student"
+    "enroll_student": "Enroll Student",
+    "change_student": "Change student",
+    "change_group": "Change group",
+    "level": "Level {{level}}"
   },
   "modify_panel": {
     "title": "Modify Enrollment",
@@ -29,6 +33,10 @@
     "group_default": "Group Default",
     "leave_blank_price": "Leave blank to use the group's default price.",
     "discount_applied": "Discount Applied",
+    "due_disc": "Due / Disc",
+    "balance": "Balance",
+    "amount_cannot_be_negative": "Amount due cannot be negative.",
+    "discount_must_be_valid": "Discount applied must be a valid non-negative number.",
     "internal_notes": "Internal Notes",
     "add_notes_placeholder": "Add administrative notes...",
     "save_changes": "Save Changes"
@@ -46,6 +54,8 @@
     "execute_transfer": "Execute Transfer",
     "drop_enrollment": "Drop Enrollment",
     "drop_description": "Permanently withdraw this student from the group.",
+    "unpaid_balance": "Unpaid Balance",
+    "outstanding_amount": "This enrollment has an outstanding {{amount}} EGP. Financial reconciliation may be required before passing to target.",
     "notes_optional": "Notes (Optional)",
     "reason_placeholder": "Reason for dropping...",
     "confirm_drop": "Confirm Drop"
