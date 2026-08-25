@@ -12,7 +12,7 @@
     "edit_employee": "عدّل الموظف"
   },
   "actions": {
-    "add_employee": "زود موظف",
+    "add_employee": "اضافه موظف",
     "include_deleted": "اعرض المحذوفين"
   },
   "dialogs": {
@@ -54,10 +54,10 @@
     "inactive": "مش شغّال"
   },
   "create_account": {
-    "title_prefix": "اعمل حساب لـ",
+    "title_prefix": "اضافه حساب لـ",
     "cancel": "إلغاء",
     "creating": "بيتعمّل...",
-    "create_account": "اعمل حساب",
+    "create_account": "اضافه حساب",
     "email_placeholder": "اكتب البريد الإلكتروني",
     "password_placeholder": "١٢ حرف على الأقل",
     "password_help": "لازم يكون ١٢ حرف على الأقل",

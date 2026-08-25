@@ -22,8 +22,8 @@
     "no_filtered_students": "مفيش طلاب يطابقوا الفلاتر"
   },
   "actions": {
-    "add_student": "زود طالب",
-    "add_parent": "زود ولي أمر",
+    "add_student": "اضافه طالب",
+    "add_parent": "اضافه ولي أمر",
     "export": "صدّر",
     "filter": "تصفية",
     "group_by": "رتّب حسب",
@@ -85,7 +85,7 @@
     "reference_label": "الكيان المرجعي",
     "no_reference": "من مش مرجع",
     "metadata_label": "حقول البيانات الوصفية المخصصة",
-    "add_field": "زود حقل",
+    "add_field": "اضافه حقل",
     "no_custom_fields": "مفيش حقول مخصصة اتضافت لسه. زود وسوم بيانات وصفية زي أكواد الخصم أو المراجع المخصصة أو تفاصيل الموافقة.",
     "key_placeholder": "المفتاح (مثلاً: coupon_code)",
     "value_placeholder": "القيمة (مثلاً: SUMMER50)",
@@ -124,10 +124,10 @@
   },
   "filter_panel": {
     "title": "تصفية الطلاب",
-    "reset": "صفر تاني",
+    "reset": "اعاده تعيين تاني",
     "apply": "طبّق",
     "found_count": "لقينا <strong>{{count}}</strong> طالب",
-    "select_filters_hint": "اختار الفلاتر واعمل Apply عشان تدور"
+    "select_filters_hint": "اختار الفلاتر واضافه Apply عشان تدور"
   },
   "modal": {
     "create_student": "إنشاء طالب",

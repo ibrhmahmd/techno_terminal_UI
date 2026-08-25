@@ -2,8 +2,8 @@
   "page_title": "المسابقات",
   "subtitle": "إدارة المسابقات وتسجيل الفرق",
   "actions": {
-    "create": "اعمل مسابقة",
-    "create_first": "اعمل أول مسابقة"
+    "create": "اضافه مسابقة",
+    "create_first": "اضافه أول مسابقة"
   },
   "empty": {
     "no_competitions": "مفيش مسابقات"
@@ -69,7 +69,7 @@
     "edition_placeholder": "مثلاً: 2024، صيف، إلخ",
     "fee_label": "الفواتير للطالب (جنيه)",
     "cancel": "إلغاء",
-    "create": "اعمل مسابقة",
+    "create": "اضافه مسابقة",
     "update": "حدّث المسابقة",
     "error_name_required": "اسم المسابقة مطلوب",
     "error_location_required": "المكان مطلوب",

@@ -57,8 +57,8 @@
     "log": "تسجيل"
   },
   "subtask": {
-    "add_placeholder": "زود تاسك فرعية...",
-    "add": "زود"
+    "add_placeholder": "اضافه تاسك فرعية...",
+    "add": "اضافه"
   },
   "table": {
     "no_tasks": "مفيش مهام",

@@ -28,7 +28,7 @@
     "aria_label": "ترتيب حسب"
   },
   "modal": {
-    "create": "اعمل مجموعة",
+    "create": "اضافه مجموعة",
     "edit": "عدّل المجموعة"
   },
   "delete": {
@@ -59,7 +59,7 @@
     "subtitle": "إدارة المجموعات والمواعيد والحضور",
     "search_placeholder": "ابحث عن مجموعات...",
     "search_aria": "ابحث عن مجموعات",
-    "create_button": "اعمل مجموعة"
+    "create_button": "اضافه مجموعة"
   },
   "groupForm": {
     "group_name": "اسم المجموعة",
@@ -74,7 +74,7 @@
     "start_time": "وقت البداية",
     "end_time": "وقت النهاية",
     "cancel": "إلغاء",
-    "create_group": "اعمل مجموعة",
+    "create_group": "اضافه مجموعة",
     "update_group": "حدّث المجموعة",
     "course_required": "الكورس مطلوب",
     "instructor_required": "المهندس مطلوب",
@@ -133,7 +133,7 @@
     "attendance_sessions": "الحضور والسيشنز",
     "payments": "المدفوعات",
     "no_payments": "مفيش مدفوعات مؤخراً للمستوى ده.",
-    "download_pdf": "تحميل الإيصال PDF",
+    "download_pdf": "تحميل الفاتوره PDF",
     "send_whatsapp": "إرسال عبر واتساب (قريباً)",
     "expected": "المتوقع",
     "collected": "المدفوع",
@@ -176,11 +176,11 @@
     "first_assigned": "أول تعيين",
     "last_assigned": "آخر تعيين",
     "present": "حالي",
-    "download_pdf": "تحميل الإيصال PDF",
+    "download_pdf": "تحميل الفاتوره PDF",
     "send_whatsapp": "إرسال عبر واتساب (قريباً)"
   },
   "addSessionDialog": {
-    "title": "زود سيشن إضافية",
+    "title": "اضافه سيشن إضافية",
     "session_date": "تاريخ السيشن",
     "status": "الحالة",
     "scheduled": "مجدول",
@@ -195,7 +195,7 @@
     "notes_optional": "ملاحظات (اختياري)",
     "notes_placeholder": "مثلاً، سيشن تعويض عن...",
     "cancel": "إلغاء",
-    "add_session": "زود سيشن",
+    "add_session": "اضافه سيشن",
     "today": "النهارده",
     "plus_one_day": "+يوم",
     "plus_seven_days": "+أيام",
@@ -212,7 +212,7 @@
     "students_in_level": "طلاب في المستوى",
     "current_level": "المستوى الحالي",
     "group_notes": "ملاحظات المجموعة",
-    "notes_placeholder": "زود ملاحظات عن المجموعة دي...",
+    "notes_placeholder": "اضافه ملاحظات عن المجموعة دي...",
     "saving": "بيتحفظ...",
     "leveling_up": "بيترقّى...",
     "level_up": "رقّي",
@@ -239,7 +239,7 @@
     "start_time": "وقت البداية",
     "end_time": "وقت النهاية",
     "additional_notes": "ملاحظات إضافية",
-    "notes_placeholder": "زود أي ملاحظات داخلية عن المجموعة دي...",
+    "notes_placeholder": "اضافه أي ملاحظات داخلية عن المجموعة دي...",
     "cancel": "إلغاء",
     "save_changes": "احفظ التعديلات",
     "close_aria": "قفل النافذة"
@@ -253,7 +253,7 @@
     "no_price_override": "مفيش سعر مخصص",
     "price_hint": "حدد فواتير مخصصة للمستوى ده، أو اسيبها فاضية عشان تاخذ السعر الأساسي للكورس.",
     "internal_notes": "ملاحظات داخلية",
-    "notes_placeholder": "زود ملاحظات المستوى هنا...",
+    "notes_placeholder": "اضافه ملاحظات المستوى هنا...",
     "cancel": "إلغاء",
     "save_changes": "احفظ التعديلات",
     "saving": "بيتحفظ...",
@@ -262,7 +262,7 @@
   },
   "progressDialog": {
     "title": "رقّي مستوى المجموعة",
-    "subtitle": "نقل المجموعة للمستوى الجاي واعمل سيشنز جديدة.",
+    "subtitle": "نقل المجموعة للمستوى الجاي واضافه سيشنز جديدة.",
     "action_will": "العملية دي هتعمل:",
     "create_level": "تعمل المستوى {{level}} للمجموعة دي",
     "mark_completed": "تمّم المستوى {{level}}",

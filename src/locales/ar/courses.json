@@ -78,7 +78,7 @@
     "total_sessions": "إجمالي السيشنز (تقديري)",
     "active_course": "كورس نشط",
     "cancel": "إلغاء",
-    "create": "اعمل كورس",
+    "create": "اضافه كورس",
     "update": "حدّث الكورس",
     "error_name_required": "اسم الكورس مطلوب",
     "error_price_zero": "السعر لكل مستوى لازم يكون أكبر من 0",
@@ -96,6 +96,6 @@
     "available": "{{count}} كورس متاح",
     "available_plural": "{{count}} كورسات متاحة",
     "search_placeholder": "دور في الكورسات...",
-    "create_course": "اعمل كورس"
+    "create_course": "اضافه كورس"
   }
 }

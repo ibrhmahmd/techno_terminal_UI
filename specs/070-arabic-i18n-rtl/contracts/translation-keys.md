@@ -33,7 +33,7 @@ This document defines the contract for translation keys — naming conventions, 
 | `common.buttons.cancel` | Cancel | إلغاء |
 | `common.labels.name` | Name | الاسم |
 | `common.messages.confirm_delete` | Are you sure? | هل أنت متأكد؟ |
-| `finance.receipt.create` | Create Receipt | إنشاء إيصال |
+| `finance.receipt.create` | Create Receipt | إنشاء فاتوره |
 | `finance.receipt.slide_to_confirm` | Slide to confirm | اسحب للتأكيد |
 | `groups.form.title.create` | Create Group | إنشاء مجموعة |
 | `dashboard.no_groups` | No groups scheduled | لا توجد مجموعات مجدولة |

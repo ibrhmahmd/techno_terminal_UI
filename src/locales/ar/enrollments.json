@@ -1,6 +1,6 @@
 {
   "page_title": "الاشتراكات",
-  "subtitle": "اعمل اشتراكات جديدة، عدّل التفاصيل الفواتير، أو حذف طلاب",
+  "subtitle": "اضافه اشتراكات جديدة، عدّل التفاصيل الفواتير، أو حذف طلاب",
   "tabs": {
     "create": "سجّل",
     "modify": "عدّل",
@@ -38,7 +38,7 @@
     "amount_cannot_be_negative": "المبلغ المستحقة مش ممكن يكون سالب.",
     "discount_must_be_valid": "الخصم لازم يكون رقم صحيح ومش سالب.",
     "internal_notes": "ملاحظات داخلية",
-    "add_notes_placeholder": "زود ملاحظات إدارية...",
+    "add_notes_placeholder": "اضافه ملاحظات إدارية...",
     "save_changes": "احفظ التعديلات"
   },
   "drop_panel": {
@@ -68,7 +68,7 @@
     "leave_blank_price": "سيبه فاضى عشان تستخدم السعر الافتراضى للمجموعة.",
     "discount_applied": "الخصم المطبّق",
     "internal_notes": "ملاحظات داخلية",
-    "add_notes_placeholder": "زود ملاحظات إدارية...",
+    "add_notes_placeholder": "اضافه ملاحظات إدارية...",
     "cancel": "إلغاء",
     "save_changes": "احفظ التعديلات"
   },
