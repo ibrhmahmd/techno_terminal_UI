@@ -15,7 +15,7 @@
   "navigation": {
     "dashboard": "لوحة التحكم",
     "groups": "المجموعات",
-    "courses": "المقررات",
+    "courses": "الكورسات",
     "directory": "دليل الطلاب",
     "enrollments": "الاشتراكات",
     "finance": "المالية",
@@ -236,11 +236,11 @@
     "past_enrollment": "اشتراك سابق"
   },
   "coursesTab": {
-    "no_course_records": "مفيش سجل مقررات",
-    "no_course_records_message": "الطالب ده متسجّلش في أي مقررات لسه.",
-    "course_history": "سجل المقررات",
-    "course_history_subtitle": "شوف كل المقررات اللي الطالب خدها أو بياخدها دلوقتي",
-    "total_courses": "الإجمالي: {{count}} مقررات",
+    "no_course_records": "مفيش سجل كورسات",
+    "no_course_records_message": "الطالب ده متسجّلش في أي كورسات لسه.",
+    "course_history": "سجل الكورسات",
+    "course_history_subtitle": "شوف كل الكورسات اللي الطالب خدها أو بياخدها دلوقتي",
+    "total_courses": "الإجمالي: {{count}} كورسات",
     "in_progress": "قيد الدراسة",
     "completed": "اتنهى",
     "dropped": " سابكها",
@@ -274,7 +274,7 @@
   },
   "certificates": {
     "title": "الشهادات",
-    "subtitle": "اعمل وشوف وحدّث شهادات إتمام المقررات",
+    "subtitle": "اعمل وشوف وحدّث شهادات إتمام الكورسات",
     "search_placeholder": "دور بالاسم أو رقم الشهادة...",
     "generate": "اعمل شهادة",
     "detail_title": "تفاصيل الشهادة",

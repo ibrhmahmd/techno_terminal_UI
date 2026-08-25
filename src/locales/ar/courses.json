@@ -1,6 +1,6 @@
 {
   "courses": {
-    "title": "المقررات",
+    "title": "الكورسات",
     "create": "انشاء مقرر",
     "edit": "تعديل المقرر",
     "delete": "حذف المقرر",
@@ -28,14 +28,14 @@
     "createFailed": "فشل انشاء المقرر",
     "updateSuccess": "اتعدل المقرر بنجاح",
     "updateFailed": "فشل تعديل المقرر",
-    "showing": "بيتعرض {{count}} من {{total}} مقررات",
+    "showing": "بيتعرض {{count}} من {{total}} كورسات",
     "perPage": "{{count}} في الصفحة",
-    "searchPlaceholder": "ابحث في المقررات..."
+    "searchPlaceholder": "ابحث في الكورسات..."
   },
   "courseDetail": {
     "error": "غلطة",
     "not_found": "المقرر مش موجود",
-    "back_to_courses": "رجوع للمقررات",
+    "back_to_courses": "رجوع للكورسات",
     "tab_details": "التفاصيل",
     "tab_groups": "المجموعات ({{count}})",
     "course_information": "معلومات المقرر",
@@ -92,10 +92,10 @@
     "error_update_failed": "مقدرش أحدّث المقرر"
   },
   "coursesHeader": {
-    "title": "المقررات",
+    "title": "الكورسات",
     "available": "{{count}} مقرر متاح",
-    "available_plural": "{{count}} مقررات متاحة",
-    "search_placeholder": "دور في المقررات...",
+    "available_plural": "{{count}} كورسات متاحة",
+    "search_placeholder": "دور في الكورسات...",
     "create_course": "اعمل مقرر"
   }
 }
