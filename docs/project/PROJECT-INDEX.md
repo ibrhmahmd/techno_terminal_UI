@@ -1,362 +1,167 @@
-# TechnoTerminal CRM Project Index & Navigation Map
+# TechnoTerminal CRM — Project Index
 
-**Project**: TechnoTerminal CRM - Robotics Center Management Platform
-**Version**: 1.0
-**Date**: April 2, 2026  
-**Framework**: Tailwind CSS + HTML5 + Vanilla JavaScript
+**Project**: TechnoTerminal CRM — Robotics Center Management Platform
+**Framework**: React 19 + Vite 8 + TypeScript
 **Design System**: Precision Engine
+**Last Updated**: August 2026
 
 ---
 
-## Project Structure
+## Application Structure
+
+### Entry & Routing
 
 ```
-build/
-├── index.html                    ← Main Hub / Entry Point
-├── dashboard.html                ← Operations Dashboard
-├── groups.html                   ← Group/Class Management  
-├── directory.html                ← Student/Parent Directory
-├── enrollments.html              ← Enrollment Operations
-├── finance.html                  ← Finance & Receipts
-├── reports.html                  ← Analytics & Reports
-├── staff.html                    ← Staff Management
-├── attendance.html               ← Attendance Tracking
-├── competitions.html             ← Competitions/Events
-├── students.html                 ← Student Profiles
-├── shared/                       ← Shared Components
-│   ├── nav.html                  (Navigation Template)
-│   └── styles.css                (Global Styles)
-└── docs/                         ← Documentation
-    ├── index.md                  ← Getting Started
-    ├── design-system.html        ← Design Specifications
-    └── api-reference.html        ← API Documentation
+src/main.tsx          → StrictMode + QueryClientProvider + i18n import
+src/App.tsx           → BrowserRouter, 25 lazy-loaded routes, Suspense, ErrorBoundary
+src/lib/queryClient.ts → React Query defaults (staleTime: 5min, gcTime: 30min)
 ```
 
----
+### Route Map
 
-## Navigation Map
-
-### Main Hub (index.html)
-**Purpose**: Central entry point with comprehensive module overview
-**Links To**:
-- [Dashboard](dashboard.html)
-- [Groups](groups.html)
-- [Directory](directory.html)
-- [Enrollments](enrollments.html)
-- [Finance](finance.html)
-- [Reports](reports.html)
-- [Staff](staff.html)
-- [Attendance](attendance.html)
-- [Competitions](competitions.html)
-- [Students](students.html)
-- [Design System](docs/design-system.html)
-- [API Reference](docs/api-reference.html)
-
----
-
-## Core Modules
-
-### 1. Dashboard (dashboard.html)
-**Module Type**: Operations Hub
-**Icon**: dashboard
-**Description**: Real-time operations overview, attendance tracking, daily scheduling
-**Contains**:
-- System Overview Header
-- Day Selector
-- Groups Stack with Attendance Grids
-- Interactive Session Tracking
-- Enrollment Actions
-
-**Navigation Links**:
-- [Home](index.html)
-- [Groups](groups.html)
-- [Directory](directory.html)
-- [Enrollments](enrollments.html)
-- [Finance](finance.html)
-- [Reports](reports.html)
+| Path | Component | Guard |
+|------|-----------|-------|
+| `/login` | LoginPage | Public |
+| `/register` | RegisterPage | Public |
+| `/forgot-password` | ForgotPasswordPage | Public |
+| `/reset-password` | ResetPasswordPage | Public |
+| `/dashboard` | DashboardPage | Protected |
+| `/courses` | CoursesPage | Protected |
+| `/courses/:id` | CourseDetailPage | Protected |
+| `/groups` | GroupsPage | Protected |
+| `/groups/:id` | GroupDetailPage | Protected |
+| `/students/:id` | StudentDetailPage | Protected |
+| `/parents/:id` | ParentDetailPage | Protected |
+| `/capabilities` | CapabilitiesPage | Protected |
+| `/competitions` | CompetitionsPage | Protected |
+| `/competitions/:id` | CompetitionDetailPage | Protected |
+| `/competitions/:id/edit` | CompetitionEditPage | Protected |
+| `/teams/:id` | TeamDetailPage | Protected |
+| `/certificates` | CertificatesPage | Protected |
+| `/directory` | DirectoryPage | Instructor-blocked |
+| `/enrollments` | EnrollmentsPage | Instructor-blocked |
+| `/finance` | FinancePage | Instructor-blocked |
+| `/reports` | ReportsPage | Instructor-blocked |
+| `/staff` | StaffPage | Instructor-blocked |
+| `/tasks` | TasksPage | Instructor-blocked |
+| `/settings` | SettingsPage | Instructor-blocked |
+| `/notifications` | NotificationsPage | Admin-only |
+| `/attendance` | Placeholder `<div>` | Protected |
 
 ---
 
-### 2. Groups (groups.html)
-**Module Type**: Class/Group Management
-**Icon**: group
-**Description**: Manage classes, sessions, schedules, and group-level settings
-**Contains**:
-- Group Detail Header (Robotics A Example)
-- Attendance Grid per Group
-- Session Management
-- Module Progress Tracking
-- Student Roster with Billing Status
+## Module Map
 
-**Navigation Links**:
-- [Home](index.html)
-- [Dashboard](dashboard.html)
-- [Directory](directory.html)
-- [Enrollments](enrollments.html)
-- [Finance](finance.html)
-- [Reports](reports.html)
+### Core Operations
 
----
+| Module | Page | Components | API Domain |
+|--------|------|------------|------------|
+| Dashboard | `DashboardPage` | `dashboard/` (10 files) | `dashboard/` |
+| Groups | `GroupsPage`, `GroupDetailPage` | `groups/` (20+ files) | `academics/groups/` |
+| Courses | `CoursesPage`, `CourseDetailPage` | `courses/` (6 files) | `academics/courses/` |
+| Directory | `DirectoryPage` | `directory/` (7 files) | `crm/students/`, `crm/parents.ts` |
+| Student Detail | `StudentDetailPage` | `student/` (10 files) | `crm/students/` (12 sub-modules) |
+| Parent Detail | `ParentDetailPage` | `crm/` | `crm/parents.ts` |
 
-### 3. Directory (directory.html)
-**Module Type**: Lookup & Registration
-**Icon**: person_search
-**Description**: Comprehensive students and parents lookup, registration, and profiles
-**Contains**:
-- Family Directory Search
-- Student Listings
-- Registration Status
-- Contact Information
-- Quick Stats
+### Operations
 
-**Navigation Links**:
-- [Home](index.html)
-- [Dashboard](dashboard.html)
-- [Groups](groups.html)
-- [Enrollments](enrollments.html)
-- [Finance](finance.html)
-- [Reports](reports.html)
+| Module | Page | Components | API Domain |
+|--------|------|------------|------------|
+| Enrollments | `EnrollmentsPage` | `enrollments/` (4 files) | `enrollments/` |
+| Finance | `FinancePage` | `finance/` (12 files) | `finance/` (7 sub-modules) |
+| Attendance | Grid on GroupDetail/Dashboard | `attendance/` (12 files) | `attendance/` |
+| Reports | `ReportsPage` | `reports/` (atomic design) | `reports/`, `analytics/` |
+| Staff | `StaffPage` | `staff/` (6 files) | `hr/` |
+| Tasks | `TasksPage` | `tasks/` (8 files) | `tasks/` |
+| Settings | `SettingsPage` | `settings/` (5 files) | `auth/` |
 
----
+### Events
 
-### 4. Enrollments (enrollments.html)
-**Module Type**: Student-Group Mapping
-**Icon**: assignment_ind
-**Description**: Student-group mapping, enrollment status, and management
-**Contains**:
-- Enrollment Operations Panel
-- Pending Transfers Queue
-- Enrollment Ledger
-- Status Tracking
-- Bulk Actions
+| Module | Page | Components | API Domain |
+|--------|------|------------|------------|
+| Competitions | `CompetitionsPage`, `CompetitionDetailPage`, `CompetitionEditPage` | `competitions/` (12 files) | `competitions/` |
+| Teams | `TeamDetailPage` | `teams/` | `teams/` |
 
-**Navigation Links**:
-- [Home](index.html)
-- [Dashboard](dashboard.html)
-- [Groups](groups.html)
-- [Directory](directory.html)
-- [Finance](finance.html)
-- [Reports](reports.html)
+### Communications
+
+| Module | Page | Components | API Domain |
+|--------|------|------------|------------|
+| Notifications | `NotificationsPage` | `notifications/` (5 files) | `notifications/` |
+| Certificates | `CertificatesPage` | `certificates/` (4 files) | `certificates/` (separate backend) |
 
 ---
 
-### 5. Finance (finance.html)
-**Module Type**: Payment Management
-**Icon**: payments
-**Description**: Receipts, payments, and financial transaction management
-**Contains**:
-- Receipt Creation Interface
-- Payment Processing
-- Transaction History
-- Wallet Balance
-- Financial Reports
+## Key Files Reference
 
-**Navigation Links**:
-- [Home](index.html)
-- [Dashboard](dashboard.html)
-- [Groups](groups.html)
-- [Directory](directory.html)
-- [Enrollments](enrollments.html)
-- [Reports](reports.html)
+### State Management
 
----
+| File | Store | Purpose |
+|------|-------|---------|
+| `src/store/authStore.ts` | `useAuthStore` | JWT, user, isAuthenticated |
+| `src/store/settingsStore.ts` | `useSettingsStore` | Locale (en/ar), direction (ltr/rtl) |
+| `src/store/groupingSettingsStore.ts` | `useGroupingSettingsStore` | Age buckets for student grouping |
 
-### 6. Reports (reports.html)
-**Module Type**: Analytics & Insights
-**Icon**: assessment
-**Description**: Analytics, insights, and comprehensive reporting dashboard
-**Contains**:
-- Financial Metrics Dashboard
-- Revenue Analytics
-- Enrollment Statistics
-- Attendance Reports
-- User Demographics
+### API Layer
 
-**Navigation Links**:
-- [Home](index.html)
-- [Dashboard](dashboard.html)
-- [Groups](groups.html)
-- [Directory](directory.html)
-- [Enrollments](enrollments.html)
-- [Finance](finance.html)
+| File | Purpose |
+|------|---------|
+| `src/api/client.ts` | Shared Axios instance, Bearer injection, 401 refresh queue |
+| `src/api/certificates/certificates.ts` | Separate `certsClient` for certificates backend |
 
----
+### Hooks
 
-## Extended Modules
+| File | Purpose |
+|------|---------|
+| `src/hooks/queryKeys.ts` | Centralized React Query key factories |
+| `src/hooks/usePaginatedList.ts` | Server-side pagination |
+| `src/hooks/usePagination.ts` | Client-side pagination |
+| `src/hooks/useSearch.ts` | Debounced search |
+| `src/hooks/useIsMobile.ts` | Mobile breakpoint detection (1023px) |
 
-### 7. Staff (staff.html)
-**Module Type**: Personnel Management
-**Icon**: people
-**Description**: Personnel administration, HR data, and staff profiles
-**Contains**:
-- Staff Directory
-- Attendance Check-in
-- Role Management
-- Employment Status
-- Staff Statistics
+### Utilities
+
+| File | Purpose |
+|------|---------|
+| `src/utils/formatting.ts` | `formatTime` (12h format) |
+| `src/utils/colors.ts` | Status color maps |
+| `src/utils/attendanceTransforms.ts` | Bridges API DTOs for attendance |
+| `src/utils/egyptianValidators.ts` | Egyptian phone/national-ID validation |
+
+### i18n
+
+| File | Purpose |
+|------|---------|
+| `src/i18n/index.ts` | i18next initialization |
+| `src/locales/en/*.json` | English translations (14 namespaces) |
+| `src/locales/ar/*.json` | Arabic translations (14 namespaces) |
 
 ---
 
-### 8. Attendance (attendance.html)
-**Module Type**: Tracking
-**Icon**: check_circle
-**Description**: Detailed staff and student attendance tracking and records
-**Contains**:
-- Real-time Attendance Grid
-- Check-in/Check-out Interface
-- Attendance History
-- Late/Absence Tracking
-- Shift Duration Tracking
+## Design System
 
----
+- **Primary**: `#000000` (Black)
+- **Primary Container**: `#131b2e` (Dark Navy)
+- **Secondary**: `#006a61` (Teal)
+- **Surface**: `#f8f9ff` (Light Blue-Tinted)
+- **Headlines**: Space Grotesk (`font-headline`)
+- **Body**: Inter (`font-body`)
+- **Border Radius**: Non-standard — `rounded` = `0.125rem`, `rounded-full` = `0.75rem`
 
-### 9. Competitions (competitions.html)
-**Module Type**: Event Management
-**Icon**: emoji_events
-**Description**: Event management, competition tracking, and results
-**Contains**:
-- Active Competition Cards
-- Team Registration
-- Results Tracking
-- Event Calendar
-- Participation Records
-
----
-
-### 10. Students (students.html)
-**Module Type**: Student Profiles
-**Icon**: school
-**Description**: Individual student profiles, progress, and performance data
-**Contains**:
-- Student Profile Header
-- Enrollment Status
-- Skills Matrix
-- Balance Due
-- Curriculum Progress
+See `docs/design/DESIGN.md` for full design system documentation.
 
 ---
 
 ## Documentation
 
-### Design System (docs/design-system.html)
-**Purpose**: Design specifications and component library
-**Contains**:
-- Precision Engine Overview
-- Color Palette Specifications
-- Typography Guidelines
-- Elevation & Depth Rules
-- Component Specifications
+| File | Purpose |
+|------|---------|
+| `README.md` | Project overview, tech stack, quick start |
+| `ARCHITECTURE.md` | Detailed architecture, data flow, patterns |
+| `docs/api/README.md` | Complete API endpoint reference (146 endpoints) |
+| `docs/design/DESIGN.md` | Precision Engine design system |
+| `docs/grouping_pattern_guide.md` | Student grouping pattern guide |
+| `AGENTS.md` | Agent instructions for AI assistants |
 
 ---
 
-### API Reference (docs/api-reference.html)
-**Purpose**: Technical integration guide and API documentation
-**Contains**:
-- Base URL Information
-- Authentication Details
-- Core Endpoints
-- Role-Based Access Control
-- Response Formats
-
----
-
-## Navigation Hierarchy
-
-Each page includes a **sidebar navigation bar** with:
-- **Logo/Branding** - Links to home
-- **Main Nav** - Primary modules (Dashboard, Groups, Directory, Enrollments, Finance, Reports)
-- **Secondary Nav** - Extended modules & settings
-- **Bottom Nav** - Home, Documentation links
-
-**Active State**: The current page is highlighted with:
-- `bg-secondary/5` background color
-- `text-secondary` text color  
-- `border-r-2 border-secondary` right border
-
----
-
-## Color Scheme
-
-| Color | Hex | Usage |
-|-------|-----|-------|
-| Primary | #000000 | Text, Headlines |
-| Secondary | #006a61 | Active states, CTAs, Highlights |
-| Background | #f8f9ff | Page background |
-| Surface | #f8f9ff | Card backgrounds |
-| Error | #ba1a1a | Error states, Warnings |
-| Surface Dim | #cbdbf5 | Subtle dividers |
-| On-Surface | #0b1c30 | Primary text |
-
----
-
-## Key Navigation Patterns
-
-### Pattern 1: Main Hub Entry
-User enters through **index.html** and selects desired module
-
-### Pattern 2: Module Navigation
-Within any module, user can navigate to any other module via sidebar
-
-### Pattern 3: Documentation Access
-User can reach docs from hub or via sidebar "Settings" menu
-
-### Pattern 4: Breadcrumb Navigation
-Header shows current page location in hierarchy
-
----
-
-## File Naming Convention
-
-- **Main Pages**: `{module-name}.html` (all lowercase)
-- **Documentation**: `docs/{topic}.html`
-- **Components**: `shared/{component}.html`
-- **Shared Utilities**: `shared/{utility}.{ext}`
-
----
-
-## Testing Navigation
-
-To verify all links are working:
-
-1. **From Hub**:  
-   - Click each module card  
-   - Verify landing on correct page  
-   - Verify sidebar highlights correct module
-
-2. **From Module Pages**:
-   - Click each sidebar link  
-   - Verify navigation to correct page  
-   - Verify new page is highlighted in sidebar
-
-3. **Documentation**:
-   - From hub, click Design System → Should load docs/design-system.html
-   - From hub, click API Reference → Should load docs/api-reference.html
-
----
-
-## Deployment Instructions
-
-1. Copy all files from `/build/` to web server root
-2. Ensure all `.html` files are in root directory
-3. Ensure `/docs/` subdirectory exists with documentation
-4. No build process required - static files only
-5. All styling is inline Tailwind CSS
-
----
-
-## Future Enhancements
-
-- [ ] Add shared navigation component as include
-- [ ] Implement user authentication
-- [ ] Add backend API integration
-- [ ] Create responsive mobile layouts
-- [ ] Add advanced search functionality
-- [ ] Implement dashboard interactivity
-- [ ] Add real data connectivity
-- [ ] Create admin settings page
-
----
-
-**Last Updated**: April 2, 2026  
-**Project Manager**: GitHub Copilot  
-**Status**: ✅ Core navigation structure complete and wired
+**Status**: React SPA deployed on Vercel, connected to FastAPI backend.
