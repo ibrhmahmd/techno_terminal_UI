@@ -1,6 +1,4 @@
 import { client } from '../client'
-import type { ApiResponse } from '../../types/api'
-import type { AttendanceLevelResponse } from './types'
 
 export async function markAttendance(
   sessionId: number,
@@ -17,19 +15,6 @@ export async function markAttendance(
   })
 }
 
-/**
- * Get consolidated attendance data for a specific level
- * Returns roster and sessions with attendance map
- * Auth: require_any
- */
-export async function getAttendanceForLevel(
-  groupId: number,
-  levelNumber: number
-): Promise<AttendanceLevelResponse> {
-  const response = await client.get<ApiResponse<AttendanceLevelResponse>>(
-    `/academics/groups/${groupId}/attendance`,
-    { params: { level_number: levelNumber } }
-  )
-  return response.data.data
-}
-
+// getAttendanceForLevel and its DTOs live in api/academics (source of truth).
+export { getAttendanceForLevel } from '../academics'
+export type { AttendanceLevelResponse } from '../academics'

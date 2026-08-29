@@ -32,7 +32,7 @@ export function AttendanceTableBody({ students, sessions, onToggle }: Attendance
 
           {/* Attendance Cells */}
           {sessions.map((session, sessionIdx) => {
-            const status = student.attendance.get(session.session_id) ?? 'absent'
+            const status = student.attendance.get(session.session_id) ?? 'not_taken'
             const isCancelled = session.status === 'cancelled'
             return (
               <td

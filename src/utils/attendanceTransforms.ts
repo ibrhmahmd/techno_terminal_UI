@@ -44,6 +44,7 @@ export function transformSessions(
   groupId: number,
   levelNumber: number,
 ): SessionWithAttendanceDTO[] {
+  const rosterById = new Map<number, AttendanceRosterDTO>(roster.map((r) => [r.student_id, r]))
   return sessions.map((s) => ({
     session_id: s.session_id,
     id: s.session_id, // Alias
@@ -64,7 +65,7 @@ export function transformSessions(
     notes: s.notes,
     attendance: Object.entries(s.attendance || {}).map(
       ([studentId, status]) => {
-        const student = roster.find((r) => r.student_id === Number(studentId));
+        const student = rosterById.get(Number(studentId));
         return {
           student_id: Number(studentId),
           student_name: student?.student_name || "",

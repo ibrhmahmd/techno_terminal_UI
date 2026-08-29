@@ -2,6 +2,7 @@
  * Session-related input DTOs (Request types)
  * Aligned with API documentation: docs/api/academics/sessions.md
  */
+import type { SessionStatus } from '../../../../types/api'
 
 /**
  * Input for updating a session
@@ -13,7 +14,7 @@ export interface UpdateSessionDTO {
   end_time?: string;
   actual_instructor_id?: number;
   is_substitute?: boolean;
-  status?: "scheduled" | "completed" | "cancelled";
+  status?: SessionStatus;
   notes?: string | null;
 }
 

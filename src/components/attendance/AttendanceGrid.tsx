@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
@@ -7,27 +7,19 @@ import type { UpdateSessionDTO } from '../../api/academics'
 import { cancelSession, updateSession, deleteSession, reactivateSession } from '../../api/academics'
 import { markAttendance, type AttendanceStatus } from '../../api/attendance'
 import { getInitials } from '../../utils/formatting'
+import { invalidateSessionCaches } from '../../utils/attendanceInvalidation'
+import { getNextStatus } from '../../utils/attendanceStatus'
 import { useToast } from '../common/Toast'
 import { AttendanceHeader } from './AttendanceHeader'
 import { AttendanceTableBody } from './AttendanceTableBody'
 import { AttendanceFooter } from './AttendanceFooter'
 import { SessionActionsRow } from './SessionActionsRow'
 import { SessionNotesRow } from './SessionNotesRow'
-import { EditSessionPopup } from './EditSessionPopup'
+import { EditSessionModal } from './EditSessionModal'
 import { AddSessionDialog } from '../groups/detail/AddSessionDialog'
 import { PaymentSummaryStrip } from './PaymentSummaryStrip'
 import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashboard'
 import type { StudentRowData } from './types'
-
-// Toggle cycle: not_taken -> present -> absent -> not_taken
-function getNextStatus(current: AttendanceStatus): AttendanceStatus {
-  const map: Record<string, AttendanceStatus> = {
-    'not_taken': 'present',
-    'present': 'absent',
-    'absent': 'not_taken',
-  }
-  return map[String(current)] ?? 'not_taken'
-}
 
 interface AttendanceGridProps {
   sessions: SessionWithAttendanceDTO[]
@@ -69,22 +61,42 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   // Optimistic overrides — merged into derived students during pending save
   const [localOverrides, setLocalOverrides] = useState<Map<string, AttendanceStatus>>(new Map())
 
+  // Keep a ref of the latest localOverrides so handleToggle can compute the current
+  // status without depending on the derived `students` array (which would otherwise
+  // recreate onToggle on every toggle and defeat AttendanceCell.memo).
+  const localOverridesRef = useRef(localOverrides)
+  useEffect(() => {
+    localOverridesRef.current = localOverrides
+  }, [localOverrides])
+
   const { showToast, ToastComponent } = useToast()
+
+  // Pre-index each session's attendance once to avoid per-row .find in the students memo.
+  const sessionsByIdx = useMemo(
+    () =>
+      sessions.map((session) => ({
+        session,
+        statusByStudent: new Map<number, AttendanceStatus>(
+          (session.attendance || []).map((a) => [
+            a.student_id,
+            a.status === 'cancelled' || a.status === null ? 'not_taken' : a.status,
+          ]),
+        ),
+      })),
+    [sessions],
+  )
 
   // Derive student rows directly from props + local overrides — no state, no fetch cycle
   const students = useMemo<StudentRowData[]>(() => {
     const rosterData: StudentRosterDTO[] = roster || []
     return rosterData.map((r) => {
       const attendanceMap = new Map<number, AttendanceStatus>()
-      sessions.forEach((session) => {
+      sessionsByIdx.forEach(({ session, statusByStudent }) => {
         const overrideKey = `${r.student_id}-${session.session_id}`
         if (localOverrides.has(overrideKey)) {
           attendanceMap.set(session.session_id, localOverrides.get(overrideKey)!)
         } else {
-          const sessionAttendance = session.attendance || []
-          const record = sessionAttendance.find((a) => a.student_id === r.student_id)
-          const rawStatus = record?.status ?? null
-          attendanceMap.set(session.session_id, rawStatus === 'cancelled' || rawStatus === null ? 'not_taken' : rawStatus)
+          attendanceMap.set(session.session_id, statusByStudent.get(r.student_id) ?? 'not_taken')
         }
       })
 
@@ -97,7 +109,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         attendance: attendanceMap,
       }
     })
-  }, [roster, sessions, localOverrides])
+  }, [roster, sessionsByIdx, localOverrides])
 
   // Initialize session notes when sessions change (preserve dirty notes)
   const initialSessionNotes = useMemo(() => {
@@ -139,16 +151,13 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       await cancelSession(sessionId)
       setHasChanges(true)
       showToast(t('toast.session_cancelled'), 'success')
-      if (selectedDate) {
-        await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
-      }
-      await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+      await invalidateSessionCaches(qc, { groupId, level, selectedDate })
       await refetchData()
     } catch (err) {
       console.error('Failed to cancel session:', err)
       showToast(t('toast.session_cancel_failed'), 'error')
     }
-  }, [refetchData, showToast, selectedDate, qc, groupId])
+  }, [refetchData, showToast, selectedDate, qc, groupId, level])
 
   // Handle delete session
   const handleDeleteSession = useCallback(async (sessionId: number) => {
@@ -156,16 +165,13 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       await deleteSession(sessionId)
       setHasChanges(true)
       showToast(t('toast.session_deleted'), 'success')
-      if (selectedDate) {
-        await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
-      }
-      await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+      await invalidateSessionCaches(qc, { groupId, level, selectedDate })
       await refetchData()
     } catch (err) {
       console.error('Failed to delete session:', err)
       showToast(t('toast.session_delete_failed'), 'error')
     }
-  }, [refetchData, showToast, selectedDate, qc, groupId])
+  }, [refetchData, showToast, selectedDate, qc, groupId, level])
 
   // Handle reactivate session
   const handleReactivateSession = useCallback(async (sessionId: number) => {
@@ -173,16 +179,13 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       await reactivateSession(sessionId)
       setHasChanges(true)
       showToast(t('toast.session_reactivated'), 'success')
-      if (selectedDate) {
-        await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
-      }
-      await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+      await invalidateSessionCaches(qc, { groupId, level, selectedDate })
       await refetchData()
     } catch (err) {
       console.error('Failed to reactivate session:', err)
       showToast(t('toast.session_reactivate_failed'), 'error')
     }
-  }, [refetchData, showToast, selectedDate, qc, groupId])
+  }, [refetchData, showToast, selectedDate, qc, groupId, level])
 
   // Handle complete session
   const handleCompleteSession = useCallback(async (sessionId: number) => {
@@ -190,16 +193,13 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       await updateSession(sessionId, { status: 'completed' })
       setHasChanges(true)
       showToast(t('toast.session_completed'), 'success')
-      if (selectedDate) {
-        await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
-      }
-      await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+      await invalidateSessionCaches(qc, { groupId, level, selectedDate })
       await refetchData()
     } catch (err) {
       console.error('Failed to complete session:', err)
       showToast(t('toast.session_complete_failed'), 'error')
     }
-  }, [refetchData, showToast, selectedDate, qc, groupId])
+  }, [refetchData, showToast, selectedDate, qc, groupId, level])
 
   // Handle save edited session
   const handleSaveEditedSession = useCallback(async (sessionId: number, data: UpdateSessionDTO) => {
@@ -208,30 +208,32 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       setIsEditModalOpen(false)
       setEditingSession(null)
       showToast(t('toast.session_updated'), 'success')
-      if (selectedDate) {
-        await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
-      }
-      await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+      await invalidateSessionCaches(qc, { groupId, level, selectedDate })
       await refetchData()
     } catch (err) {
       console.error('Failed to update session:', err)
       showToast(t('toast.session_update_failed'), 'error')
     }
-  }, [refetchData, showToast, selectedDate, qc, groupId])
+  }, [refetchData, showToast, selectedDate, qc, groupId, level])
 
   const handleToggle = useCallback((studentId: string | number, sessionId: number) => {
     const studentIdStr = String(studentId)
-    // Read current status from derived students
-    const student = students.find(s => s.student_id === studentIdStr)
-    if (!student) return
+    // Current status = baseline from the session's raw attendance (stable prop), overridden
+    // by any optimistic local override. Read from localOverridesRef (not the derived
+    // `students`) so this callback stays stable and AttendanceCell.memo can bail out.
+    const baselineRecord =
+      sessions.find(s => s.session_id === sessionId)?.attendance?.find(a => a.student_id === studentId)?.status ?? null
+    const baselineStatus: AttendanceStatus =
+      baselineRecord === 'cancelled' || baselineRecord === null ? 'not_taken' : baselineRecord
 
-    const currentStatus = student.attendance.get(sessionId) ?? 'not_taken'
+    const overrideKey = `${studentIdStr}-${sessionId}`
+    const currentStatus = localOverridesRef.current.get(overrideKey) ?? baselineStatus
     const nextStatus = getNextStatus(currentStatus)
 
     // Optimistic UI: store override in localOverrides
     setLocalOverrides(prev => {
       const newMap = new Map(prev)
-      newMap.set(`${studentIdStr}-${sessionId}`, nextStatus)
+      newMap.set(overrideKey, nextStatus)
       return newMap
     })
     
@@ -251,7 +253,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       return newMap
     })
     setHasChanges(true)
-  }, [students])
+  }, [sessions])
 
   // Save all attendance changes and notes
   const handleSaveAll = useCallback(async () => {
@@ -362,10 +364,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       }
       
       // 8. Invalidate caches after save
-      if (selectedDate) {
-        await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
-      }
-      await qc.invalidateQueries({ queryKey: queryKeys.groupAttendance(groupId, level) })
+      await invalidateSessionCaches(qc, { groupId, level, selectedDate })
 
       // 9. REFETCH data (soft refresh - no page reload)
       await refetchData()
@@ -444,12 +443,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       })
       
       // Invalidate caches after successful retry
-      await Promise.all([
-        selectedDate
-          ? qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
-          : Promise.resolve(),
-        qc.invalidateQueries({ queryKey: queryKeys.groupAttendance(groupId, level) }),
-      ])
+      await invalidateSessionCaches(qc, { groupId, level, selectedDate })
       
       showToast(t('toast.retry_success'), 'success')
     } catch (err) {
@@ -610,7 +604,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       />
       
       {/* Edit Session Modal */}
-      <EditSessionPopup
+      <EditSessionModal
         session={editingSession}
         isOpen={isEditModalOpen}
         onClose={() => {

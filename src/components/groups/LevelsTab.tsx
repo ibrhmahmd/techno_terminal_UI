@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BookOpen, GraduationCap, CheckCircle, XCircle, AlertCircle, Edit3, FileDown, MessageCircle, Calendar, Trash2 } from 'lucide-react'
 import type { LevelDetailDTO, LevelPaymentsDTO, CourseInfoDTO, InstructorInfoDTO, PaymentDetailDTO } from '../../api/academics'
@@ -554,11 +554,14 @@ function LevelAttendancePanel({
 }) {
   const { roster, sessions, isLoading, error } = useGroupAttendance(groupId, levelNumber)
 
+  const transformedRoster = useMemo(() => transformRoster(roster), [roster])
+  const transformedSessions = useMemo(
+    () => transformSessions(sessions, roster, groupId, levelNumber),
+    [sessions, roster, groupId, levelNumber],
+  )
+
   if (isLoading) return <div className="py-12 flex justify-center"><LoadingSpinner /></div>
   if (error) return <div className="py-8 text-center text-red-500">Failed to load attendance: {error}</div>
-
-  const transformedRoster = transformRoster(roster)
-  const transformedSessions = transformSessions(sessions, roster, groupId, levelNumber)
 
   return (
     <AttendanceGrid 

@@ -172,10 +172,16 @@ queryKeys.groupAttendance(groupId, levelNumber) // ['groups', id, 'attendance', 
 
 ### Gotchas
 - **`attendanceTransforms.ts` hardcoded gender**: `transformRoster` always sets `gender: 'male'` — new API doesn't return gender
-- **`markAttendance` filters `not_taken`**: The API function drops entries with `status: 'not_taken'` before posting, so toggling a cell back to `not_taken` just omits it from the payload
-- **Table min-width formula**: `Math.max(700, 200 + sessions.length * 160)` in `AttendanceGrid.tsx:508`
-- **Session notes preserve dirty state**: `useEffect` only initializes notes from `sessions` if `dirtyNotes.size === 0`
+- **`markAttendance` filters `not_taken`**: The API function drops entries with `status: 'not_taken'` before posting, so toggling a cell back to `not_taken` just omits it from the payload. It also re-parses `student_id` via `parseInt` — keep string IDs numeric or the POST payload breaks.
+- **Two divergent "missing status" defaults**: `AttendanceGrid.tsx:87` maps raw `null`/`cancelled` → `not_taken`, but `AttendanceTableBody.tsx:35` reads a missing Map value as `'absent'`. A session without an attendance record for a student can render as `absent` in some paths — be careful when reasoning about "empty" vs explicit.
+- **`mapStatus` collapses `excused`/`late` → `present`** (`attendanceTransforms.ts:33`). The new API returns `excused`/`late`/`null` statuses; they are not preserved through the transform, and `transformRoster` coerces `billing_status: 'partial'` → `'due'`.
+- **Toggle cycle is duplicated, not shared**: `getNextStatus()` is module-private in `AttendanceGrid.tsx:23`; `AttendanceMobileSheet` re-implements the same `not_taken→present→absent` cycle inline (`AttendanceMobileSheet.tsx:111`). Any new status/behavior must be changed in BOTH places or extracted to a shared util.
+- **Table min-width formula**: `Math.max(700, 200 + sessions.length * 160)` in `AttendanceGrid.tsx:510`
+- **Session notes preserve dirty state**: `useEffect` only initializes notes from `sessions` if `dirtyNotes.size === 0`; `handleSaveAll` clears `dirtyNotes` only AFTER cache invalidation + refetch resolve (see inline Fix 1 comment) or the textarea reverts to stale server data.
+- **Grid reads props, not its own fetch**: student rows derive via `useMemo` (no fetch); `refetchData()` just clears `localOverrides`. New features that need fresh attendance must invalidate `queryKeys.groupAttendance(groupId, level)` / `queryKeys.dashboard.overview(date)` — the grid won't refetch on its own.
+- **i18n**: attendance components use `useTranslation('attendance')`; new keys must be added to BOTH `src/locales/en/attendance.json` and `src/locales/ar/attendance.json` (namespaces are static-imported in `src/i18n/index.ts` — no lazy loading).
+- **Consumers**: grid is rendered from `GroupSessionCard` (dashboard) and `LevelAttendancePanel` in `LevelsTab.tsx` (group detail, feeds `transformRoster`/`transformSessions`). A feature touching the shared grid render path affects both surfaces.
 
 <!-- SPECKIT START -->
-Active plan: `specs/071-i18n-complete-translations/plan.md`
+Active plan: `specs/074-attendance-cache-refresh-audit/plan.md`
 <!-- SPECKIT END -->

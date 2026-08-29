@@ -6,14 +6,14 @@ import type { UpdateSessionDTO } from '../../api/academics'
 import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 import { useEmployees } from '../../hooks/useEmployees'
 
-interface EditSessionPopupProps {
+interface EditSessionModalProps {
   isOpen: boolean
   onClose: () => void
   session: SessionWithAttendanceDTO | null
   onSave: (sessionId: number, updates: UpdateSessionDTO) => void
 }
 
-export function EditSessionPopup({ isOpen, onClose, session, onSave }: EditSessionPopupProps) {
+export function EditSessionModal({ isOpen, onClose, session, onSave }: EditSessionModalProps) {
   const { t } = useTranslation('attendance')
   const [date, setDate] = useState('')
   const [startTime, setStartTime] = useState('')

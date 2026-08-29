@@ -5,6 +5,7 @@
  * @module dashboard/types
  * @see docs/api/dashboard-api.md
  */
+import type { SessionStatus } from '../../../types/api'
 
 // Lookup table types
 export interface GroupInfoDTO {
@@ -32,7 +33,7 @@ export interface TodaySessionDTO {
   date: string
   time_start: string
   time_end: string
-  status: 'scheduled' | 'completed' | 'cancelled'
+  status: SessionStatus
 }
 
 export interface AttendanceRecordDTO {
@@ -67,7 +68,7 @@ export interface SessionWithAttendanceDTO {
   time_end: string
   end_time: string  // Alias for time_end (backward compatibility)
   
-  status: 'scheduled' | 'completed' | 'cancelled'
+  status: SessionStatus
   is_extra_session: boolean
   
   // Group context

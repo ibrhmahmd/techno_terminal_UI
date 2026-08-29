@@ -4,7 +4,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import type { SessionWithAttendanceDTO, StudentRosterDTO } from '../../api/dashboard'
 import type { AttendanceStatus, AttendanceEntry } from '../../api/attendance'
 import { markAttendance } from '../../api/attendance'
-import { queryKeys } from '../../hooks/queryKeys'
+import { getNextStatus } from '../../utils/attendanceStatus'
+import { invalidateSessionCaches } from '../../utils/attendanceInvalidation'
 import { formatTime, formatInstructorName } from '../../utils/formatting'
 import { sessionStatusColors } from '../../utils/colors'
 import { useToast } from '../common/Toast'
@@ -107,12 +108,8 @@ export function AttendanceMobileSheet({
   const handleStudentTap = (studentId: number) => {
     setLocalAttendance(prev => {
       const next = new Map(prev)
-      const currentStatus = next.get(studentId) ?? 'not_taken'
-      let nextStatus: AttendanceStatus = 'not_taken'
-
-      if (currentStatus === 'not_taken') nextStatus = 'present'
-      else if (currentStatus === 'present') nextStatus = 'absent'
-      else if (currentStatus === 'absent') nextStatus = 'not_taken'
+      const currentStatus: AttendanceStatus = next.get(studentId) ?? 'not_taken'
+      const nextStatus = getNextStatus(currentStatus)
 
       next.set(studentId, nextStatus)
 
@@ -139,10 +136,11 @@ export function AttendanceMobileSheet({
     try {
       await markAttendance(selectedSession.session_id, pendingEntries)
       // Invalidate both dashboard and group attendance caches in parallel
-      await Promise.all([
-        qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) }),
-        qc.invalidateQueries({ queryKey: queryKeys.groupAttendance(groupId, selectedSession.level_number ?? -1) }),
-      ])
+      await invalidateSessionCaches(qc, {
+        groupId,
+        level: selectedSession.level_number ?? -1,
+        selectedDate,
+      })
       showToast(t('toast.attendance_saved'), 'success')
       setPendingEntries([])
       setActiveStep('sessions')
@@ -273,7 +271,7 @@ export function AttendanceMobileSheet({
           ) : (
             <div className="divide-y divide-slate-100">
               {roster.map(student => {
-                const status = localAttendance.get(student.student_id) ?? 'absent'
+                const status = localAttendance.get(student.student_id) ?? 'not_taken'
                 const statusConfig = {
                   present: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200', icon: 'check_circle', label: t('status.present') },
                   absent: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', icon: 'cancel', label: t('status.absent') },

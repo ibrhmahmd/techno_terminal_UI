@@ -5,6 +5,9 @@ export interface ApiResponse<T> {
   message: string | null
 }
 
+/** Session lifecycle status, shared across attendance + academics DTOs */
+export type SessionStatus = 'scheduled' | 'completed' | 'cancelled'
+
 /** 
  * Paginated data envelope.
  * Matches backend PaginatedResponse (flat structure).

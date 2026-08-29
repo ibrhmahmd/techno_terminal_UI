@@ -1,5 +1,5 @@
 import { client } from '../../client'
-import type { ApiResponse } from '../../../types/api'
+import type { ApiResponse, SessionStatus } from '../../../types/api'
 
 // ============================================================================
 // Types
@@ -29,7 +29,7 @@ export interface LevelSessionDTO {
   date: string
   time_start: string
   time_end: string
-  status: 'scheduled' | 'completed' | 'cancelled'
+  status: SessionStatus
   is_extra_session: boolean
   actual_instructor_id: number | null
   is_substitute: boolean
@@ -84,7 +84,7 @@ export interface AttendanceSessionDTO {
   date: string
   time_start: string
   time_end: string
-  status: 'scheduled' | 'completed' | 'cancelled'
+  status: SessionStatus
   is_extra_session: boolean
   notes: string | null
   attendance: Record<string, 'present' | 'absent' | 'excused' | 'late' | null>
