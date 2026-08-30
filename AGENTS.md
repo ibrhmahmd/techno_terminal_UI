@@ -14,7 +14,37 @@ No formatter configured — lint only.
 
 ---
 
-## 2. TS & Toolchain Quirks
+## 2. Arabic Localization & RTL
+
+### Content voice
+- **`ar` translations are Egyptian colloquial Arabic (masri), NOT Modern Standard Arabic** (`"مفيش"`, `"جرّب تاني"`, `"اتنهى"`, `"مش نشط"`). Write casual Egyptian dialect; formal Fusha will look wrong next to the existing strings.
+- `ar` files contain known defects — untranslated leftovers (`comingSoon.title` = `"soon"`), duplicated text (`auth.loginSuccess`), stray CJK chars (`combobox.no_results_student`), mixed-language (`certificates.info_row_revoked_at` = `"ات revoke يوم"`). Read the existing value before editing. Only 7/25 pages are audited — see `docs/i18n-audit-tracker.md`.
+
+### Wiring
+- `src/i18n/index.ts` **statically imports** all 14 namespaces × en/ar — no lazy loading. A new namespace requires editing that file's imports + `resources` + `ns` arrays.
+- New keys must be added to BOTH `src/locales/en/<ns>.json` and `src/locales/ar/<ns>.json`; missing keys render as the raw key string (no missing-key handler).
+- `defaultNS` is `common` — `useTranslation()` without arguments reads `common`; otherwise `useTranslation('<ns>')` must match the resource name.
+- **No i18next pluralization in use**: no `_one`/`_other`/`_few` suffix keys anywhere (Arabic has real plural rules, but this codebase doesn't use them). `{{count}}` without a suffix key never pluralizes — follow the existing "second(s)" style or rephrase.
+- Interpolation vars must match `en` EXACTLY in `ar` (`{{seconds}}`, `{{error}}`, `<strong>{{name}}</strong>` rendered via `<Trans>`). Placeholder drift is a common breakage.
+- Key style: snake_case preferred (some legacy camelCase in `common.json`, e.g. `networkError`).
+
+### Locale machinery
+- `settingsStore` (persist key `settings-storage`) is the single source of truth for `locale`/`direction`. `setLocale()` calls `i18n.changeLanguage`, sets `document.documentElement.dir`/`lang`, and cross-tab syncs via a module-level `storage` listener.
+- i18next also runs `LanguageDetector` (`order: ['localStorage', 'navigator']`) **independently** of the store, which defaults to `en`/`ltr`. On first load these can disagree (Arabic-browser navigator → i18n says `ar` while direction stays `ltr`). Read direction from the store, not `i18n.language`.
+
+### RTL styling
+- Use Tailwind logical utilities for RTL-safe layout: `ms-*`/`me-*`, `ps-*`/`pe-*`, `start-*`/`end-*`, `text-start`/`text-end`.
+- Directional icons (arrows/chevrons, Material Symbols) need the `icon-flip-rtl` class (defined in `src/index.css` → `scaleX(-1)`). There is **no auto-flip** — the `html[dir="rtl"]` icon rule in `index.css` is an empty placeholder.
+- Fonts: `font-body` = Inter + **Noto Sans Arabic** fallback (renders Arabic); `font-headline` (Space Grotesk) has **no Arabic fallback** — Arabic text in `font-headline` falls back to default. Prefer `font-body` for Arabic-heavy headings.
+- `formatTime`/`formatDate` in `src/utils/formatting.ts` hardcode `'en-US'` — dates/times do NOT localize under AR. Numbers stay in Latin digits (`1,2,3`), not Arabic-Indic.
+
+### Audit tooling
+- `docs/i18n-audit-tracker.md` tracks page-by-page progress (7/25 done). Prior specs: `070-arabic-i18n-rtl`, `071-i18n-complete-translations`, `072-dashboard-i18n-audit`.
+- `.agents/skills/i18n-page-audit/SKILL.md` documents the canonical audit workflow (hardcoded strings, missing keys, interpolation, logical-vs-physical classes, icon flips). Its referenced scanner at `scripts/audit-page.mjs` **does not exist** in this repo — do not run it.
+
+---
+
+## 3. TS & Toolchain Quirks
 - `verbatimModuleSyntax` → must `import type` for type-only imports
 - `erasableSyntaxOnly: true` → no enums, namespaces, parameter properties; use const objects or union types
 - `noUncheckedSideEffectImports: true` in both tsconfigs
@@ -28,7 +58,7 @@ No formatter configured — lint only.
 
 ---
 
-## 3. Architecture
+## 4. Architecture
 
 ### Entrypoint & Routing
 - `src/lib/queryClient.ts` → `src/main.tsx` (StrictMode + QueryClientProvider) → `src/App.tsx`
@@ -57,7 +87,7 @@ No formatter configured — lint only.
 
 ---
 
-## 4. Mobile Layout
+## 5. Mobile Layout
 
 **Breakpoint**: `lg` = 1024px. `useIsMobile` hook matches `(max-width: 1023px)`.
 
@@ -69,14 +99,14 @@ No formatter configured — lint only.
 
 ---
 
-## 5. Testing (Vitest)
+## 6. Testing (Vitest)
 - Environment: `happy-dom`. Setup: `src/test/setup.ts` (`@testing-library/jest-dom`)
 - Globals enabled: `describe`, `it`, `expect`, `vi` — no import needed
 - Convention: `src/tests/*.{test,spec}.{ts,tsx}` (vitest config: `src/**/*.{test,spec}.{ts,tsx}`)
 
 ---
 
-## 6. Common Pitfalls
+## 7. Common Pitfalls
 
 - **Query `enabled` guard blocking initial load**: Setting `enabled: term.length >= 2` on a hook that serves both listing and search prevents unfiltered load. Use `enabled: term.length === 0 || term.length >= 2` for dual-purpose hooks (see `useEmployees` in `useStaff.ts`). Purely search hooks (`useStudentsSearch`, `useParentsSearch`) are safe because a separate list query handles initial load.
 - **Two parallel employee cache families**: staff page uses `staffKeys` (`['staff', 'employees', ...]`) defined in `useStaff.ts`; group dialogs (`AddSessionDialog`, `EditGroupLevelDialog`, `useProgressLevelForm`) and `useEmployees.ts` use `queryKeys.employees.*` (`['employees', ...]`). Invalidating one does NOT refresh the other — invalidate both after employee mutations that affect both surfaces.
@@ -86,7 +116,7 @@ No formatter configured — lint only.
 
 ---
 
-## 7. Deploy & Config
+## 8. Deploy & Config
 - **Vercel**: `vercel.json` rewrites `/api/*` → FastAPI backend, all other routes → `/index.html`. Certificates API is NOT rewritten — prod `certsClient` hits its URL directly.
 - **No `.env` files** (gitignored), no CI (`.github/`), no pre-commit hooks
 - **No `opencode.json`** — this file (`AGENTS.md`) is the primary instruction source
@@ -98,7 +128,7 @@ No formatter configured — lint only.
 
 ---
 
-## 8. Attendance Grid Implementation
+## 9. Attendance Grid Implementation
 
 ### Component Architecture
 The attendance grid is a complex feature spanning multiple components:
