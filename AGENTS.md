@@ -35,7 +35,7 @@ No formatter configured — lint only.
 ### RTL styling
 - Use Tailwind logical utilities for RTL-safe layout: `ms-*`/`me-*`, `ps-*`/`pe-*`, `start-*`/`end-*`, `text-start`/`text-end`.
 - Directional icons (arrows/chevrons, Material Symbols) need the `icon-flip-rtl` class (defined in `src/index.css` → `scaleX(-1)`). There is **no auto-flip** — the `html[dir="rtl"]` icon rule in `index.css` is an empty placeholder.
-- Fonts: `font-body` = Inter + **Noto Sans Arabic** fallback (renders Arabic); `font-headline` (Space Grotesk) has **no Arabic fallback** — Arabic text in `font-headline` falls back to default. Prefer `font-body` for Arabic-heavy headings.
+- **Arabic fonts vs the design system** (`tailwind.config.js` `fontFamily`): body pairs `Inter` → **`Noto Sans Arabic`** → `system-ui`, so Arabic body renders via Noto Sans Arabic. But `font-headline` (`Space Grotesk`) has **no Arabic fallback** — Space Grotesk has no Arabic glyphs, so any Arabic inside `font-headline` silently falls back to the browser default serif (`Times`), visually breaking the "Precision Engine" technical aesthetic from `docs/design/DESIGN.md`. `font-headline` is used on MANY surfaces that render translated/extended text (page titles, card headings, tab labels, stat widgets, sidebar brand, combobox labels — grep `font-headline` to see the breadth). If you want Arabic to match the headline aesthetic, either (a) prefer `font-body` for Arabic-heavy headings, or (b) add a geometric/Arabic-capable fallback (e.g. `Noto Kufi Arabic`) to `font-headline` in `tailwind.config.js` + load it in `index.html` — don't assume Arabic in `font-headline` looks right, it doesn't.
 - `formatTime`/`formatDate` in `src/utils/formatting.ts` hardcode `'en-US'` — dates/times do NOT localize under AR. Numbers stay in Latin digits (`1,2,3`), not Arabic-Indic.
 
 ### Audit tooling
@@ -49,7 +49,7 @@ No formatter configured — lint only.
 - `erasableSyntaxOnly: true` → no enums, namespaces, parameter properties; use const objects or union types
 - `noUncheckedSideEffectImports: true` in both tsconfigs
 - **Tailwind**: v3 config (`tailwind.config.js`, `postcss.config.js` uses `tailwindcss` v3 plugin) despite `@tailwindcss/postcss` v4 installed — don't use v4 syntax
-- **Fonts**: Space Grotesk (`font-headline`) headings, Inter (`font-body`) body — Google Fonts in `index.html`
+- **Fonts**: Space Grotesk (`font-headline`) headings, Inter + Noto Sans Arabic (`font-body`) body — Google Fonts loaded in `index.html`. Adding a font family (e.g. an Arabic headline fallback) requires editing BOTH `tailwind.config.js` `fontFamily` AND the Google Fonts `<link>` in `index.html`. See §2 Arabic fonts for the `font-headline` Arabic gap.
 - **Border radius**: Non-standard values in `tailwind.config.js` — `rounded` = `0.125rem`, `rounded-full` = `0.75rem` (not `9999px`). Don't use Tailwind defaults mentally.
 - **Icons**: Lucide React components + Google Material Symbols (CSS class `material-symbols-outlined`)
 - **Time formatting**: Use `formatTime` from `src/utils/formatting.ts` (12h), not inline formatting

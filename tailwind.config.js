@@ -37,7 +37,7 @@ export default {
         'inverse-primary': '#bec6e0',
       },
       fontFamily: {
-        'headline': ['Space Grotesk', 'system-ui', 'sans-serif'],
+        'headline': ['Space Grotesk', 'Noto Kufi Arabic', 'system-ui', 'sans-serif'],
         'body': ['Inter', 'Noto Sans Arabic', 'system-ui', 'sans-serif'],
       },
       borderRadius: {

@@ -14,7 +14,7 @@ export function TopNavbar({ activePage }: TopNavbarProps) {
     <header className="sticky top-0 z-40 flex items-center justify-between px-8 h-16 bg-white border-b border-slate-200">
       <div className="flex items-center gap-6">
         {/* Breadcrumbs */}
-        <nav className="flex items-center gap-2 text-sm font-medium font-[Inter]">
+        <nav className="flex items-center gap-2 text-sm font-medium font-body">
           <span className="text-slate-400">{t('breadcrumb.home')}</span>
           <span className="text-slate-200">/</span>
           <span className="text-secondary font-semibold">{displayPage}</span>
