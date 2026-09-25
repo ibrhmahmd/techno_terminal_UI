@@ -1,5 +1,5 @@
 import { Edit2, Trash2, Archive, ArrowUpCircle, Users, Calendar, Clock, BookOpen, PlusCircle } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { EnrichedGroupPublic, LevelDetailDTO } from '../../../api/academics'
@@ -41,25 +41,27 @@ export function GroupInfoCard({
   const { t } = useTranslation('groups')
   const [notes, setNotes] = useState(group.notes || '')
   const debouncedNotes = useDebounce(notes, 500)
-  const lastSavedRef = useRef(group.notes || '')
+  const serverNotes = group.notes || ''
 
-  // Sync from external changes (e.g. refetch) ONLY if what the server has
-  // is different from what we last saved. This breaks the loop.
-  useEffect(() => {
-    const serverNotes = group.notes || ''
-    if (serverNotes !== lastSavedRef.current) {
-      setNotes(serverNotes)
-      lastSavedRef.current = serverNotes
-    }
-  }, [group.notes])
+  // Adopt a *changed* server value (e.g. a refetch) while rendering. Gating on the change
+  // is what keeps the autosave safe: right after a save the parent has not refetched yet,
+  // so the server still holds the previous value, and re-adopting it here would wipe what
+  // the user just typed. The two value checks then ignore an echo of our own save (the
+  // settled value already equals it) and anything the user is in the middle of typing.
+  const [prevServerNotes, setPrevServerNotes] = useState(serverNotes)
+  if (serverNotes !== prevServerNotes) {
+    setPrevServerNotes(serverNotes)
+    if (serverNotes !== notes && serverNotes !== debouncedNotes) setNotes(serverNotes)
+  }
 
-  // Trigger save when debounced notes change, and update our ref
+  // Autosave once the debounce has caught up, and only when the settled value differs from
+  // what the server already holds: an adopted value or the echo of an earlier save is a
+  // no-op, and must not be sent back.
   useEffect(() => {
-    if (debouncedNotes !== lastSavedRef.current) {
-      lastSavedRef.current = debouncedNotes
-      onNotesChange?.(debouncedNotes)
-    }
-  }, [debouncedNotes, onNotesChange])
+    if (debouncedNotes !== notes) return
+    if (debouncedNotes === serverNotes) return
+    onNotesChange?.(debouncedNotes)
+  }, [debouncedNotes, notes, serverNotes, onNotesChange])
 
   const handleNotesChange = (value: string) => {
     setNotes(value)

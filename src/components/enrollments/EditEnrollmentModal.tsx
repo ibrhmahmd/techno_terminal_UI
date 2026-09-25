@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
@@ -25,14 +25,23 @@ export function EditEnrollmentModal({ isOpen, onClose, enrollmentId, studentId }
 
   const enrollment = enrollments.find(e => e.enrollment_id === enrollmentId)
 
-  useEffect(() => {
+  // Initialise the fields while rendering instead of in an effect. The tracked source
+  // mirrors the old effect's dependency list, so a background refetch that hands us a new
+  // enrollment object still resets the fields exactly as before.
+  const [prevSource, setPrevSource] = useState<{ isOpen: boolean; enrollment: typeof enrollment } | null>(null)
+  if (
+    prevSource === null ||
+    prevSource.isOpen !== isOpen ||
+    prevSource.enrollment !== enrollment
+  ) {
+    setPrevSource({ isOpen, enrollment })
     if (enrollment && isOpen) {
       setAmountDue(enrollment.amount_due !== null ? enrollment.amount_due.toString() : '')
       setDiscountApplied(enrollment.discount_applied ? enrollment.discount_applied.toString() : '0')
       setNotes(enrollment.notes || '')
       setErrorMsg('')
     }
-  }, [enrollment, isOpen])
+  }
 
   if (!isOpen || !enrollmentId) return null
 

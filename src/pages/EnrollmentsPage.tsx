@@ -31,11 +31,13 @@ export function EnrollmentsPage() {
   const panelRef = useRef<HTMLDivElement>(null)
 
   // Sync state if search params change
-  useEffect(() => {
+  const [prevTabParam, setPrevTabParam] = useState(tabParam)
+  if (tabParam !== prevTabParam) {
+    setPrevTabParam(tabParam)
     if (tabParam === 'modify' || tabParam === 'drop' || tabParam === 'create') {
       setActivePanel(tabParam as PanelType)
     }
-  }, [tabParam])
+  }
 
   useEffect(() => {
     panelRef.current?.focus()

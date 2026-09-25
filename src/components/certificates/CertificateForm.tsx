@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
 import { ModalFooter, LoadingSpinner } from '../common'
 import { useCreateCertificate } from '../../hooks/useCertificates'
 import { useStudentsSearch } from '../../hooks/useDirectory'
 import { getStudentWithDetails } from '../../api/crm/students/core'
 import { useDebounce } from '../../hooks/useDebounce'
+import { queryKeys } from '../../hooks/queryKeys'
 import type { CreateCertificateInput } from '../../api/certificates/types'
 import type { StudentListItem } from '../../api/crm'
 
@@ -128,7 +130,6 @@ function StudentSearchCombobox({ value, onChange }: { value: string; onChange: (
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const wrapperRef = useRef<HTMLDivElement>(null)
-  const [manualInput, setManualInput] = useState(false)
 
   const debouncedSearch = useDebounce(selectedId ? '' : input, 300)
   const { data: students = [], isLoading } = useStudentsSearch(debouncedSearch)
@@ -137,16 +138,6 @@ function StudentSearchCombobox({ value, onChange }: { value: string; onChange: (
     () => students.filter((s) => s.full_name.toLowerCase().includes(input.toLowerCase())),
     [students, input],
   )
-
-  useEffect(() => {
-    if (selectedId && !manualInput) {
-      setManualInput(true)
-    }
-  }, [input, selectedId, manualInput])
-
-  useEffect(() => {
-    setHighlightedIndex(-1)
-  }, [input])
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -161,6 +152,7 @@ function StudentSearchCombobox({ value, onChange }: { value: string; onChange: (
   const handleSelect = (student: StudentListItem) => {
     setSelectedId(student.id)
     setInput(student.full_name)
+    setHighlightedIndex(-1)
     onChange(student.full_name)
     setIsOpen(false)
   }
@@ -168,6 +160,7 @@ function StudentSearchCombobox({ value, onChange }: { value: string; onChange: (
   const handleInputChange = (val: string) => {
     setInput(val)
     setSelectedId(null)
+    setHighlightedIndex(-1)
     onChange(val)
     setIsOpen(true)
   }
@@ -247,31 +240,39 @@ export function CertificateForm({ onSuccess, onCancel }: CertificateFormProps) {
   const [level, setLevel] = useState('')
   const [customColor, setCustomColor] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [isFetchingDetails, setIsFetchingDetails] = useState(false)
+  const [autoFilledStudentId, setAutoFilledStudentId] = useState<number | null>(null)
 
   const debouncedStudentName = useDebounce(studentName, 500)
   const { data: students = [] } = useStudentsSearch(debouncedStudentName)
 
-  useEffect(() => {
-    if (debouncedStudentName.length < 2 || students.length === 0) return
-    const match = students.find(
-      (s) => s.full_name.toLowerCase() === debouncedStudentName.toLowerCase(),
+  const matchedStudent = useMemo(() => {
+    if (debouncedStudentName.length < 2 || students.length === 0) return null
+    return (
+      students.find((s) => s.full_name.toLowerCase() === debouncedStudentName.toLowerCase()) ?? null
     )
-    if (!match) return
-
-    setIsFetchingDetails(true)
-    getStudentWithDetails(match.id)
-      .then((details) => {
-        const enrollment = details.current_enrollment
-        if (enrollment) {
-          const trackValue = trackLabelToValue(enrollment.course_name)
-          if (trackValue) setCourseTrack(trackValue)
-          setLevel(levelNumberToLevel(enrollment.level_number))
-        }
-      })
-      .catch(() => {})
-      .finally(() => setIsFetchingDetails(false))
   }, [debouncedStudentName, students])
+
+  const { data: studentDetails, isFetching: isFetchingDetails } = useQuery({
+    queryKey: matchedStudent ? queryKeys.studentDetails(matchedStudent.id) : queryKeys.studentDetailsNone,
+    queryFn: () => {
+      if (!matchedStudent) throw new Error('no matched student')
+      return getStudentWithDetails(matchedStudent.id)
+    },
+    enabled: matchedStudent !== null,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  // Auto-fill the course track and level once per matched student, during render, so a
+  // late refetch of the same student can never overwrite what the user typed afterwards.
+  if (matchedStudent && studentDetails && autoFilledStudentId !== matchedStudent.id) {
+    setAutoFilledStudentId(matchedStudent.id)
+    const enrollment = studentDetails.current_enrollment
+    if (enrollment) {
+      const trackValue = trackLabelToValue(enrollment.course_name)
+      if (trackValue) setCourseTrack(trackValue)
+      setLevel(levelNumberToLevel(enrollment.level_number))
+    }
+  }
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault()

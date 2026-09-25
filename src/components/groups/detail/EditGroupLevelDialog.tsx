@@ -73,15 +73,38 @@ export function EditGroupLevelDialog({
   const courses = coursesData || []
   const employees = employeesData || []
 
-  // Initialize form state
-  useEffect(() => {
+  // Initialize form state while rendering instead of in an effect. The tracked source
+  // mirrors the old effect's dependency list, so current* prop changes while the dialog
+  // is open still reset the fields.
+  const [prevSource, setPrevSource] = useState<{
+    isOpen: boolean
+    currentInstructorId: number | null | undefined
+    currentCourseId: number | null | undefined
+    currentPriceOverride: number | null | undefined
+    currentNotes: string | null | undefined
+  } | null>(null)
+  if (
+    prevSource === null ||
+    prevSource.isOpen !== isOpen ||
+    prevSource.currentInstructorId !== currentInstructorId ||
+    prevSource.currentCourseId !== currentCourseId ||
+    prevSource.currentPriceOverride !== currentPriceOverride ||
+    prevSource.currentNotes !== currentNotes
+  ) {
+    setPrevSource({
+      isOpen,
+      currentInstructorId,
+      currentCourseId,
+      currentPriceOverride,
+      currentNotes,
+    })
     if (isOpen) {
       setInstructorId(currentInstructorId ?? null)
       setCourseId(currentCourseId ?? null)
       setPriceOverride(currentPriceOverride ?? null)
       setNotes(currentNotes ?? '')
     }
-  }, [isOpen, currentInstructorId, currentCourseId, currentPriceOverride, currentNotes])
+  }
 
   // Focus trap
   useEffect(() => {

@@ -21,6 +21,7 @@ export const queryKeys = {
   // Students
   studentsAll: ['students'] as const,
   studentDetails: (id: number) => ['students', id, 'details'] as const,
+  studentDetailsNone: ['student', 'details', 'null'] as const,
   studentsGroupedAll: ['students', 'grouped'] as const,
   studentsGroupedByParams: (groupBy: string, skip: number, limit: number, tab: string, ageBucketsKey: string) => ['students', 'grouped', groupBy, skip, limit, tab, ageBucketsKey] as const,
   

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDashboard } from '../hooks/dashboard'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
@@ -25,10 +25,11 @@ export function DashboardPage() {
 
   const { scheduleItems, groups, instructors, summary, isLoading, error } = useDashboard(selectedDate)
 
-  // Reset instructor filter when date changes
-  useEffect(() => {
-    setSelectedInstructor(null)
-  }, [selectedDate])
+  // Changing the day resets the instructor filter (same day, same filter)
+  const handleSelectDate = (date: string) => {
+    if (date !== selectedDate) setSelectedInstructor(null)
+    setSelectedDate(date)
+  }
 
   // Extract unique instructors from summary (exclude TBA)
   const uniqueInstructors = useMemo(() => {
@@ -69,7 +70,7 @@ export function DashboardPage() {
         <>
           <MobileTopBar title={t('page_title')} />
           <main className="p-4 flex-1 space-y-6">
-            <DaySelectorBar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+            <DaySelectorBar selectedDate={selectedDate} onSelectDate={handleSelectDate} />
             <InstructorSelectorBar
               instructors={uniqueInstructors}
               selectedInstructor={selectedInstructor}
@@ -140,7 +141,7 @@ export function DashboardPage() {
           
           <main className="p-10 flex-1 space-y-8">
             <QuickActionsGrid todaySessionCount={scheduleItems.length} />
-            <DaySelectorBar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+            <DaySelectorBar selectedDate={selectedDate} onSelectDate={handleSelectDate} />
             <InstructorSelectorBar
               instructors={uniqueInstructors}
               selectedInstructor={selectedInstructor}
