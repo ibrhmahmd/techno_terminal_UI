@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
-import { DataTable, type DataTableColumn } from '../DataTable'
+import { DataTable, type DataTableColumn } from '../datatable'
 
 interface TestItem {
   id: number

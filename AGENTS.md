@@ -2,7 +2,7 @@
 
 ## 1. Commands
 ```bash
-npm run dev                    # Vite dev (proxy /api → http://0.0.0.0:8000)
+npm run dev                    # Vite dev (proxy /api → remote fastapicloud backend; localhost:8000 target is commented out in vite.config.ts)
 npm run build                  # tsc -b && vite build — must pass before commits
 npm run lint                   # ESLint (flat config at eslint.config.js)
 npm run test                   # Vitest
@@ -35,12 +35,12 @@ No formatter configured — lint only.
 ### RTL styling
 - Use Tailwind logical utilities for RTL-safe layout: `ms-*`/`me-*`, `ps-*`/`pe-*`, `start-*`/`end-*`, `text-start`/`text-end`.
 - Directional icons (arrows/chevrons, Material Symbols) need the `icon-flip-rtl` class (defined in `src/index.css` → `scaleX(-1)`). There is **no auto-flip** — the `html[dir="rtl"]` icon rule in `index.css` is an empty placeholder.
-- **Arabic fonts vs the design system** (`tailwind.config.js` `fontFamily`): body pairs `Inter` → **`Noto Sans Arabic`** → `system-ui`, so Arabic body renders via Noto Sans Arabic. But `font-headline` (`Space Grotesk`) has **no Arabic fallback** — Space Grotesk has no Arabic glyphs, so any Arabic inside `font-headline` silently falls back to the browser default serif (`Times`), visually breaking the "Precision Engine" technical aesthetic from `docs/design/DESIGN.md`. `font-headline` is used on MANY surfaces that render translated/extended text (page titles, card headings, tab labels, stat widgets, sidebar brand, combobox labels — grep `font-headline` to see the breadth). If you want Arabic to match the headline aesthetic, either (a) prefer `font-body` for Arabic-heavy headings, or (b) add a geometric/Arabic-capable fallback (e.g. `Noto Kufi Arabic`) to `font-headline` in `tailwind.config.js` + load it in `index.html` — don't assume Arabic in `font-headline` looks right, it doesn't.
+- **Arabic fonts** (`tailwind.config.js` `fontFamily`): Arabic glyphs come from the second entry in each stack — `font-body` is `Inter` → **`Noto Sans Arabic`**, `font-headline` is `Space Grotesk` → **`Noto Kufi Arabic`** (geometric Kufi keeps the "Precision Engine" aesthetic from `docs/design/DESIGN.md`). A new font stack needs an Arabic-capable fallback, otherwise Arabic text in it renders in the browser default serif.
 - `formatTime`/`formatDate` in `src/utils/formatting.ts` hardcode `'en-US'` — dates/times do NOT localize under AR. Numbers stay in Latin digits (`1,2,3`), not Arabic-Indic.
 
 ### Audit tooling
-- `docs/i18n-audit-tracker.md` tracks page-by-page progress (7/25 done). Prior specs: `070-arabic-i18n-rtl`, `071-i18n-complete-translations`, `072-dashboard-i18n-audit`.
-- `.agents/skills/i18n-page-audit/SKILL.md` documents the canonical audit workflow (hardcoded strings, missing keys, interpolation, logical-vs-physical classes, icon flips). Its referenced scanner at `scripts/audit-page.mjs` **does not exist** in this repo — do not run it.
+- `docs/i18n-audit-tracker.md` tracks page-by-page progress (7/25 done). Prior specs (in `specs/archive/`): `070-arabic-i18n-rtl`, `071-i18n-complete-translations`, `072-dashboard-i18n-audit`.
+- `.agents/skills/i18n-page-audit/SKILL.md` documents the canonical audit workflow (hardcoded strings, missing keys, interpolation, logical-vs-physical classes, icon flips). Its scanner lives inside the skill, not at repo-root `scripts/`: run `node .agents/skills/i18n-page-audit/scripts/audit-page.mjs --page src/pages/<Page>.tsx`.
 
 ---
 
@@ -49,7 +49,7 @@ No formatter configured — lint only.
 - `erasableSyntaxOnly: true` → no enums, namespaces, parameter properties; use const objects or union types
 - `noUncheckedSideEffectImports: true` in both tsconfigs
 - **Tailwind**: v3 config (`tailwind.config.js`, `postcss.config.js` uses `tailwindcss` v3 plugin) despite `@tailwindcss/postcss` v4 installed — don't use v4 syntax
-- **Fonts**: Space Grotesk (`font-headline`) headings, Inter + Noto Sans Arabic (`font-body`) body — Google Fonts loaded in `index.html`. Adding a font family (e.g. an Arabic headline fallback) requires editing BOTH `tailwind.config.js` `fontFamily` AND the Google Fonts `<link>` in `index.html`. See §2 Arabic fonts for the `font-headline` Arabic gap.
+- **Fonts**: Space Grotesk + Noto Kufi Arabic (`font-headline`) headings, Inter + Noto Sans Arabic (`font-body`) body — Google Fonts loaded in `index.html`. Adding a font family requires editing BOTH `tailwind.config.js` `fontFamily` AND the Google Fonts `<link>` in `index.html`. See §2 Arabic fonts.
 - **Border radius**: Non-standard values in `tailwind.config.js` — `rounded` = `0.125rem`, `rounded-full` = `0.75rem` (not `9999px`). Don't use Tailwind defaults mentally.
 - **Icons**: Lucide React components + Google Material Symbols (CSS class `material-symbols-outlined`)
 - **Time formatting**: Use `formatTime` from `src/utils/formatting.ts` (12h), not inline formatting
@@ -120,11 +120,10 @@ No formatter configured — lint only.
 - **Vercel**: `vercel.json` rewrites `/api/*` → FastAPI backend, all other routes → `/index.html`. Certificates API is NOT rewritten — prod `certsClient` hits its URL directly.
 - **No `.env` files** (gitignored), no CI (`.github/`), no pre-commit hooks
 - **No `opencode.json`** — this file (`AGENTS.md`) is the primary instruction source
-- **Docs**: `docs/api/README.md` (endpoint reference by page), `ARCHITECTURE.md`, `docs/design/DESIGN.md`
-- **Specs**: `specs/<NNN>-<name>/plan.md` for active feature plans (~65 spec dirs)
-- **Designs**: `designs/` holds HTML/SVG pattern experiments — no `.pen` files currently in repo
+- **Docs**: `docs/api/README.md` (endpoint reference by page), `docs/api/certificates-api.md` (certificates backend), `ARCHITECTURE.md`, `docs/design/DESIGN.md`. Superseded plans/reports live in `docs/archive/`.
+- **Specs**: `specs/<NNN>-<name>/plan.md` for the active feature plan; completed specs move to `specs/archive/` (ESLint ignores `specs/`)
 - **Gitignored**: `.opencode/*`, `.specify/*`
-- **Audit artifact**: `src/audit-findings.json`
+- **Audit artifact**: `docs/audit-findings.json`
 
 ---
 

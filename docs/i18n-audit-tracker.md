@@ -15,7 +15,7 @@ Central progress tracker for full page-by-page i18n audits, translations, RTL/Bi
 
 | # | Page / Route | Primary File | Namespace(s) | Status | Hardcoded Fixed | Directional CSS / BiDi | Spec Plan |
 |---|--------------|--------------|--------------|--------|-----------------|------------------------|-----------|
-| 01 | **Dashboard** | `src/pages/DashboardPage.tsx` | `dashboard` | ✅ Completed | 33 strings | Verified | [Spec 072](../specs/072-dashboard-i18n-audit/plan.md) |
+| 01 | **Dashboard** | `src/pages/DashboardPage.tsx` | `dashboard` | ✅ Completed | 33 strings | Verified | [Spec 072](../specs/archive/072-dashboard-i18n-audit/plan.md) |
 | 02 | **Groups** | `src/pages/GroupsPage.tsx` | `groups` | ⏳ Pending | — | — | — |
 | 03 | **Group Detail** | `src/pages/GroupDetailPage.tsx` | `groups`, `attendance` | ⏳ Pending | — | — | — |
 | 04 | **Directory** | `src/pages/DirectoryPage.tsx` | `directory` | ⏳ Pending | — | — | — |
@@ -37,6 +37,6 @@ Central progress tracker for full page-by-page i18n audits, translations, RTL/Bi
 | 20 | **Settings** | `src/pages/SettingsPage.tsx` | `common`, `layout` | ✅ Completed | ~99 strings | 7 DirCSS fixed | — |
 | 21 | **Notifications** | `src/pages/NotificationsPage.tsx` | `notifications` | ⏳ Pending | — | — | — |
 | 22 | **Login** | `src/pages/LoginPage.tsx` | `common` | ✅ Completed | 9 keys added | Verified | — |
-| 23 | **Register** | `src/pages/RegisterPage.tsx` | `common` | ✅ Completed | 13 keys added | Verified | [Spec 071](../specs/071-i18n-complete-translations/plan.md) |
-| 24 | **Forgot Password** | `src/pages/ForgotPasswordPage.tsx` | `common` | ✅ Completed | 9 keys added | Verified | [Spec 071](../specs/071-i18n-complete-translations/plan.md) |
-| 25 | **Reset Password** | `src/pages/ResetPasswordPage.tsx` | `common` | ✅ Completed | 17 keys added | Verified | [Spec 071](../specs/071-i18n-complete-translations/plan.md) |
+| 23 | **Register** | `src/pages/RegisterPage.tsx` | `common` | ✅ Completed | 13 keys added | Verified | [Spec 071](../specs/archive/071-i18n-complete-translations/plan.md) |
+| 24 | **Forgot Password** | `src/pages/ForgotPasswordPage.tsx` | `common` | ✅ Completed | 9 keys added | Verified | [Spec 071](../specs/archive/071-i18n-complete-translations/plan.md) |
+| 25 | **Reset Password** | `src/pages/ResetPasswordPage.tsx` | `common` | ✅ Completed | 17 keys added | Verified | [Spec 071](../specs/archive/071-i18n-complete-translations/plan.md) |

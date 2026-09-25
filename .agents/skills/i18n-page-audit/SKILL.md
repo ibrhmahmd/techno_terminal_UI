@@ -164,7 +164,7 @@ Maintain a centralized status table at `docs/i18n-audit-tracker.md`:
 
 | # | Page / Route | Namespace(s) | Status | Hardcoded Fixed | Spec Plan |
 |---|--------------|--------------|--------|-----------------|-----------|
-| 01 | Dashboard | `dashboard` | ✅ Completed | 33 strings | [Spec 072](specs/072-dashboard-i18n-audit/plan.md) |
+| 01 | Dashboard | `dashboard` | ✅ Completed | 33 strings | [Spec 072](specs/archive/072-dashboard-i18n-audit/plan.md) |
 | 02 | Groups | `groups` | ⏳ Pending | — | — |
 | 03 | Group Detail | `groups`, `attendance` | ⏳ Pending | — | — |
 | 04 | Directory | `directory` | ⏳ Pending | — | — |
