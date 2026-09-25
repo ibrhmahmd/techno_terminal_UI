@@ -8,6 +8,7 @@ interface SlideToConfirmProps {
 export function SlideToConfirm({ onConfirm, label }: SlideToConfirmProps) {
   const [isConfirmed, setIsConfirmed] = useState(false)
   const [dragX, setDragX] = useState(0)
+  const [dragging, setDragging] = useState(false)
   const trackRef = useRef<HTMLDivElement>(null)
   const isDragging = useRef(false)
   const startX = useRef(0)
@@ -15,6 +16,7 @@ export function SlideToConfirm({ onConfirm, label }: SlideToConfirmProps) {
   const handleStart = (clientX: number) => {
     if (isConfirmed) return
     isDragging.current = true
+    setDragging(true)
     startX.current = clientX - dragX
   }
 
@@ -28,6 +30,7 @@ export function SlideToConfirm({ onConfirm, label }: SlideToConfirmProps) {
     if (newX > maxDrag) {
       newX = maxDrag
       isDragging.current = false
+      setDragging(false)
       setIsConfirmed(true)
       onConfirm()
     }
@@ -36,6 +39,7 @@ export function SlideToConfirm({ onConfirm, label }: SlideToConfirmProps) {
 
   const handleEnd = () => {
     isDragging.current = false
+    setDragging(false)
     if (!isConfirmed) {
       // Spring back
       setDragX(0)
@@ -92,7 +96,7 @@ export function SlideToConfirm({ onConfirm, label }: SlideToConfirmProps) {
         onTouchStart={(e) => handleStart(e.touches[0].clientX)}
         style={{
           transform: `translateX(${dragX}px)`,
-          transition: isDragging.current ? 'none' : 'transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+          transition: dragging ? 'none' : 'transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
         }}
         className={`absolute left-1 w-12 h-12 rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing shadow-md border ${
           isConfirmed 

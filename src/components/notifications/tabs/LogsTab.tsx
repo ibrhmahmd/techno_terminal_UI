@@ -10,6 +10,17 @@ import type { NotificationLogDTO } from '../../../api/notifications'
 import { LogsGroupBySelector, type LogsGroupByField } from './LogsGroupBySelector'
 import { LogsFilters } from './LogsFilters'
 
+interface SortIconProps {
+  field: string
+  sortBy: string
+  sortOrder: 'asc' | 'desc'
+}
+
+function SortIcon({ field, sortBy, sortOrder }: SortIconProps) {
+  if (sortBy !== field) return <span className="material-symbols-outlined text-[14px] opacity-30 ml-1 inline-block align-middle" aria-hidden="true">unfold_more</span>
+  return <span className="material-symbols-outlined text-[14px] ml-1 inline-block align-middle text-secondary" aria-hidden="true">{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>
+}
+
 export function LogsTab() {
   // Query Filters & Pagination State
   const [page, setPage] = useState(1)
@@ -110,11 +121,6 @@ export function LogsTab() {
       setSortOrder('desc')
     }
     setPage(1)
-  }
-
-  const SortIcon = ({ field }: { field: string }) => {
-    if (sortBy !== field) return <span className="material-symbols-outlined text-[14px] opacity-30 ml-1 inline-block align-middle" aria-hidden="true">unfold_more</span>
-    return <span className="material-symbols-outlined text-[14px] ml-1 inline-block align-middle text-secondary" aria-hidden="true">{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>
   }
 
   // Grouping logic
@@ -273,15 +279,15 @@ export function LogsTab() {
               <thead className="bg-slate-50/50">
                 <tr>
                   <th scope="col" className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('created_at')}>
-                    Date & Time <SortIcon field="created_at" />
+                    Date & Time <SortIcon field="created_at" sortBy={sortBy} sortOrder={sortOrder} />
                   </th>
                   <th scope="col" className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Channel</th>
                   <th scope="col" className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('recipient_contact')}>
-                    Recipient <SortIcon field="recipient_contact" />
+                    Recipient <SortIcon field="recipient_contact" sortBy={sortBy} sortOrder={sortOrder} />
                   </th>
                   <th scope="col" className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Subject / Preview</th>
                   <th scope="col" className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('status')}>
-                    Status <SortIcon field="status" />
+                    Status <SortIcon field="status" sortBy={sortBy} sortOrder={sortOrder} />
                   </th>
                   <th scope="col" className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
                 </tr>
