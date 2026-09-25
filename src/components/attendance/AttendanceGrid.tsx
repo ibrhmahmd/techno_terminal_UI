@@ -156,7 +156,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       console.error('Failed to cancel session:', err)
       showToast(t('toast.session_cancel_failed'), 'error')
     }
-  }, [refetchData, showToast, selectedDate, qc, groupId, level])
+  }, [refetchData, showToast, selectedDate, qc, groupId, level, t])
 
   // Handle delete session
   const handleDeleteSession = useCallback(async (sessionId: number) => {
@@ -170,7 +170,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       console.error('Failed to delete session:', err)
       showToast(t('toast.session_delete_failed'), 'error')
     }
-  }, [refetchData, showToast, selectedDate, qc, groupId, level])
+  }, [refetchData, showToast, selectedDate, qc, groupId, level, t])
 
   // Handle reactivate session
   const handleReactivateSession = useCallback(async (sessionId: number) => {
@@ -184,7 +184,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       console.error('Failed to reactivate session:', err)
       showToast(t('toast.session_reactivate_failed'), 'error')
     }
-  }, [refetchData, showToast, selectedDate, qc, groupId, level])
+  }, [refetchData, showToast, selectedDate, qc, groupId, level, t])
 
   // Handle complete session
   const handleCompleteSession = useCallback(async (sessionId: number) => {
@@ -198,7 +198,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       console.error('Failed to complete session:', err)
       showToast(t('toast.session_complete_failed'), 'error')
     }
-  }, [refetchData, showToast, selectedDate, qc, groupId, level])
+  }, [refetchData, showToast, selectedDate, qc, groupId, level, t])
 
   // Handle save edited session
   const handleSaveEditedSession = useCallback(async (sessionId: number, data: UpdateSessionDTO) => {
@@ -213,7 +213,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       console.error('Failed to update session:', err)
       showToast(t('toast.session_update_failed'), 'error')
     }
-  }, [refetchData, showToast, selectedDate, qc, groupId, level])
+  }, [refetchData, showToast, selectedDate, qc, groupId, level, t])
 
   const handleToggle = useCallback((studentId: string | number, sessionId: number) => {
     const studentIdStr = String(studentId)
@@ -403,7 +403,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
     } finally {
       setIsSaving(false)
     }
-  }, [pendingChanges, dirtyNotes, sessionNotes, refetchData, showToast, selectedDate, qc, groupId, level])
+  }, [pendingChanges, dirtyNotes, sessionNotes, refetchData, showToast, selectedDate, qc, groupId, level, t])
 
   const handleRetrySession = useCallback(async (sessionId: number) => {
     const entries = pendingChanges.get(sessionId)
@@ -450,7 +450,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
       setSessionSaveStatus(prev => new Map(prev).set(sessionId, 'error'))
       showToast(t('toast.retry_failed'), 'error')
     }
-  }, [pendingChanges, showToast, selectedDate, qc, groupId, level])
+  }, [pendingChanges, showToast, selectedDate, qc, groupId, level, t])
 
   const handleCancel = useCallback(() => {
     setHasChanges(false)
