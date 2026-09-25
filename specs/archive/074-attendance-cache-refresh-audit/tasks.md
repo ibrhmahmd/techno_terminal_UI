@@ -257,3 +257,12 @@ Work landed on `main` via commits `810ccc6` and `8ef397f` (both "feat(attendance
 2. **`t` exhaustive-deps warnings in `AttendanceGrid.tsx`** (lines 160, 174, 188, 202, 217, 407, 454) — authored in `810ccc6`; warnings only, task bar ("fix all errors") met. Recommend adding `t` to the dependency arrays in a future pass.
 3. **Test-run infra aborts** (§4) — 7 suites drop under parallel forks pool; need re-verification of full-suite green on stable infra.
 4. **`mapStatus` collapse** (`attendanceTransforms.ts:33`) — `excused`/`late` → `present` and stale `gender: 'male'` coercion remain intentional per AGENTS.md §8 but worth revisiting if the backend starts distinguishing excused/late in UI.
+
+### 6. Follow-up close-out (2026-09-25)
+- Add Session refresh bug found and fixed (#15, commit `36e0e96`).
+- SC-001 covered by `AttendanceGridInvalidation.test.tsx` (#16, commit `dc31efc`).
+- SC-002/FR-006 covered by `attendanceStatus.test.ts` + `missingAttendance.test.tsx` (#17, commit `88f9ed0`).
+- The seven `t` exhaustive-deps warnings were cleared (#18).
+- `AGENTS.md` section 9 updated (#19).
+- Full suite is now green: **20 files / 153 tests**. The earlier "7 suites aborted" note in §4 is resolved.
+- Repo-wide lint still has **37 pre-existing errors** unrelated to 074 (itemized in `docs/audit-findings-2026-08-31.md`; no ticket yet).

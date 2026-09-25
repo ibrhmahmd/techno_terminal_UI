@@ -2,7 +2,7 @@
 
 **Feature Branch**: `074-attendance-cache-refresh-audit`
 **Created**: 2026-08-29
-**Status**: Draft
+**Status**: Closed (2026-09-25)
 **Input**: User description: "Audit and fix the attendance grid's caching behavior, updates, and refresh bugs so the group-detail grid stays in sync after any session mutation, and mobile/desktop agree on missing-status semantics. Consolidate the duplicate attendance type model."
 
 ## User Scenarios & Testing *(mandatory)*

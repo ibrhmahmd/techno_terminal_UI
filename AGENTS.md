@@ -48,7 +48,7 @@ No formatter configured — lint only.
 - `verbatimModuleSyntax` → must `import type` for type-only imports
 - `erasableSyntaxOnly: true` → no enums, namespaces, parameter properties; use const objects or union types
 - `noUncheckedSideEffectImports: true` in both tsconfigs
-- **Tailwind**: v3 config (`tailwind.config.js`, `postcss.config.js` uses `tailwindcss` v3 plugin) despite `@tailwindcss/postcss` v4 installed — don't use v4 syntax
+- **Tailwind**: v3 config (`tailwind.config.js`, `postcss.config.js` uses the `tailwindcss` v3 plugin) — don't use v4 syntax
 - **Fonts**: Space Grotesk + Noto Kufi Arabic (`font-headline`) headings, Inter + Noto Sans Arabic (`font-body`) body — Google Fonts loaded in `index.html`. Adding a font family requires editing BOTH `tailwind.config.js` `fontFamily` AND the Google Fonts `<link>` in `index.html`. See §2 Arabic fonts.
 - **Border radius**: Non-standard values in `tailwind.config.js` — `rounded` = `0.125rem`, `rounded-full` = `0.75rem` (not `9999px`). Don't use Tailwind defaults mentally.
 - **Icons**: Lucide React components + Google Material Symbols (CSS class `material-symbols-outlined`)
@@ -142,75 +142,83 @@ src/components/attendance/
 ├── AttendanceMobileSheet.tsx   # Mobile bottom sheet (session picker → student list)
 ├── SessionActionsRow.tsx       # Edit/Cancel/Delete/Reactivate/Complete buttons per session
 ├── SessionNotesRow.tsx         # Textarea row for per-session notes
-├── EditSessionPopup.tsx        # Modal for editing session (date, time, instructor, status)
+├── EditSessionModal.tsx        # Edit session (date, time, instructor, status)
 ├── StudentInfo.tsx             # Student name + billing badge (PAID/DUE)
 └── PaymentSummaryStrip.tsx     # Paid/Due counts + remaining balance
 
-src/hooks/useGroupAttendance.ts # React Query hook → calls getAttendanceForLevel
-src/utils/attendanceTransforms.ts # Transforms new API DTOs → dashboard DTOs
-src/api/attendance/attendance.ts  # markAttendance() — POST /attendance/session/{id}/mark
+src/hooks/useGroupAttendance.ts          # React Query hook → getAttendanceForLevel
+src/utils/attendanceStatus.ts            # ATTENDANCE_STATUSES + getNextStatus()
+src/utils/attendanceInvalidation.ts      # invalidateSessionCaches()
+src/utils/attendanceTransforms.ts        # New API DTOs → dashboard DTOs
+src/api/attendance/attendance.ts         # markAttendance() — POST /attendance/session/{id}/mark
+src/components/groups/detail/AddSessionDialog.tsx # Shared add-session dialog
 ```
 
 ### Data Flow — Two Sources
-1. **Dashboard view**: `useDashboardOverview` provides `ScheduledGroupDTO` with `roster`, `sessions`, and embedded `attendance[]` per session. Used on the main dashboard page.
-2. **Group-specific view**: `useGroupAttendance` calls `GET /academics/groups/{id}/attendance?level_number=N`. Returns `AttendanceLevelResponse` with `roster` and `sessions` (attendance as `Record<studentId, status>` map, not array).
+1. **Dashboard view**: `useDashboard` provides `ScheduledGroupDTO` attendance data with `roster`, `sessions`, and embedded `attendance[]` per session. Used on the main dashboard page.
+2. **Group-specific view**: `useGroupAttendance` calls `GET /academics/groups/{id}/attendance?level_number=N`. Returns `AttendanceLevelResponse` with `roster` and `sessions` (attendance as a `Record<studentId, status>` map, not an array).
 
-**`attendanceTransforms.ts`** bridges the two: `transformRoster()`, `transformSessions()`, `mapStatus()`. The new API uses `excused`/`late` statuses that `mapStatus()` collapses to `present`.
+`attendanceTransforms.ts` bridges the two through `transformRoster()`, `transformSessions()`, and `mapStatus()`.
 
 ### Key Type: `SessionWithAttendanceDTO`
-Defined in `src/api/dashboard/types/models.ts:53`. Has many alias fields for backward compat (`session_id`/`id`, `date`/`session_date`, `time_start`/`start_time`). Attendance is `AttendanceRecordDTO[] | null`.
+Defined in `src/api/dashboard/types/models.ts`. Aliases support backward compatibility (`session_id`/`id`, `date`/`session_date`, `time_start`/`start_time`); attendance is `AttendanceRecordDTO[] | null`.
 
 ### Status Toggle Cycle
 ```
 not_taken → present → absent → not_taken
 ```
-Defined in `AttendanceGrid.tsx:22` as `getNextStatus()`. Raw `cancelled`/`null` statuses from the API render as `not_taken`.
+Defined once by `getNextStatus` in `src/utils/attendanceStatus.ts`; unknown values fall back to `not_taken`. `AttendanceGrid` and `AttendanceMobileSheet` both use it.
 
 ### Save Model — Batch, Not Auto-Save
-- Student rows are derived via `useMemo` from `roster` + `sessions` props + a `localOverrides: Map<"studentId-sessionId", status>` — no mirrored fetch state; `refetchData()` just clears overrides
-- Toggles update `localOverrides` optimistically (no API call) and queue in `pendingChanges: Map<sessionId, entries[]>`
-- "Save Changes" button in `AttendanceFooter` triggers `handleSaveAll`
-- Saves attendance per-session in parallel via `markAttendance()`
-- Notes saved separately via `updateSession(sessionId, { notes })` (empty string normalized to `null`)
-- Per-session status tracking: `sessionSaveStatus: Map<sessionId, 'idle'|'saving'|'success'|'error'>`
-- Failed sessions show retry buttons in footer
-- After save: invalidates `queryKeys.dashboard.overview(date)` + `queryKeys.groupAttendance(groupId, level)`
-- "Add Session" button in the grid header opens the shared `AddSessionDialog` from groups detail
+- Student rows derive via `useMemo` from `roster` + `sessions` props + `localOverrides`; there is no mirrored fetch state, and `refetchData()` only clears overrides.
+- Toggles update `localOverrides` optimistically and queue `pendingChanges`; no API call occurs until save.
+- `AttendanceFooter`'s "Save Changes" button calls `handleSaveAll`, which saves attendance per session in parallel via `markAttendance()`.
+- Notes save separately via `updateSession(sessionId, { notes })`; an empty string becomes `null`.
+- `sessionSaveStatus` tracks per-session save/retry state; failed attendance sessions show footer retry buttons.
+- After save, `handleSaveAll` goes through `invalidateSessionCaches` before `refetchData()`.
+- "Add Session" opens the shared `AddSessionDialog`; `AttendanceGrid` wires its `onSuccess` to the same invalidation path.
 
 ### Cache Invalidation Pattern
-Every session mutation (cancel/delete/reactivate/complete/update) follows the same pattern:
+Use this pattern for every session/attendance mutation:
 ```ts
-if (selectedDate) {
-  await qc.invalidateQueries({ queryKey: queryKeys.dashboard.overview(selectedDate) })
-}
-await qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
+await invalidateSessionCaches(qc, { groupId, level, selectedDate })
 await refetchData()
 ```
+`invalidateSessionCaches` always invalidates `queryKeys.groupLevels(groupId)`, adds `queryKeys.groupAttendance(groupId, level)` when `level != null`, and adds `queryKeys.dashboard.overview(selectedDate)` when `selectedDate` is set. It backs cancel/delete/reactivate/complete/edit-save, `handleSaveAll`, `handleRetrySession`, and mobile save (with `level: selectedSession.level_number ?? -1`); `AttendanceGrid` also wires `AddSessionDialog.onSuccess` to it. `onClose` only closes the dialog, so cancelling invalidates nothing. Never inline attendance query keys.
 
-### Mobile Attendance (AttendanceMobileSheet)
+### Mobile Attendance (`AttendanceMobileSheet`)
 - Two-step flow: session picker → student list
-- Uses `z-[60]` bottom sheet (same pattern as other sheets)
-- Saves immediately on "Save" button click (not batch)
+- Uses a `z-[60]` bottom sheet (same pattern as other sheets)
+- Saves immediately on "Save" (not batch)
 - Auto-resets state on open/close via `useEffect`
 
 ### Query Key
 ```ts
 queryKeys.groupAttendance(groupId, levelNumber) // ['groups', id, 'attendance', levelNumber]
 ```
-`useGroupAttendance` hook: `staleTime: 60s`, `gcTime: 5min` (shorter than defaults — attendance changes frequently).
+`useGroupAttendance` uses `staleTime: 60s`, `gcTime: 5min` (shorter than defaults — attendance changes frequently).
 
 ### Gotchas
-- **`attendanceTransforms.ts` hardcoded gender**: `transformRoster` always sets `gender: 'male'` — new API doesn't return gender
-- **`markAttendance` filters `not_taken`**: The API function drops entries with `status: 'not_taken'` before posting, so toggling a cell back to `not_taken` just omits it from the payload. It also re-parses `student_id` via `parseInt` — keep string IDs numeric or the POST payload breaks.
-- **Two divergent "missing status" defaults**: `AttendanceGrid.tsx:87` maps raw `null`/`cancelled` → `not_taken`, but `AttendanceTableBody.tsx:35` reads a missing Map value as `'absent'`. A session without an attendance record for a student can render as `absent` in some paths — be careful when reasoning about "empty" vs explicit.
-- **`mapStatus` collapses `excused`/`late` → `present`** (`attendanceTransforms.ts:33`). The new API returns `excused`/`late`/`null` statuses; they are not preserved through the transform, and `transformRoster` coerces `billing_status: 'partial'` → `'due'`.
-- **Toggle cycle is duplicated, not shared**: `getNextStatus()` is module-private in `AttendanceGrid.tsx:23`; `AttendanceMobileSheet` re-implements the same `not_taken→present→absent` cycle inline (`AttendanceMobileSheet.tsx:111`). Any new status/behavior must be changed in BOTH places or extracted to a shared util.
-- **Table min-width formula**: `Math.max(700, 200 + sessions.length * 160)` in `AttendanceGrid.tsx:510`
-- **Session notes preserve dirty state**: `useEffect` only initializes notes from `sessions` if `dirtyNotes.size === 0`; `handleSaveAll` clears `dirtyNotes` only AFTER cache invalidation + refetch resolve (see inline Fix 1 comment) or the textarea reverts to stale server data.
-- **Grid reads props, not its own fetch**: student rows derive via `useMemo` (no fetch); `refetchData()` just clears `localOverrides`. New features that need fresh attendance must invalidate `queryKeys.groupAttendance(groupId, level)` / `queryKeys.dashboard.overview(date)` — the grid won't refetch on its own.
-- **i18n**: attendance components use `useTranslation('attendance')`; new keys must be added to BOTH `src/locales/en/attendance.json` and `src/locales/ar/attendance.json` (namespaces are static-imported in `src/i18n/index.ts` — no lazy loading).
-- **Consumers**: grid is rendered from `GroupSessionCard` (dashboard) and `LevelAttendancePanel` in `LevelsTab.tsx` (group detail, feeds `transformRoster`/`transformSessions`). A feature touching the shared grid render path affects both surfaces.
+- **Hardcoded gender**: `transformRoster` always sets `gender: "male"`; the new API does not return gender.
+- **`markAttendance` filtering**: entries with `status: 'not_taken'` are omitted from the payload. It also re-parses `student_id` via `parseInt`; string IDs must be numeric.
+- **Missing attendance**: missing, `null`, or `cancelled` attendance renders as `not_taken` everywhere — `AttendanceGrid` row building and toggle baseline, `AttendanceTableBody` (`?? 'not_taken'`), and `AttendanceMobileSheet` initial map + lookup (`?? 'not_taken'`). Keep them in sync.
+- **Status/billing collapse**: `mapStatus` collapses `excused`/`late` → `present`; `transformRoster` coerces `billing_status: "partial"` → `"due"`.
+- **Table min-width**: `AttendanceGrid` uses `Math.max(700, 200 + sessions.length * 160)`.
+- **Session notes preserve dirty state**: `AttendanceGrid` initializes notes from `sessions` only when `dirtyNotes.size === 0`; `handleSaveAll` clears them only after invalidation + refetch resolve, or the textarea can revert to stale server data.
+- **Grid reads props, not its own fetch**: student rows derive via `useMemo`; `refetchData()` only clears `localOverrides`. Fresh attendance comes through `invalidateSessionCaches`.
+- **i18n**: attendance components use `useTranslation('attendance')`; add new keys to BOTH `src/locales/en/attendance.json` and `src/locales/ar/attendance.json`. Namespaces are static-imported in `src/i18n/index.ts` (no lazy loading).
+- **Consumers**: the grid renders from `GroupSessionCard` in `src/components/dashboard/GroupSessionCard.tsx` and `LevelAttendancePanel` in `src/components/groups/LevelsTab.tsx` (which feeds `transformRoster`/`transformSessions`). Shared render changes affect both surfaces.
+
+### Tests
+Attendance regression tests live in `src/tests/attendance/`:
+- `attendanceInvalidation.test.ts` — invalidation helper
+- `AttendanceGridInvalidation.test.tsx` — every grid action × group-detail/dashboard contexts
+- `AddSessionRefresh.test.tsx` — add-session success/cancel refresh contract
+- `attendanceStatus.test.ts` — shared toggle cycle
+- `missingAttendance.test.tsx` — missing-status behavior across surfaces
+
+Changes to grid refresh or missing-status behavior must keep these tests green.
 
 <!-- SPECKIT START -->
-Active plan: `specs/074-attendance-cache-refresh-audit/plan.md`
+Active plan: none (spec 074 closed; see specs/archive/074-attendance-cache-refresh-audit/)
 <!-- SPECKIT END -->

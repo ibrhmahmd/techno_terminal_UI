@@ -1,13 +1,13 @@
 # Audit Findings — 2026-08-31 (Attendance Cache-Refresh Close-Out)
 
-Findings surfaced while closing out `specs/074-attendance-cache-refresh-audit` (attendance
+Findings surfaced while closing out `specs/archive/074-attendance-cache-refresh-audit` (attendance
 cache refresh, missing-status unification, attendance type dedup). The spec's implementation is
 complete and its build passes; the problems below are **repo-wide baseline debt** discovered while
 running the mandatory quality gates. None were introduced by the spec itself, but they block a
 clean `npm run lint` / `npm run test` and are tracked here so they are not lost.
 
 Artifact: this file + annotated closure notes in
-`specs/074-attendance-cache-refresh-audit/tasks.md`.
+`specs/archive/074-attendance-cache-refresh-audit/tasks.md`.
 
 ---
 
