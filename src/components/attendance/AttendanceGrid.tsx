@@ -2,7 +2,6 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '../../hooks/queryKeys'
 import type { UpdateSessionDTO } from '../../api/academics'
 import { cancelSession, updateSession, deleteSession, reactivateSession } from '../../api/academics'
 import { markAttendance, type AttendanceStatus } from '../../api/attendance'
@@ -623,9 +622,10 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
         groupInstructorName={groupInstructorName}
         onClose={() => {
           setIsAddSessionOpen(false)
-          // We need to invalidate queries after adding to make the new session appear immediately
-          qc.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
-          refetchData()
+        }}
+        onSuccess={async () => {
+          await invalidateSessionCaches(qc, { groupId, level, selectedDate })
+          await refetchData()
         }}
       />
       

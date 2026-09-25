@@ -16,6 +16,7 @@ interface AddSessionDialogProps {
   sessions?: SessionWithAttendanceDTO[]
   groupInstructorName?: string
   onClose: () => void
+  onSuccess?: () => void | Promise<void>
 }
 
 export function AddSessionDialog({
@@ -24,7 +25,8 @@ export function AddSessionDialog({
   levelNumber,
   sessions,
   groupInstructorName,
-  onClose
+  onClose,
+  onSuccess
 }: AddSessionDialogProps) {
   const { t } = useTranslation('groups')
   const queryClient = useQueryClient()
@@ -186,6 +188,8 @@ export function AddSessionDialog({
       // Invalidate queries so the UI updates
       queryClient.invalidateQueries({ queryKey: queryKeys.groupLevels(groupId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.groupSessions(groupId) })
+
+      await onSuccess?.()
 
       // Reset and close on success
       handleClose()
