@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useCallback, useState, useMemo, useRef, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
@@ -45,11 +45,11 @@ export function EnrollmentsPage() {
 
   const activeIndex = PANEL_ORDER.indexOf(activePanel)
 
-  const handleTabChange = (panel: PanelType) => {
+  const handleTabChange = useCallback((panel: PanelType) => {
     setActivePanel(panel)
     setSearchParams({ tab: panel })
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+  }, [setSearchParams])
 
   const metricItems = useMemo(() => [
     {
@@ -70,7 +70,7 @@ export function EnrollmentsPage() {
       color: 'amber' as const,
       onClick: () => handleTabChange('drop'),
     },
-  ], [t])
+  ], [t, handleTabChange])
 
   return (
     <div className="min-h-screen bg-surface">

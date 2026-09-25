@@ -147,7 +147,7 @@ export function GroupComboboxInner({
       label: groupByMode === 'day' ? translateDay(k, t) : k,
       groups: grouped[k],
     }))
-  }, [filteredSearchGroups, search, groupByMode, recentGroups, excludeSet])
+  }, [filteredSearchGroups, search, groupByMode, recentGroups, excludeSet, t])
 
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<string>('')
 

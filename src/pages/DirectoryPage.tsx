@@ -200,7 +200,7 @@ export function DirectoryPage() {
         },
       })
     },
-    [handleSoftDeleteStudent, setConfirmDialog]
+    [handleSoftDeleteStudent, setConfirmDialog, t, tCommon]
   )
 
   // Handle hard delete with confirmation
@@ -220,7 +220,7 @@ export function DirectoryPage() {
         },
       })
     },
-    [handleHardDeleteStudent, setConfirmDialog]
+    [handleHardDeleteStudent, setConfirmDialog, t, tCommon]
   )
 
   // Reset search and grouping when tab changes
@@ -325,7 +325,7 @@ export function DirectoryPage() {
       controls: 'tabpanel-advanced',
       onClick: () => handleTabChange('advanced'),
     },
-  ], [totalStudents, totalParents, waitingStudents.length, appliedFilters, filteredTotal, isLoading, isLoadingFiltered, handleTabChange, students.length, parents.length, t])
+  ], [totalStudents, totalParents, totalWaiting, waitingStudents.length, isLoading, handleTabChange, students.length, parents.length, t])
 
   if (isError) {
     return (
