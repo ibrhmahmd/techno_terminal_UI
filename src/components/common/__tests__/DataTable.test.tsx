@@ -312,3 +312,180 @@ describe('DataTable', () => {
     expect(onView).toHaveBeenCalled()
   })
 })
+
+const SELECTED_ROW_CLASS = 'bg-secondary/10'
+
+function rowFor(name: string) {
+  return screen.getByText(name).closest('tr') as HTMLElement
+}
+
+function selectedRows() {
+  return Array.from(document.querySelectorAll('tr')).filter((tr) =>
+    tr.className.includes(SELECTED_ROW_CLASS)
+  )
+}
+
+describe('DataTable row selection', () => {
+  it('selects the first row on ArrowDown and moves down with each keypress', () => {
+    const onRowClick = vi.fn()
+
+    render(
+      <DataTable
+        data={testData}
+        columns={testColumns}
+        keyExtractor={keyExtractor}
+        onRowClick={onRowClick}
+      />
+    )
+
+    const table = document.querySelector('table') as HTMLTableElement
+    expect(selectedRows()).toHaveLength(0)
+
+    fireEvent.keyDown(table, { key: 'ArrowDown' })
+    expect(selectedRows()).toHaveLength(1)
+    expect(rowFor('John Doe')).toHaveClass(SELECTED_ROW_CLASS)
+
+    fireEvent.keyDown(table, { key: 'ArrowDown' })
+    expect(selectedRows()).toHaveLength(1)
+    expect(rowFor('Jane Smith')).toHaveClass(SELECTED_ROW_CLASS)
+
+    fireEvent.keyDown(table, { key: 'ArrowDown' })
+    expect(rowFor('Bob Wilson')).toHaveClass(SELECTED_ROW_CLASS)
+  })
+
+  it('moves the selection up with ArrowUp and wraps at the ends', () => {
+    render(
+      <DataTable
+        data={testData}
+        columns={testColumns}
+        keyExtractor={keyExtractor}
+        onRowClick={vi.fn()}
+      />
+    )
+
+    const table = document.querySelector('table') as HTMLTableElement
+
+    fireEvent.keyDown(table, { key: 'ArrowUp' })
+    expect(rowFor('Bob Wilson')).toHaveClass(SELECTED_ROW_CLASS)
+
+    fireEvent.keyDown(table, { key: 'ArrowUp' })
+    expect(rowFor('Jane Smith')).toHaveClass(SELECTED_ROW_CLASS)
+
+    fireEvent.keyDown(table, { key: 'ArrowUp' })
+    expect(rowFor('John Doe')).toHaveClass(SELECTED_ROW_CLASS)
+
+    fireEvent.keyDown(table, { key: 'ArrowDown' })
+    expect(rowFor('Jane Smith')).toHaveClass(SELECTED_ROW_CLASS)
+
+    fireEvent.keyDown(table, { key: 'ArrowDown' })
+    fireEvent.keyDown(table, { key: 'ArrowDown' })
+    expect(rowFor('John Doe')).toHaveClass(SELECTED_ROW_CLASS)
+  })
+
+  it('selects a row on click', () => {
+    render(
+      <DataTable
+        data={testData}
+        columns={testColumns}
+        keyExtractor={keyExtractor}
+        onRowClick={vi.fn()}
+      />
+    )
+
+    fireEvent.click(screen.getByText('Jane Smith'))
+
+    expect(selectedRows()).toHaveLength(1)
+    expect(rowFor('Jane Smith')).toHaveClass(SELECTED_ROW_CLASS)
+  })
+
+  it('invokes onRowClick for the keyboard-selected row on Enter', () => {
+    const onRowClick = vi.fn()
+
+    render(
+      <DataTable
+        data={testData}
+        columns={testColumns}
+        keyExtractor={keyExtractor}
+        onRowClick={onRowClick}
+      />
+    )
+
+    const table = document.querySelector('table') as HTMLTableElement
+    fireEvent.keyDown(table, { key: 'ArrowDown' })
+    fireEvent.keyDown(table, { key: 'Enter' })
+
+    expect(onRowClick).toHaveBeenCalledWith(testData[0])
+  })
+
+  it('clears the selection when the data prop changes', () => {
+    const nextData: TestItem[] = [
+      { id: 4, name: 'Dana Reed', email: 'dana@example.com', status: 'active' },
+      { id: 5, name: 'Eli Stone', email: 'eli@example.com', status: 'inactive' },
+    ]
+
+    const { rerender } = render(
+      <DataTable
+        data={testData}
+        columns={testColumns}
+        keyExtractor={keyExtractor}
+        onRowClick={vi.fn()}
+      />
+    )
+
+    fireEvent.click(screen.getByText('Jane Smith'))
+    expect(selectedRows()).toHaveLength(1)
+
+    rerender(
+      <DataTable
+        data={nextData}
+        columns={testColumns}
+        keyExtractor={keyExtractor}
+        onRowClick={vi.fn()}
+      />
+    )
+
+    expect(selectedRows()).toHaveLength(0)
+    expect(rowFor('Dana Reed').className).not.toContain(SELECTED_ROW_CLASS)
+  })
+
+  it('keeps the selection when the data prop keeps the same array identity', () => {
+    const { rerender } = render(
+      <DataTable
+        data={testData}
+        columns={testColumns}
+        keyExtractor={keyExtractor}
+        onRowClick={vi.fn()}
+      />
+    )
+
+    fireEvent.click(screen.getByText('Bob Wilson'))
+    expect(selectedRows()).toHaveLength(1)
+
+    rerender(
+      <DataTable
+        data={testData}
+        columns={testColumns}
+        keyExtractor={keyExtractor}
+        onRowClick={vi.fn()}
+      />
+    )
+
+    expect(selectedRows()).toHaveLength(1)
+    expect(rowFor('Bob Wilson')).toHaveClass(SELECTED_ROW_CLASS)
+  })
+
+  it('does not render a selectable table when data is empty', () => {
+    render(
+      <DataTable
+        data={[]}
+        columns={testColumns}
+        keyExtractor={keyExtractor}
+        onRowClick={vi.fn()}
+      />
+    )
+
+    expect(screen.getAllByText('No data found').length).toBeGreaterThan(0)
+    expect(document.querySelector('table')).toBeNull()
+    expect(selectedRows()).toHaveLength(0)
+  })
+})

@@ -2,7 +2,7 @@
 // Custom date input component that displays DD-MM-YYYY format
 // while internally handling ISO format (YYYY-MM-DD) for API compatibility
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 
 interface DateInputProps {
   id?: string
@@ -72,18 +72,21 @@ export function DateInput({
 }: DateInputProps) {
   // Track internal display state so incomplete dates aren't wiped
   const [displayValue, setDisplayValue] = useState(() => isoToDisplay(value))
-  const isTyping = useRef(false)
+  // isTyping is state (not a ref) so the prop-sync decision below can read it during render
+  const [isTyping, setIsTyping] = useState(false)
+  const [prevValue, setPrevValue] = useState(value)
 
   // Sync from external value changes (e.g., form reset), but not while user is typing
-  useEffect(() => {
-    if (!isTyping.current) {
+  if (value !== prevValue) {
+    setPrevValue(value)
+    if (!isTyping) {
       setDisplayValue(isoToDisplay(value))
     }
-  }, [value])
-  
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value
-    isTyping.current = true
+    setIsTyping(true)
     
     // Allow empty value
     if (!inputValue) {
@@ -123,7 +126,7 @@ export function DateInput({
   }
   
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    isTyping.current = false
+    setIsTyping(false)
     const inputValue = e.target.value
     
     if (!inputValue) {

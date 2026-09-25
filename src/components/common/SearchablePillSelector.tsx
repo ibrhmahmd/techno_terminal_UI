@@ -47,11 +47,6 @@ export function SearchablePillSelector({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Reset highlight index when search changes
-  useEffect(() => {
-    setHighlightedIndex(0)
-  }, [search])
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen && e.key === 'ArrowDown') {
       setIsOpen(true)
@@ -74,6 +69,7 @@ export function SearchablePillSelector({
           onChange(filteredOptions[highlightedIndex].id)
           setIsOpen(false)
           setSearch('')
+          setHighlightedIndex(0)
         }
         break
       case 'Escape':
@@ -130,6 +126,7 @@ export function SearchablePillSelector({
           value={search}
           onChange={(e) => {
             setSearch(e.target.value)
+            setHighlightedIndex(0)
             setIsOpen(true)
           }}
           onFocus={() => setIsOpen(true)}
@@ -150,6 +147,7 @@ export function SearchablePillSelector({
                     onChange(option.id)
                     setIsOpen(false)
                     setSearch('')
+                    setHighlightedIndex(0)
                   }}
                   onMouseEnter={() => setHighlightedIndex(index)}
                   className={`px-3 py-2 cursor-pointer flex flex-col ${

@@ -20,18 +20,16 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
 
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [isSearching, setIsSearching] = useState(false)
+  const [settledTerm, setSettledTerm] = useState<string | null>(null)
+  const isSearching = searchTerm !== settledTerm
 
   useEffect(() => {
-    setIsSearching(true)
-    
     const timer = setTimeout(() => {
+      setSettledTerm(searchTerm)
+
       if (searchTerm.length >= minLength || searchTerm === '') {
         setDebouncedSearch(searchTerm)
-        setIsSearching(false)
         onSearch?.(searchTerm)
-      } else {
-        setIsSearching(false)
       }
     }, debounceMs)
 

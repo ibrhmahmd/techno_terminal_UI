@@ -25,12 +25,15 @@ export function FlatTable<T>(props: FlatTableProps<T>) {
   const [selectedIndex, setSelectedIndex] = useState<number>(-1)
   const tableRef = useRef<HTMLTableElement>(null)
   const rowRefs = useRef<(HTMLTableRowElement | null)[]>([])
+  const [prevData, setPrevData] = useState(data)
 
-  // Reset selection when data changes
-  useEffect(() => {
+  // Reset selection when data changes. rowRefs needs no reset: the inline ref
+  // callbacks re-attach every commit and null out unmounted rows, and the only
+  // reader (the scroll effect) is guarded by selectedIndex, which is -1 here.
+  if (data !== prevData) {
+    setPrevData(data)
     setSelectedIndex(-1)
-    rowRefs.current = []
-  }, [data])
+  }
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
