@@ -15,9 +15,9 @@ interface GroupCategoryTabsProps {
 
 export function GroupCategoryTabs({ categories, activeKey, onChange }: GroupCategoryTabsProps) {
   const { t } = useTranslation('groups')
-  if (categories.length === 0) return null
-
   const { getNextIndex } = useNavDirection()
+
+  if (categories.length === 0) return null
 
   const handleKeyDown = (index: number) => (e: React.KeyboardEvent) => {
     let next = index
