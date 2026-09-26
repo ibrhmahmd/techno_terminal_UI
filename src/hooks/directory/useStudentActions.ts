@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useToast } from '../../components/common/Toast'
+import { useToast } from '../../components/common/useToast'
 import { queryKeys } from '../queryKeys'
 import {
   useCreateStudent,

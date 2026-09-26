@@ -5,7 +5,7 @@ import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { EnrollPanel } from '../components/enrollments/EnrollPanel'
 import { ModifyEnrollmentPanel } from '../components/enrollments/ModifyEnrollmentPanel'
 import { DropEnrollmentPanel } from '../components/enrollments/DropEnrollmentPanel'
-import { useToast } from '../components/common/Toast'
+import { useToast } from '../components/common/useToast'
 import { MetricsStripCards } from '../components/common/MetricsStripCards'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 

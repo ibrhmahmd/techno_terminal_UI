@@ -8,7 +8,7 @@ import { getNextStatus } from '../../utils/attendanceStatus'
 import { invalidateSessionCaches } from '../../utils/attendanceInvalidation'
 import { formatTime, formatInstructorName } from '../../utils/formatting'
 import { sessionStatusColors } from '../../utils/colors'
-import { useToast } from '../common/Toast'
+import { useToast } from '../common/useToast'
 import { PaymentSummaryStrip } from './PaymentSummaryStrip'
 
 export interface AttendanceMobileSheetProps {

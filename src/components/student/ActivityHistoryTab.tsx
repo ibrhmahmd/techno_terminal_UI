@@ -4,6 +4,7 @@
 
 import { useState } from 'react'
 import { Clock, Calendar, User, BookOpen, AlertCircle, CheckCircle, FileText } from 'lucide-react'
+import { isAxiosError } from 'axios'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { EmptyState } from '../common/EmptyState'
 import {
@@ -14,7 +15,7 @@ import {
 } from '../../hooks/useStudentActivity'
 import type { ActivityLogResponseDTO, ActivitySummaryItem, EnrollmentHistoryEntry } from '../../api/crm'
 import { useAuthStore } from '../../store/authStore'
-import { useToast } from '../common/Toast'
+import { useToast } from '../common/useToast'
 import { LogActivityModal } from '../crm/LogActivityModal'
 import { ConfirmDialog } from '../common/ConfirmDialog'
 
@@ -70,8 +71,9 @@ export function ActivityHistoryTab({ studentId }: ActivityHistoryTabProps) {
       })
       showToast('Activity log deleted successfully', 'success')
       setActivityToDelete(null)
-    } catch (err: any) {
-      showToast(err?.response?.data?.message || 'Failed to delete activity log', 'error')
+    } catch (err) {
+      const apiMessage = isAxiosError<{ message?: string }>(err) ? err.response?.data?.message : undefined
+      showToast(apiMessage || 'Failed to delete activity log', 'error')
     }
   }
 

@@ -5,7 +5,7 @@ import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DataTable, PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialog } from '../components/common'
 
 import { isAxiosError } from 'axios'
-import { useToast } from '../components/common/Toast'
+import { useToast } from '../components/common/useToast'
 import { GroupForm } from '../components/groups/GroupForm'
 import { type EnrichedGroupPublic, type ScheduleGroupInput } from '../api/academics'
 import type { UpdateGroupDTO } from '../api/academics/types/groups'

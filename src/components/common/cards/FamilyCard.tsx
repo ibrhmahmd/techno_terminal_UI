@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { User, Phone, Mail, UserCircle, UsersRound, Check, ArrowRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useToast } from '../Toast'
+import { useToast } from '../useToast'
 
 interface Sibling {
   id: number

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSendDailyReport } from '../hooks/useDailyReport'
-import { useToast } from '../../common/Toast'
+import { useToast } from '../../common/useToast'
 
 interface ReportEmailSenderProps {
   date: string

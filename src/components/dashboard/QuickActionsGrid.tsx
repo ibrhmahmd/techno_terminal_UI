@@ -7,7 +7,7 @@ import { Modal } from '../common'
 import { StudentForm } from '../crm/StudentForm'
 import { useCreateStudent } from '../../hooks/useDirectory'
 import { linkParentToStudent } from '../../api/crm'
-import { useToast } from '../common/Toast'
+import { useToast } from '../common/useToast'
 import type { ParentListItem, CreateStudentDTO, StudentStatus } from '../../api/crm'
 import { logActivity } from '../../api/crm/students/activity'
 

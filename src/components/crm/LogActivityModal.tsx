@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { isAxiosError } from 'axios'
 import { Plus, Trash2 } from 'lucide-react'
 import { Modal } from '../common'
 import {
@@ -13,7 +14,7 @@ import { getCoursesPaginated, getGroupsPaginated } from '../../api/academics'
 import { getCompetitions } from '../../api/competitions'
 import { getStudentEnrollments } from '../../api/enrollments'
 import type { ActivityLogResponseDTO, ReferenceType } from '../../api/crm'
-import { useToast } from '../common/Toast'
+import { useToast } from '../common/useToast'
 
 interface LogActivityModalProps {
   isOpen: boolean
@@ -262,8 +263,9 @@ export function LogActivityModal({
       }
       onSuccess()
       onClose()
-    } catch (err: any) {
-      showToast(err?.response?.data?.message || t('toast.operation_failed'), 'error')
+    } catch (err) {
+      const apiMessage = isAxiosError<{ message?: string }>(err) ? err.response?.data?.message : undefined
+      showToast(apiMessage || t('toast.operation_failed'), 'error')
     } finally {
       setLoading(false)
     }

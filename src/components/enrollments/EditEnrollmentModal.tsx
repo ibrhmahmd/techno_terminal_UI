@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { isAxiosError } from 'axios'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useUpdateEnrollment } from '../../hooks/useEnrollmentMutations'
@@ -60,8 +61,14 @@ export function EditEnrollmentModal({ isOpen, onClose, enrollmentId, studentId }
         data: payload
       })
       onClose()
-    } catch (err: any) {
-      setErrorMsg(err.response?.data?.message || err.message || 'Failed to update enrollment')
+    } catch (err) {
+      let message = 'Failed to update enrollment'
+      if (isAxiosError<{ message?: string }>(err)) {
+        message = err.response?.data?.message || err.message || message
+      } else if (err instanceof Error) {
+        message = err.message || message
+      }
+      setErrorMsg(message)
     }
   }
 

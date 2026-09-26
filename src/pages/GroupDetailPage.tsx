@@ -13,7 +13,7 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { useGroupDetail } from '../hooks/useGroupDetail'
 import { useGroupPayments } from '../hooks/useGroupPayments'
 import { useGroupMutations } from '../hooks/useGroupMutations'
-import { useToast } from '../components/common/Toast'
+import { useToast } from '../components/common/useToast'
 import type { UpdateGroupDTO, ProgressGroupLevelRequest } from '../api/academics'
 
 export function GroupDetailPage() {

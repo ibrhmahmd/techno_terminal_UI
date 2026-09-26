@@ -8,7 +8,7 @@ import { Modal } from '../components/common/Modal'
 import { CourseInfoCard } from '../components/courses/CourseInfoCard'
 import { CourseForm } from '../components/courses/CourseForm'
 import { DataTable, type DataTableColumn } from '../components/common/datatable'
-import { useToast } from '../components/common/Toast'
+import { useToast } from '../components/common/useToast'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { 
   getCourseById, 

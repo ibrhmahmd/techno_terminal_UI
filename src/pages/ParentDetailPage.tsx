@@ -76,7 +76,7 @@ export function ParentDetailPage() {
       setParent(updated)
       setIsEditModalOpen(false)
       setError(null)
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to update parent:', error);
       setError(t('parentDetail.update_failed'))
     } finally {
@@ -89,7 +89,7 @@ export function ParentDetailPage() {
     try {
       await deleteParent(parentId)
       navigate('/directory')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to delete parent:', error);
       setError(t('parentDetail.delete_failed'))
       setIsDeleteModalOpen(false)

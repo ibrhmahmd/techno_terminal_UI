@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import { Modal, ActionButton } from '../common'
 import { LoadingSpinner } from '../common/LoadingSpinner'
-import { useToast } from '../common/Toast'
+import { useToast } from '../common/useToast'
 import type { PaymentDetailsResponse } from '../../api/crm/students/types/payments'
 import { downloadReceiptPdf } from '../../api/finance/receipts'
 
@@ -49,7 +49,7 @@ export function PaymentDetailsDialog({
       window.URL.revokeObjectURL(url)
 
       showToast('Receipt PDF downloaded', 'success')
-    } catch (err) {
+    } catch {
       showToast('Failed to download PDF', 'error')
     } finally {
       setIsDownloading(false)

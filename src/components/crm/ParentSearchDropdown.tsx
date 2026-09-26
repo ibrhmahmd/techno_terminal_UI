@@ -86,6 +86,8 @@ export function ParentSearchDropdown({
     }
   }, [])
 
+  const selectedParentId = selectedParent?.id
+
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-on-surface">
@@ -168,7 +170,7 @@ export function ParentSearchDropdown({
                       key={parent.id}
                       id={`parent-option-${parent.id}`}
                       role="option"
-                      aria-selected={!!((selectedParent as any)?.id === parent.id)}
+                      aria-selected={!!(selectedParentId === parent.id)}
                       onClick={() => handleSelect(parent)}
                       className={`px-4 py-3 cursor-pointer hover:bg-slate-50 transition-colors ${
                         index === results.length - 1 ? '' : 'border-b border-slate-100'

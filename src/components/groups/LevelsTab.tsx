@@ -9,7 +9,7 @@ import { transformRoster, transformSessions } from '../../utils/attendanceTransf
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { downloadReceiptPdf } from '../../api/finance/receipts'
 import { sendReceiptToStudent } from '../../api/crm/students/payments'
-import { useToast } from '../common/Toast'
+import { useToast } from '../common/useToast'
 import { formatDate } from '../../utils/formatting'
 import { useAuthStore } from '../../store/authStore'
 import { useGroupMutations } from '../../hooks/useGroupMutations'

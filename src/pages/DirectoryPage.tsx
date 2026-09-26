@@ -5,7 +5,7 @@ import { queryKeys } from '../hooks/queryKeys'
 import { useNavDirection } from '../hooks/useNavDirection'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { Pagination, PageHeader, PageSection, ActionButton, SearchBar, Modal, ConfirmDialog } from '../components/common'
-import { useToast } from '../components/common/Toast'
+import { useToast } from '../components/common/useToast'
 const StudentForm = lazy(() => import('../components/crm/StudentForm').then(m => ({ default: m.StudentForm })))
 const ParentForm = lazy(() => import('../components/crm/ParentForm').then(m => ({ default: m.ParentForm })))
 import { WaitingListPanel } from '../components/crm/WaitingListPanel'

@@ -4,7 +4,7 @@ import { useWeeklyReportData, useSendWeeklyReport } from '../hooks/useWeeklyRepo
 import { ReportWeekSelectorBar } from '../molecules/ReportWeekSelectorBar'
 import { MetricSummaryCard } from '../../common/cards/MetricSummaryCard'
 import { getTodayISO } from '../../../utils/date'
-import { useToast } from '../../common/Toast'
+import { useToast } from '../../common/useToast'
 import { LoadingState } from '../../common/LoadingState'
 import { ErrorState } from '../../common/ErrorState'
 import { EmptyState } from '../../common/EmptyState'

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Check } from 'lucide-react'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { useToast } from '../Toast'
+import { useToast } from '../useToast'
 
 interface QuickInfoItem {
   icon?: ReactNode

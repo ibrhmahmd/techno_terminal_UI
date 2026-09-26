@@ -4,7 +4,7 @@ import type { CreateTaskInput, TaskPriority, TaskRecurrencePattern } from '../..
 import { TASK_PRIORITIES, TASK_RECURRENCE_PATTERNS } from '../../api/tasks'
 import { useCreateTask } from '../../hooks/useTasks'
 import { useEmployees } from '../../hooks/useEmployees'
-import { useToast } from '../common/Toast'
+import { useToast } from '../common/useToast'
 
 interface CreateTaskModalProps {
   isOpen: boolean

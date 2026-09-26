@@ -1,3 +1,4 @@
 export { CourseCard } from './CourseCard'
 export type { CourseCardProps } from './CourseCard'
-export { CoursesTable, courseColumns } from './CoursesTable'
+export { CoursesTable } from './CoursesTable'
+export { courseColumns } from './courseColumns'
