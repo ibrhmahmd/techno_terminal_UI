@@ -14,6 +14,8 @@ import { useToast } from '../../common/useToast'
 import { LoadingState } from '../../common/LoadingState'
 import { ErrorState } from '../../common/ErrorState'
 import { EmptyState } from '../../common/EmptyState'
+import { extractErrorMessage } from '../../../utils/apiErrors'
+import i18n from '../../../i18n'
 
 export function DailyReportTab() {
   const [date, setDate] = useState<string>(getTodayISO())
@@ -48,7 +50,7 @@ export function DailyReportTab() {
       URL.revokeObjectURL(url)
       showToast('PDF downloaded successfully', 'success')
     } catch {
-      showToast('Failed to generate PDF', 'error')
+      showToast(i18n.t('common:errors.generatePdf'), 'error')
     }
   }
 
@@ -105,7 +107,7 @@ export function DailyReportTab() {
 
       {isError && !is404 && (
         <ErrorState
-          message={error instanceof Error ? error.message : 'Unknown error'}
+          message={extractErrorMessage(error)}
           onRetry={() => refetch()}
         />
       )}

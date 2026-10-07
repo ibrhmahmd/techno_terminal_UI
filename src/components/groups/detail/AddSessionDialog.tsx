@@ -8,6 +8,7 @@ import { addExtraSession, updateSession } from '../../../api/academics/sessions/
 import { queryKeys } from '../../../hooks/queryKeys'
 import type { SessionWithAttendanceDTO } from '../../../api/dashboard'
 import { LoadingSpinner } from '../../common/LoadingSpinner'
+import { extractErrorMessage } from '../../../utils/apiErrors'
 
 interface AddSessionDialogProps {
   isOpen: boolean
@@ -194,7 +195,7 @@ export function AddSessionDialog({
       // Reset and close on success
       handleClose()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to add session')
+      setError(extractErrorMessage(err))
     } finally {
       setIsSubmitting(false)
     }

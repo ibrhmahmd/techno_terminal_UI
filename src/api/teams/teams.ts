@@ -15,6 +15,7 @@ import type {
   TeamMemberListResponse,
   TeamWithMembersDTO,
 } from './types'
+import i18n from '../../i18n'
 
 const TEAMS_BASE = '/teams'
 
@@ -62,7 +63,7 @@ export async function getTeamMembers(teamId: number): Promise<TeamMemberListResp
 
 export async function addTeamMember(teamId: number, data: AddTeamMemberInput): Promise<AddTeamMemberResultDTO> {
   const response = await client.post<ApiResponse<AddTeamMemberResultDTO>>(`${TEAMS_BASE}/${teamId}/members`, data)
-  if (!response.data.data) throw new Error('Failed to add team member')
+  if (!response.data.data) throw new Error(i18n.t('common:errors.addTeamMember'))
   return response.data.data
 }
 

@@ -10,6 +10,8 @@ import { EmptyState } from '../../common/EmptyState'
 import { ReportSessionDetails } from '../atoms/ReportSessionDetails'
 import { ReportPaymentDetails } from '../atoms/ReportPaymentDetails'
 import { ReportDebtorsDetails } from '../atoms/ReportDebtorsDetails'
+import { extractErrorMessage } from '../../../utils/apiErrors'
+import i18n from '../../../i18n'
 
 export function MonthlyReportTab() {
   const [date, setDate] = useState<string>(() => {
@@ -29,7 +31,7 @@ export function MonthlyReportTab() {
       await sendMutation.mutateAsync({ date, recipients: [] }) // backend falls back to all admins
       showToast('Monthly report email queued successfully', 'success')
     } catch {
-      showToast('Failed to queue monthly report email', 'error')
+      showToast(i18n.t('common:errors.queueMonthlyEmail'), 'error')
     }
   }
 
@@ -76,7 +78,7 @@ export function MonthlyReportTab() {
 
       {isError && !is404 && (
         <ErrorState
-          message={error instanceof Error ? error.message : 'Unknown error'}
+          message={extractErrorMessage(error)}
           onRetry={() => refetch()}
         />
       )}

@@ -8,6 +8,7 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { MetricsStripCards } from '../components/common/MetricsStripCards'
 import { useReceipts, useDailyMetrics } from '../hooks/finance'
 import type { UnpaidEnrollment } from '../api/crm/students/types/finance'
+import i18n from '../i18n'
 
 type PanelType = 'receipts' | 'create' | 'unpaid' | 'refunds'
 
@@ -104,7 +105,7 @@ export function FinancePage() {
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } catch {
-      handleError('Failed to download PDF')
+      handleError(i18n.t('common:errors.downloadPdf'))
     }
   }, [downloadPdf, handleError])
 

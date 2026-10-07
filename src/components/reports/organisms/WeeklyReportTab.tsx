@@ -11,6 +11,8 @@ import { EmptyState } from '../../common/EmptyState'
 import { ReportSessionDetails } from '../atoms/ReportSessionDetails'
 import { ReportPaymentDetails } from '../atoms/ReportPaymentDetails'
 import { ReportDebtorsDetails } from '../atoms/ReportDebtorsDetails'
+import { extractErrorMessage } from '../../../utils/apiErrors'
+import i18n from '../../../i18n'
 
 export function WeeklyReportTab() {
   const [date, setDate] = useState<string>(getTodayISO())
@@ -26,7 +28,7 @@ export function WeeklyReportTab() {
       await sendMutation.mutateAsync({ date, recipients: [] }) // backend falls back to all admins
       showToast('Weekly report email queued successfully', 'success')
     } catch {
-      showToast('Failed to queue weekly report email', 'error')
+      showToast(i18n.t('common:errors.queueWeeklyEmail'), 'error')
     }
   }
 
@@ -73,7 +75,7 @@ export function WeeklyReportTab() {
 
       {isError && !is404 && (
         <ErrorState
-          message={error instanceof Error ? error.message : 'Unknown error'}
+          message={extractErrorMessage(error)}
           onRetry={() => refetch()}
         />
       )}

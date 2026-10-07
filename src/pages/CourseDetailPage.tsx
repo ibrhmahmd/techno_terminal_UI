@@ -21,6 +21,7 @@ import {
   type UpdateCourseDTO
 } from '../api/academics'
 import { useGroupsByCourse } from '../hooks/useGroupQueries'
+import { extractErrorMessage } from '../utils/apiErrors'
 
 type TabId = 'info' | 'groups'
 
@@ -107,7 +108,7 @@ export function CourseDetailPage() {
       setStats(statsData)
     } catch (err: unknown) {
       console.error('[CourseDetailPage] Failed to load course data:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load course data')
+      setError(extractErrorMessage(err))
     } finally {
       setIsLoading(false)
     }
@@ -126,7 +127,7 @@ export function CourseDetailPage() {
       await loadCourseData()
       showToast(t('courseDetail.toast.update_success'), 'success')
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update course'
+      const errorMessage = extractErrorMessage(err)
       setMutationError(errorMessage)
       throw new Error(errorMessage)
     }
@@ -139,7 +140,7 @@ export function CourseDetailPage() {
       showToast(t('courseDetail.toast.delete_success'), 'success')
       navigate('/courses')
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete course'
+      const errorMessage = extractErrorMessage(err)
       setMutationError(errorMessage)
       showToast(errorMessage, 'error')
       setIsDeleteDialogOpen(false)

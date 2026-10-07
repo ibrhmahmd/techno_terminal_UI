@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getStudentWithDetails } from '../../api/crm/students/core'
 import type { Student, StudentWithDetails } from '../../api/crm/students/types/models'
 import { queryKeys } from '../queryKeys'
+import { extractErrorMessage } from '../../utils/apiErrors'
 
 interface UseStudentCoreReturn {
   // Core data (loaded immediately)
@@ -58,11 +59,7 @@ export function useStudentCore(studentId: number | null): UseStudentCoreReturn {
 
   const loading = isLoading
   
-  const error = queryError instanceof Error 
-    ? queryError.message 
-    : queryError 
-      ? 'Failed to load student data'
-      : null
+  const error = queryError ? extractErrorMessage(queryError) : null
 
   const refresh = async () => {
     await refetch()

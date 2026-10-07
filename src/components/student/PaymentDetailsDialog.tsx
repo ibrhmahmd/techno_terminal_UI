@@ -7,6 +7,7 @@ import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useToast } from '../common/useToast'
 import type { PaymentDetailsResponse } from '../../api/crm/students/types/payments'
 import { downloadReceiptPdf } from '../../api/finance/receipts'
+import i18n from '../../i18n'
 
 interface PaymentDetailsDialogProps {
   payment: PaymentDetailsResponse | null
@@ -50,7 +51,7 @@ export function PaymentDetailsDialog({
 
       showToast('Receipt PDF downloaded', 'success')
     } catch {
-      showToast('Failed to download PDF', 'error')
+      showToast(i18n.t('common:errors.downloadPdf'), 'error')
     } finally {
       setIsDownloading(false)
     }

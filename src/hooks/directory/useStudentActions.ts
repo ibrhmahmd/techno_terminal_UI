@@ -20,6 +20,7 @@ import {
   type StudentStatus,
 } from '../../api/crm'
 import { logActivity } from '../../api/crm/students/activity'
+import i18n from '../../i18n'
 
 interface UseStudentActionsReturn {
   handleCreateStudent: (
@@ -121,7 +122,7 @@ export function useStudentActions(
         const failures = results.filter((r) => r.status === 'rejected')
 
         if (failures.length > 0) {
-          showToast('Failed to update student', 'error')
+          showToast(i18n.t('common:errors.updateStudent'), 'error')
           setIsLoading(false)
           return
         }
@@ -131,7 +132,7 @@ export function useStudentActions(
         showToast('Student updated successfully', 'success')
         closeEditModal()
       } catch {
-        showToast('Failed to update student', 'error')
+        showToast(i18n.t('common:errors.updateStudent'), 'error')
       } finally {
         setIsLoading(false)
       }
@@ -146,7 +147,7 @@ export function useStudentActions(
           showToast(`Student "${student.full_name}" moved to trash`, 'success')
         },
         onError: () => {
-          showToast('Failed to delete student', 'error')
+          showToast(i18n.t('common:errors.deleteStudent'), 'error')
         },
       })
     },
@@ -160,7 +161,7 @@ export function useStudentActions(
           showToast(`Student "${student.full_name}" restored`, 'success')
         },
         onError: () => {
-          showToast('Failed to restore student', 'error')
+          showToast(i18n.t('common:errors.restoreStudent'), 'error')
         },
       })
     },
@@ -174,7 +175,7 @@ export function useStudentActions(
           showToast(`Student "${student.full_name}" permanently deleted`, 'success')
         },
         onError: () => {
-          showToast('Failed to permanently delete student', 'error')
+          showToast(i18n.t('common:errors.deleteStudentPermanent'), 'error')
         },
       })
     },
