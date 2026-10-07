@@ -79,6 +79,8 @@
   "errors": {
     "somethingWentWrong": "Something went wrong",
     "unexpectedError": "An unexpected error occurred.",
+    "serverError": "Something went wrong on our side. Please try again later.",
+    "timeout": "The request took too long. Please try again.",
     "tryAgain": "Try Again"
   },
   "confirm": {

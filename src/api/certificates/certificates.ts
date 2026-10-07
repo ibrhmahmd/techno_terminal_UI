@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { attachErrorNormalizer } from '../../utils/apiErrors'
 import type {
   CertificatesListResponse,
   CreateCertificateInput,
@@ -17,6 +18,8 @@ export const certsClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
   timeout: 15000,
 })
+
+attachErrorNormalizer(certsClient)
 
 export async function listCertificates(params?: CertificatesQueryParams): Promise<CertificatesListResponse> {
   const response = await certsClient.get<CertificatesListResponse>('/certificates', { params })

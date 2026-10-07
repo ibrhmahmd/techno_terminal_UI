@@ -79,6 +79,8 @@
   "errors": {
     "somethingWentWrong": "حصل غلطة",
     "unexpectedError": "حصل غلطة مش متوقعة.",
+    "serverError": "حصلت مشكلة عندنا. جرّب تاني بعد شوية.",
+    "timeout": "الطلب خد وقت طويل. جرّب تاني.",
     "tryAgain": "جرّب تاني"
   },
   "confirm": {
