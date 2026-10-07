@@ -130,6 +130,35 @@ describe('error normalizer on the certificates client', () => {
   })
 })
 
+describe('blob (PDF) download errors', () => {
+  it('decodes a JSON error body delivered as a Blob on client', async () => {
+    const body = new Blob([JSON.stringify({ success: false, error: 'NotFoundError', message: 'Receipt 7 not found' })])
+    const error = await captureRejection(
+      client.get('/finance/receipts/7/pdf', { responseType: 'blob', adapter: rejectingAdapter(404, body) })
+    )
+
+    expect(error.message).toBe('Receipt 7 not found')
+    expect(error.response?.status).toBe(404)
+  })
+
+  it('decodes a FastAPI detail Blob on certsClient', async () => {
+    const body = new Blob([JSON.stringify({ detail: 'Certificate not found' })])
+    const error = await captureRejection(
+      certsClient.get('/certificates/x/pdf', { responseType: 'blob', adapter: rejectingAdapter(404, body) })
+    )
+
+    expect(error.message).toBe('Certificate not found')
+  })
+
+  it('falls back to the generic message when the Blob is not JSON', async () => {
+    const error = await captureRejection(
+      client.get('/finance/receipts/7/pdf', { responseType: 'blob', adapter: rejectingAdapter(404, new Blob(['<html>nope</html>'])) })
+    )
+
+    expect(error.message).toBe('An unexpected error occurred.')
+  })
+})
+
 describe('401 refresh flow with the normalizer attached', () => {
   it('still refreshes and retries for a non-auth 401, rejecting with a normalized message', async () => {
     mocks.refreshToken.mockResolvedValue({

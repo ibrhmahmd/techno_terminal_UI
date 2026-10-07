@@ -1,5 +1,5 @@
 import { isAxiosError } from 'axios'
-import type { AxiosInstance } from 'axios'
+import type { AxiosError, AxiosInstance } from 'axios'
 import i18n from '../i18n'
 
 interface ErrorResponseLike {
@@ -121,11 +121,23 @@ export function extractErrorMessage(error: unknown): string {
   return i18n.t('common:errors.unexpectedError')
 }
 
+// responseType: 'blob' requests receive error bodies as a Blob; decode the JSON so the message is readable
+async function decodeBlobBody(error: AxiosError): Promise<void> {
+  const data: unknown = error.response?.data
+  if (!error.response || typeof Blob === 'undefined' || !(data instanceof Blob)) return
+  try {
+    error.response.data = JSON.parse(await data.text())
+  } catch {
+    error.response.data = undefined
+  }
+}
+
 export function attachErrorNormalizer(instance: AxiosInstance): void {
   instance.interceptors.response.use(
     (response) => response,
-    (error: unknown) => {
+    async (error: unknown) => {
       if (isAxiosError(error)) {
+        await decodeBlobBody(error)
         error.message = extractErrorMessage(error)
       }
       return Promise.reject(error)
