@@ -56,7 +56,7 @@ export function TeamEditModal({ team, isOpen, onClose, onSubmit }: TeamEditModal
       await onSubmit(payload)
       onClose()
     } catch (err: unknown) {
-      setError(extractErrorMessage(err) || t('teamEdit.error_update_failed'))
+      setError(extractErrorMessage(err))
     } finally {
       setIsLoading(false)
     }

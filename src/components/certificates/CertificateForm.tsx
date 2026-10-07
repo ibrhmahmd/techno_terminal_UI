@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { extractErrorMessage, getErrorStatus } from '../../utils/apiErrors'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { ModalFooter, LoadingSpinner } from '../common'
@@ -304,11 +305,10 @@ export function CertificateForm({ onSuccess, onCancel }: CertificateFormProps) {
       await createMutation.mutateAsync(data)
       onSuccess()
     } catch (err: unknown) {
-      if (err instanceof Error && err.message?.includes('already exists')) {
+      if (getErrorStatus(err) === 409) {
         setError(t('certificates.error_already_exists'))
       } else {
-        const msg = err instanceof Error ? err.message : t('certificates.error_generate_failed')
-        setError(msg)
+        setError(extractErrorMessage(err))
       }
     }
   }

@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { extractErrorMessage } from "../utils/apiErrors";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   updateGroup,
@@ -176,11 +177,8 @@ export function useGroupMutations(groupId: number): UseGroupMutationsReturn {
     status = "error";
 
   // Combine all errors
-  const getErrorMessage = (err: unknown): string | null => {
-    if (err instanceof Error) return err.message;
-    if (typeof err === "string") return err;
-    return null;
-  };
+  const getErrorMessage = (err: unknown): string | null =>
+    err == null ? null : extractErrorMessage(err);
   const error = updateMutation.isError
     ? getErrorMessage(updateMutation.error)
     : deleteMutation.isError

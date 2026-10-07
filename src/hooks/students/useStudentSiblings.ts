@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getStudentSiblings } from '../../api/crm/students/siblings'
 import type { SiblingInfo } from '../../api/crm/students/types'
-import { AxiosError } from 'axios'
+import { extractErrorMessage } from '../../utils/apiErrors'
 
 interface UseStudentSiblingsReturn {
   // Data
@@ -42,8 +42,7 @@ export function useStudentSiblings(
       setSiblings(data)
       setHasFetched(true)
     } catch (err) {
-      const axiosErr = err as AxiosError<{ detail?: string }>
-      setError(axiosErr.response?.data?.detail || 'Failed to load siblings')
+      setError(extractErrorMessage(err))
       console.error('Failed to load student siblings:', err)
     } finally {
       setLoading(false)

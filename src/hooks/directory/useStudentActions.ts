@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import { useToast } from '../../components/common/useToast'
 import { queryKeys } from '../queryKeys'
+import { extractErrorMessage } from '../../utils/apiErrors'
 import {
   useCreateStudent,
   useUpdateStudent,
@@ -88,31 +88,7 @@ export function useStudentActions(
         closeCreateModal()
         clearSearch()
       } catch (err: unknown) {
-        let message = 'Failed to create student'
-
-        if (isAxiosError<{ message?: string; errors?: Record<string, unknown> }>(err)) {
-          if (err.response?.data?.message) {
-            message = err.response.data.message
-          }
-
-          if (err.response?.status === 422 && err.response?.data?.errors) {
-            const validationErrors = err.response.data.errors
-            const errorMessages = Object.entries(validationErrors)
-              .map(([field, msgs]) => {
-                if (Array.isArray(msgs)) {
-                  return `${field}: ${msgs.join(', ')}`
-                }
-                return `${field}: ${msgs}`
-              })
-              .join('; ')
-
-            if (errorMessages) {
-              message = `Validation failed: ${errorMessages}`
-            }
-          }
-        } else if (err instanceof Error) {
-          message = err.message
-        }
+        const message = extractErrorMessage(err)
 
         showToast(message, 'error')
       } finally {

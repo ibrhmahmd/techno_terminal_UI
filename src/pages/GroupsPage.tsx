@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { TopNavbar } from '../components/dashboard/TopNavbar'
 import { DataTable, PageSection, Modal, LoadingSpinner, Pagination, ConfirmDialog } from '../components/common'
 
-import { isAxiosError } from 'axios'
+import { extractErrorMessage } from '../utils/apiErrors'
 import { useToast } from '../components/common/useToast'
 import { GroupForm } from '../components/groups/GroupForm'
 import { type EnrichedGroupPublic, type ScheduleGroupInput } from '../api/academics'
@@ -191,17 +191,7 @@ export function GroupsPage() {
       await createGroupMutation.mutateAsync(data)
       setIsCreateModalOpen(false)
     } catch (err: unknown) {
-      const detail = isAxiosError(err) ? err.response?.data?.detail : undefined
-      let errorMsg = t('toast.create_failed')
-      
-      if (Array.isArray(detail)) {
-        errorMsg = detail.map((d: { loc?: string[]; msg?: string }) => `${d.loc?.[d.loc.length - 1] || 'Field'}: ${d.msg}`).join(', ')
-      } else if (typeof detail === 'string') {
-        errorMsg = detail
-      } else if (err instanceof Error) {
-        errorMsg = err.message
-      }
-      
+      const errorMsg = extractErrorMessage(err)
       setMutationError(errorMsg)
       throw new Error(errorMsg)
     }

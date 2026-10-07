@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { isAxiosError } from 'axios'
+import { extractErrorMessage } from '../../utils/apiErrors'
 import { Plus, Trash2 } from 'lucide-react'
 import { Modal } from '../common'
 import {
@@ -264,8 +264,7 @@ export function LogActivityModal({
       onSuccess()
       onClose()
     } catch (err) {
-      const apiMessage = isAxiosError<{ message?: string }>(err) ? err.response?.data?.message : undefined
-      showToast(apiMessage || t('toast.operation_failed'), 'error')
+      showToast(extractErrorMessage(err), 'error')
     } finally {
       setLoading(false)
     }

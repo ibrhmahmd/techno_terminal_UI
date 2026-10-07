@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { getStatusHistory, getAttendanceHistory } from '../../api/crm/students/history'
 import type { StatusHistoryEntry, StatusHistoryRecord, AttendanceHistoryRecord } from '../../api/crm/students'
 import type { PaginationResult } from '../../types/pagination'
-import { AxiosError } from 'axios'
+import { extractErrorMessage } from '../../utils/apiErrors'
 
 interface UseStudentHistoryReturn {
   // Data
@@ -69,8 +69,7 @@ export function useStudentHistory(
       setStatusHistory(result.items)
       setStatusPagination(result)
     } catch (err) {
-      const axiosErr = err as AxiosError<{ detail?: string }>
-      setStatusError(axiosErr.response?.data?.detail || 'Failed to load status history')
+      setStatusError(extractErrorMessage(err))
     } finally {
       setLoadingStatus(false)
     }
@@ -86,8 +85,7 @@ export function useStudentHistory(
       setAttendanceHistory(result.items)
       setAttendancePagination(result)
     } catch (err) {
-      const axiosErr = err as AxiosError<{ detail?: string }>
-      setAttendanceError(axiosErr.response?.data?.detail || 'Failed to load attendance history')
+      setAttendanceError(extractErrorMessage(err))
     } finally {
       setLoadingAttendance(false)
     }
@@ -103,8 +101,7 @@ export function useStudentHistory(
       setStatusHistory(prev => [...prev, ...result.items])
       setStatusPagination(result)
     } catch (err) {
-      const axiosErr = err as AxiosError<{ detail?: string }>
-      setStatusError(axiosErr.response?.data?.detail || 'Failed to load more status history')
+      setStatusError(extractErrorMessage(err))
     } finally {
       setLoadingStatus(false)
     }
@@ -120,8 +117,7 @@ export function useStudentHistory(
       setAttendanceHistory(prev => [...prev, ...result.items])
       setAttendancePagination(result)
     } catch (err) {
-      const axiosErr = err as AxiosError<{ detail?: string }>
-      setAttendanceError(axiosErr.response?.data?.detail || 'Failed to load more attendance history')
+      setAttendanceError(extractErrorMessage(err))
     } finally {
       setLoadingAttendance(false)
     }

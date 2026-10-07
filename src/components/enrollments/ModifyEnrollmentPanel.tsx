@@ -8,7 +8,7 @@ import { useStudentsSearch } from '../../hooks/useDirectory'
 import { useUpdateEnrollment } from '../../hooks/useEnrollmentMutations'
 import type { StudentListItem } from '../../api/crm'
 import type { StudentEnrollmentInfo } from '../../hooks/finance/useStudentEnrollments'
-import type { AxiosError } from 'axios'
+import { extractErrorMessage } from '../../utils/apiErrors'
 
 interface ModifyEnrollmentPanelProps {
   isLoading: boolean
@@ -93,8 +93,7 @@ export function ModifyEnrollmentPanel({ isLoading, setIsLoading }: ModifyEnrollm
       setStudentSearch('')
       setSelectedEnrollment(null)
     } catch (err: unknown) {
-      const axiosError = err as AxiosError<{ message: string }>
-      setErrorMsg(axiosError.response?.data?.message || t('toast.update_failed'))
+      setErrorMsg(extractErrorMessage(err))
       showToast(t('toast.update_failed'), 'error')
     } finally {
       setIsLoading(false)
