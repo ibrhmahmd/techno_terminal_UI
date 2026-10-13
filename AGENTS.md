@@ -12,6 +12,8 @@ No formatter configured — lint only.
 
 **Build caveat**: `tsc -b` uses `tsconfig.app.json` which **excludes** `src/tests/` and `*.test.*` — test files not typechecked during build.
 
+**Env**: `VITE_API_BASE_URL` (optional, full URL incl. `/api/v1`) overrides default `/api/v1`; prod leaves unset, staging sets to staging backend.
+
 ---
 
 ## 2. Arabic Localization & RTL

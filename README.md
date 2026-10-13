@@ -119,6 +119,8 @@ src/
 
 Vercel SPA — `vercel.json` rewrites `/api/*` to the FastAPI backend, all other routes to `/index.html`. The certificates API is proxied via Vite in dev (`/certs-api`) and hit directly in production.
 
+**Environment variable**: `VITE_API_BASE_URL` (optional, full URL including `/api/v1`) overrides the default relative `/api/v1`. Production leaves it unset and relies on the `vercel.json` rewrite; staging sets it to the staging backend URL.
+
 ## Architecture
 
 See `ARCHITECTURE.md` for detailed data flow, component hierarchy, and coding standards.
