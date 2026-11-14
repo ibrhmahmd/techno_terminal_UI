@@ -54,8 +54,6 @@ export interface FlightRiskStudentDTO {
 export interface RetentionAnalysisDTO {
   cohort_month: string
   initial_enrollments: number
-  retention_by_month: Record<string, string>
-  retention_rates: {
-    overall_retention_pct: number
-  }
+  retained_count: number
+  retention_pct: number
 }
