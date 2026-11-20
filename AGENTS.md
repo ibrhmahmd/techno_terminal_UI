@@ -129,7 +129,9 @@ No formatter configured — lint only.
 
 ## 8. Deploy & Config
 - **Vercel**: `vercel.json` rewrites `/api/*` → FastAPI backend, all other routes → `/index.html`. Certificates API is NOT rewritten — prod `certsClient` hits its URL directly.
-- **No `.env` files** (gitignored), no CI (`.github/`), no pre-commit hooks
+- **No `.env` files** (gitignored), no pre-commit hooks
+- **CI**: `.github/workflows/ci.yml` runs lint, vitest, build, `e2e:typecheck`, `e2e:guard-test` on PRs to `main`/`staging` and pushes to `staging`. It does not run the staging E2E suite.
+- **Branches**: work lands on `staging`; `staging` must always contain all of `main` (merge `main` → `staging`, never the reverse locally). Never push or merge into `main` directly — `main` changes only through a reviewed PR. `.claude/settings.json` denies agent pushes/checkouts of `main` and `gh pr merge`.
 - **No `opencode.json`** — this file (`AGENTS.md`) is the primary instruction source
 - **Docs**: `docs/api/README.md` (endpoint reference by page), `docs/api/certificates-api.md` (certificates backend), `ARCHITECTURE.md`, `docs/design/DESIGN.md`. Superseded plans/reports live in `docs/archive/`.
 - **Specs**: `specs/<NNN>-<name>/plan.md` for the active feature plan; completed specs move to `specs/archive/` (ESLint ignores `specs/`)
