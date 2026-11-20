@@ -9,10 +9,11 @@
     "session_notes": "Session Notes",
     "view_group_details": "View group details",
     "grid_aria": "Attendance grid",
+    "region_aria": "{{group}} attendance",
     "grid_caption": "Student attendance for {{group}} — Level {{level}}"
   },
   "cell": {
-    "toggle_aria": "Toggle attendance: {{status}}"
+    "toggle_aria": "Attendance for {{student}} on {{date}}: {{status}}"
   },
   "header": {
     "student": "Student",

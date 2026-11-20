@@ -9,10 +9,11 @@
     "session_notes": "ملاحظات السيشن",
     "view_group_details": "شوف تفاصيل المجموعة",
     "grid_aria": "جدول الحضور",
+    "region_aria": "حضور {{group}}",
     "grid_caption": "حضور الطلاب لمجموعة {{group}} — المستوى {{level}}"
   },
   "cell": {
-    "toggle_aria": "غيّر الحضور: {{status}}"
+    "toggle_aria": "حضور {{student}} يوم {{date}}: {{status}}"
   },
   "header": {
     "student": "الطالب",

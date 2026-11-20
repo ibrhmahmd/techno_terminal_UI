@@ -492,7 +492,7 @@ export function AttendanceGrid({ sessions, roster, groupId, level, groupInstruct
   }
 
   return (
-    <div className="bg-white border border-outline-variant/10 shadow-sm w-full max-w-full overflow-x-hidden">
+    <div role="region" aria-label={t('grid.region_aria', { group: groupName || '' })} className="bg-white border border-outline-variant/10 shadow-sm w-full max-w-full overflow-x-hidden">
       {error && (
         <div role="alert" className="p-3 bg-error-container/30 border-b border-error/20 text-error text-sm">
           {error}

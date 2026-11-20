@@ -81,7 +81,7 @@ function makeSession(status: 'scheduled' | 'cancelled'): SessionWithAttendanceDT
 }
 
 async function triggerSaveAll() {
-  fireEvent.click(screen.getByRole('button', { name: 'Toggle attendance: not_taken' }))
+  fireEvent.click(screen.getByRole('button', { name: /: not_taken$/ }))
   fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }))
 }
 
@@ -99,7 +99,7 @@ const actionCases: ActionCase[] = [
     name: 'cancel',
     status: 'scheduled',
     trigger: async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Cancel session' }))
+      fireEvent.click(screen.getByRole('button', { name: /^Cancel session/ }))
       const dialog = screen.getByRole('alertdialog')
       fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel Session' }))
     },
@@ -110,7 +110,7 @@ const actionCases: ActionCase[] = [
     name: 'delete',
     status: 'scheduled',
     trigger: async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Delete session' }))
+      fireEvent.click(screen.getByRole('button', { name: /^Delete session/ }))
       const dialog = screen.getByRole('alertdialog')
       fireEvent.click(within(dialog).getByRole('button', { name: 'Delete Session' }))
     },
@@ -121,7 +121,7 @@ const actionCases: ActionCase[] = [
     name: 'reactivate',
     status: 'cancelled',
     trigger: async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Reactivate session' }))
+      fireEvent.click(screen.getByRole('button', { name: /^Reactivate session/ }))
     },
     apiMock: mockReactivateSession,
     expectedApiArgs: [SESSION_ID],
@@ -130,7 +130,7 @@ const actionCases: ActionCase[] = [
     name: 'complete',
     status: 'scheduled',
     trigger: async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Mark session as completed' }))
+      fireEvent.click(screen.getByRole('button', { name: /^Mark session as completed/ }))
     },
     apiMock: mockUpdateSession,
     expectedApiArgs: [SESSION_ID, { status: 'completed' }],
@@ -139,7 +139,7 @@ const actionCases: ActionCase[] = [
     name: 'edit-save',
     status: 'scheduled',
     trigger: async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Edit session details' }))
+      fireEvent.click(screen.getByRole('button', { name: /^Edit session details/ }))
       const dialog = screen.getByRole('dialog', { name: 'Edit Session' })
       fireEvent.click(within(dialog).getByRole('button', { name: 'Save Changes' }))
     },

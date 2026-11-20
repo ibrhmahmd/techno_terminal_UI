@@ -2,6 +2,7 @@ import { StudentInfo } from './StudentInfo'
 import { AttendanceCell } from './AttendanceCell'
 import type { SessionWithAttendanceDTO } from '../../api/dashboard'
 import type { StudentRowData } from './types'
+import { formatSessionDate } from '../../utils/formatting'
 
 interface AttendanceTableBodyProps {
   students: StudentRowData[]
@@ -46,6 +47,8 @@ export function AttendanceTableBody({ students, sessions, onToggle }: Attendance
                   onToggle={onToggle}
                   studentId={student.student_id}
                   sessionId={session.session_id}
+                  studentName={student.full_name}
+                  sessionDate={formatSessionDate(session.date)}
                   disabled={isCancelled}
                 />
               </td>

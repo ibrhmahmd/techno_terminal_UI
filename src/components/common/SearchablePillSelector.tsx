@@ -107,9 +107,10 @@ export function SearchablePillSelector({
               setIsOpen(true)
               setTimeout(() => wrapperRef.current?.querySelector('input')?.focus(), 0)
             }}
+            aria-label={`Clear ${selectedOption.label}`}
             className="p-0.5 hover:bg-secondary/20 rounded-full transition-colors ml-1 disabled:pointer-events-none disabled:opacity-50"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -139,10 +140,12 @@ export function SearchablePillSelector({
       {isOpen && (
         <div className="absolute z-50 w-full bg-white border border-t-0 border-surface-container-highest rounded-b-lg shadow-lg max-h-60 overflow-y-auto mt-0.5">
           {filteredOptions.length > 0 ? (
-            <ul ref={listRef} className="py-1">
+            <ul ref={listRef} role="listbox" className="py-1">
               {filteredOptions.map((option, index) => (
                 <li
                   key={option.id}
+                  role="option"
+                  aria-selected={highlightedIndex === index}
                   onClick={() => {
                     onChange(option.id)
                     setIsOpen(false)

@@ -126,7 +126,7 @@ function expectDesktopStatus(studentName: string, status: 'not_taken' | 'present
   if (!row) throw new Error(`Could not find the desktop row for ${studentName}`)
 
   expect(
-    within(row).getByRole('button', { name: `Toggle attendance: ${status}` }),
+    within(row).getByRole('button', { name: new RegExp(`: ${status}$`) }),
   ).toBeInTheDocument()
 }
 

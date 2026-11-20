@@ -6,7 +6,7 @@ import type { AttendanceStatus, AttendanceEntry } from '../../api/attendance'
 import { markAttendance } from '../../api/attendance'
 import { getNextStatus } from '../../utils/attendanceStatus'
 import { invalidateSessionCaches } from '../../utils/attendanceInvalidation'
-import { formatTime, formatInstructorName } from '../../utils/formatting'
+import { formatTime, formatInstructorName, formatSessionDate } from '../../utils/formatting'
 import { sessionStatusColors } from '../../utils/colors'
 import { useToast } from '../common/useToast'
 import { PaymentSummaryStrip } from './PaymentSummaryStrip'
@@ -314,6 +314,7 @@ export function AttendanceMobileSheet({
                     
                     <button
                       onClick={() => handleStudentTap(student.student_id)}
+                      aria-label={t('cell.toggle_aria', { student: student.student_name, date: formatSessionDate(selectedSession?.date), status })}
                       className={`h-10 px-3 min-w-[100px] flex items-center justify-center gap-1.5 rounded-full border transition-colors ${conf.bg} ${conf.text} ${conf.border}`}
                     >
                       {conf.icon && <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{conf.icon}</span>}

@@ -7,6 +7,8 @@ interface AttendanceCellProps {
   onToggle: (studentId: string | number, sessionId: number) => void
   studentId: string | number
   sessionId: number
+  studentName: string
+  sessionDate: string
   disabled?: boolean
 }
 
@@ -28,7 +30,7 @@ const ICONS = {
   ),
 }
 
-export const AttendanceCell = React.memo(function AttendanceCell({ status, onToggle, studentId, sessionId, disabled }: AttendanceCellProps) {
+export const AttendanceCell = React.memo(function AttendanceCell({ status, onToggle, studentId, sessionId, studentName, sessionDate, disabled }: AttendanceCellProps) {
   const { t } = useTranslation('attendance')
   const handleClick = useCallback(() => {
     if (!disabled) {
@@ -41,7 +43,7 @@ export const AttendanceCell = React.memo(function AttendanceCell({ status, onTog
       onClick={handleClick}
       disabled={disabled}
       className="w-full h-full flex items-center justify-center hover:bg-secondary-container/30 rounded transition-colors py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
-      aria-label={t('cell.toggle_aria', { status })}
+      aria-label={t('cell.toggle_aria', { student: studentName, date: sessionDate, status })}
     >
       {ICONS[status]}
     </button>

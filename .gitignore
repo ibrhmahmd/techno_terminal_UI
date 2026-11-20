@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .env*
+!.env.e2e.example
 
 # Editor directories and files
 .vscode/*
@@ -26,3 +27,9 @@ dist-ssr
 
 .opencode/*
 .specify/*
+
+# Playwright E2E
+e2e/.auth/
+e2e/.ledger/
+playwright-report/
+test-results/

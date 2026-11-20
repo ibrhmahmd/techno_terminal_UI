@@ -224,7 +224,7 @@ export function AddSessionDialog({
     const periods = ['AM', 'PM']
 
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2" role="group" aria-label={label}>
         <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">
           {label}: <span className="font-extrabold text-secondary text-sm">{hour}:{minute} {ampm}</span>
         </label>
@@ -240,6 +240,7 @@ export function AddSessionDialog({
                     key={h}
                     type="button"
                     onClick={() => setCurrentTime(format12hTo24(h, minute, ampm))}
+                    aria-pressed={isSel}
                     className={`h-10 text-sm font-bold rounded-md border transition-all flex items-center justify-center ${
                       isSel
                         ? 'bg-secondary text-white border-secondary shadow-sm'
@@ -263,6 +264,7 @@ export function AddSessionDialog({
                   key={m}
                   type="button"
                   onClick={() => setCurrentTime(format12hTo24(hour, m, ampm))}
+                  aria-pressed={isSel}
                   className={`h-10 text-xs font-bold rounded-md border transition-all flex items-center justify-center ${
                     isSel
                       ? 'bg-slate-700 text-white border-slate-700 shadow-sm'
@@ -282,6 +284,7 @@ export function AddSessionDialog({
                   key={ap}
                   type="button"
                   onClick={() => setCurrentTime(format12hTo24(hour, minute, ap))}
+                  aria-pressed={isSel}
                   className={`h-10 text-xs font-extrabold rounded-md border transition-all flex items-center justify-center ${
                     isSel
                       ? 'bg-slate-900 text-white border-slate-900 shadow-sm'

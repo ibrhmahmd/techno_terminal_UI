@@ -106,6 +106,14 @@ No formatter configured — lint only.
 - Globals enabled: `describe`, `it`, `expect`, `vi` — no import needed
 - Convention: `src/tests/*.{test,spec}.{ts,tsx}` (vitest config: `src/**/*.{test,spec}.{ts,tsx}`)
 
+### E2E (Playwright, `e2e/`)
+- `npm run e2e` runs against the **staging** backend only. `e2e/support/env.ts` fails closed unless `E2E_API_TARGET` is exactly `https://techno-terminal-staging.fastapicloud.dev`; never loosen it. The production host (`techno-terminal-5c255cfe…`) is what `vite.config.ts` / `npm run dev` proxy to, so the suite starts its own server via `vite.e2e.config.ts` on port 5179 and never reuses a running dev server.
+- Setup: copy `.env.e2e.example` → `.env.e2e` (gitignored): 4 staging accounts (admin, system_admin, instructor A/B) + the instructors' employee names. `npx playwright install chromium` once.
+- Data is created **through the UI** per worker (`e2e/support/scenario.ts`), prefixed `e2e-<runid>-w<n>`, recorded in `e2e/.ledger/`, and torn down through the UI (hard-delete students, archive groups, delete course). `npm run e2e:sweep` cleans ledgers left by interrupted runs. Archived groups/courses and orphan receipts stay on staging (backend techno-terminal#218).
+- Tests that change a session add their **own extra session** on a unique date (`extraSessionDate` fixture) and only touch that column.
+- Selectors are roles + English names. Attendance cells are named `Attendance for <student> on <Mon D>: <status>`; session buttons end with the date; each grid is a region `<group> attendance`. Keep these names stable or update `e2e/support/dashboard.ts`.
+- `npm run e2e:typecheck` (e2e is outside `tsc -b`), `npm run e2e:guard-test` (prod-guard unit test).
+
 ---
 
 ## 7. Common Pitfalls
@@ -222,5 +230,5 @@ Attendance regression tests live in `src/tests/attendance/`:
 Changes to grid refresh or missing-status behavior must keep these tests green.
 
 <!-- SPECKIT START -->
-Active plan: none (spec 074 closed; see specs/archive/074-attendance-cache-refresh-audit/)
+Active plan: `specs/075-e2e-m1-dashboard/plan.md` (#32)
 <!-- SPECKIT END -->
