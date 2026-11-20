@@ -4,6 +4,7 @@ import { LoadingSpinner, PillSelector } from '../common'
 import { DateInput } from '../common/DateInput'
 import { ParentSearchDropdown } from './ParentSearchDropdown'
 import type { CreateStudentDTO, ParentListItem, StudentStatus } from '../../api/crm'
+import { extractErrorMessage } from '../../utils/apiErrors'
 
 type CreateStudentInput = CreateStudentDTO
 
@@ -93,7 +94,7 @@ export function StudentForm({ initialData, initialStatus = 'active', onSubmit, o
           : undefined
       )
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(extractErrorMessage(err))
     } finally {
       setIsLoading(false)
     }

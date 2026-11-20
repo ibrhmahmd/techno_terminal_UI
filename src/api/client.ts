@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
+import { attachErrorNormalizer } from "../utils/apiErrors";
 
 // Flag to prevent multiple concurrent refresh attempts
 let isRefreshing = false;
@@ -156,6 +157,8 @@ export const createApiClient = () => {
       }
     },
   );
+
+  attachErrorNormalizer(client);
 
   return client;
 };

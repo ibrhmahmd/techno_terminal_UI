@@ -14,6 +14,7 @@ import type {
 } from '../../api/crm/students/types/finance'
 import type { BalanceAdjustmentDTO } from '../../api/crm/students/types/inputs'
 import type { PaginationParams, PaginationResult } from '../../types/pagination'
+import { extractErrorMessage } from '../../utils/apiErrors'
 
 export interface UseBalanceResult {
   // Data
@@ -72,7 +73,7 @@ export function useBalance(): UseBalanceResult {
       setBalance(data)
       return data
     } catch (err: unknown) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch balance')
+      const error = err instanceof Error ? err : new Error(extractErrorMessage(err))
       setBalanceError(error)
       throw error
     } finally {
@@ -88,7 +89,7 @@ export function useBalance(): UseBalanceResult {
       setEnrollmentBalance(data)
       return data
     } catch (err: unknown) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch enrollment balance')
+      const error = err instanceof Error ? err : new Error(extractErrorMessage(err))
       setEnrollmentBalanceError(error)
       throw error
     } finally {
@@ -104,7 +105,7 @@ export function useBalance(): UseBalanceResult {
       setUnpaidEnrollments(data)
       return data
     } catch (err: unknown) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch unpaid enrollments')
+      const error = err instanceof Error ? err : new Error(extractErrorMessage(err))
       setUnpaidEnrollmentsError(error)
       throw error
     } finally {
@@ -121,7 +122,7 @@ export function useBalance(): UseBalanceResult {
       queryClient.invalidateQueries({ queryKey: ['finance', 'metrics'] })
       return result
     } catch (err: unknown) {
-      const error = err instanceof Error ? err : new Error('Failed to adjust balance')
+      const error = err instanceof Error ? err : new Error(extractErrorMessage(err))
       setAdjustError(error)
       throw error
     } finally {

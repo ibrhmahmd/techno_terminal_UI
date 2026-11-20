@@ -30,6 +30,7 @@ import { useStudentCourses } from '../hooks/students/useStudentCourses'
 import { useStudentCompetitions } from '../hooks/students/useStudentCompetitions'
 import { useStudentTeams } from '../hooks/students/useStudentTeams'
 import { enrollStudent } from '../api/academics'
+import { extractErrorMessage } from '../utils/apiErrors'
 
 
 export function StudentDetailPage() {
@@ -124,7 +125,7 @@ export function StudentDetailPage() {
       navigate('/directory')
     } catch (err: unknown) {
       console.error('Failed to soft delete student:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      const errorMessage = extractErrorMessage(err)
       showToast(t('studentDetail.toast.soft_delete_failed', { error: errorMessage }), 'error')
       setIsDeleteModalOpen(false)
     } finally {
@@ -141,7 +142,7 @@ export function StudentDetailPage() {
       setIsRestoreModalOpen(false)
     } catch (err: unknown) {
       console.error('Failed to restore student:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      const errorMessage = extractErrorMessage(err)
       showToast(t('studentDetail.toast.restore_failed', { error: errorMessage }), 'error')
       setIsRestoreModalOpen(false)
     } finally {
@@ -157,7 +158,7 @@ export function StudentDetailPage() {
       navigate('/directory')
     } catch (err: unknown) {
       console.error('Failed to hard delete student:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      const errorMessage = extractErrorMessage(err)
       showToast(t('studentDetail.toast.hard_delete_failed', { error: errorMessage }), 'error')
       setIsHardDeleteModalOpen(false)
     } finally {

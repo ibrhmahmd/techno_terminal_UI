@@ -14,6 +14,7 @@ import { queryClient } from '../lib/queryClient'
 import { queryKeys } from '../hooks/queryKeys'
 import { createCompetition, deleteCompetition } from '../api/competitions'
 import type { CreateCompetitionInput, UpdateCompetitionInput } from '../api/competitions'
+import { extractErrorMessage, getErrorStatus } from '../utils/apiErrors'
 
 export function CompetitionsPage() {
   const { t } = useTranslation('competitions')
@@ -56,9 +57,8 @@ export function CompetitionsPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.competitions })
       setDeletingCompetition(null)
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { status?: number; data?: { message?: string } } }
-      if (axiosErr.response?.status === 409) {
-        setDeleteError(axiosErr.response.data?.message || t('toast.delete_conflict'))
+      if (getErrorStatus(err) === 409) {
+        setDeleteError(extractErrorMessage(err))
       } else {
         setActionError(t('toast.delete_failed'))
       }

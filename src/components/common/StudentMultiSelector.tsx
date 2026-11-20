@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useRef } from 'react'
 import { searchStudents } from '../../api/crm/students/search'
 import type { StudentListItem } from '../../api/crm/students/types/models'
 import { SpyCombobox, type SpyCategory } from '../common/SpyCombobox'
+import i18n from '../../i18n'
 
 export interface StudentSelection {
   student: StudentListItem
@@ -54,7 +55,7 @@ export function StudentMultiSelector({
       })
       .catch((err: unknown) => {
         if ((err as { name?: string })?.name !== 'AbortError' && !controller.signal.aborted) {
-          setError('Failed to search students')
+          setError(i18n.t('common:errors.searchStudents'))
           setStudents([])
         }
       })

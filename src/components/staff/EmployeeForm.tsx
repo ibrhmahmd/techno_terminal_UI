@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { EmployeeCreateInput, EmployeePublic } from '../../api/hr'
-import { extractApiErrorMessage } from '../../api/hr/errors'
+import { extractErrorMessage } from '../../utils/apiErrors'
 import { isValidEgyptianNationalId, normalizeEgyptianPhone } from '../../utils/egyptianValidators'
 import { MAX_MONTHLY_SALARY } from './EmployeeForm/WorkSettingsSection'
 import { PersonalInfoSection } from './EmployeeForm/PersonalInfoSection'
@@ -144,7 +144,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel, mode, isLoading:
 
       await onSubmit(apiData)
     } catch (err) {
-      setError(extractApiErrorMessage(err) ?? 'An error occurred while saving the employee profile.')
+      setError(extractErrorMessage(err))
     } finally {
       setIsInternalLoading(false)
     }

@@ -15,6 +15,8 @@ import { useAuthStore } from '../../store/authStore'
 import { useGroupMutations } from '../../hooks/useGroupMutations'
 import { EditGroupLevelDialog } from './detail/EditGroupLevelDialog'
 import { ConfirmDialog } from '../common/ConfirmDialog'
+import { extractErrorMessage } from '../../utils/apiErrors'
+import i18n from '../../i18n'
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString()} EGP`
@@ -53,7 +55,7 @@ function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments
       window.URL.revokeObjectURL(url)
       showToast('Receipt PDF downloaded successfully', 'success')
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to download receipt PDF', 'error')
+      showToast(extractErrorMessage(err), 'error')
     } finally {
       setDownloadingId(null)
     }
@@ -67,10 +69,10 @@ function LevelPaymentsPanel({ payments }: { payments: LevelPaymentsDTO['payments
       if (result.success) {
         showToast(result.message || 'Receipt sent via WhatsApp successfully', 'success')
       } else {
-        showToast(result.message || 'Failed to send receipt via WhatsApp', 'error')
+        showToast(result.message || i18n.t('common:errors.sendWhatsapp'), 'error')
       }
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to send receipt via WhatsApp', 'error')
+      showToast(extractErrorMessage(err), 'error')
     } finally {
       setSendingId(null)
     }

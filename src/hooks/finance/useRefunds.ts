@@ -7,6 +7,7 @@ import {
   type RefundResult,
   type RiskAssessment,
 } from '../../api/finance'
+import { extractErrorMessage } from '../../utils/apiErrors'
 
 export interface UseRefundsResult {
   // Data
@@ -53,7 +54,7 @@ export function useRefunds(): UseRefundsResult {
       queryClient.invalidateQueries({ queryKey: ['finance', 'metrics'] })
       return result
     } catch (err: unknown) {
-      const error = err instanceof Error ? err : new Error('Failed to issue refund')
+      const error = err instanceof Error ? err : new Error(extractErrorMessage(err))
       setIssueRefundError(error)
       throw error
     } finally {
@@ -69,7 +70,7 @@ export function useRefunds(): UseRefundsResult {
       setRiskAssessment(assessment)
       return assessment
     } catch (err: unknown) {
-      const error = err instanceof Error ? err : new Error('Failed to preview refund risk')
+      const error = err instanceof Error ? err : new Error(extractErrorMessage(err))
       setPreviewRiskError(error)
       throw error
     } finally {

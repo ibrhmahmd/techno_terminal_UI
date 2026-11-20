@@ -11,6 +11,8 @@ import { CertificateForm } from '../components/certificates/CertificateForm'
 import { useCertificatesList, useDownloadCertificatePdf, useRevokeCertificate } from '../hooks/useCertificates'
 import { useAuthStore } from '../store/authStore'
 import type { CertificateDTO } from '../api/certificates/types'
+import { extractErrorMessage } from '../utils/apiErrors'
+import i18n from '../i18n'
 
 export function CertificatesPage() {
   const { user } = useAuthStore()
@@ -80,7 +82,7 @@ export function CertificatesPage() {
       window.URL.revokeObjectURL(url)
       showToast('PDF downloaded successfully', 'success')
     } catch {
-      showToast('Failed to download PDF', 'error')
+      showToast(i18n.t('common:errors.downloadPdf'), 'error')
     } finally {
       setDownloadingCertId(null)
     }
@@ -101,7 +103,7 @@ export function CertificatesPage() {
       setRevokeTarget(null)
       setRevokeReason('')
     } catch {
-      showToast('Failed to revoke certificate', 'error')
+      showToast(i18n.t('common:errors.revokeCertificate'), 'error')
     }
   }, [revokeTarget, revokeReason, revokeMutation, showToast])
 
@@ -158,7 +160,7 @@ export function CertificatesPage() {
             {Array.from({ length: 8 }).map((_, i) => <CardSkeleton key={i} />)}
           </CardGrid>
         ) : error ? (
-          <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-center">{error instanceof Error ? error.message : 'Failed to load certificates'}</div>
+          <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-center">{extractErrorMessage(error)}</div>
         ) : certificates.length === 0 ? (
           <div className="text-center py-20">
             <span className="material-symbols-outlined text-4xl text-slate-300 mb-3" aria-hidden="true">{searchTerm ? 'search' : 'verified'}</span>

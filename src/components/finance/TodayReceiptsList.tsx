@@ -4,6 +4,7 @@ import { useReceipts } from '../../hooks/finance'
 import { TodayReceiptsFilters } from './TodayReceiptsFilters'
 import { ReceiptDetailPanel } from './ReceiptDetailPanel'
 import type { DailyReceiptItem } from '../../api/finance/types'
+import i18n from '../../i18n'
 
 interface TodayReceiptsListProps {
   onDownloadPdf?: (receiptId: number) => void
@@ -126,7 +127,7 @@ export function TodayReceiptsList({ onDownloadPdf, onNavigateToCreate }: TodayRe
         }))
       )
     } catch {
-      setSearchErrorMsg('Failed to search receipts.')
+      setSearchErrorMsg(i18n.t('common:errors.searchReceipts'))
     }
   }
 

@@ -5,6 +5,7 @@ import { UnpaidEnrollmentsFilters } from './UnpaidEnrollmentsFilters'
 import { Pagination } from '../common'
 import type { UnpaidEnrollment } from '../../api/crm/students/types/finance'
 import type { EnrichedGroupPublic } from '../../api/academics'
+import i18n from '../../i18n'
 
 interface UnpaidEnrollmentsPanelProps {
   onError: (message: string) => void
@@ -47,7 +48,7 @@ export function UnpaidEnrollmentsPanel({ onError, onPay, onNavigateToCreate }: U
       limit: hasActiveFilters ? 1000 : PAGE_SIZE,
       group_id: selectedGroup?.id || undefined,
     }).catch(() => {
-      onError('Failed to load unpaid enrollments')
+      onError(i18n.t('common:errors.loadUnpaidEnrollments'))
     })
   }, [currentPage, selectedGroup, hasActiveFilters, fetchUnpaidEnrollments, onError])
 

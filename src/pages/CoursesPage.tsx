@@ -19,6 +19,7 @@ import {
 } from '../api/academics'
 import { ErrorBoundary } from '../components/common/ErrorBoundary'
 import { useCourses } from '../hooks/useCourses'
+import { extractErrorMessage } from '../utils/apiErrors'
 
 export function CoursesPage() {
   const navigate = useNavigate()
@@ -72,7 +73,7 @@ export function CoursesPage() {
       await refresh()
       showToast('Course deleted successfully', 'success')
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete course'
+      const errorMessage = extractErrorMessage(err)
       setMutationError(errorMessage)
       showToast(errorMessage, 'error')
     } finally {
@@ -95,7 +96,7 @@ export function CoursesPage() {
       showToast('Course created successfully', 'success')
     } catch (err: unknown) {
       console.error('[CoursesPage] createCourse failed:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create course'
+      const errorMessage = extractErrorMessage(err)
       setMutationError(errorMessage)
       throw new Error(errorMessage)
     }
@@ -111,7 +112,7 @@ export function CoursesPage() {
       await refresh()
       showToast('Course updated successfully', 'success')
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update course'
+      const errorMessage = extractErrorMessage(err)
       setMutationError(errorMessage)
       throw new Error(errorMessage)
     }

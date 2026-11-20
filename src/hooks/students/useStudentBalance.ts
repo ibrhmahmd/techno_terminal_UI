@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getStudentBalance } from '../../api/finance/balance'
 import type { StudentBalance } from '../../api/crm/students/types'
-import { AxiosError } from 'axios'
+import { extractErrorMessage } from '../../utils/apiErrors'
 
 interface UseStudentBalanceReturn {
   // Data
@@ -42,8 +42,7 @@ export function useStudentBalance(
       setBalance(data)
       setHasFetched(true)
     } catch (err) {
-      const axiosErr = err as AxiosError<{ detail?: string }>
-      setError(axiosErr.response?.data?.detail || 'Failed to load balance')
+      setError(extractErrorMessage(err))
       console.error('Failed to load student balance:', err)
     } finally {
       setLoading(false)

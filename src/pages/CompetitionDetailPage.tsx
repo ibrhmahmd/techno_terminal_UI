@@ -69,7 +69,7 @@ export function CompetitionDetailPage() {
       navigate('/competitions')
     } catch (err: unknown) {
       if (getErrorStatus(err) === 409) {
-        setDeleteError(extractErrorMessage(err) || t('competitionDetail.delete_conflict'))
+        setDeleteError(extractErrorMessage(err))
       }
     }
   }

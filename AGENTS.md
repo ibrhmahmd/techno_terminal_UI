@@ -2,7 +2,7 @@
 
 ## 1. Commands
 ```bash
-npm run dev                    # Vite dev (proxy /api → remote fastapicloud backend; localhost:8000 target is commented out in vite.config.ts)
+npm run dev                    # Vite dev (proxy /api → local backend at localhost:8000; the production target is commented out in vite.config.ts)
 npm run build                  # tsc -b && vite build — must pass before commits
 npm run lint                   # ESLint (flat config at eslint.config.js)
 npm run test                   # Vitest
@@ -107,7 +107,7 @@ No formatter configured — lint only.
 - Convention: `src/tests/*.{test,spec}.{ts,tsx}` (vitest config: `src/**/*.{test,spec}.{ts,tsx}`)
 
 ### E2E (Playwright, `e2e/`)
-- `npm run e2e` runs against the **staging** backend only. `e2e/support/env.ts` fails closed unless `E2E_API_TARGET` is exactly `https://techno-terminal-staging.fastapicloud.dev`; never loosen it. The production host (`techno-terminal-5c255cfe…`) is what `vite.config.ts` / `npm run dev` proxy to, so the suite starts its own server via `vite.e2e.config.ts` on port 5179 and never reuses a running dev server.
+- `npm run e2e` runs against the **staging** backend only. `e2e/support/env.ts` fails closed unless `E2E_API_TARGET` is exactly `https://techno-terminal-staging.fastapicloud.dev`; never loosen it. `vite.config.ts` / `npm run dev` proxy to a local backend (the production host `techno-terminal-5c255cfe…` is one comment-toggle away), so the suite starts its own server via `vite.e2e.config.ts` on port 5179 and never reuses a running dev server.
 - Setup: copy `.env.e2e.example` → `.env.e2e` (gitignored): 4 staging accounts (admin, system_admin, instructor A/B) + the instructors' employee names. `npx playwright install chromium` once.
 - Data is created **through the UI** per worker (`e2e/support/scenario.ts`), prefixed `e2e-<runid>-w<n>`, recorded in `e2e/.ledger/`, and torn down through the UI (hard-delete students, archive groups, delete course). `npm run e2e:sweep` cleans ledgers left by interrupted runs. Archived groups/courses and orphan receipts stay on staging (backend techno-terminal#218).
 - Tests that change a session add their **own extra session** on a unique date (`extraSessionDate` fixture) and only touch that column.
@@ -122,6 +122,7 @@ No formatter configured — lint only.
 - **Two parallel employee cache families**: staff page uses `staffKeys` (`['staff', 'employees', ...]`) defined in `useStaff.ts`; group dialogs (`AddSessionDialog`, `EditGroupLevelDialog`, `useProgressLevelForm`) and `useEmployees.ts` use `queryKeys.employees.*` (`['employees', ...]`). Invalidating one does NOT refresh the other — invalidate both after employee mutations that affect both surfaces.
 - **Bottom sheet z-index**: sheets need `z-[60]` (above BottomNav `z-50`); backdrop must use same layer.
 - **Route-sheet double-close**: `MobileNavSheet` watches `location.pathname` and auto-closes on navigation — don't add redundant `onClose` calls.
+- **API error display**: both axios clients (`client`, `certsClient`) run `attachErrorNormalizer`, so `err.message` already holds the user-facing text (server `message`/`detail`, formatted field errors, or a translated generic for 5xx/network/timeout). Display with `extractErrorMessage(err)` from `src/utils/apiErrors.ts`; never read `response.data.detail`/`.message` by hand. Branch on `getErrorStatus(err)`, not on message text. Blob (PDF) download error bodies are decoded by the normalizer too.
 - **API debug**: `localStorage.setItem('api_debug', 'true')` logs all requests; auto-enabled in DEV.
 
 ---
@@ -133,7 +134,6 @@ No formatter configured — lint only.
 - **Docs**: `docs/api/README.md` (endpoint reference by page), `docs/api/certificates-api.md` (certificates backend), `ARCHITECTURE.md`, `docs/design/DESIGN.md`. Superseded plans/reports live in `docs/archive/`.
 - **Specs**: `specs/<NNN>-<name>/plan.md` for the active feature plan; completed specs move to `specs/archive/` (ESLint ignores `specs/`)
 - **Gitignored**: `.opencode/*`, `.specify/*`
-- **Audit artifact**: `docs/audit-findings.json`
 
 ---
 

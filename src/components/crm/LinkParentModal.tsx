@@ -10,6 +10,7 @@ import {
   type Parent,
   type ParentInfo 
 } from '../../api/crm'
+import i18n from '../../i18n'
 
 interface LinkParentModalProps {
   studentId: number
@@ -57,7 +58,7 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
       const filteredResults = results.filter(p => !linkedIds.has(p.id))
       setSearchResults(filteredResults)
     } catch {
-      setError('Failed to search parents')
+      setError(i18n.t('common:errors.searchParents'))
     } finally {
       setIsSearching(false)
     }
@@ -73,7 +74,7 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
       setSearchResults(prev => prev.filter(p => p.id !== parentId))
       onLinked()
     } catch {
-      setError('Failed to link parent')
+      setError(i18n.t('common:errors.linkParent'))
     } finally {
       setIsLoading(false)
     }
@@ -87,7 +88,7 @@ export function LinkParentModal({ studentId, isOpen, onClose, onLinked }: LinkPa
       await unlinkParentFromStudent(studentId, parentId)
       await loadLinkedParents()
     } catch {
-      setError('Failed to unlink parent')
+      setError(i18n.t('common:errors.unlinkParent'))
     } finally {
       setIsLoading(false)
     }

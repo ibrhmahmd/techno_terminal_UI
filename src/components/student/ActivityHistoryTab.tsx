@@ -4,7 +4,7 @@
 
 import { useState } from 'react'
 import { Clock, Calendar, User, BookOpen, AlertCircle, CheckCircle, FileText } from 'lucide-react'
-import { isAxiosError } from 'axios'
+import { extractErrorMessage } from '../../utils/apiErrors'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { EmptyState } from '../common/EmptyState'
 import {
@@ -72,8 +72,7 @@ export function ActivityHistoryTab({ studentId }: ActivityHistoryTabProps) {
       showToast('Activity log deleted successfully', 'success')
       setActivityToDelete(null)
     } catch (err) {
-      const apiMessage = isAxiosError<{ message?: string }>(err) ? err.response?.data?.message : undefined
-      showToast(apiMessage || 'Failed to delete activity log', 'error')
+      showToast(extractErrorMessage(err), 'error')
     }
   }
 

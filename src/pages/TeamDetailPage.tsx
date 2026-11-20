@@ -126,7 +126,7 @@ export function TeamDetailPage() {
       navigate('/competitions')
     } catch (err: unknown) {
       if (getErrorStatus(err) === 409) {
-        setDeleteError(extractErrorMessage(err) || t('team.delete_conflict'))
+        setDeleteError(extractErrorMessage(err))
       }
     }
   }
@@ -185,7 +185,7 @@ export function TeamDetailPage() {
     try {
       await removeMember(member.student_id)
     } catch (err: unknown) {
-      setRemoveError(extractErrorMessage(err) || t('team.remove_member_conflict', { name: member.student_name, amount: member.amount_paid }))
+      setRemoveError(extractErrorMessage(err))
     }
   }
 
@@ -203,7 +203,7 @@ export function TeamDetailPage() {
       setPlacementLabel('')
       setPlacementResult(t('team.placement_updated'))
     } catch (err: unknown) {
-      setPlacementResult(extractErrorMessage(err) || t('team.placement_invalid_date'))
+      setPlacementResult(extractErrorMessage(err))
     }
   }
 
@@ -217,7 +217,7 @@ export function TeamDetailPage() {
       setSelectedStudent(null)
       setStudentSearch('')
     } catch (err: unknown) {
-      setAddMemberError(extractErrorMessage(err) || t('team.add_member_failed'))
+      setAddMemberError(extractErrorMessage(err))
     } finally {
       setIsAddingMember(false)
     }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useSendDailyReport } from '../hooks/useDailyReport'
 import { useToast } from '../../common/useToast'
+import i18n from '../../../i18n'
 
 interface ReportEmailSenderProps {
   date: string
@@ -49,7 +50,7 @@ export function ReportEmailSender({ date, disabled }: ReportEmailSenderProps) {
       showToast('Report queued for email delivery', 'success')
       setInputValue('')
     } catch {
-      showToast('Failed to send report', 'error')
+      showToast(i18n.t('common:errors.sendReport'), 'error')
     }
   }
 

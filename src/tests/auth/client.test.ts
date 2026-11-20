@@ -17,7 +17,8 @@ const mockAxiosInstance = {
   get: vi.fn(),
 }
 
-vi.mock('axios', () => ({
+vi.mock('axios', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('axios')>()),
   default: {
     create: vi.fn(() => mockAxiosInstance),
   },

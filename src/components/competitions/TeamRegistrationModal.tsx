@@ -126,7 +126,7 @@ export function TeamRegistrationModal({ competitionId, categoryName, categorySub
       onClose()
     } catch (err: unknown) {
       if (getErrorStatus(err) === 409) {
-        setError(extractErrorMessage(err) || t('teamRegistration.error_student_in_other_team'))
+        setError(extractErrorMessage(err))
       } else {
         setError(t('teamRegistration.error_register_failed'))
       }

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from '../common/Modal'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { CreateEmployeeAccountRequest } from '../../api/hr'
+import i18n from '../../i18n'
 
 interface CreateAccountModalEmployeeInfo {
   id: number
@@ -45,7 +46,7 @@ export function CreateAccountModal({ employee, isOpen, onClose, onSubmit, isLoad
       await onSubmit(formData)
       setFormData({ email: employee.email || '', password: '', role: 'admin' })
     } catch {
-      setError('Failed to create account. Please try again.')
+      setError(i18n.t('common:errors.createAccount'))
     }
   }
 

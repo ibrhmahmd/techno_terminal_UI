@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getDashboardOverview } from '../../api/dashboard'
 import type { DashboardDailyOverviewDTO } from '../../api/dashboard'
 import { queryKeys } from '../queryKeys'
+import { extractErrorMessage } from '../../utils/apiErrors'
 
 /**
  * Get consolidated dashboard data
@@ -23,7 +24,7 @@ export function useDashboard(selectedDate: string) {
     // Raw data from API
     data,
     isLoading,
-    error: error ? 'Failed to load dashboard data.' : null,
+    error: error ? extractErrorMessage(error) : null,
     
     // Convenience accessors for backward compatibility
     scheduleItems: data?.scheduled_groups ?? [],

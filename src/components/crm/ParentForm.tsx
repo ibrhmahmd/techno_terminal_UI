@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import type { Parent, ParentCreate } from '../../api/crm'
+import { extractErrorMessage } from '../../utils/apiErrors'
 
 interface ParentFormProps {
   initialData?: Partial<Parent>
@@ -46,7 +47,7 @@ export function ParentForm({ initialData, onSubmit, onCancel, mode }: ParentForm
 
       await onSubmit(submitData)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(extractErrorMessage(err))
     } finally {
       setIsLoading(false)
     }

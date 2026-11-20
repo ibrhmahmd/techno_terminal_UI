@@ -5,6 +5,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { getStudentPayments, getPaymentDetails, sendReceiptToStudent } from '../../api/crm/students/payments'
 import { downloadReceiptPdf } from '../../api/finance/receipts'
 import type { PaymentListItem, PaymentDetailsResponse } from '../../api/crm/students/types/payments'
+import { extractErrorMessage } from '../../utils/apiErrors'
 
 interface UseStudentPaymentsReturn {
   payments: PaymentListItem[]
@@ -47,7 +48,7 @@ export function useStudentPayments(studentId: number | null, enabled: boolean = 
       setPayments(sortedData)
       setHasFetched(true)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load payments'
+      const message = extractErrorMessage(err)
       setError(message)
       console.error('Failed to load student payments:', err)
     } finally {
@@ -64,7 +65,7 @@ export function useStudentPayments(studentId: number | null, enabled: boolean = 
       const data = await getPaymentDetails(paymentId)
       setSelectedPayment(data)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load payment details'
+      const message = extractErrorMessage(err)
       setError(message)
       console.error('Failed to load payment details:', err)
     } finally {
@@ -88,7 +89,7 @@ export function useStudentPayments(studentId: number | null, enabled: boolean = 
       const result = await sendReceiptToStudent(paymentId, method)
       return result
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to send receipt'
+      const message = extractErrorMessage(err)
       console.error('Failed to send receipt:', err)
       return { success: false, message }
     } finally {
@@ -113,7 +114,7 @@ export function useStudentPayments(studentId: number | null, enabled: boolean = 
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to download receipt'
+      const message = extractErrorMessage(err)
       console.error('Failed to download receipt:', err)
       throw new Error(message)
     } finally {

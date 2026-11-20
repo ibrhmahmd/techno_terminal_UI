@@ -7,7 +7,7 @@ import type { Student, StudentWithDetails } from '../../api/crm/students/types/m
 import type { StudentBalance } from '../../api/crm/students/types/finance'
 import type { SiblingInfo } from '../../api/crm/students/types/models'
 import type { UnpaidCompFeeItem } from '../../api/finance'
-import { AxiosError } from 'axios'
+import { extractErrorMessage } from '../../utils/apiErrors'
 
 interface UseStudentDetailReturn {
   // Core data
@@ -75,8 +75,7 @@ export function useStudentDetail(studentId: number | null): UseStudentDetailRetu
       const data = await getStudentById(studentId)
       setStudent(data)
     } catch (err) {
-      const axiosErr = err as AxiosError<{ detail?: string }>
-      setStudentError(axiosErr.response?.data?.detail || 'Failed to load student')
+      setStudentError(extractErrorMessage(err))
     } finally {
       setLoadingStudent(false)
     }
@@ -91,8 +90,7 @@ export function useStudentDetail(studentId: number | null): UseStudentDetailRetu
       const data = await getStudentWithDetails(studentId)
       setDetails(data)
     } catch (err) {
-      const axiosErr = err as AxiosError<{ detail?: string }>
-      setDetailsError(axiosErr.response?.data?.detail || 'Failed to load student details')
+      setDetailsError(extractErrorMessage(err))
     } finally {
       setLoadingDetails(false)
     }
@@ -107,8 +105,7 @@ export function useStudentDetail(studentId: number | null): UseStudentDetailRetu
       const data = await getStudentBalance(studentId)
       setBalance(data)
     } catch (err) {
-      const axiosErr = err as AxiosError<{ detail?: string }>
-      setBalanceError(axiosErr.response?.data?.detail || 'Failed to load balance')
+      setBalanceError(extractErrorMessage(err))
     } finally {
       setLoadingBalance(false)
     }
@@ -123,8 +120,7 @@ export function useStudentDetail(studentId: number | null): UseStudentDetailRetu
       const data = await getStudentSiblings(studentId)
       setSiblings(data)
     } catch (err) {
-      const axiosErr = err as AxiosError<{ detail?: string }>
-      setSiblingsError(axiosErr.response?.data?.detail || 'Failed to load siblings')
+      setSiblingsError(extractErrorMessage(err))
     } finally {
       setLoadingSiblings(false)
     }
@@ -139,8 +135,7 @@ export function useStudentDetail(studentId: number | null): UseStudentDetailRetu
       const data = await getUnpaidCompetitionFees(studentId)
       setUnpaidCompetitionFees(data)
     } catch (err) {
-      const axiosErr = err as AxiosError<{ detail?: string }>
-      setCompetitionFeesError(axiosErr.response?.data?.detail || 'Failed to load competition fees')
+      setCompetitionFeesError(extractErrorMessage(err))
     } finally {
       setLoadingCompetitionFees(false)
     }
