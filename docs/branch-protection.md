@@ -17,14 +17,24 @@ short branch (fix/…, feat/…) ──PR──▶ staging ──PR──▶ mai
 
 | Layer | Rule | Where it lives |
 |---|---|---|
-| GitHub ruleset `protect-main` | PR required (0 approvals, conversations resolved), merge commits only, required checks `checks` + `source-branch`, branch up to date, no force-push, no deletion | repo Settings → Rules → Rulesets |
-| GitHub ruleset `protect-staging` | PR required (0 approvals, conversations resolved), merge commits only, required check `checks`, no force-push, no deletion | same |
+| GitHub ruleset `protect-main` | PR required (0 approvals, conversations resolved), merge commits only, required checks `checks` + `source-branch`, branch up to date, signed commits, no force-push, no deletion | repo Settings → Rules → Rulesets |
+| GitHub ruleset `protect-staging` | PR required (0 approvals, conversations resolved), merge commits only, required check `checks`, signed commits, no force-push, no deletion | same |
 | CI job `source-branch` | fails any PR into `main` whose head branch isn't `staging` | `.github/workflows/ci.yml` |
 | Repo security | secret scanning + push protection, Dependabot alerts | Settings → Code security |
 | Local git hook | refuses any push to `main` (bypass: `--no-verify`) | `.git/hooks/pre-push` (per clone, not committed) |
 | Agent deny rules | Claude can't push/checkout `main`, merge PRs, delete rulesets, or use `--no-verify` | `.claude/settings.json` |
 
-Approvals are 0 because a solo owner can't approve their own PR. The PR + CI requirement is the gate. Signed commits are **not** required yet: turn that on only after commit signing is set up locally, or it blocks every unsigned commit.
+Approvals are 0 because a solo owner can't approve their own PR. The PR + CI requirement is the gate. Signed commits are required on both branches. Every committer (and every agent committing on their machine) must sign:
+
+```bash
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_ed25519.pub
+git config --global commit.gpgsign true
+gh auth refresh -h github.com -s admin:ssh_signing_key
+gh ssh-key add ~/.ssh/id_ed25519.pub --type signing --title "laptop signing"
+```
+
+The commit email must be a verified email on the GitHub account, or GitHub shows the commit as Unverified. PR merge commits made on GitHub are signed by GitHub. Turn the rule on in a new repo only after one pushed commit shows **Verified**.
 
 ## Apply to another repo
 
@@ -78,6 +88,7 @@ ruleset() { # name branch strict check...
       "require_code_owner_review": false,
       "require_last_push_approval": false,
       "required_review_thread_resolution": true}},
+    {"type": "required_signatures"},
     {"type": "required_status_checks", "parameters": {
       "strict_required_status_checks_policy": $strict,
       "do_not_enforce_on_create": false,
