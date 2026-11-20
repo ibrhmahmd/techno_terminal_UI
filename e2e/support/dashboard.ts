@@ -46,8 +46,10 @@ export async function addExtraSession(page: Page, region: Locator, isoDate: stri
   await dialog.locator('#session-date').fill(isoDate)
   if (opts.substitute) {
     const clear = dialog.getByRole('button', { name: /^Clear / })
+    const search = dialog.getByPlaceholder('Search instructors...')
+    await expect(clear.or(search)).toBeVisible()
     if (await clear.isVisible()) await clear.click()
-    await dialog.getByPlaceholder('Search instructors...').fill(opts.substitute)
+    await search.fill(opts.substitute)
     await dialog.getByRole('option').filter({ hasText: opts.substitute }).first().click()
     const toggle = dialog.getByRole('switch', { name: 'Toggle substitute instructor' })
     if ((await toggle.getAttribute('aria-checked')) !== 'true') await toggle.click()

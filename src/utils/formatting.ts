@@ -56,11 +56,6 @@ export function formatInitials(name: string | undefined | null): string {
 /**
  * Format date to localized string
  */
-/** Short session date ("Nov 14") used in attendance headers and accessible names. */
-export function formatSessionDate(dateString: string | null | undefined): string {
-  return formatDate(dateString, { month: 'short', day: 'numeric' })
-}
-
 export function formatDate(dateString: string | Date | null | undefined, options?: Intl.DateTimeFormatOptions): string {
   if (dateString == null) return ''
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString
@@ -73,6 +68,11 @@ export function formatDate(dateString: string | Date | null | undefined, options
   }
   
   return date.toLocaleDateString('en-US', options || defaultOptions)
+}
+
+/** Short session date ("Nov 14") used in attendance headers and accessible names. */
+export function formatSessionDate(dateString: string | null | undefined): string {
+  return formatDate(dateString, { month: 'short', day: 'numeric' })
 }
 
 /**

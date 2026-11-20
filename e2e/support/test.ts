@@ -1,5 +1,5 @@
 import { test as base, expect } from '@playwright/test'
-import { authFile, type Role } from './env'
+import { authFile, isAllowedRequestUrl, type Role } from './env'
 import { cairoDate, createScenario, destroyScenario, type Scenario } from './scenario'
 
 interface TestFixtures {
@@ -21,6 +21,16 @@ interface WorkerFixtures {
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
   role: ['admin', { option: true }],
+  // Defense in depth: a request to any other origin fails the test instead of reaching another backend.
+  context: async ({ context }, use) => {
+    await context.route('**/*', (route) => {
+      const url = route.request().url()
+      if (isAllowedRequestUrl(url)) return route.fallback()
+      console.error(`E2E blocked request to disallowed origin: ${url}`)
+      return route.abort('blockedbyclient')
+    })
+    await use(context)
+  },
   storageState: async ({ role }, use) => {
     await use(authFile(role))
   },
@@ -52,6 +62,9 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
         timezoneId: 'Africa/Cairo',
         locale: 'en-US',
       })
+      await context.route('**/*', (route) =>
+        isAllowedRequestUrl(route.request().url()) ? route.fallback() : route.abort('blockedbyclient'),
+      )
       const page = await context.newPage()
       const scenario = await createScenario(page, workerInfo.workerIndex)
       await use(scenario)

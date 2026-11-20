@@ -1,4 +1,4 @@
-import { expect, type Page, type Response } from '@playwright/test'
+import { expect, type Locator, type Page, type Response } from '@playwright/test'
 
 /** Waits for one API call made by the UI and returns its `data` payload. */
 export async function captureApi<T>(page: Page, method: string, path: RegExp, action: () => Promise<void>): Promise<T> {
@@ -100,12 +100,27 @@ export async function enroll(page: Page, studentName: string, groupName: string)
 
 // ---- teardown -------------------------------------------------------------
 
+/** Thrown when a ledger id points at a missing or non-e2e record; teardown drops the id instead of retrying. */
+export class NotE2eRecordError extends Error {}
+
+/**
+ * Destructive actions only run on records whose page shows the `e2e-` tag that
+ * scenario.ts puts in every name it creates (students and the course; a group's
+ * page shows its course). `ready` is a control that only exists on a loaded record.
+ */
+async function assertE2eRecord(page: Page, label: string, ready: Locator): Promise<void> {
+  await expect(ready.or(page.getByText(/not found/i)).first()).toBeVisible()
+  if (!(await ready.first().isVisible())) throw new NotE2eRecordError(`${label} not found`)
+  const text = await page.locator('main').innerText()
+  if (!/\be2e-/.test(text)) throw new NotE2eRecordError(`${label} is not e2e data (no "e2e-" name), refusing to touch it`)
+}
+
 /** Soft delete, then permanent delete (removes enrollments, attendance, payments). */
 export async function hardDeleteStudent(page: Page, studentId: number): Promise<void> {
   await page.goto(`/students/${studentId}`)
   const deletePermanently = page.getByRole('button', { name: 'Delete Permanently' })
   const softDelete = page.getByRole('button', { name: 'Delete', exact: true })
-  await expect(deletePermanently.or(softDelete).first()).toBeVisible()
+  await assertE2eRecord(page, `student ${studentId}`, deletePermanently.or(softDelete))
   if (!(await deletePermanently.isVisible())) {
     await softDelete.click()
     const dialog = page.getByRole('dialog', { name: 'Delete Student' })
@@ -123,7 +138,9 @@ export async function hardDeleteStudent(page: Page, studentId: number): Promise<
 
 export async function archiveGroup(page: Page, groupId: number): Promise<void> {
   await page.goto(`/groups/${groupId}`)
-  await page.getByRole('button', { name: 'Archive Group' }).click()
+  const archive = page.getByRole('button', { name: 'Archive Group' })
+  await assertE2eRecord(page, `group ${groupId}`, archive)
+  await archive.click()
   await captureApi(page, 'PATCH', new RegExp(`/academics/groups/${groupId}/archive$`), () =>
     page.getByRole('alertdialog').getByRole('button', { name: 'Archive', exact: true }).click(),
   )
@@ -132,7 +149,9 @@ export async function archiveGroup(page: Page, groupId: number): Promise<void> {
 /** Archives the course (the backend's DELETE is a soft delete). */
 export async function deleteCourse(page: Page, courseId: number): Promise<void> {
   await page.goto(`/courses/${courseId}`)
-  await page.getByRole('button', { name: 'Delete', exact: true }).first().click()
+  const del = page.getByRole('button', { name: 'Delete', exact: true }).first()
+  await assertE2eRecord(page, `course ${courseId}`, del)
+  await del.click()
   await captureApi(page, 'DELETE', new RegExp(`/academics/courses/${courseId}$`), () =>
     page.getByRole('alertdialog').getByRole('button', { name: 'Delete', exact: true }).click(),
   )

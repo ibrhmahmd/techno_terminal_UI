@@ -43,14 +43,12 @@ for (const role of ADMIN_ROLES) {
       await page.getByRole('tablist', { name: 'Select day' }).getByRole('tab', { name: tomorrow(), exact: true }).click()
       await expect(groupRegion(page, a.name)).toBeHidden()
       const filter = page.getByRole('tablist', { name: 'Filter by instructor' })
-      // The filter bar may be empty on a day without our instructors; when present, "All" must be active.
-      if (await filter.isVisible()) {
-        await expect(filter.getByRole('tab', { name: 'All', exact: true })).toHaveAttribute('aria-selected', 'true')
-      }
 
       await page.getByRole('tablist', { name: 'Select day' }).getByRole('tab', { name: cairoWeekday(), exact: true }).click()
       await expect(groupRegion(page, a.name)).toBeVisible()
       await expect(groupRegion(page, scenario.groups.instructor_b.name)).toBeVisible()
+      // The bar is always rendered here (our instructors have groups today): the day switch must have reset it to "All".
+      await expect(filter.getByRole('tab', { name: 'All', exact: true })).toHaveAttribute('aria-selected', 'true')
     })
   })
 }

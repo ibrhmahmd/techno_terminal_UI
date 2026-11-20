@@ -474,5 +474,6 @@
     "group_label": "المجموعة:",
     "course_default": "الافتراضي للكورس",
     "unknown_instructor": "المهندس مش معروف"
-  }
+  },
+  "clear_selected": "امسح {{label}}"
 }

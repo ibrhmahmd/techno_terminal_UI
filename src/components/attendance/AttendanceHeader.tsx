@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { SessionWithAttendanceDTO } from '../../api/dashboard'
-import { formatTime } from '../../utils/formatting'
+import { formatTime, formatSessionDate } from '../../utils/formatting'
 import { sessionStatusColors } from '../../utils/colors'
 
 interface AttendanceHeaderProps {
@@ -12,16 +12,6 @@ export function AttendanceHeader({ sessions, groupInstructorName }: AttendanceHe
   const { t } = useTranslation('attendance')
 
   const isCancelled = (session: SessionWithAttendanceDTO) => session.status === 'cancelled'
-
-  const formatSessionDate = (dateStr?: string) => {
-    if (!dateStr) return ''
-    try {
-      const date = new Date(dateStr)
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    } catch {
-      return dateStr || ''
-    }
-  }
 
   // Helper to get instructor name with fallback
   const getInstructorName = (session: SessionWithAttendanceDTO) => {

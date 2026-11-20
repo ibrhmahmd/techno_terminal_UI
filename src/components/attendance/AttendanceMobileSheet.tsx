@@ -233,6 +233,7 @@ export function AttendanceMobileSheet({
                         }
                       }}
                       disabled={isCancelled}
+                      aria-label={t('mobile.session_aria', { number: session.session_number, date: formatSessionDate(session.date) })}
                       className={`w-full flex items-center p-4 text-start transition-colors ${
                         isCancelled ? 'opacity-50 cursor-not-allowed' : 'active:bg-slate-50'
                       }`}

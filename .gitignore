@@ -33,3 +33,4 @@ e2e/.auth/
 e2e/.ledger/
 playwright-report/
 test-results/
+.vercel
