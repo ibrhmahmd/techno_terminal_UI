@@ -10,7 +10,8 @@
     "view_group_details": "View group details",
     "grid_aria": "Attendance grid",
     "region_aria": "{{group}} attendance",
-    "grid_caption": "Student attendance for {{group}} — Level {{level}}"
+    "grid_caption": "Student attendance for {{group}} — Level {{level}}",
+    "region_fallback_aria": "Group attendance"
   },
   "cell": {
     "toggle_aria": "Attendance for {{student}} on {{date}}: {{status}}"
@@ -37,7 +38,12 @@
     "reactivate": "Reactivate",
     "mark_complete": "Mark Complete",
     "completed": "Completed",
-    "cancelled": "CANCELLED"
+    "cancelled": "CANCELLED",
+    "reactivate_aria": "Reactivate session {{date}}",
+    "delete_aria": "Delete session {{date}}",
+    "edit_aria": "Edit session details {{date}}",
+    "cancel_aria": "Cancel session {{date}}",
+    "complete_aria": "Mark session as completed {{date}}"
   },
   "dialogs": {
     "cancel_title": "Cancel Session",
@@ -69,7 +75,8 @@
     "hours": "Hours",
     "scheduled": "Scheduled",
     "completed": "Completed",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "notes_aria": "Notes for session {{number}} ({{date}})"
   },
   "mobile": {
     "select_session": "Select a session",
@@ -79,7 +86,8 @@
     "back_to_sessions": "Back to sessions",
     "close_sheet": "Close attendance sheet",
     "save_attendance": "Save Attendance",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "session_aria": "Session {{number}} on {{date}}"
   },
   "payment": {
     "paid": "{{count}} paid",

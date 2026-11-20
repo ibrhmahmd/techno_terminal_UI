@@ -2,7 +2,7 @@ import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { fileURLToPath } from 'node:url'
 import type { Page } from '@playwright/test'
 import { instructorName, type InstructorRole } from './env'
-import { archiveGroup, createCourse, createGroup, createStudent, deleteCourse, enroll, hardDeleteStudent } from './ui'
+import { archiveGroup, createCourse, createGroup, createStudent, deleteCourse, enroll, hardDeleteStudent, NotE2eRecordError } from './ui'
 
 export interface Student {
   id: number
@@ -39,6 +39,22 @@ export function cairoWeekday(date = new Date()): string {
 export function cairoDate(offsetDays = 0): string {
   const d = new Date(Date.now() + offsetDays * 86_400_000)
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(d)
+}
+
+/** Records an extra student (created outside the scenario) so an interrupted run's sweep removes it. */
+export function trackStudent(tag: string, id: number): void {
+  const file = `${LEDGER_DIR}${tag}.json`
+  const ledger = JSON.parse(readFileSync(file, 'utf8')) as Ledger
+  ledger.studentIds.push(id)
+  writeFileSync(file, JSON.stringify(ledger))
+}
+
+/** Removes a student id from the worker ledger once it has been deleted. */
+export function untrackStudent(tag: string, id: number): void {
+  const file = `${LEDGER_DIR}${tag}.json`
+  const ledger = JSON.parse(readFileSync(file, 'utf8')) as Ledger
+  ledger.studentIds = ledger.studentIds.filter((x) => x !== id)
+  writeFileSync(file, JSON.stringify(ledger))
 }
 
 export async function createScenario(page: Page, workerIndex: number): Promise<Scenario> {
@@ -90,6 +106,13 @@ async function destroyLedger(page: Page, ledgerFile: string): Promise<string[]> 
       done()
       save()
     } catch (err) {
+      if (err instanceof NotE2eRecordError) {
+        // Not ours (or already gone): never touch it, and stop retrying it.
+        console.warn(`e2e teardown: skipping ${label}: ${err.message}`)
+        done()
+        save()
+        return
+      }
       errors.push(`${label}: ${err instanceof Error ? err.message.split('\n')[0] : String(err)}`)
     }
   }

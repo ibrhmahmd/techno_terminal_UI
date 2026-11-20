@@ -16,7 +16,7 @@ for (const role of ADMIN_ROLES) {
       const open = async () => {
         await page.getByRole('button', { name: `View attendance for ${group.name}` }).click()
         const sheet = page.getByRole('dialog')
-        await sheet.getByRole('button').filter({ hasText: sessionLabel(today) }).first().click()
+        await sheet.getByRole('button', { name: new RegExp(`^Session \\d+ on ${sessionLabel(today)}$`) }).first().click()
         return sheet.getByRole('button', { name: new RegExp(`^Attendance for ${escapeRegExp(student).source} on `) })
       }
 

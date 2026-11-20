@@ -1,6 +1,7 @@
 import { test, expect } from '../../support/test'
 import { ADMIN_ROLES } from '../../support/env'
 import { openDashboard } from '../../support/dashboard'
+import { trackStudent, untrackStudent } from '../../support/scenario'
 import { captureApi, fillStudentForm, hardDeleteStudent } from '../../support/ui'
 
 for (const role of ADMIN_ROLES) {
@@ -25,11 +26,13 @@ for (const role of ADMIN_ROLES) {
       const student = await captureApi<{ id: number }>(page, 'POST', /\/crm\/students\/?$/, () =>
         dialog.getByRole('button', { name: 'Create Student' }).click(),
       )
+      trackStudent(scenario.tag, student.id)
       try {
         await expect(page.getByText('Student registered successfully')).toBeVisible()
         await expect(dialog).toBeHidden()
       } finally {
         await hardDeleteStudent(page, student.id)
+        untrackStudent(scenario.tag, student.id)
       }
     })
 

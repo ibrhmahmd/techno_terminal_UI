@@ -55,3 +55,30 @@ export function instructorName(role: InstructorRole): string {
 export function authFile(role: Role): string {
   return fileURLToPath(new URL(`../.auth/${role}.json`, import.meta.url))
 }
+
+/** Browser requests the e2e suite may make; anything else could reach a real backend. */
+export const E2E_ORIGIN = 'http://localhost:5179'
+const ALLOWED_EXTERNAL_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'va.vercel-scripts.com']
+
+export function isAllowedRequestUrl(rawUrl: string): boolean {
+  let url: URL
+  try {
+    url = new URL(rawUrl)
+  } catch {
+    return false
+  }
+  if (url.protocol === 'data:' || url.protocol === 'blob:' || url.protocol === 'about:') return true
+  // vite.config.ts proxies /certs-api to the production certificates backend; M1 never needs it.
+  if (url.origin === E2E_ORIGIN && url.pathname.startsWith('/certs-api')) return false
+  return url.origin === E2E_ORIGIN || ALLOWED_EXTERNAL_HOSTS.includes(url.hostname)
+}
+
+/** The e2e build must use the guarded Vite proxy, never a direct API host. */
+export function assertNoApiBaseOverride(...sources: Array<Record<string, string | undefined>>): void {
+  if (sources.some((env) => env.VITE_API_BASE_URL)) {
+    throw new Error(
+      'E2E refused to start: VITE_API_BASE_URL is set (shell or .env file). It would make the browser call that host directly, ' +
+        'bypassing the staging-only proxy. Unset it.',
+    )
+  }
+}

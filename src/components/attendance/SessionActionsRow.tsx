@@ -95,7 +95,7 @@ export function SessionActionsRow({
                         onClick={() => onReactivate(session.session_id)}
                         disabled={disabled}
                         className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-extrabold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors disabled:opacity-50"
-                        aria-label={`Reactivate session ${formatSessionDate(session.date)}`}
+                        aria-label={t('actions.reactivate_aria', { date: formatSessionDate(session.date) })}
                       >
                         <span className="material-symbols-outlined text-base" aria-hidden="true">restore</span>
                         {t('actions.reactivate')}
@@ -104,7 +104,7 @@ export function SessionActionsRow({
                         onClick={() => handleHardDeleteClick(session.session_id)}
                         disabled={disabled}
                         className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-extrabold text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors disabled:opacity-50"
-                        aria-label={`Delete session ${formatSessionDate(session.date)}`}
+                        aria-label={t('actions.delete_aria', { date: formatSessionDate(session.date) })}
                       >
                         <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
                         {t('actions.delete')}
@@ -116,7 +116,7 @@ export function SessionActionsRow({
                         onClick={() => onEdit(session)}
                         disabled={disabled || cancelled}
                         className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-extrabold text-secondary bg-secondary/10 rounded-md hover:bg-secondary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        aria-label={`Edit session details ${formatSessionDate(session.date)}`}
+                        aria-label={t('actions.edit_aria', { date: formatSessionDate(session.date) })}
                       >
                         <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
                         {t('actions.edit')}
@@ -127,7 +127,7 @@ export function SessionActionsRow({
                           onClick={() => handleCancelClick(session.session_id)}
                           disabled={disabled}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-extrabold text-amber-600 bg-amber-50 rounded-md hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          aria-label={`Cancel session ${formatSessionDate(session.date)}`}
+                          aria-label={t('actions.cancel_aria', { date: formatSessionDate(session.date) })}
                         >
                           <span className="material-symbols-outlined text-base" aria-hidden="true">block</span>
                           {t('actions.cancel')}
@@ -138,7 +138,7 @@ export function SessionActionsRow({
                         onClick={() => handleHardDeleteClick(session.session_id)}
                         disabled={disabled}
                         className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-extrabold text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        aria-label={`Delete session ${formatSessionDate(session.date)}`}
+                        aria-label={t('actions.delete_aria', { date: formatSessionDate(session.date) })}
                       >
                         <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
                         {t('actions.delete')}
@@ -155,7 +155,7 @@ export function SessionActionsRow({
                         onClick={() => onComplete(session.session_id)}
                         disabled={disabled}
                         className="w-full flex items-center justify-center gap-1.5 py-1.5 text-sm font-extrabold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        aria-label={`Mark session as completed ${formatSessionDate(session.date)}`}
+                        aria-label={t('actions.complete_aria', { date: formatSessionDate(session.date) })}
                       >
                         <span className="material-symbols-outlined text-sm" aria-hidden="true">check_circle</span>
                         {t('actions.mark_complete')}

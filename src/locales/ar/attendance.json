@@ -10,7 +10,8 @@
     "view_group_details": "شوف تفاصيل المجموعة",
     "grid_aria": "جدول الحضور",
     "region_aria": "حضور {{group}}",
-    "grid_caption": "حضور الطلاب لمجموعة {{group}} — المستوى {{level}}"
+    "grid_caption": "حضور الطلاب لمجموعة {{group}} — المستوى {{level}}",
+    "region_fallback_aria": "حضور المجموعة"
   },
   "cell": {
     "toggle_aria": "حضور {{student}} يوم {{date}}: {{status}}"
@@ -37,7 +38,12 @@
     "reactivate": "رجّعها",
     "mark_complete": "علم خلصت",
     "completed": "خلصت",
-    "cancelled": "ملغية"
+    "cancelled": "ملغية",
+    "reactivate_aria": "رجّع السيشن بتاع {{date}}",
+    "delete_aria": "احذف السيشن بتاع {{date}}",
+    "edit_aria": "عدّل تفاصيل السيشن بتاع {{date}}",
+    "cancel_aria": "الغِ السيشن بتاع {{date}}",
+    "complete_aria": "علّم السيشن بتاع {{date}} إنه خلص"
   },
   "dialogs": {
     "cancel_title": "الغِ السيشن",
@@ -69,7 +75,8 @@
     "hours": "الساعات",
     "scheduled": "مجدول",
     "completed": "خلصت",
-    "cancelled": "ملغية"
+    "cancelled": "ملغية",
+    "notes_aria": "ملاحظات السيشن {{number}} ({{date}})"
   },
   "mobile": {
     "select_session": "اختار سيشن",
@@ -79,7 +86,8 @@
     "back_to_sessions": "رجوع للسيشنز",
     "close_sheet": "قفل ورقة الحضور",
     "save_attendance": "احفظ الحضور",
-    "saving": "بيتحفظ..."
+    "saving": "بيتحفظ...",
+    "session_aria": "سيشن {{number}} يوم {{date}}"
   },
   "payment": {
     "paid": "{{count}} مدفوع",

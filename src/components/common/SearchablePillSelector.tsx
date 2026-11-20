@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Search, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export interface SelectorOption {
   id: number | string
@@ -22,6 +23,7 @@ export function SearchablePillSelector({
   placeholder = 'Search...',
   disabled = false
 }: SearchablePillSelectorProps) {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [highlightedIndex, setHighlightedIndex] = useState(0)
@@ -107,7 +109,7 @@ export function SearchablePillSelector({
               setIsOpen(true)
               setTimeout(() => wrapperRef.current?.querySelector('input')?.focus(), 0)
             }}
-            aria-label={`Clear ${selectedOption.label}`}
+            aria-label={t('clear_selected', { label: selectedOption.label })}
             className="p-0.5 hover:bg-secondary/20 rounded-full transition-colors ml-1 disabled:pointer-events-none disabled:opacity-50"
           >
             <X className="w-4 h-4" aria-hidden="true" />

@@ -474,5 +474,6 @@
     "group_label": "Group:",
     "course_default": "Course Default",
     "unknown_instructor": "Unknown Instructor"
-  }
+  },
+  "clear_selected": "Clear {{label}}"
 }
